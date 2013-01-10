@@ -32,6 +32,8 @@ import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 // CraftBukkit end
 
+import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+
 public abstract class EntityLiving extends Entity {
 
     private static final Logger a = LogManager.getLogger();
@@ -2014,6 +2016,7 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void tick() {
+        SpigotTimings.timerEntityBaseTick.startTiming(); // Spigot
         super.tick();
         this.cV();
         this.o();
@@ -2084,7 +2087,9 @@ public abstract class EntityLiving extends Entity {
             }
         }
 
+        SpigotTimings.timerEntityBaseTick.stopTiming(); // Spigot
         this.movementTick();
+        SpigotTimings.timerEntityTickRest.startTiming(); // Spigot
         double d0 = this.locX - this.lastX;
         double d1 = this.locZ - this.lastZ;
         float f = (float) (d0 * d0 + d1 * d1);
@@ -2161,6 +2166,7 @@ public abstract class EntityLiving extends Entity {
             this.bv = 0;
         }
 
+        SpigotTimings.timerEntityTickRest.stopTiming(); // Spigot
     }
 
     protected float e(float f, float f1) {
@@ -2230,6 +2236,7 @@ public abstract class EntityLiving extends Entity {
         }
 
         this.world.methodProfiler.enter("ai");
+        SpigotTimings.timerEntityAI.startTiming(); // Spigot
         if (this.isFrozen()) {
             this.bg = false;
             this.bh = 0.0F;
@@ -2240,6 +2247,7 @@ public abstract class EntityLiving extends Entity {
             this.doTick();
             this.world.methodProfiler.exit();
         }
+        SpigotTimings.timerEntityAI.stopTiming(); // Spigot
 
         this.world.methodProfiler.exit();
         this.world.methodProfiler.enter("jump");
@@ -2264,7 +2272,9 @@ public abstract class EntityLiving extends Entity {
         this.n();
         AxisAlignedBB axisalignedbb = this.getBoundingBox();
 
+        SpigotTimings.timerEntityAIMove.startTiming(); // Spigot
         this.a(this.bh, this.bi, this.bj);
+        SpigotTimings.timerEntityAIMove.stopTiming(); // Spigot
         this.world.methodProfiler.exit();
         this.world.methodProfiler.enter("push");
         if (this.bw > 0) {
@@ -2272,7 +2282,9 @@ public abstract class EntityLiving extends Entity {
             this.a(axisalignedbb, this.getBoundingBox());
         }
 
+        SpigotTimings.timerEntityAICollision.startTiming(); // Spigot
         this.cN();
+        SpigotTimings.timerEntityAICollision.stopTiming(); // Spigot
         this.world.methodProfiler.exit();
     }
 

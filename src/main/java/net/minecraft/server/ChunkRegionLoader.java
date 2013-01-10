@@ -132,7 +132,9 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     // CraftBukkit start - Add async variant, provide compatibility
     @Nullable
     public Chunk a(GeneratorAccess generatoraccess, int i, int j, Consumer<Chunk> consumer) throws IOException {
+        generatoraccess.getMinecraftWorld().timings.syncChunkLoadDataTimer.startTiming(); // Spigot
         Object[] data = loadChunk(generatoraccess, i, j, consumer);
+        generatoraccess.getMinecraftWorld().timings.syncChunkLoadDataTimer.stopTiming(); // Spigot
         if (data != null) {
             Chunk chunk = (Chunk) data[0];
             NBTTagCompound nbttagcompound = (NBTTagCompound) data[1];
@@ -636,6 +638,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     public void loadEntities(NBTTagCompound nbttagcompound, Chunk chunk) {
         NBTTagList nbttaglist = nbttagcompound.getList("Entities", 10);
         World world = chunk.getWorld();
+        world.timings.syncChunkLoadEntitiesTimer.startTiming(); // Spigot
 
         for (int i = 0; i < nbttaglist.size(); ++i) {
             NBTTagCompound nbttagcompound1 = nbttaglist.getCompound(i);
@@ -644,6 +647,8 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             chunk.f(true);
         }
 
+        world.timings.syncChunkLoadEntitiesTimer.stopTiming(); // Spigot
+        world.timings.syncChunkLoadTileEntitiesTimer.startTiming(); // Spigot
         NBTTagList nbttaglist1 = nbttagcompound.getList("TileEntities", 10);
 
         for (int j = 0; j < nbttaglist1.size(); ++j) {
@@ -660,6 +665,8 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                 }
             }
         }
+        world.timings.syncChunkLoadTileEntitiesTimer.stopTiming(); // Spigot
+        world.timings.syncChunkLoadTileTicksTimer.startTiming(); // Spigot
 
         if (nbttagcompound.hasKeyOfType("TileTicks", 9) && world.getBlockTickList() instanceof TickListServer) {
             ((TickListServer) world.getBlockTickList()).a(nbttagcompound.getList("TileTicks", 10));
@@ -668,6 +675,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         if (nbttagcompound.hasKeyOfType("LiquidTicks", 9) && world.getFluidTickList() instanceof TickListServer) {
             ((TickListServer) world.getFluidTickList()).a(nbttagcompound.getList("LiquidTicks", 10));
         }
+        world.timings.syncChunkLoadTileTicksTimer.stopTiming(); // Spigot
 
     }
 

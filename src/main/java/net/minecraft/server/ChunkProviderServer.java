@@ -104,6 +104,7 @@ public class ChunkProviderServer implements IChunkProvider {
             return chunk;
         } else if (flag1) {
             try {
+                world.timings.syncChunkLoadTimer.startTiming(); // Spigot
                 this.batchScheduler.b();
                 this.batchScheduler.a(new ChunkCoordIntPair(i, j));
                 CompletableFuture<ProtoChunk> completablefuture = this.batchScheduler.c();
@@ -112,6 +113,7 @@ public class ChunkProviderServer implements IChunkProvider {
             } catch (RuntimeException runtimeexception) {
                 throw this.a(i, j, (Throwable) runtimeexception);
             }
+            finally { world.timings.syncChunkLoadTimer.stopTiming(); } // Spigot
         } else {
             return null;
         }

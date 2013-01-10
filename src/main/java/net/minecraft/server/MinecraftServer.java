@@ -62,6 +62,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.Main;
 import org.bukkit.event.server.ServerLoadEvent;
 // CraftBukkit end
+import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 
 public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStatistics, ICommandListener, Runnable {
 
@@ -780,6 +781,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public void t() {}
 
     protected void a(BooleanSupplier booleansupplier) {
+        SpigotTimings.serverTickTimer.startTiming(); // Spigot
         long i = SystemUtils.getMonotonicNanos();
 
         ++this.ticks;
@@ -805,10 +807,12 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         }
 
         if (autosavePeriod > 0 && this.ticks % autosavePeriod == 0) { // CraftBukkit
+            SpigotTimings.worldSaveTimer.startTiming(); // Spigot
             this.methodProfiler.enter("save");
             this.playerList.savePlayers();
             this.saveChunks(true);
             this.methodProfiler.exit();
+            SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
         }
 
         this.methodProfiler.enter("snooper");
@@ -827,10 +831,14 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.ap = this.ap * 0.8F + (float) l / 1000000.0F * 0.19999999F;
         this.methodProfiler.exit();
         this.methodProfiler.exit();
+        SpigotTimings.serverTickTimer.stopTiming(); // Spigot
+        org.spigotmc.CustomTimingsHandler.tick(); // Spigot
     }
 
     public void b(BooleanSupplier booleansupplier) {
+        SpigotTimings.schedulerTimer.startTiming(); // Spigot
         this.server.getScheduler().mainThreadHeartbeat(this.ticks); // CraftBukkit
+        SpigotTimings.schedulerTimer.stopTiming(); // Spigot
         this.methodProfiler.enter("jobs");
 
         FutureTask futuretask;
@@ -840,17 +848,24 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         }
 
         this.methodProfiler.exitEnter("commandFunctions");
+        SpigotTimings.commandFunctionsTimer.startTiming(); // Spigot
         this.getFunctionData().tick();
+        SpigotTimings.commandFunctionsTimer.stopTiming(); // Spigot
         this.methodProfiler.exitEnter("levels");
 
         // CraftBukkit start
         // Run tasks that are waiting on processing
+        SpigotTimings.processQueueTimer.startTiming(); // Spigot
         while (!processQueue.isEmpty()) {
             processQueue.remove().run();
         }
+        SpigotTimings.processQueueTimer.stopTiming(); // Spigot
 
+        SpigotTimings.chunkIOTickTimer.startTiming(); // Spigot
         org.bukkit.craftbukkit.chunkio.ChunkIOExecutor.tick();
+        SpigotTimings.chunkIOTickTimer.stopTiming(); // Spigot
 
+        SpigotTimings.timeUpdateTimer.startTiming(); // Spigot
         // Send time updates to everyone, it will get the right time from the world the player is in.
         if (this.ticks % 20 == 0) {
             for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
@@ -858,6 +873,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
                 entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
             }
         }
+        SpigotTimings.timeUpdateTimer.stopTiming(); // Spigot
 
         // WorldServer worldserver; // CraftBukkit - dropped down
         long i;
@@ -883,7 +899,9 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
                 CrashReport crashreport;
 
                 try {
+                    worldserver.timings.doTick.startTiming(); // Spigot
                     worldserver.doTick(booleansupplier);
+                    worldserver.timings.doTick.stopTiming(); // Spigot
                 } catch (Throwable throwable) {
                     crashreport = CrashReport.a(throwable, "Exception ticking world");
                     worldserver.a(crashreport);
@@ -891,7 +909,9 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
                 }
 
                 try {
+                    worldserver.timings.tickEntities.startTiming(); // Spigot
                     worldserver.tickEntities();
+                    worldserver.timings.tickEntities.stopTiming(); // Spigot
                 } catch (Throwable throwable1) {
                     crashreport = CrashReport.a(throwable1, "Exception ticking world entities");
                     worldserver.a(crashreport);
@@ -900,21 +920,29 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
                 this.methodProfiler.exit();
                 this.methodProfiler.enter("tracker");
+                worldserver.timings.tracker.startTiming(); // Spigot
                 worldserver.getTracker().updatePlayers();
+                worldserver.timings.tracker.stopTiming(); // Spigot
                 this.methodProfiler.exit();
                 this.methodProfiler.exit();
             }
         }
 
         this.methodProfiler.exitEnter("connection");
+        SpigotTimings.connectionTimer.startTiming(); // Spigot
         this.getServerConnection().c();
+        SpigotTimings.connectionTimer.stopTiming(); // Spigot
         this.methodProfiler.exitEnter("players");
+        SpigotTimings.playerListTimer.startTiming(); // Spigot
         this.playerList.tick();
+        SpigotTimings.playerListTimer.stopTiming(); // Spigot
         this.methodProfiler.exitEnter("tickables");
 
+        SpigotTimings.tickablesTimer.startTiming(); // Spigot
         for (int j = 0; j < this.k.size(); ++j) {
             ((ITickable) this.k.get(j)).tick();
         }
+        SpigotTimings.tickablesTimer.stopTiming(); // Spigot
 
         this.methodProfiler.exit();
     }
