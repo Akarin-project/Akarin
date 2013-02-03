@@ -128,6 +128,13 @@ public abstract class EntityLiving extends Entity {
         return getHeadRotation();
     }
     // CraftBukkit end
+    // Spigot start
+    public void inactiveTick()
+    {
+        super.inactiveTick();
+        ++this.ticksFarFromPlayer; // Above all the floats
+    }
+    // Spigot end
 
     protected EntityLiving(EntityTypes<?> entitytypes, World world) {
         super(entitytypes, world);

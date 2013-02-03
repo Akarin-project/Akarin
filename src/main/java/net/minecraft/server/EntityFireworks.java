@@ -17,6 +17,14 @@ public class EntityFireworks extends Entity {
         this.setSize(0.25F, 0.25F);
     }
 
+    // Spigot Start
+    @Override
+    public void inactiveTick() {
+        this.ticksFlown += 1;
+        super.inactiveTick();
+    }
+    // Spigot End
+
     protected void x_() {
         this.datawatcher.register(EntityFireworks.FIREWORK_ITEM, ItemStack.a);
         this.datawatcher.register(EntityFireworks.b, 0);

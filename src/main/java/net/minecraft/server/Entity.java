@@ -159,6 +159,12 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
     public org.bukkit.projectiles.ProjectileSource projectileSource; // For projectiles only
     public boolean forceExplosionKnockback; // SPIGOT-949
     public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getEntityTimings(this); // Spigot
+    // Spigot start
+    public final byte activationType = org.spigotmc.ActivationRange.initializeEntityActivationType(this);
+    public final boolean defaultActivationState;
+    public long activatedTick = Integer.MIN_VALUE;
+    public void inactiveTick() { }
+    // Spigot end
 
     public float getBukkitYaw() {
         return this.yaw;
@@ -185,7 +191,12 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
         this.setPosition(0.0D, 0.0D, 0.0D);
         if (world != null) {
             this.dimension = world.worldProvider.getDimensionManager();
+            // Spigot start
+            this.defaultActivationState = org.spigotmc.ActivationRange.initializeEntityActivationState(this, world.spigotConfig);
+        } else {
+            this.defaultActivationState = false;
         }
+        // Spigot end
 
         this.datawatcher = new DataWatcher(this);
         this.datawatcher.register(Entity.ac, (byte) 0);

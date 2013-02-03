@@ -99,6 +99,22 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
         this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.5D);
     }
 
+    // Spigot Start
+    @Override
+    public void inactiveTick() {
+        // SPIGOT-3874
+        if (world.spigotConfig.tickInactiveVillagers) {
+            // SPIGOT-3894
+            Chunk startingChunk = this.world.getChunkIfLoaded(MathHelper.floor(this.locX) >> 4, MathHelper.floor(this.locZ) >> 4);
+            if (!(startingChunk != null && startingChunk.areNeighborsLoaded(1))) {
+                return;
+            }
+            this.mobTick(); // SPIGOT-3846
+        }
+        super.inactiveTick();
+    }
+    // Spigot End
+
     protected void mobTick() {
         if (--this.profession <= 0) {
             BlockPosition blockposition = new BlockPosition(this);

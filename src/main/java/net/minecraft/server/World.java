@@ -1039,6 +1039,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         CrashReport crashreport1;
         CrashReportSystemDetails crashreportsystemdetails1;
 
+        org.spigotmc.ActivationRange.activateEntities(this); // Spigot
         timings.entityTick.startTiming(); // Spigot
         // CraftBukkit start - Use field for loop variable
         for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
@@ -1224,8 +1225,12 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
         // CraftBukkit start - check if chunks are loaded as done in previous versions
         // TODO: Go back to Vanilla behaviour when comfortable
-        Chunk startingChunk = this.getChunkIfLoaded(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4);
-        if (flag && !(startingChunk != null && startingChunk.areNeighborsLoaded(2))) {
+        // Spigot start
+        // Chunk startingChunk = this.getChunkIfLoaded(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4);
+        if (flag && !org.spigotmc.ActivationRange.checkIfActive(entity)) {
+            entity.ticksLived++;
+            entity.inactiveTick();
+            // Spigot end
             return;
         }
         // CraftBukkit end

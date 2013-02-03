@@ -16,6 +16,31 @@ public abstract class EntityAgeable extends EntityCreature {
         super(entitytypes, world);
     }
 
+    // Spigot start
+    @Override
+    public void inactiveTick()
+    {
+        super.inactiveTick();
+        if ( this.world.isClientSide || this.ageLocked )
+        { // CraftBukkit
+            this.a( this.isBaby() );
+        } else
+        {
+            int i = this.getAge();
+
+            if ( i < 0 )
+            {
+                ++i;
+                this.setAgeRaw( i );
+            } else if ( i > 0 )
+            {
+                --i;
+                this.setAgeRaw( i );
+            }
+        }
+    }
+    // Spigot end
+
     @Nullable
     public abstract EntityAgeable createChild(EntityAgeable entityageable);
 
