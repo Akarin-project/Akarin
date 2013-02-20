@@ -104,8 +104,9 @@ public class EntityTracker {
         this.addEntity(entity, i, j, false);
     }
 
-    public void addEntity(Entity entity, int i, int j, boolean flag) {
+    public void addEntity(Entity entity, int originalRange, int j, boolean flag) { // Spigot
         org.spigotmc.AsyncCatcher.catchOp( "entity track"); // Spigot
+        int i = org.spigotmc.TrackingRange.getEntityTrackingRange(entity, originalRange); // Spigot
         try {
             if (this.trackedEntities.b(entity.getId())) {
                 throw new IllegalStateException("Entity is already tracked!");
