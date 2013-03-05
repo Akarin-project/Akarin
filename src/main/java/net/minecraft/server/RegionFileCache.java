@@ -95,11 +95,29 @@ public class RegionFileCache {
 
     @Nullable
     public static synchronized void write(File file, int i, int j, NBTTagCompound nbttagcompound) throws IOException {
+        int attempts = 0; Exception laste = null; while (attempts++ < 5) { try { // Paper
         RegionFile regionfile = a(file, i, j);
 
         DataOutputStream dataoutputstream = regionfile.c(i & 31, j & 31);
         NBTCompressedStreamTools.a(nbttagcompound, (java.io.DataOutput) dataoutputstream);
         dataoutputstream.close();
+        // Paper start
+            laste = null; break; // Paper
+            } catch (Exception exception) {
+                //ChunkRegionLoader.a.error("Failed to save chunk", exception); // Paper
+                laste = exception; // Paper
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if (laste != null) {
+            com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(laste);
+            MinecraftServer.LOGGER.error("Failed to save chunk", laste);
+        }
+        // Paper end
     }
 
     public static synchronized boolean chunkExists(File file, int i, int j) {

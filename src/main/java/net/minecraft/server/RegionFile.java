@@ -276,8 +276,7 @@ public class RegionFile {
 
             this.b(i, j, (int) (SystemUtils.getTimeMillis() / 1000L));
         } catch (IOException ioexception) {
-            ioexception.printStackTrace();
-            ServerInternalException.reportInternalException(ioexception); // Paper
+            com.destroystokyo.paper.util.SneakyThrow.sneaky(ioexception); // Paper - we want the upper try/catch to retry this
         }
 
     }
