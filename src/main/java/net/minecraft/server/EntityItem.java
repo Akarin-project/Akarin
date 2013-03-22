@@ -149,7 +149,10 @@ public class EntityItem extends Entity {
     }
 
     private void v() {
-        Iterator iterator = this.world.a(EntityItem.class, this.getBoundingBox().grow(0.5D, 0.0D, 0.5D)).iterator();
+        // Spigot start
+        double radius = world.spigotConfig.itemMerge;
+        Iterator iterator = this.world.a(EntityItem.class, this.getBoundingBox().grow(radius, radius, radius)).iterator();
+        // Spigot end
 
         while (iterator.hasNext()) {
             EntityItem entityitem = (EntityItem) iterator.next();
@@ -181,12 +184,14 @@ public class EntityItem extends Entity {
                     } else if (itemstack1.getCount() + itemstack.getCount() > itemstack1.getMaxStackSize()) {
                         return false;
                     } else {
-                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callItemMergeEvent(this, entityitem).isCancelled()) return false; // CraftBukkit
-                        itemstack1.add(itemstack.getCount());
-                        entityitem.pickupDelay = Math.max(entityitem.pickupDelay, this.pickupDelay);
-                        entityitem.age = Math.min(entityitem.age, this.age);
-                        entityitem.setItemStack(itemstack1);
-                        this.die();
+                        // Spigot start
+                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callItemMergeEvent(entityitem, this).isCancelled()) return false; // CraftBukkit
+                        itemstack.add(itemstack1.getCount());
+                        this.pickupDelay = Math.max(entityitem.pickupDelay, this.pickupDelay);
+                        this.age = Math.min(entityitem.age, this.age);
+                        this.setItemStack(itemstack);
+                        entityitem.die();
+                        // Spigot end
                         return true;
                     }
                 } else {
