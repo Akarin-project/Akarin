@@ -125,4 +125,11 @@ public class SpigotWorldConfig
         expMerge = getDouble("merge-radius.exp", 3.0 );
         log( "Experience Merge Radius: " + expMerge );
     }
+
+    public int viewDistance;
+    private void viewDistance()
+    {
+        viewDistance = getInt( "view-distance", Bukkit.getViewDistance() );
+        log( "View Distance: " + viewDistance );
+    }
 }

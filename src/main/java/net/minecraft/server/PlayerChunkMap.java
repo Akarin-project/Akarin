@@ -40,7 +40,7 @@ public class PlayerChunkMap {
 
     public PlayerChunkMap(WorldServer worldserver) {
         this.world = worldserver;
-        this.a(worldserver.getMinecraftServer().getPlayerList().getViewDistance());
+        this.a(worldserver.spigotConfig.viewDistance); // Spigot
     }
 
     public WorldServer getWorld() {
