@@ -1769,4 +1769,14 @@ public class CraftWorld implements World {
             cps.unload(chunk);
         }
     }
+    // Spigot start
+    private final Spigot spigot = new Spigot()
+    {
+    };
+
+    public Spigot spigot()
+    {
+        return spigot;
+    }
+    // Spigot end
 }

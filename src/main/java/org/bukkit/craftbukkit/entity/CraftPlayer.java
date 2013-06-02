@@ -1606,4 +1606,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         getHandle().server.getCommandDispatcher().a(getHandle());
     }
+
+    // Spigot start
+    private final Player.Spigot spigot = new Player.Spigot()
+    {
+    };
+
+    public Player.Spigot spigot()
+    {
+        return spigot;
+    }
+    // Spigot end
 }
