@@ -633,6 +633,11 @@ public abstract class PlayerList {
             Player respawnPlayer = cserver.getPlayer(entityplayer1);
             PlayerRespawnEvent respawnEvent = new PlayerRespawnEvent(respawnPlayer, location, isBedSpawn);
             cserver.getPluginManager().callEvent(respawnEvent);
+            // Spigot Start
+            if (entityplayer.playerConnection.isDisconnected()) {
+                return entityplayer;
+            }
+            // Spigot End
 
             location = respawnEvent.getRespawnLocation();
             entityplayer.reset();
