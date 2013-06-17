@@ -70,6 +70,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     public com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData; // Paper
     protected CraftEntity bukkitEntity;
 
+    EntityTrackerEntry tracker; // Paper
     public CraftEntity getBukkitEntity() {
         if (bukkitEntity == null) {
             bukkitEntity = CraftEntity.getEntity(world.getServer(), this);

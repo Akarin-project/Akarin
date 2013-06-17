@@ -56,6 +56,7 @@ public class EntityTrackerEntry {
     // Paper end
 
     public EntityTrackerEntry(Entity entity, int i, int j, int k, boolean flag) {
+        entity.tracker = this; // Paper
         this.tracker = entity;
         this.e = i;
         this.f = j;
@@ -453,17 +454,59 @@ public class EntityTrackerEntry {
 
                     this.tracker.b(entityplayer);
                     entityplayer.d(this.tracker);
+                    updatePassengers(entityplayer); // Paper
                 }
             } else if (this.trackedPlayers.contains(entityplayer)) {
                 this.trackedPlayers.remove(entityplayer);
                 this.tracker.c(entityplayer);
                 entityplayer.c(this.tracker);
+                updatePassengers(entityplayer); // Paper
             }
 
         }
     }
 
     public boolean c(EntityPlayer entityplayer) {
+        // Paper start
+        if (tracker.isPassenger()) {
+            return isTrackedBy(tracker.getVehicle(), entityplayer);
+        } else if (hasPassengerInRange(tracker, entityplayer)) {
+            return true;
+        }
+
+        return isInRangeOfPlayer(entityplayer);
+    }
+    private static boolean hasPassengerInRange(Entity entity, EntityPlayer entityplayer) {
+        if (!entity.isVehicle()) {
+            return false;
+        }
+        for (Entity passenger : entity.passengers) {
+            if (passenger.tracker != null && passenger.tracker.isInRangeOfPlayer(entityplayer)) {
+                return true;
+            }
+            if (passenger.isVehicle()) {
+                if (hasPassengerInRange(passenger, entityplayer)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private static boolean isTrackedBy(Entity entity, EntityPlayer entityplayer) {
+        return entity == entityplayer || entity.tracker != null && entity.tracker.trackedPlayers.contains(entityplayer);
+    }
+    private void updatePassengers(EntityPlayer player) {
+        if (tracker.isVehicle()) {
+            tracker.passengers.forEach((e) -> {
+                if (e.tracker != null) {
+                    e.tracker.updatePlayer(player);
+                }
+            });
+            player.playerConnection.sendPacket(new PacketPlayOutMount(this.tracker));
+        }
+    }
+    private boolean isInRangeOfPlayer(EntityPlayer entityplayer) {
+        // Paper end
         double d0 = entityplayer.locX - (double) this.xLoc / 4096.0D;
         double d1 = entityplayer.locZ - (double) this.zLoc / 4096.0D;
         int i = Math.min(this.e, (entityplayer.getViewDistance() - 1) * 16); // Paper - Use player view distance API
@@ -604,6 +647,7 @@ public class EntityTrackerEntry {
             this.trackedPlayers.remove(entityplayer);
             this.tracker.c(entityplayer);
             entityplayer.c(this.tracker);
+            updatePassengers(entityplayer); // Paper
         }
 
     }
