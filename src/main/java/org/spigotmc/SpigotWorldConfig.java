@@ -132,4 +132,11 @@ public class SpigotWorldConfig
         viewDistance = getInt( "view-distance", Bukkit.getViewDistance() );
         log( "View Distance: " + viewDistance );
     }
+
+    public byte mobSpawnRange;
+    private void mobSpawnRange()
+    {
+        mobSpawnRange = (byte) getInt( "mob-spawn-range", 6 );
+        log( "Mob Spawn Range: " + mobSpawnRange );
+    }
 }

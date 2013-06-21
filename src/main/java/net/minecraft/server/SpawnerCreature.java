@@ -42,10 +42,15 @@ public final class SpawnerCreature {
 
                     j = MathHelper.floor(entityhuman.locZ / 16.0D);
                     boolean flag3 = true;
+                    // Spigot Start
+                    byte b0 = worldserver.spigotConfig.mobSpawnRange;
+                    b0 = ( b0 > worldserver.spigotConfig.viewDistance ) ? (byte) worldserver.spigotConfig.viewDistance : b0;
+                    b0 = ( b0 > 8 ) ? 8 : b0;
 
-                    for (int i1 = -8; i1 <= 8; ++i1) {
-                        for (k = -8; k <= 8; ++k) {
-                            boolean flag4 = i1 == -8 || i1 == 8 || k == -8 || k == 8;
+                    for (int i1 = -b0; i1 <= b0; ++i1) {
+                        for (k = -b0; k <= b0; ++k) {
+                            boolean flag4 = i1 == -b0 || i1 == b0 || k == -b0 || k == b0;
+                            // Spigot End
                             ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i1 + l, k + j);
 
                             // CraftBukkit start - use LongHash and LongHashSet
