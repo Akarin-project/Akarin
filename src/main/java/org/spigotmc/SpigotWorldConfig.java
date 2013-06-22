@@ -190,4 +190,11 @@ public class SpigotWorldConfig
         hopperAmount = getInt( "hopper-amount", 1 );
         log( "Hopper Transfer: " + hopperTransfer + " Hopper Check: " + hopperCheck + " Hopper Amount: " + hopperAmount );
     }
+
+    public boolean randomLightUpdates;
+    private void lightUpdates()
+    {
+        randomLightUpdates = getBoolean( "random-light-updates", false );
+        log( "Random Lighting Updates: " + randomLightUpdates );
+    }
 }

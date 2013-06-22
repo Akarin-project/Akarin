@@ -428,7 +428,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     protected void l() {
         this.methodProfiler.enter("playerCheckLight");
-        if (!this.players.isEmpty()) {
+        if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
             int i = this.random.nextInt(this.players.size());
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
             int j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
