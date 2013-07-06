@@ -177,6 +177,11 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             if (this.getPort() < 0) {
                 this.setPort(this.propertyManager.getInt("server-port", 25565));
             }
+            // Spigot start
+            this.a((PlayerList) (new DedicatedPlayerList(this)));
+            org.spigotmc.SpigotConfig.init((File) options.valueOf("spigot-settings"));
+            org.spigotmc.SpigotConfig.registerCommands();
+            // Spigot end
 
             DedicatedServer.LOGGER.info("Generating keypair");
             this.a(MinecraftEncryption.b());
@@ -192,7 +197,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             }
 
             // CraftBukkit start
-            this.a((PlayerList) (new DedicatedPlayerList(this)));
+            // this.a((PlayerList) (new DedicatedPlayerList(this))); // Spigot - moved up
             server.loadPlugins();
             server.enablePlugins(org.bukkit.plugin.PluginLoadOrder.STARTUP);
             // CraftBukkit end
