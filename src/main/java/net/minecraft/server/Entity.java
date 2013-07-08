@@ -1561,6 +1561,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
             nbttagcompound.setLong("WorldUUIDLeast", this.world.getDataManager().getUUID().getLeastSignificantBits());
             nbttagcompound.setLong("WorldUUIDMost", this.world.getDataManager().getUUID().getMostSignificantBits());
             nbttagcompound.setInt("Bukkit.updateLevel", CURRENT_LEVEL);
+            nbttagcompound.setInt("Spigot.ticksLived", this.ticksLived);
             // CraftBukkit end
             IChatBaseComponent ichatbasecomponent = this.getCustomName();
 
@@ -1711,6 +1712,8 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
             // CraftBukkit start
             if (this instanceof EntityLiving) {
                 EntityLiving entity = (EntityLiving) this;
+
+                this.ticksLived = nbttagcompound.getInt("Spigot.ticksLived");
 
                 // Reset the persistence for tamed animals
                 if (entity instanceof EntityTameableAnimal && !isLevelAtLeast(nbttagcompound, 2) && !nbttagcompound.getBoolean("PersistenceRequired")) {
