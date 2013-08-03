@@ -816,11 +816,11 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         }
 
         this.methodProfiler.enter("snooper");
-        if (!this.snooper.d() && this.ticks > 100) {
+        if (getSnooperEnabled() && !this.snooper.d() && this.ticks > 100) { // Spigot
             this.snooper.a();
         }
 
-        if (this.ticks % 6000 == 0) {
+        if (getSnooperEnabled() && this.ticks % 6000 == 0) { // Spigot
             this.snooper.b();
         }
 
