@@ -11,7 +11,7 @@ import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
 public class BlockRedstoneTorch extends BlockTorch {
 
     public static final BlockStateBoolean LIT = BlockProperties.o;
-    private static final Map<IBlockAccess, List<BlockRedstoneTorch.RedstoneUpdateInfo>> b = Maps.newHashMap();
+    private static final Map<IBlockAccess, List<BlockRedstoneTorch.RedstoneUpdateInfo>> b = new java.util.WeakHashMap(); // Spigot
 
     protected BlockRedstoneTorch(Block.Info block_info) {
         super(block_info);
