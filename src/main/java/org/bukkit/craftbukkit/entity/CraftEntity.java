@@ -771,6 +771,11 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     // Spigot start
     private final Spigot spigot = new Spigot()
     {
+        @Override
+        public boolean isInvulnerable()
+        {
+            return getHandle().isInvulnerable(net.minecraft.server.DamageSource.GENERIC);
+        }
     };
 
     public Spigot spigot()
