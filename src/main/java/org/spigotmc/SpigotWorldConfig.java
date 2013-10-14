@@ -197,4 +197,11 @@ public class SpigotWorldConfig
         randomLightUpdates = getBoolean( "random-light-updates", false );
         log( "Random Lighting Updates: " + randomLightUpdates );
     }
+
+    public int arrowDespawnRate;
+    private void arrowDespawnRate()
+    {
+        arrowDespawnRate = getInt( "arrow-despawn-rate", 1200  );
+        log( "Arrow Despawn Rate: " + arrowDespawnRate );
+    }
 }
