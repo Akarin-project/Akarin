@@ -47,6 +47,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     private final ReentrantReadWriteLock j = new ReentrantReadWriteLock();
     public Channel channel;
     public SocketAddress socketAddress;
+    // Spigot Start
+    public java.util.UUID spoofedUUID;
+    public com.mojang.authlib.properties.Property[] spoofedProfile;
+    // Spigot End
     private PacketListener packetListener;
     private IChatBaseComponent n;
     private boolean o;
@@ -329,4 +333,11 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
             this.b = genericfuturelistener;
         }
     }
+
+    // Spigot Start
+    public SocketAddress getRawAddress()
+    {
+        return this.channel.remoteAddress();
+    }
+    // Spigot End
 }
