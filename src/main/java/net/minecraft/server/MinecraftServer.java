@@ -73,7 +73,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public File universe;
     private final List<ITickable> k = Lists.newArrayList();
     public final MethodProfiler methodProfiler = new MethodProfiler();
-    private final ServerConnection serverConnection;
+    private ServerConnection serverConnection; // Spigot
     private final ServerPing m = new ServerPing();
     private final Random n = new Random();
     public final DataFixer dataConverterManager;
@@ -164,7 +164,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.W = gameprofilerepository;
         this.X = usercache;
         // this.universe = file; // CraftBukkit
-        this.serverConnection = new ServerConnection(this); // CraftBukkit
+        // this.serverConnection = new ServerConnection(this); // CraftBukkit // Spigot
         // this.convertable = file == null ? null : new WorldLoaderServer(file.toPath(), file.toPath().resolve("../backups"), datafixer); // CraftBukkit - moved to DedicatedServer.init
         this.dataConverterManager = datafixer;
         this.ac.a((IResourcePackListener) this.ah);
@@ -1420,7 +1420,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     }
 
     public ServerConnection getServerConnection() {
-        return this.serverConnection;
+        return this.serverConnection == null ? this.serverConnection = new ServerConnection(this) : this.serverConnection; // Spigot
     }
 
     public boolean ag() {
