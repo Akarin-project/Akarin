@@ -204,4 +204,11 @@ public class SpigotWorldConfig
         arrowDespawnRate = getInt( "arrow-despawn-rate", 1200  );
         log( "Arrow Despawn Rate: " + arrowDespawnRate );
     }
+
+    public boolean zombieAggressiveTowardsVillager;
+    private void zombieAggressiveTowardsVillager()
+    {
+        zombieAggressiveTowardsVillager = getBoolean( "zombie-aggressive-towards-villager", true );
+        log( "Zombie Aggressive Towards Villager: " + zombieAggressiveTowardsVillager );
+    }
 }
