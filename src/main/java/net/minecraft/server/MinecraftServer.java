@@ -707,6 +707,12 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             }
         } catch (Throwable throwable) {
             MinecraftServer.LOGGER.error("Encountered an unexpected exception", throwable);
+            // Spigot Start
+            if ( throwable.getCause() != null )
+            {
+                MinecraftServer.LOGGER.error( "\tCause of unexpected exception was", throwable.getCause() );
+            }
+            // Spigot End
             CrashReport crashreport;
 
             if (throwable instanceof ReportedException) {
