@@ -231,4 +231,9 @@ public class SpigotConfig
         System.setProperty( "io.netty.eventLoopThreads", Integer.toString( count ) );
         Bukkit.getLogger().log( Level.INFO, "Using {0} threads for Netty based IO", count );
     }
+
+    public static boolean lateBind;
+    private static void lateBind() {
+        lateBind = getBoolean( "settings.late-bind", false );
+    }
 }

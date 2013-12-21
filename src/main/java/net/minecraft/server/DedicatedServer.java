@@ -188,6 +188,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             this.a(MinecraftEncryption.b());
             DedicatedServer.LOGGER.info("Starting Minecraft server on {}:{}", this.getServerIp().isEmpty() ? "*" : this.getServerIp(), this.getPort());
 
+        if (!org.spigotmc.SpigotConfig.lateBind) {
             try {
                 this.getServerConnection().a(inetaddress, this.getPort());
             } catch (IOException ioexception) {
@@ -196,6 +197,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                 DedicatedServer.LOGGER.warn("Perhaps a server is already running on that port?");
                 return false;
             }
+        }
 
             // CraftBukkit start
             // this.a((PlayerList) (new DedicatedPlayerList(this))); // Spigot - moved up
@@ -306,6 +308,17 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                     this.propertyManager.savePropertiesFile();
                 }
                 // CraftBukkit end
+
+        if (org.spigotmc.SpigotConfig.lateBind) {
+            try {
+                this.getServerConnection().a(inetaddress, this.getPort());
+            } catch (IOException ioexception) {
+                DedicatedServer.LOGGER.warn("**** FAILED TO BIND TO PORT!");
+                DedicatedServer.LOGGER.warn("The exception was: {}", ioexception.toString());
+                DedicatedServer.LOGGER.warn("Perhaps a server is already running on that port?");
+                return false;
+            }
+        }
 
                 if (false && this.getMaxTickTime() > 0L) {  // Spigot - disable
                     Thread thread1 = new Thread(new ThreadWatchdog(this));
