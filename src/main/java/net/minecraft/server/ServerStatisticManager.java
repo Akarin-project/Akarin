@@ -36,6 +36,13 @@ public class ServerStatisticManager extends StatisticManager {
     public ServerStatisticManager(MinecraftServer minecraftserver, File file) {
         this.c = minecraftserver;
         this.d = file;
+        // Spigot start
+        for ( Map.Entry<MinecraftKey, Integer> entry : org.spigotmc.SpigotConfig.forcedStats.entrySet() )
+        {
+            Statistic<MinecraftKey> wrapper = StatisticList.CUSTOM.b( entry.getKey() );
+            this.a.put( wrapper, entry.getValue().intValue() );
+        }
+        // Spigot end
         if (file.isFile()) {
             try {
                 this.a(minecraftserver.az(), FileUtils.readFileToString(file));
@@ -49,6 +56,7 @@ public class ServerStatisticManager extends StatisticManager {
     }
 
     public void a() {
+        if ( org.spigotmc.SpigotConfig.disableStatSaving ) return; // Spigot
         try {
             FileUtils.writeStringToFile(this.d, this.b());
         } catch (IOException ioexception) {
@@ -58,6 +66,7 @@ public class ServerStatisticManager extends StatisticManager {
     }
 
     public void setStatistic(EntityHuman entityhuman, Statistic<?> statistic, int i) {
+        if ( org.spigotmc.SpigotConfig.disableStatSaving ) return; // Spigot
         super.setStatistic(entityhuman, statistic, i);
         this.e.add(statistic);
     }
