@@ -861,12 +861,17 @@ public class CraftWorld implements World {
     }
 
     public void save() {
+    // Spigot start
+        save(true);
+    }
+    public void save(boolean forceSave) {
+    // Spigot end
         this.server.checkSaveState();
         try {
             boolean oldSave = world.savingDisabled;
 
             world.savingDisabled = false;
-            world.save(true, null);
+            world.save(forceSave, null); // Spigot
 
             world.savingDisabled = oldSave;
         } catch (ExceptionWorldConflict ex) {

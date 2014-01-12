@@ -817,7 +817,17 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             SpigotTimings.worldSaveTimer.startTiming(); // Spigot
             this.methodProfiler.enter("save");
             this.playerList.savePlayers();
-            this.saveChunks(true);
+            // Spigot Start
+            // We replace this with saving each individual world as this.saveChunks(...) is broken,
+            // and causes the main thread to sleep for random amounts of time depending on chunk activity
+            // Also pass flag to only save modified chunks
+            server.playerCommandState = true;
+            for (World world : getWorlds()) {
+                world.getWorld().save(false);
+            }
+            server.playerCommandState = false;
+            // this.saveChunks(true);
+            // Spigot End
             this.methodProfiler.exit();
             SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
         }
