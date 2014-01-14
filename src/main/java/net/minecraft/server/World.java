@@ -1,4 +1,4 @@
-package net.minecraft.server;
+	package net.minecraft.server;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
@@ -962,6 +962,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             this.everyoneSleeping();
         }
 
+        if (!guardEntityList) { // Spigot - It will get removed after the tick if we are ticking
         int i = entity.chunkX;
         int j = entity.chunkZ;
 
@@ -978,6 +979,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             this.entityList.remove(index);
         }
         // CraftBukkit end
+        } // Spigot
         this.c(entity);
     }
 
