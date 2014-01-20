@@ -41,6 +41,7 @@ public class NBTTagByteArray extends NBTList<NBTTagByte> {
     public void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) throws IOException {
         nbtreadlimiter.a(192L);
         int j = datainput.readInt();
+        com.google.common.base.Preconditions.checkArgument( j < 1 << 24);
 
         nbtreadlimiter.a((long) (8 * j));
         this.data = new byte[j];
