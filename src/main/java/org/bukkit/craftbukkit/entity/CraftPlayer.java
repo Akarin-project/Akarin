@@ -1636,6 +1636,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
                 server.getServer().getPlayerList().moveToWorld( getHandle(), net.minecraft.server.DimensionManager.OVERWORLD, false );
             }
         }
+
+        @Override
+        public String getLocale()
+        {
+           return getHandle().locale;
+        }
     };
 
     public Player.Spigot spigot()
