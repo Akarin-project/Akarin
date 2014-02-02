@@ -110,7 +110,12 @@ public abstract class MobSpawnerAbstract {
                         if (this.spawnData.b().d() == 1 && this.spawnData.b().hasKeyOfType("id", 8) && entity instanceof EntityInsentient) {
                             ((EntityInsentient) entity).prepare(world.getDamageScaler(new BlockPosition(entity)), (GroupDataEntity) null, (NBTTagCompound) null);
                         }
-
+                        // Spigot Start
+                        if ( entity.world.spigotConfig.nerfSpawnerMobs )
+                        {
+                            entity.fromMobSpawner = true;
+                        }
+                        // Spigot End
                         ChunkRegionLoader.a(entity, (GeneratorAccess) world, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER); // CraftBukkit
                         world.triggerEffect(2004, blockposition, 0);
                         if (entityinsentient != null) {
