@@ -1479,9 +1479,20 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 this.minecraftServer.getPlayerList().sendMessage(chatmessage, false);
             }
 
+            // Spigot start - spam exclusions
+            boolean counted = true;
+            for ( String exclude : org.spigotmc.SpigotConfig.spamExclusions )
+            {
+                if ( exclude != null && s.startsWith( exclude ) )
+                {
+                    counted = false;
+                    break;
+                }
+            }
+            // Spigot end
             // CraftBukkit start - replaced with thread safe throttle
             // this.chatThrottle += 20;
-            if (chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
+            if (counted && chatSpamField.addAndGet(this, 20) > 200 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) { // Spigot
                 if (!isSync) {
                     Waitable waitable = new Waitable() {
                         @Override
