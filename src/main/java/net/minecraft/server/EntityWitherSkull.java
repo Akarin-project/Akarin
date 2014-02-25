@@ -29,8 +29,11 @@ public class EntityWitherSkull extends EntityFireball {
     protected void a(MovingObjectPosition movingobjectposition) {
         if (!this.world.isClientSide) {
             if (movingobjectposition.entity != null) {
+                // Spigot start
+                boolean didDamage = false;
                 if (this.shooter != null) {
-                    if (movingobjectposition.entity.damageEntity(DamageSource.projectile(this, shooter), 8.0F)) { // CraftBukkit
+                    didDamage = movingobjectposition.entity.damageEntity(DamageSource.projectile(this, shooter), 8.0F);
+                    if (didDamage) { // CraftBukkit
                         if (movingobjectposition.entity.isAlive()) {
                             this.a(this.shooter, movingobjectposition.entity);
                         } else {
@@ -38,10 +41,11 @@ public class EntityWitherSkull extends EntityFireball {
                         }
                     }
                 } else {
-                    movingobjectposition.entity.damageEntity(DamageSource.MAGIC, 5.0F);
+                    didDamage = movingobjectposition.entity.damageEntity(DamageSource.MAGIC, 5.0F);
                 }
 
-                if (movingobjectposition.entity instanceof EntityLiving) {
+                if (didDamage && movingobjectposition.entity instanceof EntityLiving) {
+                // Spigot end
                     byte b0 = 0;
 
                     if (this.world.getDifficulty() == EnumDifficulty.NORMAL) {
