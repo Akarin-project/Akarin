@@ -40,7 +40,32 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     protected static final Logger e = LogManager.getLogger();
     private static final EnumDirection[] a = EnumDirection.values();
     private int b = 63;
-    public final List<Entity> entityList = Lists.newArrayList();
+    // Spigot start - guard entity list from removals
+    public final List<Entity> entityList = new java.util.ArrayList<Entity>()
+    {
+        @Override
+        public Entity remove(int index)
+        {
+            guard();
+            return super.remove( index );
+        }
+
+        @Override
+        public boolean remove(Object o)
+        {
+            guard();
+            return super.remove( o );
+        }
+
+        private void guard()
+        {
+            if ( guardEntityList )
+            {
+                throw new java.util.ConcurrentModificationException();
+            }
+        }
+    };
+    // Spigot end
     protected final List<Entity> g = Lists.newArrayList();
     public final List<TileEntity> tileEntityList = Lists.newArrayList();
     public final List<TileEntity> tileEntityListTick = Lists.newArrayList();
@@ -106,6 +131,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     public final org.spigotmc.SpigotWorldConfig spigotConfig; // Spigot
 
     public final SpigotTimings.WorldTimingsHandler timings; // Spigot
+    private boolean guardEntityList; // Spigot
 
     public CraftWorld getWorld() {
         return this.world;
@@ -1041,6 +1067,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
         org.spigotmc.ActivationRange.activateEntities(this); // Spigot
         timings.entityTick.startTiming(); // Spigot
+        guardEntityList = true; // Spigot
         // CraftBukkit start - Use field for loop variable
         for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
             entity = (Entity) this.entityList.get(this.tickPosition);
@@ -1079,12 +1106,15 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                     this.getChunkAt(j, l).b(entity);
                 }
 
+                guardEntityList = false; // Spigot
                 this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
+                guardEntityList = true; // Spigot
                 this.c(entity);
             }
 
             this.methodProfiler.exit();
         }
+        guardEntityList = false; // Spigot
 
         timings.entityTick.stopTiming(); // Spigot
         this.methodProfiler.exitEnter("blockEntities");
