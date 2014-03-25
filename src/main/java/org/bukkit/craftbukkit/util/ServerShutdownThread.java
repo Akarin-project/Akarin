@@ -13,6 +13,7 @@ public class ServerShutdownThread extends Thread {
     @Override
     public void run() {
         try {
+            org.spigotmc.AsyncCatcher.enabled = false; // Spigot
             server.stop();
         } catch (ExceptionWorldConflict ex) {
             ex.printStackTrace();

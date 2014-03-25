@@ -81,6 +81,7 @@ public class CraftingManager implements IResourcePackListener {
     }
 
     public void a(IRecipe irecipe) {
+        org.spigotmc.AsyncCatcher.catchOp("Recipe Add"); // Spigot
         if (this.recipes.containsKey(irecipe.getKey())) {
             throw new IllegalStateException("Duplicate recipe ignored with ID " + irecipe.getKey());
         } else {

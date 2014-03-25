@@ -105,6 +105,7 @@ public class EntityTracker {
     }
 
     public void addEntity(Entity entity, int i, int j, boolean flag) {
+        org.spigotmc.AsyncCatcher.catchOp( "entity track"); // Spigot
         try {
             if (this.trackedEntities.b(entity.getId())) {
                 throw new IllegalStateException("Entity is already tracked!");
@@ -142,6 +143,7 @@ public class EntityTracker {
     }
 
     public void untrackEntity(Entity entity) {
+        org.spigotmc.AsyncCatcher.catchOp( "entity untrack"); // Spigot
         if (entity instanceof EntityPlayer) {
             EntityPlayer entityplayer = (EntityPlayer) entity;
             Iterator iterator = this.c.iterator();

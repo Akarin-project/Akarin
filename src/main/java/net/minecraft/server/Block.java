@@ -373,10 +373,14 @@ public class Block implements IMaterial {
     }
 
     @Deprecated
-    public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1) {}
+    public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1) {
+        org.spigotmc.AsyncCatcher.catchOp( "block onPlace"); // Spigot
+    }
 
     @Deprecated
-    public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {}
+    public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
+        org.spigotmc.AsyncCatcher.catchOp( "block remove"); // Spigot
+    }
 
     public int a(IBlockData iblockdata, Random random) {
         return 1;

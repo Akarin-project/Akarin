@@ -857,6 +857,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public boolean addEntity(Entity entity, SpawnReason spawnReason) { // Changed signature, added SpawnReason
+        org.spigotmc.AsyncCatcher.catchOp( "entity add"); // Spigot
         if (!CraftEventFactory.doEntityAddEventCalling(this, entity, spawnReason)) {
             return false;
         }
@@ -904,6 +905,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void kill(Entity entity) {
+        org.spigotmc.AsyncCatcher.catchOp( "entity kill"); // Spigot
         if (entity.isVehicle()) {
             entity.ejectPassengers();
         }
@@ -922,6 +924,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void removeEntity(Entity entity) {
+        org.spigotmc.AsyncCatcher.catchOp( "entity remove"); // Spigot
         entity.b(false);
         entity.die();
         if (entity instanceof EntityHuman) {
@@ -2139,6 +2142,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void a(Stream<Entity> stream) {
+        org.spigotmc.AsyncCatcher.catchOp( "entity world add"); // Spigot
         stream.forEach((entity) -> {
             this.entityList.add(entity);
             this.b(entity);
