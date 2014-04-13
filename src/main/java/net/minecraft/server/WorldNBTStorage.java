@@ -164,10 +164,28 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
 
         try {
             File file = new File(this.playerDir, entityhuman.bu() + ".dat");
+            // Spigot Start
+            boolean usingWrongFile = false;
+            if ( !file.exists() )
+            {
+                file = new File( this.playerDir, UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
+                if ( file.exists() )
+                {
+                    usingWrongFile = true;
+                    org.bukkit.Bukkit.getServer().getLogger().warning( "Using offline mode UUID file for player " + entityhuman.getName() + " as it is the only copy we can find." );
+                }
+            }
+            // Spigot End
 
             if (file.exists() && file.isFile()) {
                 nbttagcompound = NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file)));
             }
+            // Spigot Start
+            if ( usingWrongFile )
+            {
+                file.renameTo( new File( file.getPath() + ".offline-read" ) );
+            }
+            // Spigot End
         } catch (Exception exception) {
             WorldNBTStorage.b.warn("Failed to load player data for {}", entityhuman.getDisplayName().getString());
         }
