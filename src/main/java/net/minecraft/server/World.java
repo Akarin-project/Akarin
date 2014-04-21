@@ -132,6 +132,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
     public final SpigotTimings.WorldTimingsHandler timings; // Spigot
     private boolean guardEntityList; // Spigot
+    public static BlockPosition lastPhysicsProblem; // Spigot
 
     public CraftWorld getWorld() {
         return this.world;
@@ -352,7 +353,13 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 // CraftBukkit start
                 if (!this.captureBlockStates) { // Don't notify clients or update physics while capturing blockstates
                     // Modularize client and physic updates
-                    notifyAndUpdatePhysics(blockposition, chunk, iblockdata1, iblockdata, iblockdata2, i);
+                    // Spigot start
+                    try {
+                        notifyAndUpdatePhysics(blockposition, chunk, iblockdata1, iblockdata, iblockdata2, i);
+                    } catch (StackOverflowError ex) {
+                        lastPhysicsProblem = new BlockPosition(blockposition);
+                    }
+                    // Spigot end
                 }
                 // CraftBukkit end
 
@@ -532,6 +539,10 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 }
                 // CraftBukkit end
                 iblockdata.doPhysics(this, blockposition, block, blockposition1);
+            // Spigot Start
+            } catch (StackOverflowError ex) { 
+                lastPhysicsProblem = new BlockPosition(blockposition);
+                // Spigot End
             } catch (Throwable throwable) {
                 CrashReport crashreport = CrashReport.a(throwable, "Exception while updating neighbours");
                 CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Block being updated");
