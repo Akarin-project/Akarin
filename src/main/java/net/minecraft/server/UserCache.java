@@ -216,7 +216,7 @@ public class UserCache {
     }
 
     public void c() {
-        String s = this.b.toJson(this.a(1000));
+        String s = this.b.toJson(this.a(org.spigotmc.SpigotConfig.userCacheCap));
         BufferedWriter bufferedwriter = null;
 
         try {
