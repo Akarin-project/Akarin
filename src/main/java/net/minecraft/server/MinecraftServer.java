@@ -656,6 +656,12 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             this.snooper.e();
         }
 
+        // Spigot start
+        if (org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly) {
+            LOGGER.info("Saving usercache.json");
+            this.getUserCache().c();
+        }
+        // Spigot end
     }
 
     public String getServerIp() {
