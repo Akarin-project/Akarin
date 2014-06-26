@@ -1692,6 +1692,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                         }
                     }
 
+                    tileentity.setWorld(this); // Spigot - No null worlds
                     this.c.add(tileentity);
                 } else {
                     this.getChunkAtWorldCoords(blockposition).a(blockposition, tileentity);
