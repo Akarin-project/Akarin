@@ -1191,9 +1191,29 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         // CraftBukkit end
     }
 
+    // Spigot start - limit place/interactions
+    private int limitedPackets;
+    private long lastLimitedPacket = -1;
+
+    private boolean checkLimit(long timestamp) {
+        if (lastLimitedPacket != -1 && timestamp - lastLimitedPacket < 30 && limitedPackets++ >= 4) {
+            return false;
+        }
+
+        if (lastLimitedPacket == -1 || timestamp - lastLimitedPacket >= 30) {
+            lastLimitedPacket = timestamp;
+            limitedPackets = 0;
+            return true;
+        }
+
+        return true;
+    }
+    // Spigot end
+
     public void a(PacketPlayInUseItem packetplayinuseitem) {
         PlayerConnectionUtils.ensureMainThread(packetplayinuseitem, this, this.player.getWorldServer());
         if (this.player.isFrozen()) return; // CraftBukkit
+        if (!checkLimit(packetplayinuseitem.timestamp)) return; // Spigot - check limit
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
         EnumHand enumhand = packetplayinuseitem.d();
         ItemStack itemstack = this.player.b(enumhand);
@@ -1223,6 +1243,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     public void a(PacketPlayInBlockPlace packetplayinblockplace) {
         PlayerConnectionUtils.ensureMainThread(packetplayinblockplace, this, this.player.getWorldServer());
         if (this.player.isFrozen()) return; // CraftBukkit
+        if (!checkLimit(packetplayinblockplace.timestamp)) return; // Spigot - check limit
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
         EnumHand enumhand = packetplayinblockplace.b();
         ItemStack itemstack = this.player.b(enumhand);

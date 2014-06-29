@@ -10,10 +10,12 @@ public class PacketPlayInUseItem implements Packet<PacketListenerPlayIn> {
     private float d;
     private float e;
     private float f;
+    public long timestamp;
 
     public PacketPlayInUseItem() {}
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
+        this.timestamp = System.currentTimeMillis(); // Spigot
         this.a = packetdataserializer.e();
         this.b = (EnumDirection) packetdataserializer.a(EnumDirection.class);
         this.c = (EnumHand) packetdataserializer.a(EnumHand.class);
