@@ -23,6 +23,10 @@ import net.minecraft.server.IChatBaseComponent;
 import net.minecraft.server.NBTTagString;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 
+// Spigot start
+import static org.spigotmc.ValidateUtils.*;
+// Spigot end
+
 @DelegateDeserialization(SerializableMeta.class)
 public class CraftMetaBook extends CraftMetaItem implements BookMeta {
     static final ItemMetaKey BOOK_TITLE = new ItemMetaKey("title");
@@ -59,11 +63,11 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
         super(tag);
 
         if (tag.hasKey(BOOK_TITLE.NBT)) {
-            this.title = tag.getString(BOOK_TITLE.NBT);
+            this.title = limit( tag.getString(BOOK_TITLE.NBT), 1024 ); // Spigot
         }
 
         if (tag.hasKey(BOOK_AUTHOR.NBT)) {
-            this.author = tag.getString(BOOK_AUTHOR.NBT);
+            this.author = limit( tag.getString(BOOK_AUTHOR.NBT), 1024 ); // Spigot
         }
 
         boolean resolved = false;
@@ -88,7 +92,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
                         // Ignore and treat as an old book
                     }
                 }
-                addPage(page);
+                addPage( limit( page, 2048 ) ); // Spigot
             }
         }
     }

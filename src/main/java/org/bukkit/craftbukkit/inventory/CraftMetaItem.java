@@ -74,6 +74,10 @@ import org.apache.commons.codec.binary.Base64;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+// Spigot start
+import static org.spigotmc.ValidateUtils.*;
+// Spigot end
+
 /**
  * Children must include the following:
  *
@@ -305,7 +309,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
 
             if (display.hasKey(NAME.NBT)) {
                 try {
-                    displayName = IChatBaseComponent.ChatSerializer.a(display.getString(NAME.NBT));
+                    displayName = IChatBaseComponent.ChatSerializer.a( limit( display.getString(NAME.NBT), 1024 ) ); // Spigot
                 } catch (JsonParseException ex) {
                     // Ignore (stripped like Vanilla)
                 }
@@ -313,7 +317,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
 
             if (display.hasKey(LOCNAME.NBT)) {
                 try {
-                    locName = IChatBaseComponent.ChatSerializer.a(display.getString(LOCNAME.NBT));
+                    locName = IChatBaseComponent.ChatSerializer.a( limit( display.getString(LOCNAME.NBT), 1024 ) ); // Spigot
                 } catch (JsonParseException ex) {
                     // Ignore (stripped like Vanilla)
                 }
@@ -324,7 +328,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
                 lore = new ArrayList<String>(list.size());
 
                 for (int index = 0; index < list.size(); index++) {
-                    String line = list.getString(index);
+                    String line = limit( list.getString(index), 1024 ); // Spigot
                     lore.add(line);
                 }
             }
