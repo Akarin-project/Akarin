@@ -267,7 +267,7 @@ public class EntitySlime extends EntityInsentient implements IMonster {
                 }
 
                 ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(blockposition);
-                boolean flag1 = SeededRandom.a(chunkcoordintpair.x, chunkcoordintpair.z, generatoraccess.getSeed(), 987234911L).nextInt(10) == 0;
+                boolean flag1 = SeededRandom.a(chunkcoordintpair.x, chunkcoordintpair.z, generatoraccess.getSeed(), world.spigotConfig.slimeSeed).nextInt(10) == 0; // Spigot
 
                 if (this.random.nextInt(10) == 0 && flag1 && this.locY < 40.0D) {
                     return super.a(generatoraccess, flag);

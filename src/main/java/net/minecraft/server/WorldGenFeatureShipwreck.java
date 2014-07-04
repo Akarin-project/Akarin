@@ -18,8 +18,10 @@ public class WorldGenFeatureShipwreck extends WorldGenFeatureRandomScattered<Wor
         return new WorldGenFeatureShipwreck.a(generatoraccess, chunkgenerator, seededrandom, i, j, biomebase);
     }
 
-    protected int c() {
-        return 165745295;
+    // Spigot start
+    protected int c(World world) {
+        return world.spigotConfig.shipwreckSeed;
+        // Spigot end
     }
 
     protected int a(ChunkGenerator<?> chunkgenerator) {

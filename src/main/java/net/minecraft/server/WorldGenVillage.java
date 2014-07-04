@@ -30,7 +30,7 @@ public class WorldGenVillage extends StructureGenerator<WorldGenFeatureVillageCo
         int k2 = i2 / i1;
         int l2 = j2 / i1;
 
-        ((SeededRandom) random).a(chunkgenerator.getSeed(), k2, l2, 10387312);
+        ((SeededRandom) random).a(chunkgenerator.getSeed(), k2, l2, chunkgenerator.getWorld().spigotConfig.villageSeed); // Spigot
         k2 *= i1;
         l2 *= i1;
         k2 += random.nextInt(i1 - j1);

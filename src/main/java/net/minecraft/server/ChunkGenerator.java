@@ -40,4 +40,6 @@ public interface ChunkGenerator<C extends GeneratorSettings> {
     int getSpawnHeight();
 
     int getGenerationDepth();
+
+    World getWorld(); // Spigot
 }

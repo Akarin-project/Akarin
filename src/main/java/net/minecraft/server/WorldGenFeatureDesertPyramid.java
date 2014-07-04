@@ -18,8 +18,10 @@ public class WorldGenFeatureDesertPyramid extends WorldGenFeatureRandomScattered
         return new WorldGenFeatureDesertPyramid.a(generatoraccess, seededrandom, i, j, biomebase);
     }
 
-    protected int c() {
-        return 14357617;
+    // Spigot start
+    protected int c(World world) {
+        return world.spigotConfig.desertSeed;
+        // Spigot end
     }
 
     public static class a extends StructureStart {

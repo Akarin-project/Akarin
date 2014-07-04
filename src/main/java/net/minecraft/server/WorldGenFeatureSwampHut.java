@@ -23,8 +23,10 @@ public class WorldGenFeatureSwampHut extends WorldGenFeatureRandomScattered<Worl
         return new WorldGenFeatureSwampHut.a(generatoraccess, seededrandom, i, j, biomebase);
     }
 
-    protected int c() {
-        return 14357620;
+    // Spigot start
+    protected int c(World world) {
+        return world.spigotConfig.swampSeed;
+        // Spigot end
     }
 
     public List<BiomeBase.BiomeMeta> d() {

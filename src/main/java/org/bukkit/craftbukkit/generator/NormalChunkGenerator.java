@@ -11,9 +11,11 @@ import net.minecraft.server.*;
 import org.bukkit.generator.BlockPopulator;
 
 public class NormalChunkGenerator<C extends GeneratorSettings> extends InternalChunkGenerator<C> {
+    private final World world; // Spigot
     private final ChunkGenerator<?> generator;
 
     public NormalChunkGenerator(World world, long seed) {
+        this.world = world; // Spigot
         generator = world.worldProvider.getChunkGenerator();
     }
 
@@ -111,4 +113,11 @@ public class NormalChunkGenerator<C extends GeneratorSettings> extends InternalC
     public int getGenerationDepth() {
         return generator.getGenerationDepth();
     }
+
+    // Spigot start
+    @Override
+    public World getWorld() {
+        return this.world;
+    }
+    // Spigot end
 }

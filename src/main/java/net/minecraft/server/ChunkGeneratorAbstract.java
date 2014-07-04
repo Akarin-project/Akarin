@@ -155,4 +155,11 @@ public abstract class ChunkGeneratorAbstract<C extends GeneratorSettings> implem
     public int getGenerationDepth() {
         return 256;
     }
+
+    // Spigot start
+    @Override
+    public World getWorld() {
+        return this.a.getMinecraftWorld();
+    }
+    // Spigot end
 }

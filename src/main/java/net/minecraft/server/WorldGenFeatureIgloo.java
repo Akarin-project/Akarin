@@ -18,8 +18,10 @@ public class WorldGenFeatureIgloo extends WorldGenFeatureRandomScattered<WorldGe
         return new WorldGenFeatureIgloo.a(generatoraccess, chunkgenerator, seededrandom, i, j, biomebase);
     }
 
-    protected int c() {
-        return 14357618;
+    // Spigot start
+    protected int c(World world) {
+        return world.spigotConfig.iglooSeed;
+        // Spigot end
     }
 
     public static class a extends StructureStart {

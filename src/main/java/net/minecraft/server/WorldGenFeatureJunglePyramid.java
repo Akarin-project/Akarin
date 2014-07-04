@@ -18,8 +18,10 @@ public class WorldGenFeatureJunglePyramid extends WorldGenFeatureRandomScattered
         return new WorldGenFeatureJunglePyramid.a(generatoraccess, seededrandom, i, j, biomebase);
     }
 
-    protected int c() {
-        return 14357619;
+    // Spigot start
+    protected int c(World world) {
+        return world.spigotConfig.jungleSeed;
+        // Spigot end
     }
 
     public static class a extends StructureStart {

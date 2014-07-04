@@ -28,8 +28,10 @@ public class WorldGenFeatureOceanRuin extends WorldGenFeatureRandomScattered<Wor
         return new WorldGenFeatureOceanRuin.a(generatoraccess, chunkgenerator, seededrandom, i, j, biomebase);
     }
 
-    protected int c() {
-        return 14357621;
+    // Spigot start
+    protected int c(World world) {
+        return world.spigotConfig.oceanSeed;
+        // Spigot end
     }
 
     public static enum Temperature {

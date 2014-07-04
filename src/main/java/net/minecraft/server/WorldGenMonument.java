@@ -23,7 +23,7 @@ public class WorldGenMonument extends StructureGenerator<WorldGenMonumentConfigu
         int k2 = i2 / i1;
         int l2 = j2 / i1;
 
-        ((SeededRandom) random).a(chunkgenerator.getSeed(), k2, l2, 10387313);
+        ((SeededRandom) random).a(chunkgenerator.getSeed(), k2, l2, chunkgenerator.getWorld().spigotConfig.monumentSeed); // Spigot
         k2 *= i1;
         l2 *= i1;
         k2 += (random.nextInt(i1 - j1) + random.nextInt(i1 - j1)) / 2;
