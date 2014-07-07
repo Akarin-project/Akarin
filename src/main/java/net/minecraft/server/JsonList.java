@@ -189,6 +189,14 @@ public class JsonList<K, V extends JsonListEntry<K>> {
                         }
                     }
                 }
+            // Spigot Start
+            } catch ( com.google.gson.JsonParseException ex )
+            {
+                org.bukkit.Bukkit.getLogger().log( java.util.logging.Level.WARNING, "Unable to read file " + this.c + ", backing it up to {0}.backup and creating new copy.", ex );
+                File backup = new File( this.c + ".backup" );
+                this.c.renameTo( backup );
+                this.c.delete();
+            // Spigot End
             } finally {
                 IOUtils.closeQuietly(bufferedreader);
             }
