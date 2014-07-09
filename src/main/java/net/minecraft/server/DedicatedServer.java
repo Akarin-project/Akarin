@@ -136,7 +136,16 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
         DedicatedServer.LOGGER.info("Loading properties");
         this.propertyManager = new PropertyManager(this.options); // CraftBukkit - CLI argument support
         this.eula = new EULA(new File("eula.txt"));
-        if (!this.eula.a()) {
+        // Spigot Start
+        boolean eulaAgreed = Boolean.getBoolean( "com.mojang.eula.agree" );
+        if ( eulaAgreed )
+        {
+            System.err.println( "You have used the Spigot command line EULA agreement flag." );
+            System.err.println( "By using this setting you are indicating your agreement to Mojang's EULA (https://account.mojang.com/documents/minecraft_eula)." );
+            System.err.println( "If you do not agree to the above EULA please stop your server and remove this flag immediately." );
+        }
+        // Spigot End
+        if (!this.eula.a() && !eulaAgreed) { // Spigot
             DedicatedServer.LOGGER.info("You need to agree to the EULA in order to run the server. Go to eula.txt for more info.");
             this.eula.b();
             return false;
