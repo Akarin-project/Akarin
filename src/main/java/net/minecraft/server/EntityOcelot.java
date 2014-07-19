@@ -10,6 +10,7 @@ public class EntityOcelot extends EntityTameableAnimal {
     private static final MinecraftKey bI = new MinecraftKey("cat");
     private PathfinderGoalAvoidTarget<EntityHuman> bJ;
     private PathfinderGoalTempt bK;
+    public boolean spawnBonus = true; // Spigot
 
     public EntityOcelot(World world) {
         super(EntityTypes.OCELOT, world);
@@ -234,7 +235,7 @@ public class EntityOcelot extends EntityTameableAnimal {
     @Nullable
     public GroupDataEntity prepare(DifficultyDamageScaler difficultydamagescaler, @Nullable GroupDataEntity groupdataentity, @Nullable NBTTagCompound nbttagcompound) {
         groupdataentity = super.prepare(difficultydamagescaler, groupdataentity, nbttagcompound);
-        if (this.getCatType() == 0 && this.world.random.nextInt(7) == 0) {
+        if (spawnBonus && this.getCatType() == 0 && this.world.random.nextInt(7) == 0) { // Spigot
             for (int i = 0; i < 2; ++i) {
                 EntityOcelot entityocelot = new EntityOcelot(this.world);
 
