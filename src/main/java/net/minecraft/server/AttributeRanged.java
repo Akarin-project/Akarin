@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 public class AttributeRanged extends AttributeBase {
 
     private final double a;
-    public final double maximum;
+    public double maximum; // Spigot
     private String c;
 
     public AttributeRanged(@Nullable IAttribute iattribute, String s, double d0, double d1, double d2) {

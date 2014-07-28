@@ -10,16 +10,18 @@ import org.apache.logging.log4j.Logger;
 public class GenericAttributes {
 
     private static final Logger k = LogManager.getLogger();
-    public static final IAttribute maxHealth = (new AttributeRanged((IAttribute) null, "generic.maxHealth", 20.0D, 0.0D, 1024.0D)).a("Max Health").a(true);
+    // Spigot start
+    public static final IAttribute maxHealth = (new AttributeRanged((IAttribute) null, "generic.maxHealth", 20.0D, 0.0D, org.spigotmc.SpigotConfig.maxHealth)).a("Max Health").a(true);
     public static final IAttribute FOLLOW_RANGE = (new AttributeRanged((IAttribute) null, "generic.followRange", 32.0D, 0.0D, 2048.0D)).a("Follow Range");
     public static final IAttribute c = (new AttributeRanged((IAttribute) null, "generic.knockbackResistance", 0.0D, 0.0D, 1.0D)).a("Knockback Resistance");
-    public static final IAttribute MOVEMENT_SPEED = (new AttributeRanged((IAttribute) null, "generic.movementSpeed", 0.699999988079071D, 0.0D, 1024.0D)).a("Movement Speed").a(true);
+    public static final IAttribute MOVEMENT_SPEED = (new AttributeRanged((IAttribute) null, "generic.movementSpeed", 0.699999988079071D, 0.0D, org.spigotmc.SpigotConfig.movementSpeed)).a("Movement Speed").a(true);
     public static final IAttribute e = (new AttributeRanged((IAttribute) null, "generic.flyingSpeed", 0.4000000059604645D, 0.0D, 1024.0D)).a("Flying Speed").a(true);
-    public static final IAttribute ATTACK_DAMAGE = new AttributeRanged((IAttribute) null, "generic.attackDamage", 2.0D, 0.0D, 2048.0D);
+    public static final IAttribute ATTACK_DAMAGE = new AttributeRanged((IAttribute) null, "generic.attackDamage", 2.0D, 0.0D, org.spigotmc.SpigotConfig.attackDamage);
     public static final IAttribute g = (new AttributeRanged((IAttribute) null, "generic.attackSpeed", 4.0D, 0.0D, 1024.0D)).a(true);
     public static final IAttribute h = (new AttributeRanged((IAttribute) null, "generic.armor", 0.0D, 0.0D, 30.0D)).a(true);
     public static final IAttribute i = (new AttributeRanged((IAttribute) null, "generic.armorToughness", 0.0D, 0.0D, 20.0D)).a(true);
     public static final IAttribute j = (new AttributeRanged((IAttribute) null, "generic.luck", 0.0D, -1024.0D, 1024.0D)).a(true);
+    // Spigot end
 
     public static NBTTagList a(AttributeMapBase attributemapbase) {
         NBTTagList nbttaglist = new NBTTagList();
