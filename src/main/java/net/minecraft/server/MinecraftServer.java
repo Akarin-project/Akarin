@@ -726,6 +726,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             this.a(crashreport);
         } finally {
             try {
+                org.spigotmc.WatchdogThread.doStop();
                 this.isStopped = true;
                 this.stop();
             } catch (Throwable throwable1) {
@@ -831,6 +832,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.ap = this.ap * 0.8F + (float) l / 1000000.0F * 0.19999999F;
         this.methodProfiler.exit();
         this.methodProfiler.exit();
+        org.spigotmc.WatchdogThread.tick(); // Spigot
         SpigotTimings.serverTickTimer.stopTiming(); // Spigot
         org.spigotmc.CustomTimingsHandler.tick(); // Spigot
     }
