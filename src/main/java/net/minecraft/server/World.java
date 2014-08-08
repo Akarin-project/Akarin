@@ -958,6 +958,26 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         entity.die();
         if (entity instanceof EntityHuman) {
             this.players.remove(entity);
+            // Spigot start
+            for ( WorldPersistentData worldData : worldMaps.worldMap.values() )
+            {
+                for (Object o : worldData.data.values() )
+                {
+                    if ( o instanceof WorldMap )
+                    {
+                        WorldMap map = (WorldMap) o;
+                        map.humans.remove( (EntityHuman) entity );
+                        for ( Iterator<WorldMap.WorldMapHumanTracker> iter = (Iterator<WorldMap.WorldMapHumanTracker>) map.h.iterator(); iter.hasNext(); )
+                        {
+                            if ( iter.next().trackee == entity )
+                            {
+                                iter.remove();
+                            }
+                        }
+                    }
+                }
+            }
+            // Spigot end
             this.everyoneSleeping();
             this.c(entity);
         }
