@@ -125,7 +125,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         TileEntity result = super.getTileEntity(pos);
         Block type = getType(pos).getBlock();
 
-        if (type == Blocks.CHEST) {
+        if (type == Blocks.CHEST || type == Blocks.TRAPPED_CHEST) { // Spigot
             if (!(result instanceof TileEntityChest)) {
                 result = fixTileEntity(pos, type, result);
             }
