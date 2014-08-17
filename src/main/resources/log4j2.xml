@@ -19,9 +19,9 @@
             <filters>
                 <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL" />
             </filters>
-            <AppenderRef ref="WINDOWS_COMPAT"/>
+            <AppenderRef ref="WINDOWS_COMPAT" level="info"/>
             <AppenderRef ref="File"/>
-            <AppenderRef ref="TerminalConsole"/>
+            <AppenderRef ref="TerminalConsole" level="info"/>
         </Root>
     </Loggers>
 </Configuration>
