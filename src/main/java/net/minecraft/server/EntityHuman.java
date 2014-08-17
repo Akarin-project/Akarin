@@ -1165,7 +1165,7 @@ public abstract class EntityHuman extends EntityLiving {
                             }
                         }
 
-                        this.applyExhaustion(0.1F);
+                        this.applyExhaustion(world.spigotConfig.combatExhaustion); // Spigot - Change to use configurable value
                     } else {
                         this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PLAYER_ATTACK_NODAMAGE, this.bV(), 1.0F, 1.0F);
                         if (flag4) {
@@ -1465,9 +1465,9 @@ public abstract class EntityHuman extends EntityLiving {
         super.cH();
         this.a(StatisticList.JUMP);
         if (this.isSprinting()) {
-            this.applyExhaustion(0.2F);
+            this.applyExhaustion(world.spigotConfig.jumpSprintExhaustion); // Spigot - Change to use configurable value
         } else {
-            this.applyExhaustion(0.05F);
+            this.applyExhaustion(world.spigotConfig.jumpWalkExhaustion); // Spigot - Change to use configurable value
         }
 
     }
@@ -1535,13 +1535,13 @@ public abstract class EntityHuman extends EntityLiving {
                 i = Math.round(MathHelper.sqrt(d0 * d0 + d1 * d1 + d2 * d2) * 100.0F);
                 if (i > 0) {
                     this.a(StatisticList.WALK_UNDER_WATER_ONE_CM, i);
-                    this.applyExhaustion(0.01F * (float) i * 0.01F);
+                    this.applyExhaustion(world.spigotConfig.swimMultiplier * (float) i * 0.01F); // Spigot
                 }
             } else if (this.isInWater()) {
                 i = Math.round(MathHelper.sqrt(d0 * d0 + d2 * d2) * 100.0F);
                 if (i > 0) {
                     this.a(StatisticList.WALK_ON_WATER_ONE_CM, i);
-                    this.applyExhaustion(0.01F * (float) i * 0.01F);
+                    this.applyExhaustion(world.spigotConfig.swimMultiplier * (float) i * 0.01F); // Spigot
                 }
             } else if (this.z_()) {
                 if (d1 > 0.0D) {
@@ -1552,13 +1552,13 @@ public abstract class EntityHuman extends EntityLiving {
                 if (i > 0) {
                     if (this.isSprinting()) {
                         this.a(StatisticList.SPRINT_ONE_CM, i);
-                        this.applyExhaustion(0.1F * (float) i * 0.01F);
+                        this.applyExhaustion(world.spigotConfig.sprintMultiplier * (float) i * 0.01F); // Spigot
                     } else if (this.isSneaking()) {
                         this.a(StatisticList.CROUCH_ONE_CM, i);
-                        this.applyExhaustion(0.0F * (float) i * 0.01F);
+                        this.applyExhaustion(world.spigotConfig.otherMultiplier * (float) i * 0.01F); // Spigot
                     } else {
                         this.a(StatisticList.WALK_ONE_CM, i);
-                        this.applyExhaustion(0.0F * (float) i * 0.01F);
+                        this.applyExhaustion(world.spigotConfig.otherMultiplier * (float) i * 0.01F); // Spigot
                     }
                 }
             } else if (this.dc()) {
