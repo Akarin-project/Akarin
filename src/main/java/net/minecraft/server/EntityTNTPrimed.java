@@ -48,6 +48,7 @@ public class EntityTNTPrimed extends Entity {
     }
 
     public void tick() {
+        if (world.spigotConfig.currentPrimedTnt++ > world.spigotConfig.maxTntTicksPerTick) { return; } // Spigot
         this.lastX = this.locX;
         this.lastY = this.locY;
         this.lastZ = this.locZ;
