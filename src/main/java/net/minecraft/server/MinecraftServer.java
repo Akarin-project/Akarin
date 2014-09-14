@@ -486,13 +486,21 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             List<ChunkCoordIntPair> list = Lists.newArrayList();
             Set<ChunkCoordIntPair> set = Sets.newConcurrentHashSet();
 
-            for (int i = -192; i <= 192 && this.isRunning(); i += 16) {
-                for (int j = -192; j <= 192 && this.isRunning(); j += 16) {
+            // Paper start
+            short radius = worldserver.paperConfig.keepLoadedRange;
+            for (int i = -radius; i <= radius && this.isRunning(); i += 16) {
+                for (int j = -radius; j <= radius && this.isRunning(); j += 16) {
+                    // Paper end
                     list.add(new ChunkCoordIntPair(blockposition.getX() + i >> 4, blockposition.getZ() + j >> 4));
                 }
+            } // Paper
+            if (this.isRunning()) { // Paper
+                int expected = list.size(); // Paper
+
 
                 CompletableFuture completablefuture = worldserver.getChunkProvider().a((Iterable) list, (chunk) -> {
                     set.add(chunk.getPos());
+                    if (set.size() < expected && set.size() % 25 == 0) this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / expected); // Paper
                 });
 
                 while (!completablefuture.isDone()) {
@@ -507,11 +515,11 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
                         throw new RuntimeException(executionexception.getCause());
                     } catch (TimeoutException timeoutexception) {
-                        this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / 625);
+                        this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / expected); // Paper
                     }
                 }
 
-                this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / 625);
+                this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / expected); // Paper
             }
         }
 

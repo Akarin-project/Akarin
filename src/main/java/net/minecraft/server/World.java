@@ -2852,8 +2852,9 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         int k = i * 16 + 8 - blockposition.getX();
         int l = j * 16 + 8 - blockposition.getZ();
         boolean flag = true;
+        short keepLoadedRange = paperConfig.keepLoadedRange; // Paper
 
-        return k >= -128 && k <= 128 && l >= -128 && l <= 128 && this.keepSpawnInMemory; // CraftBukkit - Added 'this.keepSpawnInMemory'
+        return k >= -keepLoadedRange && k <= keepLoadedRange && l >= -keepLoadedRange && l <= keepLoadedRange && this.keepSpawnInMemory; // CraftBukkit - Added 'this.keepSpawnInMemory' // Paper - Re-add range var
     }
 
     public LongSet ag() {

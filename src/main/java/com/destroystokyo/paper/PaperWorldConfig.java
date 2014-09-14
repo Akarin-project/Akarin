@@ -249,4 +249,10 @@ public class PaperWorldConfig {
         grassUpdateRate = Math.max(0, getInt("grass-spread-tick-rate", grassUpdateRate));
         log("Grass Spread Tick Rate: " + grassUpdateRate);
     }
+
+    public short keepLoadedRange;
+    private void keepLoadedRange() {
+        keepLoadedRange = (short) (getInt("keep-spawn-loaded-range", Math.min(spigotConfig.viewDistance, 8)) * 16);
+        log( "Keep Spawn Loaded Range: " + (keepLoadedRange/16));
+    }
 }
