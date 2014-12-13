@@ -776,6 +776,16 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         {
             return getHandle().isInvulnerable(net.minecraft.server.DamageSource.GENERIC);
         }
+
+        @Override
+        public void sendMessage(net.md_5.bungee.api.chat.BaseComponent component)
+        {
+        }
+
+        @Override
+        public void sendMessage(net.md_5.bungee.api.chat.BaseComponent... components)
+        {
+        }
     };
 
     public Spigot spigot()

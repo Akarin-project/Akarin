@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.md_5.bungee.api.chat.BaseComponent;
 
 import net.minecraft.server.AdvancementDataPlayer;
 import net.minecraft.server.AdvancementProgress;
@@ -1661,6 +1662,38 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             }
 
             return java.util.Collections.unmodifiableSet( ret );
+        }
+
+        @Override
+        public void sendMessage(BaseComponent component) {
+          sendMessage( new BaseComponent[] { component } );
+        }
+
+        @Override
+        public void sendMessage(BaseComponent... components) {
+           if ( getHandle().playerConnection == null ) return;
+
+            PacketPlayOutChat packet = new PacketPlayOutChat(null, net.minecraft.server.ChatMessageType.CHAT);
+            packet.components = components;
+            getHandle().playerConnection.sendPacket(packet);
+        }
+
+        @Override
+        public void sendMessage(net.md_5.bungee.api.ChatMessageType position, BaseComponent component) {
+            sendMessage( position, new BaseComponent[] { component } );
+        }
+
+        @Override
+        public void sendMessage(net.md_5.bungee.api.ChatMessageType position, BaseComponent... components) {
+            if ( getHandle().playerConnection == null ) return;
+
+            PacketPlayOutChat packet = new PacketPlayOutChat(null, net.minecraft.server.ChatMessageType.a((byte) position.ordinal()));
+            // Action bar doesn't render colours, replace colours with legacy section symbols
+            if (position == net.md_5.bungee.api.ChatMessageType.ACTION_BAR) {
+                components = new BaseComponent[]{new net.md_5.bungee.api.chat.TextComponent(BaseComponent.toLegacyText(components))};
+            }
+            packet.components = components;
+            getHandle().playerConnection.sendPacket(packet);
         }
     };
 
