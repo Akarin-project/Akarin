@@ -133,6 +133,9 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     public final SpigotTimings.WorldTimingsHandler timings; // Spigot
     private boolean guardEntityList; // Spigot
     public static BlockPosition lastPhysicsProblem; // Spigot
+    private org.spigotmc.TickLimiter entityLimiter;
+    private org.spigotmc.TickLimiter tileLimiter;
+    private int tileTickPosition;
 
     public CraftWorld getWorld() {
         return this.world;
@@ -195,6 +198,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         this.getServer().addWorld(this.world);
         // CraftBukkit end
         timings = new SpigotTimings.WorldTimingsHandler(this); // Spigot - code below can generate new world and access timings
+                this.entityLimiter = new org.spigotmc.TickLimiter(spigotConfig.entityMaxTickTime);
+        this.tileLimiter = new org.spigotmc.TickLimiter(spigotConfig.tileMaxTickTime);
     }
 
     public BiomeBase getBiome(BlockPosition blockposition) {
@@ -1102,7 +1107,12 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         timings.entityTick.startTiming(); // Spigot
         guardEntityList = true; // Spigot
         // CraftBukkit start - Use field for loop variable
-        for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
+        int entitiesThisCycle = 0;
+        if (tickPosition < 0) tickPosition = 0;
+        for (entityLimiter.initTick();
+                entitiesThisCycle < entityList.size() && (entitiesThisCycle % 10 != 0 || entityLimiter.shouldContinue());
+                tickPosition++, entitiesThisCycle++) {
+            tickPosition = (tickPosition < entityList.size()) ? tickPosition : 0;
             entity = (Entity) this.entityList.get(this.tickPosition);
             // CraftBukkit end
             Entity entity1 = entity.getVehicle();
@@ -1159,14 +1169,19 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
 
         this.J = true;
-        Iterator iterator = this.tileEntityListTick.iterator();
-
-        while (iterator.hasNext()) {
-            TileEntity tileentity = (TileEntity) iterator.next();
+        // Spigot start
+        // Iterator iterator = this.tileEntityListTick.iterator();
+        int tilesThisCycle = 0;
+        for (tileLimiter.initTick();
+                tilesThisCycle < tileEntityListTick.size() && (tilesThisCycle % 10 != 0 || tileLimiter.shouldContinue());
+                tileTickPosition++, tilesThisCycle++) {
+            tileTickPosition = (tileTickPosition < tileEntityListTick.size()) ? tileTickPosition : 0;
+            TileEntity tileentity = (TileEntity) this.tileEntityListTick.get(tileTickPosition);
             // Spigot start
             if (tileentity == null) {
                 getServer().getLogger().severe("Spigot has detected a null entity and has removed it, preventing a crash");
-                iterator.remove();
+                tilesThisCycle--;
+                this.tileEntityListTick.remove(tileTickPosition--);
                 continue;
             }
             // Spigot end
@@ -1197,7 +1212,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             }
 
             if (tileentity.x()) {
-                iterator.remove();
+                tilesThisCycle--;
+                this.tileEntityListTick.remove(tileTickPosition--);
                 this.tileEntityList.remove(tileentity);
                 if (this.isLoaded(tileentity.getPosition())) {
                     this.getChunkAtWorldCoords(tileentity.getPosition()).d(tileentity.getPosition());
