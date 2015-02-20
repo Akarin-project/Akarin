@@ -44,7 +44,7 @@ public class Chunk implements IChunkAccess {
     private boolean l;
     private final ChunkConverter m;
     public final Map<BlockPosition, TileEntity> tileEntities;
-    public final EntitySlice<Entity>[] entitySlices;
+    public final List<Entity>[] entitySlices; // Spigot
     private final Map<String, StructureStart> p;
     private final Map<String, LongSet> q;
     private final ShortList[] r;
@@ -105,7 +105,7 @@ public class Chunk implements IChunkAccess {
         this.B = Queues.newConcurrentLinkedQueue();
         this.C = ChunkStatus.EMPTY;
         this.E = new AtomicInteger();
-        this.entitySlices = (EntitySlice[]) (new EntitySlice[16]);
+        this.entitySlices = (List[]) (new List[16]); // Spigot
         this.world = world;
         this.locX = i;
         this.locZ = j;
@@ -123,7 +123,7 @@ public class Chunk implements IChunkAccess {
         }
 
         for (int j1 = 0; j1 < this.entitySlices.length; ++j1) {
-            this.entitySlices[j1] = new EntitySlice<>(Entity.class);
+            this.entitySlices[j1] = new org.bukkit.craftbukkit.util.UnsafeList(); // Spigot
         }
 
         this.f = abiomebase;
@@ -786,11 +786,11 @@ public class Chunk implements IChunkAccess {
     public void addEntities() {
         this.i = true;
         this.world.a(this.tileEntities.values());
-        EntitySlice[] aentityslice = this.entitySlices;
+        List[] aentityslice = this.entitySlices; // Spigot
         int i = aentityslice.length;
 
         for (int j = 0; j < i; ++j) {
-            EntitySlice<Entity> entityslice = aentityslice[j];
+            List<Entity> entityslice = aentityslice[j]; // Spigot
 
             // CraftBukkit start
             List<Entity> toRemove = new LinkedList<>();
@@ -863,7 +863,7 @@ public class Chunk implements IChunkAccess {
             this.world.b(tileentity);
         }
 
-        EntitySlice[] aentityslice = this.entitySlices;
+        List[] aentityslice = this.entitySlices; // Spigot
         int i = aentityslice.length;
 
         for (int j = 0; j < i; ++j) {
@@ -950,12 +950,12 @@ public class Chunk implements IChunkAccess {
         j = MathHelper.clamp(j, 0, this.entitySlices.length - 1);
 
         for (int k = i; k <= j; ++k) {
-            Iterator iterator = this.entitySlices[k].c(oclass).iterator();
+            Iterator iterator = this.entitySlices[k].iterator(); // Spigot
 
             while (iterator.hasNext()) {
                 T t0 = (T) iterator.next(); // CraftBukkit - decompile error
 
-                if (t0.getBoundingBox().c(axisalignedbb) && (predicate == null || predicate.test(t0))) {
+                if (oclass.isInstance(t0) && t0.getBoundingBox().c(axisalignedbb) && (predicate == null || predicate.test(t0))) { // Spigot - instance check
                     list.add(t0);
                 }
             }
@@ -1110,7 +1110,7 @@ public class Chunk implements IChunkAccess {
         return this.tileEntities;
     }
 
-    public EntitySlice<Entity>[] getEntitySlices() {
+    public List<Entity>[] getEntitySlices() { // Spigot
         return this.entitySlices;
     }
 

@@ -1,5 +1,6 @@
 package org.spigotmc;
 
+import java.util.List;
 import java.util.Set;
 import net.minecraft.server.AxisAlignedBB;
 import net.minecraft.server.Chunk;
@@ -142,9 +143,9 @@ public class ActivationRange
      */
     private static void activateChunkEntities(Chunk chunk)
     {
-        for ( EntitySlice slice : chunk.entitySlices )
+        for ( List<Entity> slice : chunk.entitySlices )
         {
-            for ( Entity entity : (Set<Entity>) slice )
+            for ( Entity entity : slice )
             {
                 if ( MinecraftServer.currentTick > entity.activatedTick )
                 {
