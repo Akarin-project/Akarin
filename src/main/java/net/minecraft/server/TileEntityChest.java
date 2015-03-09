@@ -7,7 +7,7 @@ import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
 // CraftBukkit end
 
-public class TileEntityChest extends TileEntityLootable implements ITickable {
+public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITickable
 
     private NonNullList<ItemStack> items;
     protected float a;
@@ -113,9 +113,15 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
         int k = this.position.getZ();
 
         ++this.k;
+        // Paper start
+    }
+    private void doOpenLogic() {
         float f;
-
-        if (!this.world.isClientSide && this.f != 0 && (this.k + i + j + k) % 200 == 0) {
+        int i = this.position.getX();
+        int j = this.position.getY();
+        int k = this.position.getZ();
+        if (false && !this.world.isClientSide && this.f != 0 && (this.k + i + j + k) % 200 == 0) { // Paper - disable block
+            // Paper end
             this.f = 0;
             f = 5.0F;
             List<EntityHuman> list = this.world.a(EntityHuman.class, new AxisAlignedBB((double) ((float) i - 5.0F), (double) ((float) j - 5.0F), (double) ((float) k - 5.0F), (double) ((float) (i + 1) + 5.0F), (double) ((float) (j + 1) + 5.0F), (double) ((float) (k + 1) + 5.0F)));
@@ -134,13 +140,17 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
             }
         }
 
-        this.e = this.a;
-        f = 0.1F;
-        if (this.f > 0 && this.a == 0.0F) {
+        if (this.f == 1 && this.a == 0.0F) { // check == 1 instead of > 0, first open
             this.a(SoundEffects.BLOCK_CHEST_OPEN);
         }
+        // Paper start
+    }
+    private void doCloseLogic() {
+        this.e = this.a;
+        // Paper end
 
-        if (this.f == 0 && this.a > 0.0F || this.f > 0 && this.a < 1.0F) {
+        if (this.f == 0/* && this.a > 0.0F || this.f > 0 && this.a < 1.0F*/) { // Paper disable all but player count check
+            /* // Paper disable animation stuff
             float f1 = this.a;
 
             if (this.f > 0) {
@@ -155,9 +165,14 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
 
             float f2 = 0.5F;
 
+
             if (this.a < 0.5F && f1 >= 0.5F) {
-                this.a(SoundEffects.BLOCK_CHEST_CLOSE);
-            }
+            */
+                // add some delay
+                MCUtil.scheduleTask(10, () -> {
+                    if (this.f == 0) this.a(SoundEffects.BLOCK_CHEST_CLOSE);
+                });
+            // } // Paper end
 
             if (this.a < 0.0F) {
                 this.a = 0.0F;
@@ -203,6 +218,7 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
 
             ++this.f;
             if (this.world == null) return; // CraftBukkit
+            doOpenLogic(); // Paper
 
             // CraftBukkit start - Call redstone event
             if (this.getBlock() == Blocks.TRAPPED_CHEST) {
@@ -224,6 +240,7 @@ public class TileEntityChest extends TileEntityLootable implements ITickable {
             --this.f;
 
             // CraftBukkit start - Call redstone event
+            doCloseLogic(); // Paper
             if (this.getBlock() == Blocks.TRAPPED_CHEST) {
                 int newPower = Math.max(0, Math.min(15, this.f));
 

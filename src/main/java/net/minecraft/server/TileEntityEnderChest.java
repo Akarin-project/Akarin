@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-public class TileEntityEnderChest extends TileEntity implements ITickable {
+public class TileEntityEnderChest extends TileEntity { // Paper - Remove ITickable
 
     public float a;
     public float e;
@@ -17,19 +17,37 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
         }
 
         this.e = this.a;
+        // Paper start
+        /*
         int i = this.position.getX();
         int j = this.position.getY();
         int k = this.position.getZ();
         float f = 0.1F;
         double d0;
 
+        */
+        // Paper start
+    }
+    private void doOpenLogic() {
+        int i = this.position.getX();
+        int j = this.position.getY();
+        int k = this.position.getZ();
+        // Paper end
         if (this.f > 0 && this.a == 0.0F) {
             double d1 = (double) i + 0.5D;
 
-            d0 = (double) k + 0.5D;
+            double d0 = (double) k + 0.5D; // Paper
             this.world.a((EntityHuman) null, d1, (double) j + 0.5D, d0, SoundEffects.BLOCK_ENDER_CHEST_OPEN, SoundCategory.BLOCKS, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
         }
-
+        // Paper start
+    }
+    private void doCloseLogic() {
+        int i = this.position.getX();
+        int j = this.position.getY();
+        int k = this.position.getZ();
+        this.e = this.a;
+        double d0;
+        // Paper end
         if (this.f == 0 && this.a > 0.0F || this.f > 0 && this.a < 1.0F) {
             float f1 = this.a;
 
@@ -76,11 +94,13 @@ public class TileEntityEnderChest extends TileEntity implements ITickable {
     public void c() {
         ++this.f;
         this.world.playBlockAction(this.position, Blocks.ENDER_CHEST, 1, this.f);
+        doOpenLogic(); // Paper
     }
 
     public void d() {
         --this.f;
         this.world.playBlockAction(this.position, Blocks.ENDER_CHEST, 1, this.f);
+        doCloseLogic(); // Paper
     }
 
     public boolean a(EntityHuman entityhuman) {
