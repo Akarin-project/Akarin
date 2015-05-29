@@ -8,6 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ import com.google.common.collect.SetMultimap;
 import net.minecraft.server.EnumItemSlot;
 import net.minecraft.server.GenericAttributes;
 import net.minecraft.server.IChatBaseComponent;
+import com.google.common.collect.ImmutableSortedMap;
 import net.minecraft.server.NBTBase;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.NBTTagList;
@@ -65,6 +67,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.minecraft.server.EnumChatFormat;
@@ -256,7 +259,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
     private IChatBaseComponent displayName;
     private IChatBaseComponent locName;
     private List<String> lore;
-    private Map<Enchantment, Integer> enchantments;
+    private EnchantmentMap enchantments; // Paper
     private Multimap<Attribute, AttributeModifier> attributeModifiers;
     private int repairCost;
     private int hideFlag;
@@ -267,7 +270,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
     private static final CraftCustomTagTypeRegistry TAG_TYPE_REGISTRY = new CraftCustomTagTypeRegistry();
 
     private NBTTagCompound internalTag;
-    private final Map<String, NBTBase> unhandledTags = new HashMap<String, NBTBase>();
+    private final Map<String, NBTBase> unhandledTags = new TreeMap<>(); // Paper
     private final CraftCustomItemTagContainer publicItemTagContainer = new CraftCustomItemTagContainer(TAG_TYPE_REGISTRY);
 
     CraftMetaItem(CraftMetaItem meta) {
@@ -283,7 +286,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
         }
 
         if (meta.enchantments != null) { // Spigot
-            this.enchantments = new HashMap<Enchantment, Integer>(meta.enchantments);
+            this.enchantments = new EnchantmentMap(meta.enchantments); // Paper
         }
 
         if (meta.hasAttributeModifiers()) {
@@ -366,13 +369,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
         }
     }
 
-    static Map<Enchantment, Integer> buildEnchantments(NBTTagCompound tag, ItemMetaKey key) {
+    static EnchantmentMap buildEnchantments(NBTTagCompound tag, ItemMetaKey key) { // Paper
         if (!tag.hasKey(key.NBT)) {
             return null;
         }
 
         NBTTagList ench = tag.getList(key.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND);
-        Map<Enchantment, Integer> enchantments = new HashMap<Enchantment, Integer>(ench.size());
+        EnchantmentMap enchantments = new EnchantmentMap(); // Paper
 
         for (int i = 0; i < ench.size(); i++) {
             String id = ((NBTTagCompound) ench.get(i)).getString(ENCHANTMENTS_ID.NBT);
@@ -514,13 +517,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
         }
     }
 
-    static Map<Enchantment, Integer> buildEnchantments(Map<String, Object> map, ItemMetaKey key) {
+    static EnchantmentMap buildEnchantments(Map<String, Object> map, ItemMetaKey key) { // Paper
         Map<?, ?> ench = SerializableMeta.getObject(Map.class, map, key.BUKKIT, true);
         if (ench == null) {
             return null;
         }
 
-        Map<Enchantment, Integer> enchantments = new HashMap<Enchantment, Integer>(ench.size());
+        EnchantmentMap enchantments = new EnchantmentMap(); // Paper
         for (Map.Entry<?, ?> entry : ench.entrySet()) {
             // Doctor older enchants
             String enchantKey = entry.getKey().toString();
@@ -755,13 +758,13 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
     }
 
     public Map<Enchantment, Integer> getEnchants() {
-        return hasEnchants() ? ImmutableMap.copyOf(enchantments) : ImmutableMap.<Enchantment, Integer>of();
+        return hasEnchants() ? ImmutableSortedMap.copyOfSorted(enchantments) : ImmutableMap.<Enchantment, Integer>of(); // Paper
     }
 
     public boolean addEnchant(Enchantment ench, int level, boolean ignoreRestrictions) {
         Validate.notNull(ench, "Enchantment cannot be null");
         if (enchantments == null) {
-            enchantments = new HashMap<Enchantment, Integer>(4);
+            enchantments = new EnchantmentMap(); // Paper
         }
 
         if (ignoreRestrictions || level >= ench.getStartLevel() && level <= ench.getMaxLevel()) {
@@ -1088,7 +1091,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
                 clone.lore = new ArrayList<String>(this.lore);
             }
             if (this.enchantments != null) {
-                clone.enchantments = new HashMap<Enchantment, Integer>(this.enchantments);
+                clone.enchantments = new EnchantmentMap(this.enchantments); // Paper
             }
             if (this.hasAttributeModifiers()) {
                 clone.attributeModifiers = HashMultimap.create(this.attributeModifiers);
@@ -1293,6 +1296,23 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
             return HANDLED_TAGS;
         }
     }
+
+    // Paper start
+    private static class EnchantmentMap extends TreeMap<Enchantment, Integer> {
+        private EnchantmentMap(Map<Enchantment, Integer> enchantments) {
+            this();
+            putAll(enchantments);
+        }
+
+        private EnchantmentMap() {
+            super(Comparator.comparing(o -> o.getKey().toString()));
+        }
+
+        public EnchantmentMap clone() {
+            return (EnchantmentMap) super.clone();
+        }
+    }
+    // Paper end
 
     // Spigot start
     private final Spigot spigot = new Spigot()
