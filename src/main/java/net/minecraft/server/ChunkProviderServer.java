@@ -76,15 +76,16 @@ public class ChunkProviderServer implements IChunkProvider {
         Chunk chunk;
 
         synchronized (this.chunkLoader) {
-            if (this.lastChunk != null && this.lastChunk.getPos().x == i && this.lastChunk.getPos().z == j) {
+            // Paper start - remove vanilla lastChunk, we do it more accurately
+            /* if (this.lastChunk != null && this.lastChunk.locX == i && this.lastChunk.locZ == j) {
                 return this.lastChunk;
-            }
+            }*/ // Paper end
 
             long k = ChunkCoordIntPair.a(i, j);
 
             chunk = (Chunk) this.chunks.get(k);
             if (chunk != null) {
-                this.lastChunk = chunk;
+                //this.lastChunk = chunk; // Paper remove vanilla lastChunk
                 return chunk;
             }
 
@@ -198,7 +199,7 @@ public class ChunkProviderServer implements IChunkProvider {
             }
 
             this.chunks.put(k, chunk);
-            this.lastChunk = chunk;
+            //this.lastChunk = chunk; // Paper
         }
 
         this.asyncTaskHandler.postToMainThread(chunk::addEntities);
@@ -344,7 +345,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 this.saveChunk(chunk, true); // Spigot
             }
             this.chunks.remove(chunk.chunkKey);
-            this.lastChunk = null;
+            // this.lastChunk = null; // Paper
         }
         return true;
     }
@@ -380,6 +381,6 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     public boolean isLoaded(int i, int j) {
-        return this.chunks.containsKey(ChunkCoordIntPair.a(i, j));
+        return this.chunks.get(ChunkCoordIntPair.asLong(i, j)) != null; // Paper - use get for last access
     }
 }

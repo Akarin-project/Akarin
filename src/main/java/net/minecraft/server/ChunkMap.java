@@ -15,6 +15,7 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
 
     public Chunk put(long i, Chunk chunk) {
         chunk.world.timings.syncChunkLoadPostTimer.startTiming(); // Paper
+        lastChunkByPos = chunk; // Paper
         Chunk chunk1 = (Chunk) super.put(i, chunk);
         ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i);
 
@@ -22,7 +23,7 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
             for (int k = chunkcoordintpair.z - 1; k <= chunkcoordintpair.z + 1; ++k) {
                 if (j != chunkcoordintpair.x || k != chunkcoordintpair.z) {
                     long l = ChunkCoordIntPair.a(j, k);
-                    Chunk chunk2 = (Chunk) this.get(l);
+                    Chunk chunk2 = (Chunk) super.get(l);  // Paper - use super to avoid polluting last access cache
 
                     if (chunk2 != null) {
                         chunk.H();
@@ -40,7 +41,7 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
                     continue;
                 }
 
-                Chunk neighbor = this.get(ChunkCoordIntPair.a(chunkcoordintpair.x + x, chunkcoordintpair.z + z));
+                Chunk neighbor = super.get(ChunkCoordIntPair.a(chunkcoordintpair.x + x, chunkcoordintpair.z + z)); // Paper - use super to avoid polluting last access cache
                 if (neighbor != null) {
                     neighbor.setNeighborLoaded(-x, -z);
                     chunk.setNeighborLoaded(x, z);
@@ -64,7 +65,7 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
         for (int j = chunkcoordintpair.x - 1; j <= chunkcoordintpair.x + 1; ++j) {
             for (int k = chunkcoordintpair.z - 1; k <= chunkcoordintpair.z + 1; ++k) {
                 if (j != chunkcoordintpair.x || k != chunkcoordintpair.z) {
-                    Chunk chunk1 = (Chunk) this.get(ChunkCoordIntPair.a(j, k));
+                    Chunk chunk1 = (Chunk) super.get(ChunkCoordIntPair.a(j, k)); // Paper - use super to avoid polluting last access cache
 
                     if (chunk1 != null) {
                         chunk1.I();
@@ -73,8 +74,22 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
             }
         }
 
+        // Paper start
+        if (lastChunkByPos != null && i == lastChunkByPos.chunkKey) {
+            lastChunkByPos = null;
+        }
         return chunk;
     }
+    private Chunk lastChunkByPos = null;
+
+    @Override
+    public Chunk get(long l) {
+        if (lastChunkByPos != null && l == lastChunkByPos.chunkKey) {
+            return lastChunkByPos;
+        }
+        return lastChunkByPos = super.get(l);
+    }
+    // Paper end
 
     public Chunk remove(Object object) {
         return this.remove((Long) object);
