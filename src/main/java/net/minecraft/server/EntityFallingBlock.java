@@ -86,6 +86,17 @@ public class EntityFallingBlock extends Entity {
             }
 
             this.move(EnumMoveType.SELF, this.motX, this.motY, this.motZ);
+
+            // Paper start - Configurable EntityFallingBlock height nerf
+            if (this.world.paperConfig.fallingBlockHeightNerf != 0 && this.locY > this.world.paperConfig.fallingBlockHeightNerf) {
+                if (this.dropItem && this.world.getGameRules().getBoolean("doEntityDrops")) {
+                    this.dropItem(new ItemStack(block), 0.0F);
+                }
+
+                this.die();
+            }
+            // Paper end
+
             if (!this.world.isClientSide) {
                 blockposition = new BlockPosition(this);
                 boolean flag = this.block.getBlock() instanceof BlockConcretePowder;
