@@ -130,6 +130,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     private int tickPosition;
     public final org.spigotmc.SpigotWorldConfig spigotConfig; // Spigot
 
+    public final com.destroystokyo.paper.PaperWorldConfig paperConfig; // Paper
+
     public final SpigotTimings.WorldTimingsHandler timings; // Spigot
     private boolean guardEntityList; // Spigot
     public static BlockPosition lastPhysicsProblem; // Spigot
@@ -151,6 +153,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
     protected World(IDataManager idatamanager, @Nullable PersistentCollection persistentcollection, WorldData worlddata, WorldProvider worldprovider, MethodProfiler methodprofiler, boolean flag, ChunkGenerator gen, org.bukkit.World.Environment env) {
         this.spigotConfig = new org.spigotmc.SpigotWorldConfig( worlddata.getName() ); // Spigot
+        this.paperConfig = new com.destroystokyo.paper.PaperWorldConfig(worlddata.getName(), this.spigotConfig); // Paper
         this.generator = gen;
         this.world = new CraftWorld((WorldServer) this, gen, env);
         this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit

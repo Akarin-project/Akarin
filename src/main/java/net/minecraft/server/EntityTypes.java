@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.types.Type;
+
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -333,4 +335,10 @@ public class EntityTypes<T extends Entity> {
             return new EntityTypes<>(this.a, this.b, this.c, this.d, type);
         }
     }
+
+    // Paper start
+    public static Set<MinecraftKey> getEntityNameList() {
+        return REGISTRY.keySet();
+    }
+    // Paper end
 }

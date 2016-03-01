@@ -133,9 +133,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
     private static final DataWatcherObject<Boolean> aG = DataWatcher.a(Entity.class, DataWatcherRegistry.i);
     private static final DataWatcherObject<Boolean> aH = DataWatcher.a(Entity.class, DataWatcherRegistry.i);
     public boolean inChunk;
-    public int chunkX;
-    public int chunkY;
-    public int chunkZ;
+    public int chunkX; public int getChunkX() { return chunkX; } // Paper - OBFHELPER
+    public int chunkY; public int getChunkY() { return chunkY; } // Paper - OBFHELPER
+    public int chunkZ; public int getChunkZ() { return chunkZ; } // Paper - OBFHELPER
     public boolean ak;
     public boolean impulse;
     public int portalCooldown;
