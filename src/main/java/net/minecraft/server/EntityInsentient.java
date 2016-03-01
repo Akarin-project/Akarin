@@ -33,6 +33,7 @@ public abstract class EntityInsentient extends EntityLiving {
     private final EntityAIBodyControl b;
     protected NavigationAbstract navigation;
     public PathfinderGoalSelector goalSelector;
+    @Nullable public PathfinderGoalFloat goalFloat; // Paper
     public PathfinderGoalSelector targetSelector;
     private EntityLiving goalTarget;
     private final EntitySenses bC;
@@ -647,6 +648,12 @@ public abstract class EntityInsentient extends EntityLiving {
         // Spigot Start
         if ( this.fromMobSpawner )
         {
+            // Paper start - Allow nerfed mobs to jump and float
+            if (goalFloat != null) {
+                if (goalFloat.validConditions()) goalFloat.update();
+                this.getControllerJump().jumpIfSet();
+            }
+            // Paper end
             return;
         }
         // Spigot End
