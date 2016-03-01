@@ -386,7 +386,7 @@ public class EntityFishingHook extends Entity {
                     this.aw = MathHelper.nextInt(this.random, 20, 80);
                 }
             } else {
-                this.h = MathHelper.nextInt(this.random, 100, 600);
+                this.h = MathHelper.nextInt(this.random, world.paperConfig.fishingMinTicks, world.paperConfig.fishingMaxTicks); // Paper
                 this.h -= this.aA * 20 * 5;
             }
         }

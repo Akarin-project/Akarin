@@ -79,4 +79,12 @@ public class PaperWorldConfig {
         babyZombieMovementSpeed = getDouble("baby-zombie-movement-speed", 0.5D); // Player moves at 0.1F, for reference
         log("Baby zombies will move at the speed of " + babyZombieMovementSpeed);
     }
+
+    public int fishingMinTicks;
+    public int fishingMaxTicks;
+    private void fishingTickRange() {
+        fishingMinTicks = getInt("fishing-time-range.MinimumTicks", 100);
+        fishingMaxTicks = getInt("fishing-time-range.MaximumTicks", 600);
+        log("Fishing time ranges are between " + fishingMinTicks +" and " + fishingMaxTicks + " ticks");
+    }
 }
