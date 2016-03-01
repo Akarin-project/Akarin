@@ -96,7 +96,7 @@ public class EntitySilverfish extends EntityMonster {
         if (super.a(generatoraccess, flag)) {
             EntityHuman entityhuman = generatoraccess.b(this, 5.0D);
 
-            return entityhuman == null;
+            return !(entityhuman != null && !entityhuman.affectsSpawning) && entityhuman == null; // Paper - Affects Spawning API
         } else {
             return false;
         }

@@ -30,6 +30,7 @@ import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.craftbukkit.util.LongHashSet; // Paper
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.generator.ChunkGenerator;
@@ -2389,7 +2390,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         for (int i = 0; i < this.players.size(); ++i) {
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
 
-            if (IEntitySelector.f.test(entityhuman)) {
+            if (IEntitySelector.f.test(entityhuman) && entityhuman.affectsSpawning) { // Paper - Affects Spawning API
                 double d4 = entityhuman.d(d0, d1, d2);
 
                 if (d3 < 0.0D || d4 < d3 * d3) {

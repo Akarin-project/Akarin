@@ -620,7 +620,7 @@ public abstract class EntityInsentient extends EntityLiving {
         } else {
             EntityHuman entityhuman = this.world.findNearbyPlayer(this, -1.0D);
 
-            if (entityhuman != null) {
+            if (entityhuman != null && entityhuman.affectsSpawning) { // Paper - Affects Spawning API
                 double d0 = entityhuman.locX - this.locX;
                 double d1 = entityhuman.locY - this.locY;
                 double d2 = entityhuman.locZ - this.locZ;
