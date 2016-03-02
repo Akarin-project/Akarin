@@ -1006,6 +1006,7 @@ public abstract class EntityLiving extends Entity {
                 }
             }
 
+                boolean knockbackCancelled = world.paperConfig.disableExplosionKnockback && damagesource.isExplosion() && this instanceof EntityHuman; // Paper - Disable explosion knockback
             if (flag1) {
                 if (flag) {
                     this.world.broadcastEntityEffect(this, (byte) 29);
@@ -1022,6 +1023,7 @@ public abstract class EntityLiving extends Entity {
                         b0 = 2;
                     }
 
+                        if (!knockbackCancelled) // Paper - Disable explosion knockback
                     this.world.broadcastEntityEffect(this, b0);
                 }
 
@@ -1044,6 +1046,8 @@ public abstract class EntityLiving extends Entity {
                     this.aD = (float) ((int) (Math.random() * 2.0D) * 180);
                 }
             }
+
+                if (knockbackCancelled) this.world.broadcastEntityEffect(this, (byte) 2); // Paper - Disable explosion knockback
 
             if (this.getHealth() <= 0.0F) {
                 if (!this.e(damagesource)) {

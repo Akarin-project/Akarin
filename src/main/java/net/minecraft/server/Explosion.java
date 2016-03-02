@@ -153,7 +153,7 @@ public class Explosion {
                         double d14 = d13;
 
                         if (entity instanceof EntityLiving) {
-                            d14 = EnchantmentProtection.a((EntityLiving) entity, d13);
+                            d14 = entity instanceof EntityHuman && world.paperConfig.disableExplosionKnockback ? 0 : EnchantmentProtection.a((EntityLiving) entity, d13); // Paper - Disable explosion knockback
                         }
 
                         entity.motX += d8 * d14;
@@ -162,7 +162,7 @@ public class Explosion {
                         if (entity instanceof EntityHuman) {
                             EntityHuman entityhuman = (EntityHuman) entity;
 
-                            if (!entityhuman.isSpectator() && (!entityhuman.u() || !entityhuman.abilities.isFlying)) {
+                            if (!entityhuman.isSpectator() && (!entityhuman.u() && !world.paperConfig.disableExplosionKnockback || !entityhuman.abilities.isFlying)) { // Paper - Disable explosion knockback
                                 this.l.put(entityhuman, new Vec3D(d8 * d13, d9 * d13, d10 * d13));
                             }
                         }

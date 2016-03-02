@@ -150,4 +150,9 @@ public class PaperWorldConfig {
         optimizeExplosions = getBoolean("optimize-explosions", false);
         log("Optimize explosions: " + optimizeExplosions);
     }
+
+    public boolean disableExplosionKnockback;
+    private void disableExplosionKnockback(){
+        disableExplosionKnockback = getBoolean("disable-explosion-knockback", false);
+    }
 }
