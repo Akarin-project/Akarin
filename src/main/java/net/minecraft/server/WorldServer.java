@@ -496,7 +496,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 }
 
                 this.methodProfiler.exitEnter("iceandsnow");
-                if (this.random.nextInt(16) == 0) {
+                if (!this.paperConfig.disableIceAndSnow && this.random.nextInt(16) == 0) { // Paper - Disable ice and snow
                     this.m = this.m * 3 + 1013904223;
                     l = this.m >> 2;
                     blockposition = this.getHighestBlockYAt(HeightMap.Type.MOTION_BLOCKING, new BlockPosition(j + (l & 15), 0, k + (l >> 8 & 15)));
