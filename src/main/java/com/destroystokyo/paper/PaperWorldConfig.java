@@ -124,4 +124,10 @@ public class PaperWorldConfig {
         if (fallingBlockHeightNerf != 0) log("Falling Block Height Limit set to Y: " + fallingBlockHeightNerf);
         if (entityTNTHeightNerf != 0) log("TNT Entity Height Limit set to Y: " + entityTNTHeightNerf);
     }
+
+    public boolean netherVoidTopDamage;
+    private void netherVoidTopDamage() {
+        netherVoidTopDamage = getBoolean( "nether-ceiling-void-damage", false );
+        log("Top of the nether void damage: " + netherVoidTopDamage);
+    }
 }
