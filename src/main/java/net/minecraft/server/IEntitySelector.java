@@ -14,6 +14,7 @@ public final class IEntitySelector {
     public static final Predicate<Entity> d = (entity) -> {
         return entity instanceof IInventory && entity.isAlive();
     };
+    public static Predicate<Entity> canAITarget() { return e; } // Paper - OBFHELPER
     public static final Predicate<Entity> e = (entity) -> {
         return !(entity instanceof EntityHuman) || !((EntityHuman) entity).isSpectator() && !((EntityHuman) entity).u();
     };
