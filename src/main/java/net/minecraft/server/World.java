@@ -1147,10 +1147,12 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                     entity.tickTimer.stopTiming(); // Paper
                 } catch (Throwable throwable1) {
                     entity.tickTimer.stopTiming();
-                    crashreport1 = CrashReport.a(throwable1, "Ticking entity");
-                    crashreportsystemdetails1 = crashreport1.a("Entity being ticked");
-                    entity.appendEntityCrashDetails(crashreportsystemdetails1);
-                    throw new ReportedException(crashreport1);
+                    // Paper start - Prevent tile entity and entity crashes
+                    System.err.println("Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX + "," + entity.locY + "," + entity.locZ);
+                    throwable1.printStackTrace();
+                    entity.dead = true;
+                    continue;
+                    // Paper end
                 }
             }
 
@@ -1213,10 +1215,13 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                         ((ITickable) tileentity).tick();
                         this.methodProfiler.exit();
                     } catch (Throwable throwable2) {
-                        crashreport1 = CrashReport.a(throwable2, "Ticking block entity");
-                        crashreportsystemdetails1 = crashreport1.a("Block entity being ticked");
-                        tileentity.a(crashreportsystemdetails1);
-                        throw new ReportedException(crashreport1);
+                        // Paper start - Prevent tile entity and entity crashes
+                        System.err.println("TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ());
+                        throwable2.printStackTrace();
+                        tilesThisCycle--;
+                        this.tileEntityListTick.remove(tileTickPosition--);
+                        continue;
+                        // Paper end
                     }
                     // Spigot start
                     finally {
