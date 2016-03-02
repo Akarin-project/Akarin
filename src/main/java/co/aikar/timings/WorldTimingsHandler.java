@@ -50,6 +50,8 @@ public class WorldTimingsHandler {
     public final Timing worldSaveLevel;
     public final Timing chunkSaveData;
 
+    public final Timing lightingQueueTimer;
+
     public WorldTimingsHandler(World server) {
         String name = server.worldData.getName() +" - ";
 
@@ -96,6 +98,8 @@ public class WorldTimingsHandler {
         tracker2 = Timings.ofSafe(name + "tracker stage 2");
         doTick = Timings.ofSafe(name + "doTick");
         tickEntities = Timings.ofSafe(name + "tickEntities");
+
+        lightingQueueTimer = Timings.ofSafe(name + "Lighting Queue");
     }
 
     public static Timing getTickList(WorldServer worldserver, String timingsType) {

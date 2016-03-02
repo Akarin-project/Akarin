@@ -329,7 +329,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
                 if (iblockdata2.b(this, blockposition) != iblockdata1.b(this, blockposition) || iblockdata2.e() != iblockdata1.e()) {
                     this.methodProfiler.enter("checkLight");
-                    this.r(blockposition);
+                    chunk.runOrQueueLightUpdate(() -> this.r(blockposition)); // Paper - Queue light update
                     this.methodProfiler.exit();
                 }
 

@@ -313,6 +313,7 @@ public class ChunkProviderServer implements IChunkProvider {
             return false;
         }
         save = event.isSaveChunk();
+        chunk.lightingQueue.processUnload(); // Paper
 
         // Update neighbor counts
         for (int x = -2; x < 3; x++) {

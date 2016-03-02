@@ -191,6 +191,13 @@ public class PaperConfig {
         return config.getString(path, config.getString(path));
     }
 
+    public static int maxTickMsLostLightQueue;
+    private static void lightQueue() {
+        int badSetting = config.getInt("queue-light-updates-max-loss", 10);
+        config.set("queue-light-updates-max-loss", null);
+        maxTickMsLostLightQueue = getInt("settings.queue-light-updates-max-loss", badSetting);
+    }
+
     private static void timings() {
         boolean timings = getBoolean("timings.enabled", true);
         boolean verboseTimings = getBoolean("timings.verbose", true);

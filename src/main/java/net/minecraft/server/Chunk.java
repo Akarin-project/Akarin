@@ -94,6 +94,7 @@ public class Chunk implements IChunkAccess {
             return removed;
         }
     }
+    final PaperLightingQueue.LightingQueue lightingQueue = new PaperLightingQueue.LightingQueue(this);
     // Paper end
     public boolean areNeighborsLoaded(final int radius) {
         switch (radius) {
@@ -284,7 +285,7 @@ public class Chunk implements IChunkAccess {
 
     private void g(boolean flag) {
         this.world.methodProfiler.enter("recheckGaps");
-        if (this.world.areChunksLoaded(new BlockPosition(this.locX * 16 + 8, 0, this.locZ * 16 + 8), 16)) {
+        if (this.areNeighborsLoaded(1)) { // Paper
             for (int i = 0; i < 16; ++i) {
                 for (int j = 0; j < 16; ++j) {
                     if (this.g[i + j * 16]) {
@@ -335,7 +336,7 @@ public class Chunk implements IChunkAccess {
     }
 
     private void a(int i, int j, int k, int l) {
-        if (l > k && this.world.areChunksLoaded(new BlockPosition(i, 0, j), 16)) {
+        if (l > k && this.areNeighborsLoaded(1)) { // Paper
             for (int i1 = k; i1 < l; ++i1) {
                 this.world.c(EnumSkyBlock.SKY, new BlockPosition(i, i1, j));
             }
@@ -535,6 +536,7 @@ public class Chunk implements IChunkAccess {
                 if (flag1) {
                     this.initLighting();
                 } else {
+                    this.runOrQueueLightUpdate(() -> { // Paper - Queue light update
                     int i1 = iblockdata.b(this.world, blockposition);
                     int j1 = iblockdata1.b(this.world, blockposition);
 
@@ -542,6 +544,7 @@ public class Chunk implements IChunkAccess {
                     if (i1 != j1 && (i1 < j1 || this.getBrightness(EnumSkyBlock.SKY, blockposition) > 0 || this.getBrightness(EnumSkyBlock.BLOCK, blockposition) > 0)) {
                         this.c(i, k);
                     }
+                    }); // Paper
                 }
 
                 TileEntity tileentity;
@@ -1359,6 +1362,16 @@ public class Chunk implements IChunkAccess {
     public boolean J() {
         return this.D == 8;
     }
+
+    // Paper start
+    public void runOrQueueLightUpdate(Runnable runnable) {
+        if (this.world.paperConfig.queueLightUpdates) {
+            lightingQueue.add(runnable);
+        } else {
+            runnable.run();
+        }
+    }
+    // Paper end
 
     public static enum EnumTileEntityState {
 

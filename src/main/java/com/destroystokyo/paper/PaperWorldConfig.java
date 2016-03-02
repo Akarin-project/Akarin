@@ -130,4 +130,12 @@ public class PaperWorldConfig {
         netherVoidTopDamage = getBoolean( "nether-ceiling-void-damage", false );
         log("Top of the nether void damage: " + netherVoidTopDamage);
     }
+
+    public boolean queueLightUpdates;
+    private void queueLightUpdates() {
+        queueLightUpdates = getBoolean("queue-light-updates", false);
+        log("Lighting Queue enabled: " + queueLightUpdates);
+        log("Warning: This feature may help reduce TPS loss from light, but comes at the cost of buggy light data");
+        log("We are working to improve this feature.");
+    }
 }
