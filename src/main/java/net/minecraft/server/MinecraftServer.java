@@ -1055,6 +1055,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
                 worldserver.getTracker().updatePlayers();
                 this.methodProfiler.exit();
                 this.methodProfiler.exit();
+                worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
             }
         }
 
