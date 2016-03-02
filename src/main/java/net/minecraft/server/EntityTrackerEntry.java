@@ -435,7 +435,7 @@ public class EntityTrackerEntry {
     public boolean c(EntityPlayer entityplayer) {
         double d0 = entityplayer.locX - (double) this.xLoc / 4096.0D;
         double d1 = entityplayer.locZ - (double) this.zLoc / 4096.0D;
-        int i = Math.min(this.e, this.f);
+        int i = Math.min(this.e, (entityplayer.getViewDistance() - 1) * 16); // Paper - Use player view distance API
 
         return d0 >= (double) (-i) && d0 <= (double) i && d1 >= (double) (-i) && d1 <= (double) i && this.tracker.a(entityplayer);
     }

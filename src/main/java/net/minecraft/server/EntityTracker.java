@@ -200,6 +200,7 @@ public class EntityTracker {
 
     }
 
+    public void updatePlayer(EntityPlayer entityplayer) { a(entityplayer); } // Paper - OBFHELPER
     public void a(EntityPlayer entityplayer) {
         Iterator iterator = this.c.iterator();
 

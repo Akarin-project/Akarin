@@ -44,7 +44,7 @@ public final class SpawnerCreature {
                     boolean flag3 = true;
                     // Spigot Start
                     byte b0 = worldserver.spigotConfig.mobSpawnRange;
-                    b0 = ( b0 > worldserver.spigotConfig.viewDistance ) ? (byte) worldserver.spigotConfig.viewDistance : b0;
+                    b0 = ( b0 > entityhuman.getViewDistance() ) ? (byte) entityhuman.getViewDistance() : b0; // Paper - Use player view distance API
                     b0 = ( b0 > 8 ) ? 8 : b0;
 
                     for (int i1 = -b0; i1 <= b0; ++i1) {

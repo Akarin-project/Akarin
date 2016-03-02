@@ -71,6 +71,15 @@ public abstract class EntityHuman extends EntityLiving {
     // Paper start
     public boolean affectsSpawning = true;
     // Paper end
+    // Paper start - Player view distance API
+    private int viewDistance = -1;
+    public int getViewDistance() {
+        return viewDistance == -1 ? ((WorldServer) world).getPlayerChunkMap().getViewDistance() : viewDistance;
+    }
+    public void setViewDistance(int viewDistance) {
+        this.viewDistance = viewDistance;
+    }
+    // Paper end
 
     // CraftBukkit start
     public boolean fauxSleeping;

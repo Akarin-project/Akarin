@@ -1621,6 +1621,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public boolean getAffectsSpawning() {
         return this.getHandle().affectsSpawning;
     }
+
+    @Override
+    public int getViewDistance() {
+        return getHandle().getViewDistance();
+    }
+
+    @Override
+    public void setViewDistance(int viewDistance) {
+        ((WorldServer) getHandle().world).getPlayerChunkMap().updateViewDistance(getHandle(), viewDistance);
+    }
     // Paper end
 
     @Override

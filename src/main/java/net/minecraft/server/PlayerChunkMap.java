@@ -33,7 +33,7 @@ public class PlayerChunkMap {
     private final List<PlayerChunk> g = Lists.newLinkedList();
     private final List<PlayerChunk> h = Lists.newLinkedList();
     private final List<PlayerChunk> i = Lists.newArrayList();
-    private int j;
+    private int j;public int getViewDistance() { return j; } // Paper OBFHELPER
     private long k;
     private boolean l = true;
     private boolean m = true;
@@ -257,8 +257,11 @@ public class PlayerChunkMap {
         // CraftBukkit start - Load nearby chunks first
         List<ChunkCoordIntPair> chunkList = new LinkedList<ChunkCoordIntPair>();
 
-        for (int k = i - this.j; k <= i + this.j; ++k) {
-            for (int l = j - this.j; l <= j + this.j; ++l) {
+        // Paper start - Player view distance API
+        int viewDistance = entityplayer.getViewDistance();
+        for (int k = i - viewDistance; k <= i + viewDistance; ++k) {
+            for (int l = j - viewDistance; l <= j + viewDistance; ++l) {
+                // Paper end
                 chunkList.add(new ChunkCoordIntPair(k, l));
             }
         }
@@ -277,8 +280,11 @@ public class PlayerChunkMap {
         int i = (int) entityplayer.d >> 4;
         int j = (int) entityplayer.e >> 4;
 
-        for (int k = i - this.j; k <= i + this.j; ++k) {
-            for (int l = j - this.j; l <= j + this.j; ++l) {
+        // Paper start - Player view distance API
+        int viewDistance = entityplayer.getViewDistance();
+        for (int k = i - viewDistance; k <= i + viewDistance; ++k) {
+            for (int l = j - viewDistance; l <= j + viewDistance; ++l) {
+                // Paper end
                 PlayerChunk playerchunk = this.getChunk(k, l);
 
                 if (playerchunk != null) {
@@ -308,7 +314,8 @@ public class PlayerChunkMap {
         if (d2 >= 64.0D) {
             int k = (int) entityplayer.d >> 4;
             int l = (int) entityplayer.e >> 4;
-            int i1 = this.j;
+            int i1 = entityplayer.getViewDistance(); // Paper - Player view distance API
+
             int j1 = i - k;
             int k1 = j - l;
 
@@ -352,6 +359,8 @@ public class PlayerChunkMap {
         return playerchunk != null && playerchunk.d(entityplayer) && playerchunk.e();
     }
 
+    public final void setViewDistanceForAll(int viewDistance) { this.a(viewDistance); } // Paper - OBFHELPER
+    // Paper start - Separate into two methods
     public void a(int i) {
         i = MathHelper.clamp(i, 3, 32);
         if (i != this.j) {
@@ -361,36 +370,55 @@ public class PlayerChunkMap {
 
             while (iterator.hasNext()) {
                 EntityPlayer entityplayer = (EntityPlayer) iterator.next();
-                int k = (int) entityplayer.locX >> 4;
-                int l = (int) entityplayer.locZ >> 4;
-                int i1;
-                int j1;
-
-                if (j > 0) {
-                    for (i1 = k - i; i1 <= k + i; ++i1) {
-                        for (j1 = l - i; j1 <= l + i; ++j1) {
-                            PlayerChunk playerchunk = this.c(i1, j1);
-
-                            if (!playerchunk.d(entityplayer)) {
-                                playerchunk.a(entityplayer);
-                            }
-                        }
-                    }
-                } else {
-                    for (i1 = k - this.j; i1 <= k + this.j; ++i1) {
-                        for (j1 = l - this.j; j1 <= l + this.j; ++j1) {
-                            if (!this.a(i1, j1, k, l, i)) {
-                                this.c(i1, j1).b(entityplayer);
-                            }
-                        }
-                    }
-                }
+                this.setViewDistance(entityplayer, i, false); // Paper - Split, don't mark sort pending, we'll handle it after
             }
 
             this.j = i;
             this.e();
         }
     }
+
+    public void setViewDistance(EntityPlayer entityplayer, int i) {
+        this.setViewDistance(entityplayer, i, true); // Mark sort pending by default so we don't have to remember to do so all the time
+    }
+    
+    // Copied from above with minor changes
+    public void setViewDistance(EntityPlayer entityplayer, int i, boolean markSort) {
+        i = MathHelper.clamp(i, 3, 32);
+        int oldViewDistance = entityplayer.getViewDistance();
+        if (i != oldViewDistance) {
+            int j = i - oldViewDistance;
+            
+            int k = (int) entityplayer.locX >> 4;
+            int l = (int) entityplayer.locZ >> 4;
+            int i1;
+            int j1;
+
+            if (j > 0) {
+                for (i1 = k - i; i1 <= k + i; ++i1) {
+                    for (j1 = l - i; j1 <= l + i; ++j1) {
+                        PlayerChunk playerchunk = this.c(i1, j1);
+
+                        if (!playerchunk.d(entityplayer)) {
+                            playerchunk.a(entityplayer);
+                        }
+                    }
+                }
+            } else {
+                for (i1 = k - oldViewDistance; i1 <= k + oldViewDistance; ++i1) {
+                    for (j1 = l - oldViewDistance; j1 <= l + oldViewDistance; ++j1) {
+                        if (!this.a(i1, j1, k, l, i)) {
+                            this.c(i1, j1).b(entityplayer);
+                        }
+                    }
+                }
+                if (markSort) {
+                    this.e();
+                }
+            }
+        }
+    }
+    // Paper end
 
     private void e() {
         this.l = true;
@@ -469,4 +497,32 @@ public class PlayerChunkMap {
         }
     }
     // CraftBukkit end
+
+    // Paper start - Player view distance API
+    public void updateViewDistance(EntityPlayer player, int distanceIn) {
+        final int oldViewDistance = player.getViewDistance();
+
+        // This represents the view distance that we will set on the player
+        // It can exist as a negative value
+        int playerViewDistance = MathHelper.clamp(distanceIn, 3, 32);
+
+        // This value is the one we actually use to update the chunk map
+        // We don't ever want this to be a negative
+        int toSet = playerViewDistance;
+
+        if (distanceIn < 0) {
+            playerViewDistance = -1;
+            toSet = world.getPlayerChunkMap().getViewDistance();
+        }
+
+        if (toSet != oldViewDistance) {
+            // Order matters
+            this.setViewDistance(player, toSet);
+            player.setViewDistance(playerViewDistance);
+
+            //Force update entity trackers
+            this.getWorld().getTracker().updatePlayer(player);
+        }
+    }
+    // Paper end
 }

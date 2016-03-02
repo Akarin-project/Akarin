@@ -108,13 +108,13 @@ public class ActivationRange
 
         int maxRange = Math.max( monsterActivationRange, animalActivationRange );
         maxRange = Math.max( maxRange, miscActivationRange );
-        maxRange = Math.min( ( world.spigotConfig.viewDistance << 4 ) - 8, maxRange );
+        //maxRange = Math.min( ( world.spigotConfig.viewDistance << 4 ) - 8, maxRange ); Paper - Use player view distance API below instead
 
         for ( EntityHuman player : world.players )
         {
-
+            int playerMaxRange = maxRange = Math.min( ( player.getViewDistance() << 4 ) - 8, maxRange ); // Paper - Use player view distance API
             player.activatedTick = MinecraftServer.currentTick;
-            maxBB = player.getBoundingBox().grow( maxRange, 256, maxRange );
+            maxBB = player.getBoundingBox().grow( playerMaxRange, 256, playerMaxRange ); // Paper - Use player view distance API
             miscBB = player.getBoundingBox().grow( miscActivationRange, 256, miscActivationRange );
             animalBB = player.getBoundingBox().grow( animalActivationRange, 256, animalActivationRange );
             monsterBB = player.getBoundingBox().grow( monsterActivationRange, 256, monsterActivationRange );
