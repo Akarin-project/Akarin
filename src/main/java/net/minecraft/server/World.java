@@ -918,6 +918,12 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         int j = MathHelper.floor(entity.locZ / 16.0D);
         boolean flag = entity.attachedToPlayer;
 
+        // Paper start - Set origin location when the entity is being added to the world
+        if (entity.origin == null) {
+            entity.origin = entity.getBukkitEntity().getLocation();
+        }
+        // Paper end
+
         if (entity instanceof EntityHuman) {
             flag = true;
         }
