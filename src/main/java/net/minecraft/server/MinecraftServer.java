@@ -141,7 +141,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public org.bukkit.command.ConsoleCommandSender console;
     public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
     public ConsoleReader reader;
-    public static int currentTick = (int) (System.currentTimeMillis() / 50);
+    public static int currentTick = 0; // Paper - Further improve tick loop
     public final Thread primaryThread;
     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
     public int autosavePeriod;
@@ -151,7 +151,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     // Spigot start
     public static final int TPS = 20;
     public static final int TICK_TIME = 1000000000 / TPS;
-    private static final int SAMPLE_INTERVAL = 100;
+    private static final int SAMPLE_INTERVAL = 20; // Paper
     public final double[] recentTps = new double[ 3 ];
     public final SlackActivityAccountant slackActivityAccountant = new SlackActivityAccountant();
     // Spigot end
@@ -685,7 +685,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     }
 
     private boolean canSleepForTick() {
-        return SystemUtils.getMonotonicMillis() < this.nextTick;
+        return System.nanoTime() - lastTick + catchupTime < TICK_TIME; // Paper - improved "are we lagging" check to match our own
     }
 
     // Spigot Start
@@ -693,6 +693,57 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     {
         return ( avg * exp ) + ( tps * ( 1 - exp ) );
     }
+
+    // Paper start - Further improve server tick loop
+    private static final long SEC_IN_NANO = 1000000000;
+    private static final long MAX_CATCHUP_BUFFER = TICK_TIME * TPS * 60L;
+    private long lastTick = 0;
+    private long catchupTime = 0;
+    public final RollingAverage tps1 = new RollingAverage(60);
+    public final RollingAverage tps5 = new RollingAverage(60 * 5);
+    public final RollingAverage tps15 = new RollingAverage(60 * 15);
+
+    public static class RollingAverage {
+        private final int size;
+        private long time;
+        private java.math.BigDecimal total;
+        private int index = 0;
+        private final java.math.BigDecimal[] samples;
+        private final long[] times;
+
+        RollingAverage(int size) {
+            this.size = size;
+            this.time = size * SEC_IN_NANO;
+            this.total = dec(TPS).multiply(dec(SEC_IN_NANO)).multiply(dec(size));
+            this.samples = new java.math.BigDecimal[size];
+            this.times = new long[size];
+            for (int i = 0; i < size; i++) {
+                this.samples[i] = dec(TPS);
+                this.times[i] = SEC_IN_NANO;
+            }
+        }
+
+        private static java.math.BigDecimal dec(long t) {
+            return new java.math.BigDecimal(t);
+        }
+        public void add(java.math.BigDecimal x, long t) {
+            time -= times[index];
+            total = total.subtract(samples[index].multiply(dec(times[index])));
+            samples[index] = x;
+            times[index] = t;
+            time += t;
+            total = total.add(x.multiply(dec(t)));
+            if (++index == size) {
+                index = 0;
+            }
+        }
+
+        public double getAverage() {
+            return total.divide(dec(time), 30, java.math.RoundingMode.HALF_UP).doubleValue();
+        }
+    }
+    private static final java.math.BigDecimal TPS_BASE = new java.math.BigDecimal(1E9).multiply(new java.math.BigDecimal(SAMPLE_INTERVAL));
+    // Paper End
     // Spigot End
 
     public void run() {
@@ -705,29 +756,47 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
                 // Spigot start
                 Arrays.fill( recentTps, 20 );
-                long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick, tickCount = 1;
+                long start = System.nanoTime(), curTime, wait, tickSection = start; // Paper - Further improve server tick loop
+                lastTick = start - TICK_TIME; // Paper
                 while (this.isRunning) {
                     curTime = System.nanoTime();
-                    wait = TICK_TIME - (curTime - lastTick) - catchupTime;
+                    // Paper start - Further improve server tick loop
+                    wait = TICK_TIME - (curTime - lastTick);
+                    if (wait > 0) {
+                        if (catchupTime < 2E6) {
+                            wait += Math.abs(catchupTime);
+                        } else if (wait < catchupTime) {
+                            catchupTime -= wait;
+                            wait = 0;
+                        } else {
+                            wait -= catchupTime;
+                            catchupTime = 0;
+                        }
+                    }
                     if (wait > 0) {
                         Thread.sleep(wait / 1000000);
-                        catchupTime = 0;
-                        continue;
-                    } else {
-                        catchupTime = Math.min(1000000000, Math.abs(wait));
+                        curTime = System.nanoTime();
+                        wait = TICK_TIME - (curTime - lastTick);
                     }
 
-                    if ( tickCount++ % SAMPLE_INTERVAL == 0 )
+                    catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime - wait);
+                    if ( ++MinecraftServer.currentTick % SAMPLE_INTERVAL == 0 )
                     {
-                        double currentTps = 1E9 / ( curTime - tickSection ) * SAMPLE_INTERVAL;
-                        recentTps[0] = calcTps( recentTps[0], 0.92, currentTps ); // 1/exp(5sec/1min)
-                        recentTps[1] = calcTps( recentTps[1], 0.9835, currentTps ); // 1/exp(5sec/5min)
-                        recentTps[2] = calcTps( recentTps[2], 0.9945, currentTps ); // 1/exp(5sec/15min)
+                        final long diff = curTime - tickSection;
+                        java.math.BigDecimal currentTps = TPS_BASE.divide(new java.math.BigDecimal(diff), 30, java.math.RoundingMode.HALF_UP);
+                        tps1.add(currentTps, diff);
+                        tps5.add(currentTps, diff);
+                        tps15.add(currentTps, diff);
+                        // Backwards compat with bad plugins
+                        recentTps[0] = tps1.getAverage();
+                        recentTps[1] = tps5.getAverage();
+                        recentTps[2] = tps15.getAverage();
+                        // Paper end
                         tickSection = curTime;
                     }
                     lastTick = curTime;
 
-                    MinecraftServer.currentTick = (int) (System.currentTimeMillis() / 50); // CraftBukkit
+                    //MinecraftServer.currentTick = (int) (System.currentTimeMillis() / 50); // CraftBukkit // Paper - don't overwrite current tick time
                     this.a(this::canSleepForTick);
                     this.nextTick += 50L;
                     // Spigot end
