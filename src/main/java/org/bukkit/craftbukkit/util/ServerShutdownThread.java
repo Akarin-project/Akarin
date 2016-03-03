@@ -14,6 +14,7 @@ public class ServerShutdownThread extends Thread {
     public void run() {
         try {
             org.spigotmc.AsyncCatcher.enabled = false; // Spigot
+            org.spigotmc.AsyncCatcher.shuttingDown = true; // Paper
             server.stop();
         } catch (ExceptionWorldConflict ex) {
             ex.printStackTrace();
