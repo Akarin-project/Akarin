@@ -168,7 +168,7 @@ public class EntityTracker {
     public void updatePlayers() {
         List<EntityPlayer> list = Lists.newArrayList();
         Iterator iterator = this.c.iterator();
-
+        world.timings.tracker1.startTiming(); // Paper
         while (iterator.hasNext()) {
             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
 
@@ -181,7 +181,9 @@ public class EntityTracker {
                 }
             }
         }
+        world.timings.tracker1.stopTiming(); // Paper
 
+        world.timings.tracker2.startTiming(); // Paper
         for (int i = 0; i < list.size(); ++i) {
             EntityPlayer entityplayer = (EntityPlayer) list.get(i);
             Iterator iterator1 = this.c.iterator();
@@ -194,6 +196,7 @@ public class EntityTracker {
                 }
             }
         }
+        world.timings.tracker2.stopTiming(); // Paper
 
     }
 

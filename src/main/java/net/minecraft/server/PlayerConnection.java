@@ -58,6 +58,7 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.util.NumberConversions;
+import co.aikar.timings.MinecraftTimings; // Paper
 // CraftBukkit end
 
 public class PlayerConnection implements PacketListenerPlayIn, ITickable {
@@ -135,7 +136,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     // CraftBukkit end
 
     public void tick() {
-        org.bukkit.craftbukkit.SpigotTimings.playerConnectionTimer.startTiming(); // Spigot
         this.syncPosition();
         this.player.playerTick();
         this.player.setLocation(this.l, this.m, this.n, this.player.yaw, this.player.pitch);
@@ -208,7 +208,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             this.player.resetIdleTimer(); // CraftBukkit - SPIGOT-854
             this.disconnect(new ChatMessage("multiplayer.disconnect.idling", new Object[0]));
         }
-        org.bukkit.craftbukkit.SpigotTimings.playerConnectionTimer.stopTiming(); // Spigot
 
     }
 
@@ -1617,7 +1616,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     // CraftBukkit end
 
     private void handleCommand(String s) {
-        org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.startTiming(); // Spigot
+        MinecraftTimings.playerCommandTimer.startTiming(); // Paper
         // CraftBukkit start - whole method
         if ( org.spigotmc.SpigotConfig.logCommands ) // Spigot
         this.LOGGER.info(this.player.getName() + " issued server command: " + s);
@@ -1628,7 +1627,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.server.getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
-            org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
+            MinecraftTimings.playerCommandTimer.stopTiming(); // Paper
             return;
         }
 
@@ -1641,7 +1640,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             java.util.logging.Logger.getLogger(PlayerConnection.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             return;
         } finally {
-            org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
+            MinecraftTimings.playerCommandTimer.stopTiming(); // Paper
         }
         // this.minecraftServer.getCommandDispatcher().a(this.player.getCommandListener(), s);
         // CraftBukkit end

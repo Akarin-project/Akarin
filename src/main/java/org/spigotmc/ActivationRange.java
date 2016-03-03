@@ -30,7 +30,7 @@ import net.minecraft.server.EntityWither;
 import net.minecraft.server.MathHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.World;
-import org.bukkit.craftbukkit.SpigotTimings;
+import co.aikar.timings.MinecraftTimings;
 
 public class ActivationRange
 {
@@ -64,8 +64,8 @@ public class ActivationRange
     /**
      * These entities are excluded from Activation range checks.
      *
-     * @param entity
-     * @param world
+     * @param entity Entity to initialize
+     * @param config Spigot config to determine ranges
      * @return boolean If it should always tick.
      */
     public static boolean initializeEntityActivationState(Entity entity, SpigotWorldConfig config)
@@ -99,7 +99,7 @@ public class ActivationRange
      */
     public static void activateEntities(World world)
     {
-        SpigotTimings.entityActivationCheckTimer.startTiming();
+        MinecraftTimings.entityActivationCheckTimer.startTiming();
         final int miscActivationRange = world.spigotConfig.miscActivationRange;
         final int animalActivationRange = world.spigotConfig.animalActivationRange;
         final int monsterActivationRange = world.spigotConfig.monsterActivationRange;
@@ -133,7 +133,7 @@ public class ActivationRange
                 }
             }
         }
-        SpigotTimings.entityActivationCheckTimer.stopTiming();
+        MinecraftTimings.entityActivationCheckTimer.stopTiming();
     }
 
     /**
@@ -247,10 +247,8 @@ public class ActivationRange
      */
     public static boolean checkIfActive(Entity entity)
     {
-        SpigotTimings.checkIfActiveTimer.startTiming();
         // Never safe to skip fireworks or entities not yet added to chunk
         if ( !entity.inChunk || entity instanceof EntityFireworks ) {
-            SpigotTimings.checkIfActiveTimer.stopTiming();
             return true;
         }
 
@@ -282,7 +280,6 @@ public class ActivationRange
         {
             isActive = false;
         }
-        SpigotTimings.checkIfActiveTimer.stopTiming();
         return isActive;
     }
 }

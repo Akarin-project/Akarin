@@ -4,12 +4,13 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.spigotmc.CustomTimingsHandler; // Spigot
+import co.aikar.timings.MinecraftTimings; // Paper
+import co.aikar.timings.Timing; // Paper
 import org.bukkit.inventory.InventoryHolder; // CraftBukkit
 
 public abstract class TileEntity implements KeyedObject { // Paper
 
-    public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getTileEntityTimings(this); // Spigot
+    public Timing tickTimer = MinecraftTimings.getTileEntityTimings(this); // Paper
     private static final Logger a = LogManager.getLogger();
     private final TileEntityTypes<?> e; public TileEntityTypes getTileEntityType() { return e; } // Paper - OBFHELPER
     protected World world;

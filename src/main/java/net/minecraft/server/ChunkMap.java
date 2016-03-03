@@ -14,6 +14,7 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
     }
 
     public Chunk put(long i, Chunk chunk) {
+        chunk.world.timings.syncChunkLoadPostTimer.startTiming(); // Paper
         Chunk chunk1 = (Chunk) super.put(i, chunk);
         ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i);
 
@@ -46,6 +47,7 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
                 }
             }
         }
+        chunk.world.timings.syncChunkLoadPostTimer.stopTiming(); // Paper
         // CraftBukkit end
 
         return chunk1;

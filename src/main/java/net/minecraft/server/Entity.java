@@ -27,7 +27,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Hanging;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Vehicle;
-import org.spigotmc.CustomTimingsHandler; // Spigot
+import co.aikar.timings.MinecraftTimings; // Paper
+import co.aikar.timings.Timing; // Paper
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
@@ -158,7 +159,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     public boolean valid;
     public org.bukkit.projectiles.ProjectileSource projectileSource; // For projectiles only
     public boolean forceExplosionKnockback; // SPIGOT-949
-    public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getEntityTimings(this); // Spigot
+    public Timing tickTimer = MinecraftTimings.getEntityTimings(this); // Paper
     // Spigot start
     public final byte activationType = org.spigotmc.ActivationRange.initializeEntityActivationType(this);
     public final boolean defaultActivationState;
@@ -551,7 +552,6 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     }
 
     public void move(EnumMoveType enummovetype, double d0, double d1, double d2) {
-        org.bukkit.craftbukkit.SpigotTimings.entityMoveTimer.startTiming(); // Spigot
         if (this.noclip) {
             this.a(this.getBoundingBox().d(d0, d1, d2));
             this.recalcPosition();
@@ -901,7 +901,6 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
             this.world.methodProfiler.exit();
         }
-        org.bukkit.craftbukkit.SpigotTimings.entityMoveTimer.stopTiming(); // Spigot
     }
 
     protected float ab() {

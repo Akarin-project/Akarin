@@ -88,7 +88,7 @@ public class ChunkProviderServer implements IChunkProvider {
             }
 
             if (flag) {
-                try {
+                try (co.aikar.timings.Timing timing = world.timings.syncChunkLoadTimer.startTiming()) { // Paper
                     chunk = this.chunkLoader.a(this.world, i, j, (chunk1) -> {
                         chunk1.setLastSaved(this.world.getTime());
                         this.chunks.put(ChunkCoordIntPair.a(i, j), chunk1);
@@ -103,8 +103,7 @@ public class ChunkProviderServer implements IChunkProvider {
             this.asyncTaskHandler.postToMainThread(chunk::addEntities);
             return chunk;
         } else if (flag1) {
-            try {
-                world.timings.syncChunkLoadTimer.startTiming(); // Spigot
+            try (co.aikar.timings.Timing timing = world.timings.chunkGeneration.startTiming()) { // Paper
                 this.batchScheduler.b();
                 this.batchScheduler.a(new ChunkCoordIntPair(i, j));
                 CompletableFuture<ProtoChunk> completablefuture = this.batchScheduler.c();
@@ -113,7 +112,7 @@ public class ChunkProviderServer implements IChunkProvider {
             } catch (RuntimeException runtimeexception) {
                 throw this.a(i, j, (Throwable) runtimeexception);
             }
-            finally { world.timings.syncChunkLoadTimer.stopTiming(); } // Spigot
+            // finally { world.timings.syncChunkLoadTimer.stopTiming(); } // Spigot // Paper
         } else {
             return null;
         }
@@ -206,7 +205,7 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     public void saveChunk(IChunkAccess ichunkaccess, boolean unloaded) { // Spigot
-        try {
+        try (co.aikar.timings.Timing timed = world.timings.chunkSaveData.startTiming()) { // Paper - Timings
             ichunkaccess.setLastSaved(this.world.getTime());
             this.chunkLoader.saveChunk(this.world, ichunkaccess, unloaded); // Spigot
         } catch (IOException ioexception) {

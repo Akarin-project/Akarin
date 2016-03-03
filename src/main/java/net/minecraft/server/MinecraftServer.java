@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import co.aikar.timings.Timings;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -62,8 +63,8 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.Main;
 import org.bukkit.event.server.ServerLoadEvent;
 // CraftBukkit end
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.spigotmc.SlackActivityAccountant; // Spigot
+import co.aikar.timings.MinecraftTimings; // Paper
 
 public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStatistics, ICommandListener, Runnable {
 
@@ -616,6 +617,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         }
         // CraftBukkit end
         MinecraftServer.LOGGER.info("Stopping server");
+        MinecraftTimings.stopServer(); // Paper
         // CraftBukkit start
         if (this.server != null) {
             this.server.disablePlugins();
@@ -817,7 +819,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public void t() {}
 
     protected void a(BooleanSupplier booleansupplier) {
-        SpigotTimings.serverTickTimer.startTiming(); // Spigot
+        co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Paper
         this.slackActivityAccountant.tickStarted(); // Spigot
         long i = SystemUtils.getMonotonicNanos();
 
@@ -844,7 +846,6 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         }
 
         if (autosavePeriod > 0 && this.ticks % autosavePeriod == 0) { // CraftBukkit
-            SpigotTimings.worldSaveTimer.startTiming(); // Spigot
             this.methodProfiler.enter("save");
             this.playerList.savePlayers();
             // Spigot Start
@@ -859,7 +860,6 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             // this.saveChunks(true);
             // Spigot End
             this.methodProfiler.exit();
-            SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
         }
 
         this.methodProfiler.enter("snooper");
@@ -880,14 +880,14 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.methodProfiler.exit();
         org.spigotmc.WatchdogThread.tick(); // Spigot
         this.slackActivityAccountant.tickEnded(l); // Spigot
-        SpigotTimings.serverTickTimer.stopTiming(); // Spigot
-        org.spigotmc.CustomTimingsHandler.tick(); // Spigot
+        co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Paper
     }
 
     public void b(BooleanSupplier booleansupplier) {
-        SpigotTimings.schedulerTimer.startTiming(); // Spigot
+        MinecraftTimings.bukkitSchedulerTimer.startTiming(); // Paper
         this.server.getScheduler().mainThreadHeartbeat(this.ticks); // CraftBukkit
-        SpigotTimings.schedulerTimer.stopTiming(); // Spigot
+        MinecraftTimings.bukkitSchedulerTimer.stopTiming(); // Paper
+        MinecraftTimings.minecraftSchedulerTimer.startTiming(); // Paper
         this.methodProfiler.enter("jobs");
 
         FutureTask futuretask;
@@ -895,26 +895,27 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         while ((futuretask = (FutureTask) this.f.poll()) != null) {
             SystemUtils.a(futuretask, MinecraftServer.LOGGER);
         }
+        MinecraftTimings.minecraftSchedulerTimer.stopTiming(); // Paper
 
         this.methodProfiler.exitEnter("commandFunctions");
-        SpigotTimings.commandFunctionsTimer.startTiming(); // Spigot
+        MinecraftTimings.commandFunctionsTimer.startTiming(); // Spigot
         this.getFunctionData().tick();
-        SpigotTimings.commandFunctionsTimer.stopTiming(); // Spigot
+        MinecraftTimings.commandFunctionsTimer.stopTiming(); // Spigot
         this.methodProfiler.exitEnter("levels");
 
         // CraftBukkit start
         // Run tasks that are waiting on processing
-        SpigotTimings.processQueueTimer.startTiming(); // Spigot
+        MinecraftTimings.processQueueTimer.startTiming(); // Spigot
         while (!processQueue.isEmpty()) {
             processQueue.remove().run();
         }
-        SpigotTimings.processQueueTimer.stopTiming(); // Spigot
+        MinecraftTimings.processQueueTimer.stopTiming(); // Spigot
 
-        SpigotTimings.chunkIOTickTimer.startTiming(); // Spigot
+        MinecraftTimings.chunkIOTickTimer.startTiming(); // Spigot
         org.bukkit.craftbukkit.chunkio.ChunkIOExecutor.tick();
-        SpigotTimings.chunkIOTickTimer.stopTiming(); // Spigot
+        MinecraftTimings.chunkIOTickTimer.stopTiming(); // Spigot
 
-        SpigotTimings.timeUpdateTimer.startTiming(); // Spigot
+        MinecraftTimings.timeUpdateTimer.startTiming(); // Spigot
         // Send time updates to everyone, it will get the right time from the world the player is in.
         if (this.ticks % 20 == 0) {
             for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
@@ -922,7 +923,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
                 entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
             }
         }
-        SpigotTimings.timeUpdateTimer.stopTiming(); // Spigot
+        MinecraftTimings.timeUpdateTimer.stopTiming(); // Spigot
 
         // WorldServer worldserver; // CraftBukkit - dropped down
         long i;
@@ -981,29 +982,27 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
                 this.methodProfiler.exit();
                 this.methodProfiler.enter("tracker");
-                worldserver.timings.tracker.startTiming(); // Spigot
                 worldserver.getTracker().updatePlayers();
-                worldserver.timings.tracker.stopTiming(); // Spigot
                 this.methodProfiler.exit();
                 this.methodProfiler.exit();
             }
         }
 
         this.methodProfiler.exitEnter("connection");
-        SpigotTimings.connectionTimer.startTiming(); // Spigot
+        MinecraftTimings.connectionTimer.startTiming(); // Spigot
         this.getServerConnection().c();
-        SpigotTimings.connectionTimer.stopTiming(); // Spigot
+        MinecraftTimings.connectionTimer.stopTiming(); // Spigot
         this.methodProfiler.exitEnter("players");
-        SpigotTimings.playerListTimer.startTiming(); // Spigot
+        MinecraftTimings.playerListTimer.startTiming(); // Spigot
         this.playerList.tick();
-        SpigotTimings.playerListTimer.stopTiming(); // Spigot
+        MinecraftTimings.playerListTimer.stopTiming(); // Spigot
         this.methodProfiler.exitEnter("tickables");
 
-        SpigotTimings.tickablesTimer.startTiming(); // Spigot
+        MinecraftTimings.tickablesTimer.startTiming(); // Spigot
         for (int j = 0; j < this.k.size(); ++j) {
             ((ITickable) this.k.get(j)).tick();
         }
-        SpigotTimings.tickablesTimer.stopTiming(); // Spigot
+        MinecraftTimings.tickablesTimer.stopTiming(); // Spigot
 
         this.methodProfiler.exit();
     }

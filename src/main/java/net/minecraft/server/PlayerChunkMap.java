@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import co.aikar.timings.Timing;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
@@ -84,6 +85,7 @@ public class PlayerChunkMap {
         int j;
 
         if (i - this.k > 8000L) {
+            try (Timing ignored = world.timings.doChunkMapUpdate.startTiming()) { // Paper
             this.k = i;
 
             for (j = 0; j < this.i.size(); ++j) {
@@ -91,9 +93,11 @@ public class PlayerChunkMap {
                 playerchunk.d();
                 playerchunk.c();
             }
+            } // Paper timing
         }
 
         if (!this.f.isEmpty()) {
+            try (Timing ignored = world.timings.doChunkMapToUpdate.startTiming()) { // Paper
             Iterator iterator = this.f.iterator();
 
             while (iterator.hasNext()) {
@@ -102,23 +106,29 @@ public class PlayerChunkMap {
             }
 
             this.f.clear();
+            } // Paper timing
         }
 
         if (this.l && i % 4L == 0L) {
             this.l = false;
+            try (Timing ignored = world.timings.doChunkMapSortMissing.startTiming()) { // Paper
             Collections.sort(this.h, (playerchunk1, playerchunk2) -> {
                 return ComparisonChain.start().compare(playerchunk1.g(), playerchunk2.g()).result();
             });
+            } // Paper timing
         }
 
         if (this.m && i % 4L == 2L) {
             this.m = false;
+            try (Timing ignored = world.timings.doChunkMapSortSendToPlayers.startTiming()) { // Paper
             Collections.sort(this.g, (playerchunk1, playerchunk2) -> {
                 return ComparisonChain.start().compare(playerchunk1.g(), playerchunk2.g()).result();
             });
+            } // Paper timing
         }
 
         if (!this.h.isEmpty()) {
+            try (Timing ignored = world.timings.doChunkMapPlayersNeedingChunks.startTiming()) { // Paper
             // Spigot start
             org.spigotmc.SlackActivityAccountant activityAccountant = this.world.getMinecraftServer().slackActivityAccountant;
             activityAccountant.startActivity(0.5);
@@ -150,10 +160,12 @@ public class PlayerChunkMap {
             }
 
             activityAccountant.endActivity(); // Spigot
+            } // Paper timing
         }
 
         if (!this.g.isEmpty()) {
             j = 81;
+            try (Timing ignored = world.timings.doChunkMapPendingSendToPlayers.startTiming()) { // Paper
             Iterator iterator2 = this.g.iterator();
 
             while (iterator2.hasNext()) {
@@ -167,14 +179,17 @@ public class PlayerChunkMap {
                     }
                 }
             }
+            } // Paper timing
         }
 
         if (this.managedPlayers.isEmpty()) {
+            try (Timing ignored = world.timings.doChunkMapUnloadChunks.startTiming()) { // Paper
             WorldProvider worldprovider = this.world.worldProvider;
 
             if (!worldprovider.canRespawn()) {
                 this.world.getChunkProvider().b();
             }
+            } // Paper timing
         }
 
     }

@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
+import co.aikar.timings.MinecraftTimings; // Paper
 import org.apache.commons.lang.Validate;
 import org.bukkit.plugin.IllegalPluginAccessException;
 import org.bukkit.plugin.Plugin;
@@ -247,7 +248,7 @@ public class CraftScheduler implements BukkitScheduler {
                             }
                         }
                         return false;
-                    }});
+                    }}){{this.timings=co.aikar.timings.MinecraftTimings.getCancelTasksTimer();}}; // Paper
         handle(task, 0L);
         for (CraftTask taskPending = head.getNext(); taskPending != null; taskPending = taskPending.getNext()) {
             if (taskPending == task) {
@@ -281,7 +282,7 @@ public class CraftScheduler implements BukkitScheduler {
                             }
                         }
                     }
-                });
+                }){{this.timings=co.aikar.timings.MinecraftTimings.getCancelTasksTimer(plugin);}}; // Paper
         handle(task, 0L);
         for (CraftTask taskPending = head.getNext(); taskPending != null; taskPending = taskPending.getNext()) {
             if (taskPending == task) {
@@ -388,9 +389,7 @@ public class CraftScheduler implements BukkitScheduler {
             if (task.isSync()) {
                 currentTask = task;
                 try {
-                    task.timings.startTiming(); // Spigot
                     task.run();
-                    task.timings.stopTiming(); // Spigot
                 } catch (final Throwable throwable) {
                     task.getOwner().getLogger().log(
                             Level.WARNING,
@@ -417,8 +416,10 @@ public class CraftScheduler implements BukkitScheduler {
                 runners.remove(task.getTaskId());
             }
         }
+        MinecraftTimings.bukkitSchedulerFinishTimer.startTiming();
         pending.addAll(temp);
         temp.clear();
+        MinecraftTimings.bukkitSchedulerFinishTimer.stopTiming();
         debugHead = debugHead.getNextHead(currentTick);
     }
 
@@ -451,6 +452,7 @@ public class CraftScheduler implements BukkitScheduler {
     }
 
     private void parsePending() {
+        MinecraftTimings.bukkitSchedulerPendingTimer.startTiming();
         CraftTask head = this.head;
         CraftTask task = head.getNext();
         CraftTask lastTask = head;
@@ -469,6 +471,7 @@ public class CraftScheduler implements BukkitScheduler {
            task.setNext(null);
         }
         this.head = lastTask;
+        MinecraftTimings.bukkitSchedulerPendingTimer.stopTiming();
     }
 
     private boolean isReady(final int currentTick) {

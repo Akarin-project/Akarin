@@ -1,6 +1,8 @@
 package org.bukkit.craftbukkit.chunkio;
 
 import java.io.IOException;
+
+import co.aikar.timings.Timing;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.ChunkCoordIntPair;
 import net.minecraft.server.ChunkRegionLoader;
@@ -16,7 +18,7 @@ class ChunkIOProvider implements AsynchronousExecutor.CallBackProvider<QueuedChu
 
     // async stuff
     public Chunk callStage1(QueuedChunk queuedChunk) throws RuntimeException {
-        try {
+        try (Timing ignored = queuedChunk.provider.world.timings.chunkIOStage1.startTimingIfSync()) { // Paper
             ChunkRegionLoader loader = queuedChunk.loader;
             Object[] data = loader.loadChunk(queuedChunk.world, queuedChunk.x, queuedChunk.z, (chunk) -> {});
             
@@ -38,11 +40,13 @@ class ChunkIOProvider implements AsynchronousExecutor.CallBackProvider<QueuedChu
             // queuedChunk.provider.originalGetChunkAt(queuedChunk.x, queuedChunk.z);
             return;
         }
+        try (Timing ignored = queuedChunk.provider.world.timings.chunkIOStage2.startTimingIfSync()) { // Paper
 
         queuedChunk.loader.loadEntities(queuedChunk.compound.getCompound("Level"), chunk);
         chunk.setLastSaved(queuedChunk.provider.world.getTime());
         queuedChunk.provider.chunks.put(ChunkCoordIntPair.a(queuedChunk.x, queuedChunk.z), chunk);
         chunk.addEntities();
+        } // Paper
     }
 
     public void callStage3(QueuedChunk queuedChunk, Chunk chunk, Runnable runnable) throws RuntimeException {

@@ -1,5 +1,6 @@
 	package net.minecraft.server;
 
+import co.aikar.timings.Timings;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -24,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.CraftBlockState;
@@ -132,7 +132,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
     public final com.destroystokyo.paper.PaperWorldConfig paperConfig; // Paper
 
-    public final SpigotTimings.WorldTimingsHandler timings; // Spigot
+    public final co.aikar.timings.WorldTimingsHandler timings; // Paper
     private boolean guardEntityList; // Spigot
     public static BlockPosition lastPhysicsProblem; // Spigot
     private org.spigotmc.TickLimiter entityLimiter;
@@ -200,7 +200,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         });
         this.getServer().addWorld(this.world);
         // CraftBukkit end
-        timings = new SpigotTimings.WorldTimingsHandler(this); // Spigot - code below can generate new world and access timings
+        timings = new co.aikar.timings.WorldTimingsHandler(this); // Paper - code below can generate new world and access timings
                 this.entityLimiter = new org.spigotmc.TickLimiter(spigotConfig.entityMaxTickTime);
         this.tileLimiter = new org.spigotmc.TickLimiter(spigotConfig.tileMaxTickTime);
     }
@@ -1081,6 +1081,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
 
         this.methodProfiler.exitEnter("remove");
+        timings.entityRemoval.startTiming(); // Paper
         this.entityList.removeAll(this.g);
 
         int j;
@@ -1101,6 +1102,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
         this.g.clear();
         this.p_();
+        timings.entityRemoval.stopTiming(); // Paper
         this.methodProfiler.exitEnter("regular");
 
         CrashReport crashreport1;
@@ -1110,6 +1112,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         timings.entityTick.startTiming(); // Spigot
         guardEntityList = true; // Spigot
         // CraftBukkit start - Use field for loop variable
+        co.aikar.timings.TimingHistory.entityTicks += this.entityList.size(); // Paper
         int entitiesThisCycle = 0;
         if (tickPosition < 0) tickPosition = 0;
         for (entityLimiter.initTick();
@@ -1131,10 +1134,11 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             this.methodProfiler.enter("tick");
             if (!entity.dead && !(entity instanceof EntityPlayer)) {
                 try {
-                    SpigotTimings.tickEntityTimer.startTiming(); // Spigot
+                    entity.tickTimer.startTiming(); // Paper
                     this.g(entity);
-                    SpigotTimings.tickEntityTimer.stopTiming(); // Spigot
+                    entity.tickTimer.stopTiming(); // Paper
                 } catch (Throwable throwable1) {
+                    entity.tickTimer.stopTiming();
                     crashreport1 = CrashReport.a(throwable1, "Ticking entity");
                     crashreportsystemdetails1 = crashreport1.a("Entity being ticked");
                     entity.appendEntityCrashDetails(crashreportsystemdetails1);
@@ -1259,6 +1263,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
 
         timings.tileEntityPending.stopTiming(); // Spigot
+        co.aikar.timings.TimingHistory.tileEntityTicks += this.tileEntityListTick.size(); // Paper
         this.methodProfiler.exit();
         this.methodProfiler.exit();
     }
@@ -1317,7 +1322,6 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
         // CraftBukkit end
 
-        entity.tickTimer.startTiming(); // Spigot
         entity.N = entity.locX;
         entity.O = entity.locY;
         entity.P = entity.locZ;
@@ -1325,6 +1329,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         entity.lastPitch = entity.pitch;
         if (flag && entity.inChunk) {
             ++entity.ticksLived;
+            ++co.aikar.timings.TimingHistory.activatedEntityTicks; // Paper
             if (entity.isPassenger()) {
                 entity.aH();
             } else {
@@ -1388,8 +1393,6 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 }
             }
         }
-        entity.tickTimer.stopTiming(); // Spigot
-
     }
 
     public boolean a(@Nullable Entity entity, VoxelShape voxelshape) {

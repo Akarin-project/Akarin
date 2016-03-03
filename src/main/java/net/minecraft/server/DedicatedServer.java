@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Level;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.LoggerOutputStream;
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+import co.aikar.timings.MinecraftTimings; // Paper
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.server.RemoteServerCommandEvent;
@@ -454,7 +454,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     }
 
     public void handleCommandQueue() {
-        SpigotTimings.serverCommandTimer.startTiming(); // Spigot
+        MinecraftTimings.serverCommandTimer.startTiming(); // Spigot
         while (!this.serverCommandQueue.isEmpty()) {
             ServerCommand servercommand = (ServerCommand) this.serverCommandQueue.remove(0);
 
@@ -469,7 +469,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             // CraftBukkit end
         }
 
-        SpigotTimings.serverCommandTimer.stopTiming(); // Spigot
+        MinecraftTimings.serverCommandTimer.stopTiming(); // Spigot
     }
 
     public boolean Q() {
@@ -718,7 +718,20 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                 return remoteControlCommandListener.getMessages();
             }
         };
-        processQueue.add(waitable);
+        // Paper start
+        if (s.toLowerCase().startsWith("timings") && s.toLowerCase().matches("timings (report|paste|get|merged|seperate)")) {
+            org.bukkit.command.BufferedCommandSender sender = new org.bukkit.command.BufferedCommandSender();
+            waitable = new Waitable<String>() {
+                @Override
+                protected String evaluate() {
+                    return sender.getBuffer();
+                }
+            };
+            co.aikar.timings.Timings.generateReport(new co.aikar.timings.TimingsReportListener(sender, waitable));
+        } else {
+            processQueue.add(waitable);
+        }
+        // Paper end
         try {
             return waitable.get();
         } catch (java.util.concurrent.ExecutionException e) {

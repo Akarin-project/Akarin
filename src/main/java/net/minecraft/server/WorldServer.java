@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import co.aikar.timings.Timings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -59,10 +60,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         // CraftBukkit end
         this.nextTickListBlock = new TickListServer<>(this, (block) -> {
             return block == null || block.getBlockData().isAir();
-        }, IRegistry.BLOCK::getKey, IRegistry.BLOCK::getOrDefault, this::b);
+        }, IRegistry.BLOCK::getKey, IRegistry.BLOCK::getOrDefault, this::b, "Blocks"); // Paper - timings
+
         this.nextTickListFluid = new TickListServer<>(this, (fluidtype) -> {
             return fluidtype == null || fluidtype == FluidTypes.EMPTY;
-        }, IRegistry.FLUID::getKey, IRegistry.FLUID::getOrDefault, this::a);
+        }, IRegistry.FLUID::getKey, IRegistry.FLUID::getOrDefault, this::a, "Fluids"); // Paper - timings
         this.siegeManager = new VillageSiege(this);
         this.d = new ObjectLinkedOpenHashSet();
         this.server = minecraftserver;
@@ -279,13 +281,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
         timings.doChunkUnload.stopTiming(); // Spigot
         this.methodProfiler.exitEnter("tickPending");
-        timings.doTickPending.startTiming(); // Spigot
+        timings.scheduledBlocks.startTiming(); // Paper
         this.q();
-        timings.doTickPending.stopTiming(); // Spigot
+        timings.scheduledBlocks.stopTiming(); // Paper
         this.methodProfiler.exitEnter("tickBlocks");
-        timings.doTickTiles.startTiming(); // Spigot
+        timings.chunkTicks.startTiming(); // Paper
         this.n_();
-        timings.doTickTiles.stopTiming(); // Spigot
+        timings.chunkTicks.stopTiming(); // Paper
         this.methodProfiler.exitEnter("chunkMap");
         timings.doChunkMap.startTiming(); // Spigot
         this.manager.flush();
@@ -515,6 +517,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 }
 
                 this.methodProfiler.exitEnter("tickBlocks");
+                timings.chunkTicksBlocks.startTiming(); // Paper
                 if (i > 0) {
                     ChunkSection[] achunksection = chunk.getSections();
                     int i1 = achunksection.length;
@@ -546,6 +549,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                         }
                     }
                 }
+                timings.chunkTicksBlocks.stopTiming(); // Paper
             }
 
             this.methodProfiler.exit();
@@ -851,6 +855,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
         if (chunkproviderserver.d()) {
             org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getWorld())); // CraftBukkit
+            timings.worldSave.startTiming(); // Paper
             if (iprogressupdate != null) {
                 iprogressupdate.a(new ChatMessage("menu.savingLevel", new Object[0]));
             }
@@ -860,7 +865,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 iprogressupdate.c(new ChatMessage("menu.savingChunks", new Object[0]));
             }
 
+            timings.worldSaveChunks.startTiming(); // Paper
             chunkproviderserver.a(flag);
+            timings.worldSaveChunks.stopTiming(); // Paper
             // CraftBukkit - ArrayList -> Collection
             java.util.Collection<Chunk> list = chunkproviderserver.a();
             Iterator iterator = list.iterator();
@@ -872,7 +879,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     chunkproviderserver.unload(chunk);
                 }
             }
-
+            timings.worldSave.stopTiming(); // Paper
         }
     }
 
@@ -885,6 +892,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
 
     protected void a() throws ExceptionWorldConflict {
+        timings.worldSaveLevel.startTiming(); // Paper
         this.checkSession();
         Iterator iterator = this.server.getWorlds().iterator();
 
@@ -908,6 +916,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.worldData.c(this.server.getBossBattleCustomData().c());
         this.dataManager.saveWorldData(this.worldData, this.server.getPlayerList().t());
         this.h().a();
+        timings.worldSaveLevel.stopTiming(); // Paper
     }
 
     // CraftBukkit start

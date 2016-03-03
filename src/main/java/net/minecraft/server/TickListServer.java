@@ -24,13 +24,19 @@ public class TickListServer<T> implements TickList<T> {
     private final List<NextTickListEntry<T>> g = Lists.newArrayList();
     private final Consumer<NextTickListEntry<T>> h;
 
-    public TickListServer(WorldServer worldserver, Predicate<T> predicate, Function<T, MinecraftKey> function, Function<MinecraftKey, T> function1, Consumer<NextTickListEntry<T>> consumer) {
+    public TickListServer(WorldServer worldserver, Predicate<T> predicate, Function<T, MinecraftKey> function, Function<MinecraftKey, T> function1, Consumer<NextTickListEntry<T>> consumer, String timingsType) { // Paper
         this.a = predicate;
         this.b = function;
         this.c = function1;
         this.f = worldserver;
         this.h = consumer;
+        // Paper start
+        timingCleanup = co.aikar.timings.WorldTimingsHandler.getTickList(worldserver, timingsType + " - Cleanup");
+        timingTicking = co.aikar.timings.WorldTimingsHandler.getTickList(worldserver, timingsType + " - Ticking");
     }
+    private final co.aikar.timings.Timing timingCleanup; // Paper
+    private final co.aikar.timings.Timing timingTicking; // Paper
+    // Paper end
 
     public void a() {
         int i = this.nextTickList.size();
@@ -49,7 +55,7 @@ public class TickListServer<T> implements TickList<T> {
             }
 
             this.f.methodProfiler.enter("cleaning");
-
+            timingCleanup.startTiming(); // Paper
             NextTickListEntry<T> nextticklistentry; // CraftBukkit - decompile error
 
             for (int j = 0; j < i; ++j) {
@@ -62,9 +68,11 @@ public class TickListServer<T> implements TickList<T> {
                 // this.nextTickListHash.remove(nextticklistentry); // CraftBukkit - use nextTickList
                 this.g.add(nextticklistentry);
             }
+            timingCleanup.stopTiming(); // Paper
 
             this.f.methodProfiler.exit();
             this.f.methodProfiler.enter("ticking");
+            timingTicking.startTiming(); // Paper
             Iterator iterator = this.g.iterator();
 
             while (iterator.hasNext()) {
@@ -89,6 +97,7 @@ public class TickListServer<T> implements TickList<T> {
 
             this.f.methodProfiler.exit();
             this.g.clear();
+            timingTicking.stopTiming(); // Paper
         }
     }
 
