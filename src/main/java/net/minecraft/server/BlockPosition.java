@@ -300,6 +300,16 @@ public class BlockPosition extends BaseBlockPosition {
         protected int b;
         protected int c;
         protected int d;
+        // Paper start
+        @Override
+        public boolean isValidLocation() {
+            return b >= -30000000 && d >= -30000000 && b < 30000000 && d < 30000000 && c >= 0 && c < 256;
+        }
+        @Override
+        public boolean isInvalidYLocation() {
+            return c < 0 || c >= 256;
+        }
+        // Paper end
 
         public MutableBlockPosition() {
             this(0, 0, 0);

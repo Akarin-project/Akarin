@@ -7,7 +7,7 @@ public class ChunkSection {
     private int nonEmptyBlockCount;
     private int tickingBlockCount;
     private int e;
-    private final DataPaletteBlock<IBlockData> blockIds;
+    final DataPaletteBlock<IBlockData> blockIds; // Paper - package
     private NibbleArray emittedLight;
     private NibbleArray skyLight;
 

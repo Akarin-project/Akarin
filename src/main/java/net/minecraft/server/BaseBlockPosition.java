@@ -10,6 +10,14 @@ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
     private final int a;
     private final int b;
     private final int c;
+    // Paper start
+    public boolean isValidLocation() {
+        return a >= -30000000 && c >= -30000000 && a < 30000000 && c < 30000000 && b >= 0 && b < 256;
+    }
+    public boolean isInvalidYLocation() {
+        return b < 0 || b >= 256;
+    }
+    // Paper end
 
     public BaseBlockPosition(int i, int j, int k) {
         this.a = i;
