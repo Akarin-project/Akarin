@@ -68,6 +68,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public boolean f;
     public int ping;
     public boolean viewingCredits;
+    private int containerUpdateDelay; // Paper
 
     // CraftBukkit start
     public String displayName;
@@ -332,7 +333,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             --this.noDamageTicks;
         }
 
-        this.activeContainer.b();
+        // Paper start - Configurable container update tick rate
+        if (--containerUpdateDelay <= 0) {
+            this.activeContainer.b();
+            containerUpdateDelay = world.paperConfig.containerUpdateTickRate;
+        }
+        // Paper end
         if (!this.world.isClientSide && !this.activeContainer.canUse(this)) {
             this.closeInventory();
             this.activeContainer = this.defaultContainer;
