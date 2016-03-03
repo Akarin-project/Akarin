@@ -68,11 +68,11 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
     };
     // Spigot end
-    protected final List<Entity> g = Lists.newArrayList();
+    protected final Set<Entity> g = com.google.common.collect.Sets.newHashSet(); // Paper
     public final List<TileEntity> tileEntityList = Lists.newArrayList();
     public final List<TileEntity> tileEntityListTick = Lists.newArrayList();
     private final List<TileEntity> c = Lists.newArrayList();
-    private final List<TileEntity> tileEntityListUnload = Lists.newArrayList();
+    private final Set<TileEntity> tileEntityListUnload = com.google.common.collect.Sets.newHashSet(); // Paper
     public final List<EntityHuman> players = Lists.newArrayList();
     public final List<Entity> k = Lists.newArrayList();
     protected final IntHashMap<Entity> entitiesById = new IntHashMap<>();
@@ -1095,20 +1095,20 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         this.entityList.removeAll(this.g);
 
         int j;
+        // Paper start - Set based removal lists
+        for (Entity e : this.g) {
+            j = e.getChunkZ();
+            int k = e.getChunkX();
 
-        for (i = 0; i < this.g.size(); ++i) {
-            entity = (Entity) this.g.get(i);
-            int k = entity.chunkX;
-
-            j = entity.chunkZ;
-            if (entity.inChunk && this.isChunkLoaded(k, j, true)) {
-                this.getChunkAt(k, j).b(entity);
+            if (e.inChunk && this.isChunkLoaded(k, j, true)) {
+                this.getChunkAt(k, j).b(e);
             }
         }
 
-        for (i = 0; i < this.g.size(); ++i) {
-            this.c((Entity) this.g.get(i));
+        for (Entity e : this.g) {
+            this.c(e);
         }
+        // Paper end
 
         this.g.clear();
         this.p_();
