@@ -232,6 +232,11 @@ public class BlockChest extends BlockTileEntity implements IFluidSource, IFluidC
     }
 
     private boolean b(World world, BlockPosition blockposition) {
+        // Paper start - Option to disable chest cat detection
+        if (world.paperConfig.disableChestCatDetection) {
+            return false;
+        }
+        // Paper end
         List<EntityOcelot> list = world.a(EntityOcelot.class, new AxisAlignedBB((double) blockposition.getX(), (double) (blockposition.getY() + 1), (double) blockposition.getZ(), (double) (blockposition.getX() + 1), (double) (blockposition.getY() + 2), (double) (blockposition.getZ() + 1)));
 
         if (!list.isEmpty()) {
