@@ -122,10 +122,26 @@ public abstract class NavigationAbstract {
     }
 
     public boolean a(Entity entity, double d0) {
+        // Paper start - Pathfinding optimizations
+        if (this.pathfindFailures > 10 && this.c == null && MinecraftServer.currentTick < this.lastFailure + 40) {
+            return false;
+        }
+
         PathEntity pathentity = this.a(entity);
 
-        return pathentity != null && this.a(pathentity, d0);
+        if (pathentity != null && this.a(pathentity, d0)) {
+            this.lastFailure = 0;
+            this.pathfindFailures = 0;
+            return true;
+        } else {
+            this.pathfindFailures++;
+            this.lastFailure = MinecraftServer.currentTick;
+            return false;
+        }
     }
+    private int lastFailure = 0;
+    private int pathfindFailures = 0;
+    // Paper end
 
     public boolean a(@Nullable PathEntity pathentity, double d0) {
         if (pathentity == null) {
@@ -258,6 +274,7 @@ public abstract class NavigationAbstract {
     }
 
     public void q() {
+        this.pathfindFailures = 0; this.lastFailure = 0; // Paper - Pathfinding optimizations
         this.c = null;
     }
 
