@@ -6,6 +6,7 @@ import net.minecraft.server.GameProfileSerializer;
 import net.minecraft.server.NBTBase;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.TileEntitySkull;
+import net.minecraft.server.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -155,7 +156,13 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         if (name == null) {
             profile = null;
         } else {
-            profile = new GameProfile(null, name);
+            // Paper start - Use Online Players Skull
+            GameProfile newProfile = null;
+            EntityPlayer player = MinecraftServer.getServer().getPlayerList().getPlayer(name);
+            if (player != null) newProfile = player.getProfile();
+            if (newProfile == null) newProfile = new GameProfile(null, name);
+            profile = newProfile;
+            // Paper end
         }
 
         return true;
