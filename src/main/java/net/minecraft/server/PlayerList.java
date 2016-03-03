@@ -109,6 +109,21 @@ public abstract class PlayerList {
         }
         // CraftBukkit end
 
+        // Paper start - support PlayerInitialSpawnEvent
+        Location originalLoc = new Location(entityplayer.world.getWorld(), entityplayer.locX, entityplayer.locY, entityplayer.locZ, entityplayer.yaw, entityplayer.pitch);
+        com.destroystokyo.paper.event.player.PlayerInitialSpawnEvent event = new com.destroystokyo.paper.event.player.PlayerInitialSpawnEvent(entityplayer.getBukkitEntity(), originalLoc);
+        this.server.server.getPluginManager().callEvent(event);
+
+        Location newLoc = event.getSpawnLocation();
+        entityplayer.world = ((CraftWorld) newLoc.getWorld()).getHandle();
+        entityplayer.locX = newLoc.getX();
+        entityplayer.locY = newLoc.getY();
+        entityplayer.locZ = newLoc.getZ();
+        entityplayer.yaw = newLoc.getYaw();
+        entityplayer.pitch = newLoc.getPitch();
+        entityplayer.dimension = ((CraftWorld) newLoc.getWorld()).getHandle().dimension;
+        // Paper end
+
         entityplayer.spawnIn(this.server.getWorldServer(entityplayer.dimension));
         entityplayer.playerInteractManager.a((WorldServer) entityplayer.world);
         String s1 = "local";
