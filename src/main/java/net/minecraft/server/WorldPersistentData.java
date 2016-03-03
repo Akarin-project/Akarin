@@ -138,6 +138,7 @@ public class WorldPersistentData {
 
             nbttagcompound = GameProfileSerializer.a(idatamanager.i(), DataFixTypes.SAVED_DATA, nbttagcompound1, j, i);
         } catch (Throwable throwable1) {
+            com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(throwable1); // Paper
             throwable = throwable1;
             throw throwable1;
         } finally {

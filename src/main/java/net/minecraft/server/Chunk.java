@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
@@ -424,6 +425,7 @@ public class Chunk implements IChunkAccess {
         return this.getBlockData(i, j, k).b(this.world, new BlockPosition(i, j, k));
     }
 
+    public IBlockData getBlockData(BlockPosition blockposition) { return getType(blockposition); } // Paper
     public IBlockData getType(BlockPosition blockposition) {
         return this.getBlockData(blockposition.getX(), blockposition.getY(), blockposition.getZ());
     }
@@ -819,10 +821,15 @@ public class Chunk implements IChunkAccess {
             this.tileEntities.remove(blockposition);
             // Paper end
         } else {
-            System.out.println("Attempted to place a tile entity (" + tileentity + ") at " + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ()
-                + " (" + getType(blockposition) + ") where there was no entity tile!");
-            System.out.println("Chunk coordinates: " + (this.locX * 16) + "," + (this.locZ * 16));
-            new Exception().printStackTrace();
+            // Paper start
+            ServerInternalException e = new ServerInternalException(
+                    "Attempted to place a tile entity (" + tileentity + ") at " + tileentity.position.getX() + ","
+                            + tileentity.position.getY() + "," + tileentity.position.getZ()
+                            + " (" + getBlockData(blockposition) + ") where there was no entity tile!\n" +
+                            "Chunk coordinates: " + (this.locX * 16) + "," + (this.locZ * 16));
+            e.printStackTrace();
+            ServerInternalException.reportInternalException(e);
+            // Paper end
             // CraftBukkit end
         }
     }

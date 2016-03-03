@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import com.destroystokyo.paper.exception.ServerInternalException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -209,9 +210,16 @@ public class ChunkProviderServer implements IChunkProvider {
             ichunkaccess.setLastSaved(this.world.getTime());
             this.chunkLoader.saveChunk(this.world, ichunkaccess, unloaded); // Spigot
         } catch (IOException ioexception) {
-            ChunkProviderServer.a.error("Couldn't save chunk", ioexception);
+            // Paper start
+            String msg = "Couldn\'t save chunk";
+            ChunkProviderServer.a.error(msg, ioexception);
+            ServerInternalException.reportInternalException(ioexception);
         } catch (ExceptionWorldConflict exceptionworldconflict) {
-            ChunkProviderServer.a.error("Couldn't save chunk; already in use by another instance of Minecraft?", exceptionworldconflict);
+            ChunkProviderServer.a.error("Couldn\'t save chunk; already in use by another instance of Minecraft?", exceptionworldconflict);
+            String msg = "Couldn\'t save chunk; already in use by another instance of Minecraft?";
+            ChunkProviderServer.a.error(msg, exceptionworldconflict);
+            ServerInternalException.reportInternalException(exceptionworldconflict);
+            // Paper end
         }
 
     }

@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.collect.Maps;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -71,6 +72,7 @@ public class RegionFileCache {
                 }
             } catch (IOException ioexception) {
                 ioexception.printStackTrace();
+                ServerInternalException.reportInternalException(ioexception); // Paper
             }
         }
 

@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
+import com.destroystokyo.paper.exception.ServerInternalException;
 import org.bukkit.craftbukkit.util.LongHash;
 import org.bukkit.craftbukkit.util.LongHashSet;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -171,6 +172,7 @@ public final class SpawnerCreature {
                                                                     entityinsentient = (EntityInsentient) biomebase_biomemeta.b.a((World) worldserver);
                                                                 } catch (Exception exception) {
                                                                     SpawnerCreature.a.warn("Failed to create mob", exception);
+                                                                ServerInternalException.reportInternalException(exception); // Paper
                                                                     return j1;
                                                                 }
 
@@ -291,6 +293,7 @@ public final class SpawnerCreature {
                                 entityinsentient = (EntityInsentient) biomebase_biomemeta.b.a(generatoraccess.getMinecraftWorld());
                             } catch (Exception exception) {
                                 SpawnerCreature.a.warn("Failed to create mob", exception);
+                                ServerInternalException.reportInternalException(exception); // Paper
                                 continue;
                             }
 
