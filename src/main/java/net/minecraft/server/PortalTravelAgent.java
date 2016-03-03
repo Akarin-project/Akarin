@@ -13,7 +13,7 @@ import org.bukkit.util.Vector;
 public class PortalTravelAgent {
 
     private static final BlockPortal a = (BlockPortal) Blocks.NETHER_PORTAL;
-    private final WorldServer world;
+    public final WorldServer world; // Paper - private -> public
     private final Random c;
     private final Long2ObjectMap<PortalTravelAgent.ChunkCoordinatesPortal> d = new Long2ObjectOpenHashMap(4096);
 
@@ -93,7 +93,7 @@ public class PortalTravelAgent {
 
     public boolean b(Entity entity, float f) {
         // CraftBukkit start - Modularize portal search process and entity teleportation
-        BlockPosition found = this.findPortal(entity.locX, entity.locY, entity.locZ, 128);
+        BlockPosition found = this.findPortal(entity.locX, entity.locY, entity.locZ, world.paperConfig.portalSearchRadius); // Paper - Configurable search radius
         if (found == null) {
             return false;
         }
