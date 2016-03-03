@@ -398,6 +398,7 @@ public interface IChatBaseComponent extends Message, Iterable<IChatBaseComponent
             return IChatBaseComponent.ChatSerializer.a.toJsonTree(ichatbasecomponent);
         }
 
+        @Nullable public static IChatBaseComponent jsonToComponent(String json) { return a(json);} // Paper - OBFHELPER
         @Nullable
         public static IChatBaseComponent a(String s) {
             return (IChatBaseComponent) ChatDeserializer.a(IChatBaseComponent.ChatSerializer.a, s, IChatBaseComponent.class, false);
