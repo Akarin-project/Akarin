@@ -201,6 +201,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         this.getServer().addWorld(this.world);
         // CraftBukkit end
         timings = new co.aikar.timings.WorldTimingsHandler(this); // Paper - code below can generate new world and access timings
+        this.keepSpawnInMemory = this.paperConfig.keepSpawnInMemory; // Paper
                 this.entityLimiter = new org.spigotmc.TickLimiter(spigotConfig.entityMaxTickTime);
         this.tileLimiter = new org.spigotmc.TickLimiter(spigotConfig.tileMaxTickTime);
     }
