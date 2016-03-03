@@ -95,6 +95,10 @@ public class Chunk implements IChunkAccess {
         }
     }
     final PaperLightingQueue.LightingQueue lightingQueue = new PaperLightingQueue.LightingQueue(this);
+    // Track the number of minecarts and items
+    // Keep this synced with entitySlices.add() and entitySlices.remove()
+    private final int[] itemCounts = new int[16];
+    private final int[] inventoryEntityCounts = new int[16];
     // Paper end
     public boolean areNeighborsLoaded(final int radius) {
         switch (radius) {
@@ -689,6 +693,11 @@ public class Chunk implements IChunkAccess {
         entity.chunkZ = this.locZ;
         this.entitySlices[k].add(entity);
         // Paper start
+        if (entity instanceof EntityItem) {
+            itemCounts[k]++;
+        } else if (entity instanceof IInventory) {
+            inventoryEntityCounts[k]++;
+        }
         entity.setCurrentChunk(this);
         entityCounts.increment(entity.getMinecraftKeyString());
         // Paper end
@@ -713,6 +722,11 @@ public class Chunk implements IChunkAccess {
         // Paper start
         if (!this.entitySlices[i].remove(entity)) {
             return;
+        }
+        if (entity instanceof EntityItem) {
+            itemCounts[i]--;
+        } else if (entity instanceof IInventory) {
+            inventoryEntityCounts[i]--;
         }
         entity.setCurrentChunk(null);
         entityCounts.decrement(entity.getMinecraftKeyString());
@@ -961,6 +975,15 @@ public class Chunk implements IChunkAccess {
             if (!this.entitySlices[k].isEmpty()) {
                 Iterator iterator = this.entitySlices[k].iterator();
 
+                // Paper start - Don't search for inventories if we have none, and that is all we want
+                /*
+                * We check if they want inventories by seeing if it is the static `IEntitySelector.c`
+                *
+                * Make sure the inventory selector stays in sync.
+                * It should be the one that checks `var1 instanceof IInventory && var1.isAlive()`
+                */
+                if (predicate == IEntitySelector.isInventory() && inventoryEntityCounts[k] <= 0) continue;
+                // Paper end
                 while (iterator.hasNext()) {
                     Entity entity1 = (Entity) iterator.next();
 
@@ -997,7 +1020,18 @@ public class Chunk implements IChunkAccess {
         i = MathHelper.clamp(i, 0, this.entitySlices.length - 1);
         j = MathHelper.clamp(j, 0, this.entitySlices.length - 1);
 
+        // Paper start
+        int[] counts;
+        if (EntityItem.class.isAssignableFrom(oclass)) {
+            counts = itemCounts;
+        } else if (IInventory.class.isAssignableFrom(oclass)) {
+            counts = inventoryEntityCounts;
+        } else {
+            counts = null;
+        }
+        // Paper end
         for (int k = i; k <= j; ++k) {
+            if (counts != null && counts[k] <= 0) continue; // Paper - Don't check a chunk if it doesn't have the type we are looking for
             Iterator iterator = this.entitySlices[k].iterator(); // Spigot
 
             while (iterator.hasNext()) {
