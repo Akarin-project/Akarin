@@ -38,20 +38,21 @@ public class FileIOThread implements Runnable {
             IAsyncChunkSaver iasyncchunksaver = (IAsyncChunkSaver) this.c.get(i);
             boolean flag;
 
-            synchronized (iasyncchunksaver) {
+            //synchronized (iasyncchunksaver) { // Paper - remove synchronized
                 flag = iasyncchunksaver.a();
-            }
+            //} // Paper
 
             if (!flag) {
                 this.c.remove(i--);
                 ++this.e;
             }
 
+            if (com.destroystokyo.paper.PaperConfig.enableFileIOThreadSleep) { // Paper
             try {
-                Thread.sleep(this.f ? 0L : 10L);
+                Thread.sleep(this.f ? 0L : 1L); // Paper
             } catch (InterruptedException interruptedexception) {
                 interruptedexception.printStackTrace();
-            }
+            }} // Paper
         }
 
         if (this.c.isEmpty()) {

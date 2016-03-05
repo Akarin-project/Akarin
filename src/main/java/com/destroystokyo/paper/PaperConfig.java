@@ -217,4 +217,10 @@ public class PaperConfig {
                 " - Interval: " + timeSummary(Timings.getHistoryInterval() / 20) +
                 " - Length: " + timeSummary(Timings.getHistoryLength() / 20));
     }
+
+    public static boolean enableFileIOThreadSleep;
+    private static void enableFileIOThreadSleep() {
+        enableFileIOThreadSleep = getBoolean("settings.sleep-between-chunk-saves", false);
+        if (enableFileIOThreadSleep) Bukkit.getLogger().info("Enabled sleeping between chunk saves, beware of memory issues");
+    }
 }

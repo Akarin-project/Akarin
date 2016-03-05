@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import java.util.concurrent.ConcurrentLinkedQueue; // Paper
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 // Spigot start
@@ -29,8 +30,28 @@ import org.spigotmc.SupplierUtils;
 
 public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
+    // Paper start - Chunk queue improvements
+    private static class QueuedChunk {
+        public ChunkCoordIntPair coords;
+        public Supplier<NBTTagCompound> compoundSupplier;
+        public Runnable onSave;
+
+        public QueuedChunk(Runnable run) {
+            this.coords = null;
+            this.compoundSupplier = null;
+            this.onSave = run;
+        }
+
+        public QueuedChunk(ChunkCoordIntPair coords, Supplier<NBTTagCompound> compoundSupplier) {
+            this.coords = coords;
+            this.compoundSupplier = compoundSupplier;
+        }
+    }
+    final private ConcurrentLinkedQueue<QueuedChunk> queue = new ConcurrentLinkedQueue<>();
+    // Paper end
+
     private static final Logger a = LogManager.getLogger();
-    private final Map<ChunkCoordIntPair, Supplier<NBTTagCompound>> b = Maps.newHashMap();
+    private final it.unimi.dsi.fastutil.longs.Long2ObjectMap<Supplier<NBTTagCompound>> saveMap = it.unimi.dsi.fastutil.longs.Long2ObjectMaps.synchronize(new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<>()); // Paper
     private final File c;
     private final DataFixer d;
     private PersistentStructureLegacy e;
@@ -86,7 +107,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             return null;
         }
         // CraftBukkit end
-        NBTTagCompound nbttagcompound = SupplierUtils.getIfExists(this.b.get(new ChunkCoordIntPair(i, j))); // Spigot
+        NBTTagCompound nbttagcompound = SupplierUtils.getIfExists(this.saveMap.get(ChunkCoordIntPair.asLong(i, j))); // Spigot // Paper
 
         if (nbttagcompound != null) {
             return nbttagcompound;
@@ -314,7 +335,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                 };
             }
 
-            this.a(chunkcoordintpair, SupplierUtils.createUnivaluedSupplier(completion, unloaded && this.b.size() < SAVE_QUEUE_TARGET_SIZE));
+            this.a(chunkcoordintpair, SupplierUtils.createUnivaluedSupplier(completion, unloaded)); // Paper - Remove save queue target size
             // Spigot end
         } catch (Exception exception) {
             ChunkRegionLoader.a.error("Failed to save chunk", exception);
@@ -323,7 +344,8 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     }
 
     protected void a(ChunkCoordIntPair chunkcoordintpair, Supplier<NBTTagCompound> nbttagcompound) { // Spigot
-        this.b.put(chunkcoordintpair, nbttagcompound);
+        this.saveMap.put(chunkcoordintpair.asLong(), nbttagcompound); // Paper
+        queue.add(new QueuedChunk(chunkcoordintpair, nbttagcompound)); // Paper - Chunk queue improvements
         FileIOThread.a().a(this);
     }
 
@@ -333,20 +355,24 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     }
 
     private boolean processSaveQueueEntry(boolean logCompletion) {
-        Iterator<Entry<ChunkCoordIntPair, Supplier<NBTTagCompound>>> iterator = this.b.entrySet().iterator(); // Spigot
-
-        if (!iterator.hasNext()) {
+        // Paper start - Chunk queue improvements
+        QueuedChunk chunk = queue.poll();
+        if (chunk == null) {
+        // Paper - end
             if (logCompletion) { // CraftBukkit
                 ChunkRegionLoader.a.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", this.c.getName());
             }
 
             return false;
         } else {
-            Entry<ChunkCoordIntPair, NBTTagCompound> entry = (Entry) iterator.next();
-
-            iterator.remove();
-            ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) entry.getKey();
-            Supplier<NBTTagCompound> nbttagcompound = (Supplier<NBTTagCompound>) entry.getValue(); // Spigot
+            // Paper start
+            if (chunk.onSave != null) {
+                chunk.onSave.run();
+                return true;
+            }
+            // Paper end
+            ChunkCoordIntPair chunkcoordintpair = chunk.coords; // Paper - Chunk queue improvements
+            Supplier<NBTTagCompound> nbttagcompound = chunk.compoundSupplier; // Spigot // Paper
 
             if (nbttagcompound == null) {
                 return true;
@@ -355,6 +381,15 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                     // CraftBukkit start
                     RegionFileCache.write(this.c, chunkcoordintpair.x, chunkcoordintpair.z, SupplierUtils.getIfExists(nbttagcompound)); // Spigot
 
+                    // Paper start remove from map only if this was the latest version of the chunk
+                    synchronized (this.saveMap) {
+                        long k = chunkcoordintpair.asLong();
+                        // This will not equal if a newer version is still pending - wait until newest is saved to remove
+                        if (this.saveMap.get(k) == chunk.compoundSupplier) {
+                            this.saveMap.remove(k);
+                        }
+                    }
+                    // Paper end
                     /*
                     NBTCompressedStreamTools.a(nbttagcompound, (DataOutput) dataoutputstream);
                     dataoutputstream.close();

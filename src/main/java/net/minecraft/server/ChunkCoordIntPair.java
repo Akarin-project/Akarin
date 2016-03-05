@@ -20,6 +20,7 @@ public class ChunkCoordIntPair {
         this.z = (int) (i >> 32);
     }
 
+    public long asLong() { return a(); } // Paper
     public long a() {
         return a(this.x, this.z);
     }
