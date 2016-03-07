@@ -30,7 +30,7 @@ public class BlockSapling extends BlockPlant implements IBlockFragilePlantElemen
 
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         super.a(iblockdata, world, blockposition, random);
-        if (world.getLightLevel(blockposition.up()) >= 9 && random.nextInt(7) == 0) {
+        if (world.getLightLevel(blockposition.up()) >= 9 && random.nextInt(Math.max(2, (int) (((100.0F / world.spigotConfig.saplingModifier) * 7) + 0.5F))) == 0) { // Spigot
             // CraftBukkit start
             world.captureTreeGeneration = true;
             // CraftBukkit end
