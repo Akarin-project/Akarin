@@ -2261,6 +2261,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
     @Nullable
     public ScoreboardTeamBase getScoreboardTeam() {
+        if (!this.world.paperConfig.nonPlayerEntitiesOnScoreboards && !(this instanceof EntityHuman)) { return null; } // Paper
         return this.world.getScoreboard().getPlayerTeam(this.getName());
     }
 

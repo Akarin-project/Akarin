@@ -538,6 +538,7 @@ public abstract class EntityLiving extends Entity {
         if (nbttagcompound.hasKeyOfType("Team", 8)) {
             String s = nbttagcompound.getString("Team");
             ScoreboardTeam scoreboardteam = this.world.getScoreboard().getTeam(s);
+            if (!world.paperConfig.nonPlayerEntitiesOnScoreboards && !(this instanceof EntityHuman)) { scoreboardteam = null; } // Paper
             boolean flag = scoreboardteam != null && this.world.getScoreboard().addPlayerToTeam(this.bu(), scoreboardteam);
 
             if (!flag) {
