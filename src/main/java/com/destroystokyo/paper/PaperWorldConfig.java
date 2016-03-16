@@ -138,4 +138,10 @@ public class PaperWorldConfig {
         log("Warning: This feature may help reduce TPS loss from light, but comes at the cost of buggy light data");
         log("We are working to improve this feature.");
     }
+
+    public boolean disableEndCredits;
+    private void disableEndCredits() {
+        disableEndCredits = getBoolean("game-mechanics.disable-end-credits", false);
+        log("End credits disabled: " + disableEndCredits);
+    }
 }
