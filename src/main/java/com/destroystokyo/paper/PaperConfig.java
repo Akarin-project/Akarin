@@ -223,4 +223,9 @@ public class PaperConfig {
         enableFileIOThreadSleep = getBoolean("settings.sleep-between-chunk-saves", false);
         if (enableFileIOThreadSleep) Bukkit.getLogger().info("Enabled sleeping between chunk saves, beware of memory issues");
     }
+
+    public static boolean loadPermsBeforePlugins = true;
+    private static void loadPermsBeforePlugins() {
+        loadPermsBeforePlugins = getBoolean("settings.load-permissions-yml-before-plugins", true);
+    }
 }
