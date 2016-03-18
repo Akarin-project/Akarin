@@ -200,4 +200,9 @@ public class PaperWorldConfig {
     private void nonPlayerEntitiesOnScoreboards() {
         nonPlayerEntitiesOnScoreboards = getBoolean("allow-non-player-entities-on-scoreboards", false);
     }
+
+    public boolean allowLeashingUndeadHorse = false;
+    private void allowLeashingUndeadHorse() {
+        allowLeashingUndeadHorse = getBoolean("allow-leashing-undead-horse", false);
+    }
 }
