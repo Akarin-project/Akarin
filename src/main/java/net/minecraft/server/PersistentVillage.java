@@ -237,7 +237,7 @@ public class PersistentVillage extends PersistentBase {
 
         for (int i = 0; i < nbttaglist.size(); ++i) {
             NBTTagCompound nbttagcompound1 = nbttaglist.getCompound(i);
-            Village village = new Village();
+            Village village = new Village(world); // Paper
 
             village.a(nbttagcompound1);
             this.villages.add(village);

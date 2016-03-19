@@ -24,7 +24,7 @@ public class Village {
     private final List<Village.Aggressor> k;
     private int l;
 
-    public Village() {
+    private Village() { // Paper - Nothing should call this - world needs to be set.
         this.c = BlockPosition.ZERO;
         this.d = BlockPosition.ZERO;
         this.j = Maps.newHashMap();
