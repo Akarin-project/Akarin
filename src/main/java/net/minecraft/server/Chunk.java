@@ -637,6 +637,7 @@ public class Chunk implements IChunkAccess {
         }
     }
 
+    public final int getLightSubtracted(BlockPosition blockposition, int i) { return this.a(blockposition, i); } // Paper - OBFHELPER
     public int a(BlockPosition blockposition, int i) {
         return this.a(blockposition, i, this.world.o().g());
     }

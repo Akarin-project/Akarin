@@ -38,6 +38,22 @@ public interface IWorldReader extends IBlockAccess {
     }
 
     int getLightLevel(BlockPosition blockposition, int i);
+    // Paper start
+    default @Nullable
+    IBlockData getTypeIfLoaded(BlockPosition var1) {
+        return isLoaded(var1) ? getType(var1) : null;
+    }
+
+    default @Nullable
+    Block getBlockIfLoaded(BlockPosition var1) {
+        return isLoaded(var1) ? getType(var1).getBlock() : null;
+    }
+
+    default @Nullable
+    Material getMaterialIfLoaded(BlockPosition var1) {
+        return isLoaded(var1) ? getType(var1).getMaterial() : null;
+    }
+    // Paper end
 
     boolean isChunkLoaded(int i, int j, boolean flag);
 

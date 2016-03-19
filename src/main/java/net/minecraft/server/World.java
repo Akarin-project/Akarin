@@ -79,7 +79,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     public final List<Entity> k = Lists.newArrayList();
     protected final IntHashMap<Entity> entitiesById = new IntHashMap<>();
     private final long F = 16777215L;
-    private int G;
+    private int G; public int getSkylightSubtracted() { return this.G; } public void setSkylightSubtracted(int value) { this.G = value;} // Paper - OBFHELPER
     protected int m = (new Random()).nextInt();
     protected final int n = 1013904223;
     protected float o;
@@ -267,6 +267,83 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     public boolean isEmpty(BlockPosition blockposition) {
         return this.getType(blockposition).isAir();
     }
+
+    // Paper start
+    public boolean isLoadedAndInBounds(BlockPosition blockposition) {
+        return getWorldBorder().isInBounds(blockposition) && getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4) != null;
+    }
+    public Chunk getChunkIfLoaded(BlockPosition blockposition) {
+        return getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+    }
+    // test if meets light level, return faster
+    // logic copied from below
+    public boolean isLightLevel(BlockPosition blockposition, int level) {
+        if (isValidLocation(blockposition)) {
+            if (this.getType(blockposition).c(this, blockposition)) {
+                int sky = getSkylightSubtracted();
+                if (this.getLightLevel(blockposition.up(), sky) >= level) {
+                    return true;
+                }
+                if (this.getLightLevel(blockposition.east(), sky) >= level) {
+                    return true;
+                }
+                if (this.getLightLevel(blockposition.west(), sky) >= level) {
+                    return true;
+                }
+                if (this.getLightLevel(blockposition.south(), sky) >= level) {
+                    return true;
+                }
+                if (this.getLightLevel(blockposition.north(), sky) >= level) {
+                    return true;
+                }
+                return false;
+            } else {
+                if (blockposition.getY() >= 256) {
+                    blockposition = new BlockPosition(blockposition.getX(), 255, blockposition.getZ());
+                }
+
+                Chunk chunk = this.getChunkAtWorldCoords(blockposition);
+                return chunk.getLightSubtracted(blockposition, this.getSkylightSubtracted()) >= level;
+            }
+        } else {
+            return true;
+        }
+    }
+    //  reduces need to do isLoaded before getType
+    public IBlockData getTypeIfLoadedAndInBounds(BlockPosition blockposition) {
+        return getWorldBorder().isInBounds(blockposition) ? getTypeIfLoaded(blockposition) : null;
+    }
+    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
+        // CraftBukkit start - tree generation
+        if (captureTreeGeneration) {
+            for (CraftBlockState previous : capturedBlockStates) {
+                if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
+                    return previous.getHandle();
+                }
+            }
+        }
+        // CraftBukkit end
+        Chunk chunk = this.getChunkIfLoaded(blockposition);
+        if (chunk != null) {
+            return isValidLocation(blockposition) ? chunk.getBlockData(blockposition) : Blocks.AIR.getBlockData();
+        }
+        return null;
+    }
+    public Block getBlockIfLoaded(BlockPosition blockposition) {
+        IBlockData type = getTypeIfLoaded(blockposition);
+        if (type == null) {
+            return null;
+        }
+        return type.getBlock();
+    }
+    public Material getMaterialIfLoaded(BlockPosition blockposition) {
+        IBlockData type = getTypeIfLoaded(blockposition);
+        if (type == null) {
+            return null;
+        }
+        return type.getBlock().material;
+    }
+    // Paper end
 
     public Chunk getChunkAtWorldCoords(BlockPosition blockposition) {
         return this.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4);
