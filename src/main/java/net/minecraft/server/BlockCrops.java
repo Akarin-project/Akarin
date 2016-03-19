@@ -44,7 +44,7 @@ public class BlockCrops extends BlockPlant implements IBlockFragilePlantElement 
 
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         super.a(iblockdata, world, blockposition, random);
-        if (world.getLightLevel(blockposition.up(), 0) >= 9) {
+        if (world.isLightLevel(blockposition.up(), 9)) { // Paper
             int i = this.k(iblockdata);
 
             if (i < this.e()) {

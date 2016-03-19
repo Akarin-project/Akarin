@@ -27,7 +27,7 @@ public class BlockStem extends BlockPlant implements IBlockFragilePlantElement {
 
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         super.a(iblockdata, world, blockposition, random);
-        if (world.getLightLevel(blockposition.up(), 0) >= 9) {
+        if (world.isLightLevel(blockposition.up(), 9)) { // Paper
             float f = BlockCrops.a((Block) this, (IBlockAccess) world, blockposition);
 
             if (random.nextInt((int) ((100.0F / (this == Blocks.PUMPKIN_STEM ? world.spigotConfig.pumpkinModifier : world.spigotConfig.melonModifier)) * (25.0F / f)) + 1) == 0) { // Spigot

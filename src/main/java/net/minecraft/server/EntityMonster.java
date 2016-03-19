@@ -66,9 +66,18 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
         if (this.world.getBrightness(EnumSkyBlock.SKY, blockposition) > this.random.nextInt(32)) {
             return false;
         } else {
-            int i = this.world.Y() ? this.world.d(blockposition, 10) : this.world.getLightLevel(blockposition);
-
-            return i <= this.random.nextInt(8);
+            // Paper start - optimized light check, returns faster
+            boolean passes;
+            if (this.world.Y()) {
+                final int orig = world.getSkylightSubtracted();
+                world.setSkylightSubtracted(10);
+                passes = !this.world.isLightLevel(blockposition, this.random.nextInt(8));
+                world.setSkylightSubtracted(orig);
+            } else {
+                passes = !this.world.isLightLevel(blockposition, this.random.nextInt(8));
+            }
+            return passes;
+            // Paper end
         }
     }
 
