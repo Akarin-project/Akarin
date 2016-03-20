@@ -250,4 +250,54 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
     public void setBootsDropChance(float chance) {
         throw new UnsupportedOperationException("Cannot set drop chance for PlayerInventory");
     }
+
+    // Paper start
+    @Override
+    public ItemStack getItem(org.bukkit.inventory.EquipmentSlot slot) {
+        Preconditions.checkNotNull(slot, "slot");
+        switch (slot) {
+            case HAND:
+                return this.getItemInMainHand();
+            case OFF_HAND:
+                return this.getItemInOffHand();
+            case HEAD:
+                return this.getHelmet();
+            case CHEST:
+                return this.getChestplate();
+            case LEGS:
+                return this.getLeggings();
+            case FEET:
+                return this.getBoots();
+        }
+
+        throw new UnsupportedOperationException(slot.name());
+    }
+
+    @Override
+    public void setItem(org.bukkit.inventory.EquipmentSlot slot, ItemStack stack) {
+        Preconditions.checkNotNull(slot, "slot");
+        switch (slot) {
+            case HAND:
+                this.setItemInMainHand(stack);
+                return;
+            case OFF_HAND:
+                this.setItemInOffHand(stack);
+                return;
+            case HEAD:
+                this.setHelmet(stack);
+                return;
+            case CHEST:
+                this.setChestplate(stack);
+                return;
+            case LEGS:
+                this.setLeggings(stack);
+                return;
+            case FEET:
+                this.setBoots(stack);
+                return;
+        }
+
+        throw new UnsupportedOperationException(slot.name());
+    }
+    // Paper end
 }
