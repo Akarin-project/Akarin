@@ -434,10 +434,12 @@ public class PlayerChunkMap {
     }
 
     public void a(PlayerChunk playerchunk) {
+        org.spigotmc.AsyncCatcher.catchOp("Async Player Chunk Add"); // Paper
         this.f.add(playerchunk);
     }
 
     public void b(PlayerChunk playerchunk) {
+        org.spigotmc.AsyncCatcher.catchOp("Async Player Chunk Remove"); // Paper
         ChunkCoordIntPair chunkcoordintpair = playerchunk.a();
         long i = d(chunkcoordintpair.x, chunkcoordintpair.z);
 
