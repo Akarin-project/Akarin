@@ -49,6 +49,20 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
     // CraftBukkit start
     private static final int CURRENT_LEVEL = 2;
+    // Paper start
+    public static Random SHARED_RANDOM = new Random() {
+        private boolean locked = false;
+        @Override
+        public synchronized void setSeed(long seed) {
+            if (locked) {
+                LogManager.getLogger().error("Ignoring setSeed on Entity.SHARED_RANDOM", new Throwable());
+            } else {
+                super.setSeed(seed);
+                locked = true;
+            }
+        }
+    };
+    // Paper end
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
     }
@@ -182,7 +196,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         this.length = 1.8F;
         this.aA = 1.0F;
         this.aB = 1.0F;
-        this.random = new Random();
+        this.random = SHARED_RANDOM; // Paper
         this.fireTicks = -this.getMaxFireTicks();
         this.justCreated = true;
         this.uniqueID = MathHelper.a(this.random);
