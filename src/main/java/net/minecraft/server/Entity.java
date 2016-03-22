@@ -2576,7 +2576,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     }
 
     public Entity teleportTo(Location exit, boolean portal) {
-        if (true) {
+        if (!this.dead) { // Paper
             WorldServer worldserver = ((CraftWorld) getBukkitEntity().getLocation().getWorld()).getHandle();
             WorldServer worldserver1 = ((CraftWorld) exit.getWorld()).getHandle();
             DimensionManager dimensionmanager = worldserver1.dimension;
