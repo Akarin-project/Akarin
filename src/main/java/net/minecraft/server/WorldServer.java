@@ -480,7 +480,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     blockposition = this.a(new BlockPosition(j + (l & 15), 0, k + (l >> 8 & 15)));
                     if (this.isRainingAt(blockposition)) {
                         DifficultyDamageScaler difficultydamagescaler = this.getDamageScaler(blockposition);
-                        boolean flag2 = this.getGameRules().getBoolean("doMobSpawning") && this.random.nextDouble() < (double) difficultydamagescaler.b() * 0.01D;
+                        boolean flag2 = this.getGameRules().getBoolean("doMobSpawning") && this.random.nextDouble() < (double) difficultydamagescaler.b() * paperConfig.skeleHorseSpawnChance; // Paper
 
                         if (flag2) {
                             EntityHorseSkeleton entityhorseskeleton = new EntityHorseSkeleton(this);
