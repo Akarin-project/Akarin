@@ -33,6 +33,7 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 public class WorldServer extends World implements IAsyncTaskHandler {
 
     private static final Logger a = LogManager.getLogger();
+    boolean hasPhysicsEvent = true; // Paper
     private final MinecraftServer server;
     public EntityTracker tracker;
     private final PlayerChunkMap manager;
