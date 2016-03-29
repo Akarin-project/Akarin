@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 public class ChunkTaskScheduler extends Scheduler<ChunkCoordIntPair, ChunkStatus, ProtoChunk> {
 
     private static final Logger b = LogManager.getLogger();
-    private final World c;
+    private final World c; private final World getWorld() { return this.c; } // Paper - OBFHELPER
     private final ChunkGenerator<?> d;
     private final IChunkLoader e;
     private final IAsyncTaskHandler f;

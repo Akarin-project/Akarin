@@ -43,7 +43,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         return new DefaultEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Local Client IO #%d").setDaemon(true).build());
     });
     private final EnumProtocolDirection h;
-    private final Queue<NetworkManager.QueuedPacket> packetQueue = Queues.newConcurrentLinkedQueue();
+    private final Queue<NetworkManager.QueuedPacket> packetQueue = Queues.newConcurrentLinkedQueue();  private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.packetQueue; } // Paper - OBFHELPER
     private final ReentrantReadWriteLock j = new ReentrantReadWriteLock();
     public Channel channel;
     public SocketAddress socketAddress;
@@ -167,6 +167,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     }
 
+    private void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
     private void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
         EnumProtocol enumprotocol = EnumProtocol.a(packet);
         EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
@@ -207,6 +208,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     }
 
+    private void sendPacketQueue() { this.o(); } // Paper - OBFHELPER
     private void o() {
         if (this.channel != null && this.channel.isOpen()) {
             this.j.readLock().lock();
@@ -333,9 +335,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     static class QueuedPacket {
 
-        private final Packet<?> a;
+        private final Packet<?> a; private final Packet<?> getPacket() { return this.a; } // Paper - OBFHELPER
         @Nullable
-        private final GenericFutureListener<? extends Future<? super Void>> b;
+        private final GenericFutureListener<? extends Future<? super Void>> b; private final GenericFutureListener<? extends Future<? super Void>> getGenericFutureListener() { return this.b; } // Paper - OBFHELPER
 
         public QueuedPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
             this.a = packet;

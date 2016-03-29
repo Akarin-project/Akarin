@@ -578,6 +578,17 @@ public final class ItemStack {
         return this.tag != null ? this.tag.getList("Enchantments", 10) : new NBTTagList();
     }
 
+    // Paper start - (this is just a good no conflict location)
+    public org.bukkit.inventory.ItemStack asBukkitMirror() {
+        return CraftItemStack.asCraftMirror(this);
+    }
+    public org.bukkit.inventory.ItemStack asBukkitCopy() {
+        return CraftItemStack.asCraftMirror(this.cloneItemStack());
+    }
+    public static ItemStack fromBukkitCopy(org.bukkit.inventory.ItemStack itemstack) {
+        return CraftItemStack.asNMSCopy(itemstack);
+    }
+    // Paper end
     public void setTag(@Nullable NBTTagCompound nbttagcompound) {
         this.tag = nbttagcompound;
     }
@@ -662,6 +673,7 @@ public final class ItemStack {
         return this.tag != null && this.tag.hasKeyOfType("Enchantments", 9) ? !this.tag.getList("Enchantments", 10).isEmpty() : false;
     }
 
+    public void getOrCreateTagAndSet(String s, NBTBase nbtbase) { a(s, nbtbase);} // Paper - OBFHELPER
     public void a(String s, NBTBase nbtbase) {
         this.getOrCreateTag().set(s, nbtbase);
     }

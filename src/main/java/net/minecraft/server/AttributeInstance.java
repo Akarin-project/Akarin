@@ -21,8 +21,10 @@ public interface AttributeInstance {
     @Nullable
     AttributeModifier a(UUID uuid);
 
+    default void addModifier(AttributeModifier modifier) { b(modifier); } // Paper - OBFHELPER
     void b(AttributeModifier attributemodifier);
 
+    default void removeModifier(AttributeModifier modifier) { c(modifier); } // Paper - OBFHELPER
     void c(AttributeModifier attributemodifier);
 
     void b(UUID uuid);

@@ -45,6 +45,7 @@ public class BlockPosition extends BaseBlockPosition {
         return d0 == 0.0D && d1 == 0.0D && d2 == 0.0D ? this : new BlockPosition((double) this.getX() + d0, (double) this.getY() + d1, (double) this.getZ() + d2);
     }
 
+    public BlockPosition add(int i, int j, int k) {return a(i, j, k);} // Paper - OBFHELPER
     public BlockPosition a(int i, int j, int k) {
         return i == 0 && j == 0 && k == 0 ? this : new BlockPosition(this.getX() + i, this.getY() + j, this.getZ() + k);
     }
@@ -183,6 +184,7 @@ public class BlockPosition extends BaseBlockPosition {
         };
     }
 
+    public BlockPosition asImmutable() { return h(); } // Paper - OBFHELPER
     public BlockPosition h() {
         return this;
     }
@@ -342,6 +344,7 @@ public class BlockPosition extends BaseBlockPosition {
             return this.d;
         }
 
+        public BlockPosition.MutableBlockPosition setValues(int i, int j, int k) { return c(i, j, k);} // Paper - OBFHELPER
         public BlockPosition.MutableBlockPosition c(int i, int j, int k) {
             this.b = i;
             this.c = j;
@@ -349,6 +352,7 @@ public class BlockPosition extends BaseBlockPosition {
             return this;
         }
 
+        public BlockPosition.MutableBlockPosition setValues(double d0, double d1, double d2) { return c(d0, d1, d2);} // Paper - OBFHELPER
         public BlockPosition.MutableBlockPosition c(double d0, double d1, double d2) {
             return this.c(MathHelper.floor(d0), MathHelper.floor(d1), MathHelper.floor(d2));
         }

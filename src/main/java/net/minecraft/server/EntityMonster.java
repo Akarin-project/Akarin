@@ -2,11 +2,13 @@ package net.minecraft.server;
 
 public abstract class EntityMonster extends EntityCreature implements IMonster {
 
+    public org.bukkit.craftbukkit.entity.CraftMonster getBukkitMonster() { return (org.bukkit.craftbukkit.entity.CraftMonster) super.getBukkitEntity(); } // Paper
     protected EntityMonster(EntityTypes<?> entitytypes, World world) {
         super(entitytypes, world);
         this.b_ = 5;
     }
 
+    public SoundCategory getSoundCategory() { return bV(); } // Paper - OBFHELPER
     public SoundCategory bV() {
         return SoundCategory.HOSTILE;
     }

@@ -3,6 +3,7 @@ package net.minecraft.server;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.types.Type;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -123,9 +124,20 @@ public class EntityTypes<T extends Entity> {
     public static <T extends Entity> EntityTypes<T> a(String s, EntityTypes.a<T> entitytypes_a) {
         EntityTypes<T> entitytypes = entitytypes_a.a(s);
 
+        // Paper start
+        if (clsToKeyMap == null ) clsToKeyMap = new java.util.HashMap<>();
+        if (clsToTypeMap == null ) clsToTypeMap = new java.util.HashMap<>();
+
+        MinecraftKey key = new MinecraftKey(s);
+        Class<? extends T> entityClass = entitytypes_a.getEntityClass();
         IRegistry.ENTITY_TYPE.a(new MinecraftKey(s), entitytypes); // CraftBukkit - decompile error
+        clsToKeyMap.put(entityClass, key);
+        clsToTypeMap.put(entityClass, org.bukkit.entity.EntityType.fromName(s));
         return entitytypes;
     }
+    public static Map<Class<? extends Entity>, MinecraftKey> clsToKeyMap;
+    public static Map<Class<? extends Entity>, org.bukkit.entity.EntityType> clsToTypeMap;
+    // Paper end
 
     @Nullable
     public static MinecraftKey getName(EntityTypes<?> entitytypes) {
@@ -287,7 +299,7 @@ public class EntityTypes<T extends Entity> {
 
     public static class a<T extends Entity> {
 
-        private final Class<? extends T> a;
+        private final Class<? extends T> a; public Class<? extends T> getEntityClass() { return a; } // Paper - OBFHELPER
         private final Function<? super World, ? extends T> b;
         private boolean c = true;
         private boolean d = true;
@@ -338,7 +350,7 @@ public class EntityTypes<T extends Entity> {
 
     // Paper start
     public static Set<MinecraftKey> getEntityNameList() {
-        return REGISTRY.keySet();
+        return IRegistry.ENTITY_TYPE.keySet();
     }
     // Paper end
 }

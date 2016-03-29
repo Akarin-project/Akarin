@@ -31,7 +31,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 public class Chunk implements IChunkAccess {
 
     private static final Logger d = LogManager.getLogger();
-    public static final ChunkSection a = null;
+    public static final ChunkSection a = null; public static final ChunkSection EMPTY_CHUNK_SECTION = Chunk.a; // Paper - OBFHELPER
     private final ChunkSection[] sections;
     private final BiomeBase[] f;
     private final boolean[] g;
@@ -704,6 +704,7 @@ public class Chunk implements IChunkAccess {
         return this.a(blockposition, Chunk.EnumTileEntityState.CHECK);
     }
 
+    @Nullable public final TileEntity getTileEntityImmediately(BlockPosition pos) { return this.a(pos, EnumTileEntityState.IMMEDIATE); } // Paper - OBFHELPER
     @Nullable
     public TileEntity a(BlockPosition blockposition, Chunk.EnumTileEntityState chunk_enumtileentitystate) {
         // CraftBukkit start

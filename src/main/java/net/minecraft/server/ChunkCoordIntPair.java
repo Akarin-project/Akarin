@@ -24,6 +24,8 @@ public class ChunkCoordIntPair {
         return a(this.x, this.z);
     }
 
+    public static long asLong(final BlockPosition pos) { return a(pos.getX() >> 4, pos.getZ() >> 4); } // Paper - OBFHELPER
+    public static long asLong(int x, int z) { return a(x, z); } // Paper - OBFHELPER
     public static long a(int i, int j) {
         return (long) i & 4294967295L | ((long) j & 4294967295L) << 32;
     }
