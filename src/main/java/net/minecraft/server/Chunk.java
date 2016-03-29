@@ -1289,7 +1289,7 @@ public class Chunk implements IChunkAccess {
     }
 
     public long m() {
-        return this.z;
+        return world.paperConfig.fixedInhabitedTime < 0 ? this.z : world.paperConfig.fixedInhabitedTime; // Paper
     }
 
     public void b(long i) {
