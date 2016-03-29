@@ -71,9 +71,17 @@ public class RegionFile {
             this.c.seek(0L);
 
             int k;
+            // Paper Start
+            java.nio.ByteBuffer header = java.nio.ByteBuffer.allocate(8192);
+            while (header.hasRemaining())  {
+                if (this.c.getChannel().read(header) == -1) throw new java.io.EOFException();
+            }
+            header.clear();
+            java.nio.IntBuffer headerAsInts = header.asIntBuffer();
+            // Paper End
 
             for (j = 0; j < 1024; ++j) {
-                k = this.c.readInt();
+                k = headerAsInts.get(); // Paper
                 this.d[j] = k;
                 // Spigot start
                 int length = k & 255;
@@ -99,7 +107,7 @@ public class RegionFile {
             }
 
             for (j = 0; j < 1024; ++j) {
-                k = this.c.readInt();
+                k = headerAsInts.get(); // Paper
                 this.e[j] = k;
             }
         } catch (IOException ioexception) {
