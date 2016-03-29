@@ -1032,6 +1032,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
 
         entity.valid = true; // CraftBukkit
+        new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
     }
 
     protected void c(Entity entity) {
@@ -1039,6 +1040,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             ((IWorldAccess) this.v.get(i)).b(entity);
         }
 
+        new com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
         entity.valid = false; // CraftBukkit
     }
 
