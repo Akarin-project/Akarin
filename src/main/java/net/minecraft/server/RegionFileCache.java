@@ -9,10 +9,12 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
+import com.destroystokyo.paper.PaperConfig; // Paper
+import java.util.LinkedHashMap; // Paper
 
 public class RegionFileCache {
 
-    public static final Map<File, RegionFile> cache = Maps.newHashMap();
+    public static final Map<File, RegionFile> cache = new LinkedHashMap(PaperConfig.regionFileCacheSize, 0.75f, true); // Paper - HashMap -> LinkedHashMap
 
     public static synchronized RegionFile a(File file, int i, int j) {
         File file1 = new File(file, "region");
@@ -27,7 +29,7 @@ public class RegionFileCache {
             }
 
             if (RegionFileCache.cache.size() >= 256) {
-                a();
+                trimCache();
             }
 
             RegionFile regionfile1 = new RegionFile(file2);
@@ -59,6 +61,22 @@ public class RegionFileCache {
         }
     }
     // CraftBukkit end
+
+    // Paper Start
+    private static synchronized void trimCache() {
+        Iterator<Map.Entry<File, RegionFile>> itr = RegionFileCache.cache.entrySet().iterator();
+        int count = RegionFileCache.cache.size() - PaperConfig.regionFileCacheSize;
+        while (count-- >= 0 && itr.hasNext()) {
+            try {
+                itr.next().getValue().close();
+            } catch (IOException ioexception) {
+                ioexception.printStackTrace();
+                ServerInternalException.reportInternalException(ioexception);
+            }
+            itr.remove();
+        }
+    }
+    // Paper End
 
     public static synchronized void a() {
         Iterator iterator = RegionFileCache.cache.values().iterator();

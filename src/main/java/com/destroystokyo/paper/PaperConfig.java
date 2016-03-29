@@ -228,4 +228,9 @@ public class PaperConfig {
     private static void loadPermsBeforePlugins() {
         loadPermsBeforePlugins = getBoolean("settings.load-permissions-yml-before-plugins", true);
     }
+
+    public static int regionFileCacheSize = 256;
+    private static void regionFileCacheSize() {
+        regionFileCacheSize = getInt("settings.region-file-cache-size", 256);
+    }
 }
