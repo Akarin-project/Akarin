@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 
 public abstract class NavigationAbstract {
 
-    protected EntityInsentient a;
+    protected EntityInsentient a; public Entity getEntity() { return a; } // Paper - OBFHELPER
     protected World b;
     @Nullable
     protected PathEntity c;
@@ -78,6 +78,7 @@ public abstract class NavigationAbstract {
         } else if (this.c != null && !this.c.b() && blockposition.equals(this.q)) {
             return this.c;
         } else {
+            if (!new com.destroystokyo.paper.event.entity.EntityPathfindEvent(getEntity().getBukkitEntity(), MCUtil.toLocation(getEntity().world, blockposition), null).callEvent()) { return null; } // Paper
             this.q = blockposition;
             float f = this.j();
 
@@ -102,6 +103,7 @@ public abstract class NavigationAbstract {
             if (this.c != null && !this.c.b() && blockposition.equals(this.q)) {
                 return this.c;
             } else {
+                if (!new com.destroystokyo.paper.event.entity.EntityPathfindEvent(getEntity().getBukkitEntity(), MCUtil.toLocation(entity.world, blockposition), entity.getBukkitEntity()).callEvent()) { return null; } // Paper
                 this.q = blockposition;
                 float f = this.j();
 
