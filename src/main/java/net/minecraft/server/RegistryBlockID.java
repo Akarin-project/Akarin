@@ -27,7 +27,7 @@ public class RegistryBlockID<T> implements Registry<T> {
         this.b.put(t0, i);
 
         while (this.c.size() <= i) {
-            this.c.add((Object) null);
+            this.c.add(null); // Paper - decompile fix
         }
 
         this.c.set(i, t0);

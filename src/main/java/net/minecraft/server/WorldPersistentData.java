@@ -39,14 +39,14 @@ public class WorldPersistentData {
 
     @Nullable
     public <T extends PersistentBase> T a(Function<String, T> function, String s) {
-        PersistentBase persistentbase = (PersistentBase) this.data.get(s);
+        T persistentbase = (T) this.data.get(s); // Paper - decompile fix
 
         if (persistentbase == null && this.e != null) {
             try {
                 File file = this.e.getDataFile(this.b, s);
 
                 if (file != null && file.exists()) {
-                    persistentbase = (PersistentBase) function.apply(s);
+                    persistentbase = function.apply(s); // Paper - decompile fix
                     persistentbase.a(a(this.e, this.b, s, 1631).getCompound("data"));
                     this.data.put(s, persistentbase);
                 }

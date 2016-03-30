@@ -85,7 +85,7 @@ public class DefinedStructure {
     }
 
     private void a(World world, BlockPosition blockposition, BlockPosition blockposition1) {
-        List<Entity> list = world.a(Entity.class, new AxisAlignedBB(blockposition, blockposition1), (entity) -> {
+        List<Entity> list = world.a(Entity.class, new AxisAlignedBB(blockposition, blockposition1), (java.util.function.Predicate<? super Entity>) (entity) -> { // Paper - decompile fix
             return !(entity instanceof EntityHuman);
         });
 
@@ -235,7 +235,7 @@ public class DefinedStructure {
                 boolean flag = true;
                 EnumDirection[] aenumdirection = new EnumDirection[] { EnumDirection.UP, EnumDirection.NORTH, EnumDirection.EAST, EnumDirection.SOUTH, EnumDirection.WEST};
 
-                int l1;
+                //int l1; // Paper - decompile fix
 
                 while (flag && !list1.isEmpty()) {
                     flag = false;
@@ -245,7 +245,7 @@ public class DefinedStructure {
                         BlockPosition blockposition2 = (BlockPosition) iterator1.next();
                         Fluid fluid1 = generatoraccess.getFluid(blockposition2);
 
-                        for (l1 = 0; l1 < aenumdirection.length && !fluid1.d(); ++l1) {
+                        for (int l1 = 0; l1 < aenumdirection.length && !fluid1.d(); ++l1) { // Paper - decompile fix
                             Fluid fluid2 = generatoraccess.getFluid(blockposition2.shift(aenumdirection[l1]));
 
                             if (fluid2.getHeight() > fluid1.getHeight() || fluid2.d() && !fluid1.d()) {
@@ -270,7 +270,7 @@ public class DefinedStructure {
                     int i2 = j;
                     int j2 = k;
 
-                    l1 = l;
+                    int l1 = l; // Paper - decompile fix
                     Iterator iterator2 = list2.iterator();
 
                     Pair pair;
@@ -717,7 +717,7 @@ public class DefinedStructure {
         public IBlockData a(int i) {
             IBlockData iblockdata = (IBlockData) this.b.fromId(i);
 
-            return iblockdata == null ? DefinedStructure.a.a : iblockdata;
+            return iblockdata == null ? a : iblockdata; // Paper - decompile fix
         }
 
         public Iterator<IBlockData> iterator() {

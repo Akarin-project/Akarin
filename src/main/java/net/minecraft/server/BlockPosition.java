@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 @Immutable
 public class BlockPosition extends BaseBlockPosition {
 
-    private static final Logger b = LogManager.getLogger();
+    //private static final Logger b = LogManager.getLogger(); // Paper - variable name conflict, logger isn't used
     public static final BlockPosition ZERO = new BlockPosition(0, 0, 0);
     private static final int c = 1 + MathHelper.e(MathHelper.c(30000000));
     private static final int d = BlockPosition.c;
@@ -147,7 +147,7 @@ public class BlockPosition extends BaseBlockPosition {
         return a(Math.min(blockposition.getX(), blockposition1.getX()), Math.min(blockposition.getY(), blockposition1.getY()), Math.min(blockposition.getZ(), blockposition1.getZ()), Math.max(blockposition.getX(), blockposition1.getX()), Math.max(blockposition.getY(), blockposition1.getY()), Math.max(blockposition.getZ(), blockposition1.getZ()));
     }
 
-    public static Iterable<BlockPosition> a(int i, int j, int k, int l, int i1, int j1) {
+    public static Iterable<BlockPosition> a(int ix, int jx, int kx, int l, int i1, int j1) { // Paper - decompile fix
         return () -> {
             return new AbstractIterator<BlockPosition>() {
                 private boolean g = true;
@@ -158,21 +158,21 @@ public class BlockPosition extends BaseBlockPosition {
                 protected BlockPosition computeNext() {
                     if (this.g) {
                         this.g = false;
-                        this.h = i;
-                        this.i = j;
-                        this.j = k;
-                        return new BlockPosition(i, j, k);
+                        this.h = ix; // Paper - decompile fix
+                        this.i = jx; // Paper - decompile fix
+                        this.j = kx; // Paper - decompile fix
+                        return new BlockPosition(ix, jx, kx);
                     } else if (this.h == l && this.i == i1 && this.j == j1) {
                         return (BlockPosition) this.endOfData();
                     } else {
                         if (this.h < l) {
                             ++this.h;
                         } else if (this.i < i1) {
-                            this.h = i;
+                            this.h = ix; // Paper - decompile fix
                             ++this.i;
                         } else if (this.j < j1) {
-                            this.h = i;
-                            this.i = j;
+                            this.h = ix; // Paper - decompile fix
+                            this.i = jx; // Paper - decompile fix
                             ++this.j;
                         }
 
@@ -206,8 +206,11 @@ public class BlockPosition extends BaseBlockPosition {
                         if (this.g.b < l) {
                             ++this.g.b;
                         } else if (this.g.c < i1) {
+                            this.g.b = i; // Paper - decompile fix Readd line removed by the decompiler
                             ++this.g.c;
                         } else if (this.g.d < j1) {
+                            this.g.b = i; // Paper - decompile fix Readd line removed by the decompiler
+                            this.g.c = j; // Paper - decompile fix Readd line removed by the decompiler
                             ++this.g.d;
                         }
 

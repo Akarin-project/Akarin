@@ -1,3 +1,8 @@
 package net.minecraft.server;
 
-public interface Registry extends Iterable {}
+import java.util.Iterator;
+public interface Registry<T> extends Iterable<T> { // Paper - decompile fix
+
+    @Override
+    Iterator<T> iterator(); // Paper - decompile fix
+}

@@ -124,7 +124,7 @@ public abstract class BiomeBase {
 
     @Nullable
     public static BiomeBase a(BiomeBase biomebase) {
-        return (BiomeBase) BiomeBase.aH.fromId(IRegistry.BIOME.a((Object) biomebase));
+        return (BiomeBase) BiomeBase.aH.fromId(IRegistry.BIOME.a(biomebase)); // Paper - decompile fix
     }
 
     public static <C extends WorldGenFeatureConfiguration> WorldGenCarverWrapper<C> a(WorldGenCarver<C> worldgencarver, C c0) {
