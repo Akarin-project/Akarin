@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap; // Paper
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +22,7 @@ public class DataWatcher {
     private static final Logger a = LogManager.getLogger();
     private static final Map<Class<? extends Entity>, Integer> b = Maps.newHashMap();
     private final Entity c;
-    private final Map<Integer, DataWatcher.Item<?>> d = Maps.newHashMap();
+    private final Map<Integer, DataWatcher.Item<?>> d = new Int2ObjectOpenHashMap<>(); // Paper
     private final ReadWriteLock e = new ReentrantReadWriteLock();
     private boolean f = true;
     private boolean g;
