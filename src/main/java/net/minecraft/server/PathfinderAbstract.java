@@ -4,6 +4,7 @@ public abstract class PathfinderAbstract {
 
     protected IBlockAccess a;
     protected EntityInsentient b;
+    public World world; // Paper
     protected final IntHashMap<PathPoint> c = new IntHashMap<>();
     protected int d;
     protected int e;
@@ -16,6 +17,7 @@ public abstract class PathfinderAbstract {
 
     public void a(IBlockAccess iblockaccess, EntityInsentient entityinsentient) {
         this.a = iblockaccess;
+        if (iblockaccess instanceof World) world = (World) iblockaccess; // Paper
         this.b = entityinsentient;
         this.c.c();
         this.d = MathHelper.d(entityinsentient.width + 1.0F);

@@ -327,7 +327,8 @@ public class PathfinderNormal extends PathfinderAbstract {
         PathType pathtype = this.b(iblockaccess, i, j, k);
 
         if (pathtype == PathType.OPEN && j >= 1) {
-            Block block = iblockaccess.getType(new BlockPosition(i, j - 1, k)).getBlock();
+            Block block = world.getBlockIfLoaded(new BlockPosition(i, j - 1, k)); // Paper
+            if (block == null) return PathType.BLOCKED; // Paper
             PathType pathtype1 = this.b(iblockaccess, i, j - 1, k);
 
             pathtype = pathtype1 != PathType.WALKABLE && pathtype1 != PathType.OPEN && pathtype1 != PathType.WATER && pathtype1 != PathType.LAVA ? PathType.WALKABLE : PathType.OPEN;
@@ -353,9 +354,10 @@ public class PathfinderNormal extends PathfinderAbstract {
                 for (int l = -1; l <= 1; ++l) {
                     for (int i1 = -1; i1 <= 1; ++i1) {
                         if (l != 0 || i1 != 0) {
-                            Block block = iblockaccess.getType(blockposition_b.c(l + i, j, i1 + k)).getBlock();
+                            Block block = world.getBlockIfLoaded(blockposition_b.c(l + i, j, i1 + k)); // Paper
 
-                            if (block == Blocks.CACTUS) {
+                            if (block == null) pathtype = PathType.BLOCKED; // Paper
+                            else if (block == Blocks.CACTUS) { // Paper
                                 pathtype = PathType.DANGER_CACTUS;
                             } else if (block == Blocks.FIRE) {
                                 pathtype = PathType.DANGER_FIRE;
@@ -387,7 +389,8 @@ public class PathfinderNormal extends PathfinderAbstract {
 
     protected PathType b(IBlockAccess iblockaccess, int i, int j, int k) {
         BlockPosition blockposition = new BlockPosition(i, j, k);
-        IBlockData iblockdata = iblockaccess.getType(blockposition);
+        IBlockData iblockdata = world.getTypeIfLoaded(blockposition); // Paper
+        if (iblockdata == null) return PathType.BLOCKED; // Paper
         Block block = iblockdata.getBlock();
         Material material = iblockdata.getMaterial();
 

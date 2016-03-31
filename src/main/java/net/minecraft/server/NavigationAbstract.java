@@ -22,8 +22,9 @@ public abstract class NavigationAbstract {
     protected long n;
     protected PathfinderAbstract o;
     private BlockPosition q;
-    private Pathfinder r;
+    private Pathfinder r; public Pathfinder getPathfinder() { return r; } // Paper - OBFHELPER
 
+    private void setWorld() { if (getPathfinder() != null && getPathfinder().getPathfinder() != null) getPathfinder().getPathfinder().world = getEntity().world; } // Paper
     public NavigationAbstract(EntityInsentient entityinsentient, World world) {
         this.g = Vec3D.a;
         this.h = Vec3D.a;
@@ -32,6 +33,7 @@ public abstract class NavigationAbstract {
         this.b = world;
         this.p = entityinsentient.getAttributeInstance(GenericAttributes.FOLLOW_RANGE);
         this.r = this.a();
+        setWorld(); // Paper
     }
 
     public BlockPosition i() {
@@ -174,6 +176,7 @@ public abstract class NavigationAbstract {
     }
 
     public void d() {
+        setWorld(); // Paper
         ++this.e;
         if (this.m) {
             this.l();

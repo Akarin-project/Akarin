@@ -26,7 +26,7 @@ public class ChunkCache implements IIBlockAccess {
 
         for (l = this.a; l <= j; ++l) {
             for (i1 = this.b; i1 <= k; ++i1) {
-                this.c[l - this.a][i1 - this.b] = world.getChunkAt(l, i1);
+                this.c[l - this.a][i1 - this.b] = world.getChunkIfLoaded(l, i1); // Paper
             }
         }
 
