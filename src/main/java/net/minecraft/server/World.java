@@ -663,6 +663,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 if (blockposition.getY() >= 256) {
                     blockposition = new BlockPosition(blockposition.getX(), 255, blockposition.getZ());
                 }
+                if (!this.isLoaded(blockposition)) return 0; // Paper
 
                 return this.getChunkAtWorldCoords(blockposition).a(blockposition, i);
             }
