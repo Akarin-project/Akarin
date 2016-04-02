@@ -1889,6 +1889,16 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 }
             }
         }
+        // Paper start - fire event
+        else {
+            this.server.getPluginManager().callEvent(new com.destroystokyo.paper.event.player.PlayerUseUnknownEntityEvent(
+                this.getPlayer(),
+                packetplayinuseentity.getEntityId(),
+                packetplayinuseentity.b() == PacketPlayInUseEntity.EnumEntityUseAction.ATTACK,
+                packetplayinuseentity.c() == EnumHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND
+            ));
+        }
+        // Paper end
 
     }
 
