@@ -161,6 +161,7 @@ public abstract class PlayerList {
         playerconnection.sendPacket(new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex));
         playerconnection.sendPacket(new PacketPlayOutRecipeUpdate(this.server.getCraftingManager().b()));
         playerconnection.sendPacket(new PacketPlayOutTags(this.server.getTagRegistry()));
+        playerconnection.sendPacket(new PacketPlayOutEntityStatus(entityplayer, (byte) (worldserver.getGameRules().getBoolean("reducedDebugInfo") ? 22 : 23))); // Paper - fix this rule not being initialized on the client
         this.f(entityplayer);
         entityplayer.getStatisticManager().c();
         entityplayer.B().a(entityplayer);
