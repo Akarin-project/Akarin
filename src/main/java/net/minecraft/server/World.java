@@ -2848,6 +2848,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         return this.K;
     }
 
+    public boolean isSpawnChunk(int i,  int j) { return e(i, j); } // Paper - OBFHELPER
     public boolean e(int i, int j) {
         BlockPosition blockposition = this.getSpawn();
         int k = i * 16 + 8 - blockposition.getX();

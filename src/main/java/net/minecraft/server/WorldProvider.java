@@ -69,7 +69,7 @@ public abstract class WorldProvider {
     public void l() {}
 
     public boolean a(int i, int j) {
-        return !this.b.isForceLoaded(i, j);
+        return !this.b.isSpawnChunk(i, j) && !this.b.isForceLoaded(i, j); // Paper - Use spawn chunks check for all worlds
     }
 
     protected abstract void m();
