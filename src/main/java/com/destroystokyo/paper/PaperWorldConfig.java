@@ -255,4 +255,9 @@ public class PaperWorldConfig {
         keepLoadedRange = (short) (getInt("keep-spawn-loaded-range", Math.min(spigotConfig.viewDistance, 8)) * 16);
         log( "Keep Spawn Loaded Range: " + (keepLoadedRange/16));
     }
+
+    public boolean useVanillaScoreboardColoring;
+    private void useVanillaScoreboardColoring() {
+        useVanillaScoreboardColoring = getBoolean("use-vanilla-world-scoreboard-name-coloring", false);
+    }
 }

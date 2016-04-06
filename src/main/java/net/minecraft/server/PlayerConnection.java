@@ -1626,7 +1626,16 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                     return;
                 }
 
-                s = String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage());
+                // Paper Start - (Meh) Support for vanilla world scoreboard name coloring
+                String displayName = event.getPlayer().getDisplayName();
+                if (this.player.getWorld().paperConfig.useVanillaScoreboardColoring) {
+                    IChatBaseComponent nameFromTeam = ScoreboardTeam.a(this.player.getScoreboardTeam(),((CraftPlayer) player).getHandle().getDisplayName());
+                    // Explicitly add a RESET here, vanilla uses components for this now...
+                    displayName = CraftChatMessage.fromComponent(nameFromTeam, EnumChatFormat.WHITE) + org.bukkit.ChatColor.RESET;
+                }
+
+                s = String.format(event.getFormat(), displayName, event.getMessage());
+                // Paper end
                 minecraftServer.console.sendMessage(s);
                 if (((LazyPlayerSet) event.getRecipients()).isLazy()) {
                     for (Object recipient : minecraftServer.getPlayerList().players) {

@@ -176,7 +176,7 @@ public abstract class PlayerList {
         }
 
         chatmessage.a(EnumChatFormat.YELLOW);
-        this.onPlayerJoin(entityplayer, CraftChatMessage.fromComponent(chatmessage));
+        this.onPlayerJoin(entityplayer, CraftChatMessage.fromComponent(chatmessage, EnumChatFormat.WHITE)); // Paper
         // CraftBukkit end
         worldserver = server.getWorldServer(entityplayer.dimension);  // CraftBukkit - Update in case join event changed it
         playerconnection.a(entityplayer.locX, entityplayer.locY, entityplayer.locZ, entityplayer.yaw, entityplayer.pitch);
