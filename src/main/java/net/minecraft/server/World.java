@@ -71,7 +71,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     };
     // Spigot end
     protected final Set<Entity> g = com.google.common.collect.Sets.newHashSet(); // Paper
-    public final List<TileEntity> tileEntityList = Lists.newArrayList();
+    //public final List<TileEntity> tileEntityList = Lists.newArrayList(); // Paper - remove unused list
     public final List<TileEntity> tileEntityListTick = Lists.newArrayList();
     private final List<TileEntity> c = Lists.newArrayList();
     private final Set<TileEntity> tileEntityListUnload = com.google.common.collect.Sets.newHashSet(); // Paper
@@ -1268,7 +1268,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         timings.tileEntityTick.startTiming(); // Spigot
         if (!this.tileEntityListUnload.isEmpty()) {
             this.tileEntityListTick.removeAll(this.tileEntityListUnload);
-            this.tileEntityList.removeAll(this.tileEntityListUnload);
+            //this.tileEntityList.removeAll(this.tileEntityListUnload); // Paper - remove unused list
             this.tileEntityListUnload.clear();
         }
 
@@ -1321,7 +1321,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             if (tileentity.x()) {
                 tilesThisCycle--;
                 this.tileEntityListTick.remove(tileTickPosition--);
-                this.tileEntityList.remove(tileentity);
+                //this.tileEntityList.remove(tileentity); // Paper - remove unused list
                 if (this.isLoaded(tileentity.getPosition())) {
                     this.getChunkAtWorldCoords(tileentity.getPosition()).d(tileentity.getPosition());
                 }
@@ -1351,7 +1351,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                         this.notify(tileentity1.getPosition(), iblockdata, iblockdata, 3);
                         // CraftBukkit start
                         // From above, don't screw this up - SPIGOT-1746
-                        if (!this.tileEntityList.contains(tileentity1)) {
+                        if (true) { // Paper - remove unused list
                             this.a(tileentity1);
                         }
                         // CraftBukkit end
@@ -1371,9 +1371,9 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     protected void p_() {}
 
     public boolean a(TileEntity tileentity) {
-        boolean flag = this.tileEntityList.add(tileentity);
+        boolean flag = true; // Paper - remove unused list
 
-        if (flag && tileentity instanceof ITickable) {
+        if (flag && tileentity instanceof ITickable && !this.tileEntityListTick.contains(tileentity)) { // Paper
             this.tileEntityListTick.add(tileentity);
         }
 
@@ -1854,7 +1854,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         } else {
             if (tileentity != null) {
                 this.c.remove(tileentity);
-                this.tileEntityList.remove(tileentity);
+                //this.tileEntityList.remove(tileentity); // Paper - remove unused list
                 this.tileEntityListTick.remove(tileentity);
             }
 
