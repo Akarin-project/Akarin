@@ -421,6 +421,19 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.a(this.getWorldServer(DimensionManager.OVERWORLD).worldMaps);
         // CraftBukkit end
 
+        // Paper start - Handle collideRule team for player collision toggle
+        final Scoreboard scoreboard = this.getScoreboard();
+        final java.util.Collection<String> toRemove = scoreboard.getTeams().stream().filter(team -> team.getName().startsWith("collideRule_")).map(ScoreboardTeam::getName).collect(java.util.stream.Collectors.toList());
+        for (String teamName : toRemove) {
+            scoreboard.removeTeam(scoreboard.getTeam(teamName)); // Clean up after ourselves
+        }
+
+        if (!com.destroystokyo.paper.PaperConfig.enablePlayerCollisions) {
+            this.getPlayerList().collideRuleTeamName = org.apache.commons.lang3.StringUtils.left("collideRule_" + java.util.concurrent.ThreadLocalRandom.current().nextInt(), 16);
+            ScoreboardTeam collideTeam = scoreboard.createTeam(this.getPlayerList().collideRuleTeamName);
+            collideTeam.setCanSeeFriendlyInvisibles(false); // Because we want to mimic them not being on a team at all
+        }
+        // Paper end
     }
 
     protected void a(File file, WorldData worlddata) {
