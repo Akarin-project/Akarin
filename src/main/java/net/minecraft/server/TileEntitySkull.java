@@ -24,7 +24,7 @@ import com.mojang.authlib.ProfileLookupCallback;
 import java.util.concurrent.Callable;
 // Spigot end
 
-public class TileEntitySkull extends TileEntity implements ITickable {
+public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Paper - remove tickable
 
     private GameProfile a;
     private int e;
