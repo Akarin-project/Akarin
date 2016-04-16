@@ -24,7 +24,7 @@ public class RemoteControlListener extends RemoteConnectionThread {
         super(iminecraftserver, "RCON Listener");
         this.h = iminecraftserver.a("rcon.port", 0);
         this.l = iminecraftserver.a("rcon.password", "");
-        this.j = iminecraftserver.e();
+        this.j = iminecraftserver.a("rcon.ip", ((DedicatedServer) iminecraftserver).getServerIp()); // Paper
         this.i = iminecraftserver.e_();
         if (0 == this.h) {
             this.h = this.i + 10;
