@@ -161,6 +161,7 @@ public class BlockFire extends Block {
                                 }
 
                                 blockposition_mutableblockposition.g(blockposition).d(l, j1, i1);
+                                if (!world.isLoaded(blockposition_mutableblockposition)) continue; // Paper
                                 int l1 = this.a((IWorldReader) world, (BlockPosition) blockposition_mutableblockposition);
 
                                 if (l1 > 0) {
@@ -206,10 +207,14 @@ public class BlockFire extends Block {
     }
 
     private void a(World world, BlockPosition blockposition, int i, Random random, int j, BlockPosition sourceposition) { // CraftBukkit add sourceposition
-        int k = this.f(world.getType(blockposition).getBlock());
+        // Paper start
+        final IBlockData iblockdata = world.getTypeIfLoaded(blockposition);
+        if (iblockdata == null) return;
+        int k = this.f(iblockdata.getBlock());
+        // Paper end
 
         if (random.nextInt(i) < k) {
-            IBlockData iblockdata = world.getType(blockposition);
+            //IBlockData iblockdata = world.getType(blockposition); // Paper
 
             // CraftBukkit start
             org.bukkit.block.Block theBlock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
@@ -266,7 +271,11 @@ public class BlockFire extends Block {
             for (int k = 0; k < j; ++k) {
                 EnumDirection enumdirection = aenumdirection[k];
 
-                i = Math.max(this.g(iworldreader.getType(blockposition.shift(enumdirection)).getBlock()), i);
+                // Paper start
+                final IBlockData type = ((World)iworldreader).getTypeIfLoaded(blockposition.shift(enumdirection));
+                if (type == null) continue;
+                i = Math.max(this.g(type.getBlock()), i);
+                // Paper end
             }
 
             return i;
