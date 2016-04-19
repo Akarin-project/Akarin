@@ -33,7 +33,7 @@ import org.bukkit.inventory.MainHand;
 public class EntityPlayer extends EntityHuman implements ICrafting {
 
     private static final Logger cc = LogManager.getLogger();
-    public String locale = "en_us"; // CraftBukkit - lowercase
+    public String locale = null; // CraftBukkit - lowercase // Paper - default to null
     public PlayerConnection playerConnection;
     public final MinecraftServer server;
     public final PlayerInteractManager playerInteractManager;
@@ -1260,13 +1260,20 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             PlayerChangedMainHandEvent event = new PlayerChangedMainHandEvent(getBukkitEntity(), getMainHand() == EnumMainHand.LEFT ? MainHand.LEFT : MainHand.RIGHT);
             this.server.server.getPluginManager().callEvent(event);
         }
-        if (!this.locale.equals(packetplayinsettings.b())) {
+        if (this.locale == null || !this.locale.equals(packetplayinsettings.b())) { // Paper - check for null
             PlayerLocaleChangeEvent event = new PlayerLocaleChangeEvent(getBukkitEntity(), packetplayinsettings.b());
             this.server.server.getPluginManager().callEvent(event);
         }
         this.clientViewDistance = packetplayinsettings.viewDistance;
         // CraftBukkit end
+        // Paper start - add PlayerLocaleChangeEvent
+        // Since the field is initialized to null, this event should always fire the first time the packet is received
+        String oldLocale = this.locale;
         this.locale = packetplayinsettings.b();
+        if (!this.locale.equals(oldLocale)) {
+            new com.destroystokyo.paper.event.player.PlayerLocaleChangeEvent(this.getBukkitEntity(), oldLocale, this.locale).callEvent();
+        }
+        // Paper end
         this.cs = packetplayinsettings.d();
         this.ct = packetplayinsettings.e();
         this.getDataWatcher().set(EntityPlayer.bx, (byte) packetplayinsettings.f());
