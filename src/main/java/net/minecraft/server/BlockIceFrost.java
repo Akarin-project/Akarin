@@ -12,6 +12,7 @@ public class BlockIceFrost extends BlockIce {
     }
 
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
+        if (!world.paperConfig.frostedIceEnabled) return; // Paper - add ability to disable frosted ice
         if ((random.nextInt(3) == 0 || this.a(world, blockposition, 4)) && world.getLightLevel(blockposition) > 11 - (Integer) iblockdata.get(BlockIceFrost.a) - iblockdata.b(world, blockposition) && this.c(iblockdata, world, blockposition)) {
             BlockPosition.b blockposition_b = BlockPosition.b.r();
             Throwable throwable = null;
@@ -27,7 +28,7 @@ public class BlockIceFrost extends BlockIce {
                     IBlockData iblockdata1 = world.getType(blockposition_b);
 
                     if (iblockdata1.getBlock() == this && !this.c(iblockdata1, world, blockposition_b)) {
-                        world.getBlockTickList().a(blockposition_b, this, MathHelper.nextInt(random, 20, 40));
+                        world.getBlockTickList().a(blockposition_b, this, MathHelper.nextInt(random, world.paperConfig.frostedIceDelayMin, world.paperConfig.frostedIceDelayMax)); // Paper - use configurable min/max delay
                     }
                 }
             } catch (Throwable throwable1) {
@@ -49,7 +50,7 @@ public class BlockIceFrost extends BlockIce {
             }
 
         } else {
-            world.getBlockTickList().a(blockposition, this, MathHelper.nextInt(random, 20, 40));
+            world.getBlockTickList().a(blockposition, this, MathHelper.nextInt(random, world.paperConfig.frostedIceDelayMin, world.paperConfig.frostedIceDelayMax)); // Paper - use configurable min/max delay
         }
     }
 
