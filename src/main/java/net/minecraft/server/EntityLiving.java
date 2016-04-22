@@ -873,10 +873,16 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void heal(float f, EntityRegainHealthEvent.RegainReason regainReason) {
+        // Paper start - Forward
+        heal(f, regainReason, false);
+    }
+
+    public void heal(float f, EntityRegainHealthEvent.RegainReason regainReason, boolean isFastRegen) {
+        // Paper end
         float f1 = this.getHealth();
 
         if (f1 > 0.0F) {
-            EntityRegainHealthEvent event = new EntityRegainHealthEvent(this.getBukkitEntity(), f, regainReason);
+            EntityRegainHealthEvent event = new EntityRegainHealthEvent(this.getBukkitEntity(), f, regainReason, isFastRegen); // Paper - Add isFastRegen
             this.world.getServer().getPluginManager().callEvent(event);
 
             if (!event.isCancelled()) {
