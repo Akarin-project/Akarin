@@ -464,8 +464,9 @@ public final class ItemStack {
         return this.getItem().a(this, entityhuman, entityliving, enumhand);
     }
 
-    public ItemStack cloneItemStack() {
-        ItemStack itemstack = new ItemStack(this.getItem(), this.count);
+    public ItemStack cloneItemStack() { return cloneItemStack(false); } // Paper
+    public ItemStack cloneItemStack(boolean origItem) { // Paper
+        ItemStack itemstack = new ItemStack(origItem ? this.item : this.getItem(), this.count); // Paper
 
         itemstack.d(this.B());
         if (this.tag != null) {

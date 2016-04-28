@@ -420,6 +420,15 @@ public class PaperWorldConfig {
         squidMaxSpawnHeight = getDouble("squid-spawn-height.maximum", 0.0D);
     }
 
+    public boolean cooldownHopperWhenFull = true;
+    public boolean disableHopperMoveEvents = false;
+    private void hopperOptimizations() {
+        cooldownHopperWhenFull = getBoolean("hopper.cooldown-when-full", cooldownHopperWhenFull);
+        log("Cooldown Hoppers when Full: " + (cooldownHopperWhenFull ? "enabled" : "disabled"));
+        disableHopperMoveEvents = getBoolean("hopper.disable-move-event", disableHopperMoveEvents);
+        log("Hopper Move Item Events: " + (disableHopperMoveEvents ? "disabled" : "enabled"));
+    }
+
     public boolean disableSprintInterruptionOnAttack;
     private void disableSprintInterruptionOnAttack() {
         disableSprintInterruptionOnAttack = getBoolean("game-mechanics.disable-sprint-interruption-on-attack", false);
