@@ -68,6 +68,7 @@ import co.aikar.timings.MinecraftTimings; // Paper
 
 public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStatistics, ICommandListener, Runnable {
 
+    private static MinecraftServer SERVER; // Paper
     public static final Logger LOGGER = LogManager.getLogger();
     public static final File a = new File("usercache.json");
     public Convertable convertable;
@@ -157,6 +158,8 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     // Spigot end
 
     public MinecraftServer(OptionSet options, Proxy proxy, DataFixer datafixer, CommandDispatcher commanddispatcher, YggdrasilAuthenticationService yggdrasilauthenticationservice, MinecraftSessionService minecraftsessionservice, GameProfileRepository gameprofilerepository, UserCache usercache) {
+        SERVER = this; // Paper - better singleton
+        this.commandDispatcher = commanddispatcher; // CraftBukkit
         this.ac = new ResourceManager(EnumResourcePackType.SERVER_DATA);
         this.resourcePackRepository = new ResourcePackRepository<>(ResourcePackLoader::new);
         this.ag = new CraftingManager();
@@ -1825,7 +1828,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     // CraftBukkit start
     @Deprecated
     public static MinecraftServer getServer() {
-        return (Bukkit.getServer() instanceof CraftServer) ? ((CraftServer) Bukkit.getServer()).getServer() : null;
+        return SERVER;
     }
     // CraftBukkit end
 }
