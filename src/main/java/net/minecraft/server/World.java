@@ -1072,6 +1072,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                         {
                             if ( iter.next().trackee == entity )
                             {
+                                map.decorations.remove(entity.getDisplayName().getString()); // Paper
                                 iter.remove();
                             }
                         }

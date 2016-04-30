@@ -97,7 +97,7 @@ public class EntityTrackerEntry {
         }
 
         // PAIL : rename
-        if (this.tracker instanceof EntityItemFrame /*&& this.a % 10 == 0*/) { // CraftBukkit - Moved below, should always enter this block
+        if (this.tracker instanceof EntityItemFrame && this.a % 20 == 0) { // Paper
             EntityItemFrame entityitemframe = (EntityItemFrame) this.tracker;
             ItemStack itemstack = entityitemframe.getItem();
 
