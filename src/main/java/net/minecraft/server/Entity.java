@@ -67,6 +67,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
     }
 
+    public com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData; // Paper
     protected CraftEntity bukkitEntity;
 
     public CraftEntity getBukkitEntity() {

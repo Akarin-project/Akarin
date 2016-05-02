@@ -5,9 +5,10 @@ import javax.annotation.Nullable;
 
 public abstract class TileEntityLootable extends TileEntityContainer implements ILootable {
 
-    protected MinecraftKey g;
-    protected long h;
+    protected MinecraftKey g; public MinecraftKey getLootTableKey() { return g; } public void setLootTable(MinecraftKey key) { g = key; } // Paper - OBFHELPER
+    protected long h; public long getSeed() { return h; } public void setSeed(long seed) { h = seed; } // Paper - OBFHELPER
     protected IChatBaseComponent i;
+    public final com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData = new com.destroystokyo.paper.loottable.PaperLootableInventoryData(new com.destroystokyo.paper.loottable.PaperTileEntityLootableInventory(this)); // Paper
 
     protected TileEntityLootable(TileEntityTypes<?> tileentitytypes) {
         super(tileentitytypes);
@@ -23,16 +24,18 @@ public abstract class TileEntityLootable extends TileEntityContainer implements 
     }
 
     protected boolean d(NBTTagCompound nbttagcompound) {
+        lootableData.loadNbt(nbttagcompound); // Paper
         if (nbttagcompound.hasKeyOfType("LootTable", 8)) {
             this.g = new MinecraftKey(nbttagcompound.getString("LootTable"));
             this.h = nbttagcompound.getLong("LootTableSeed");
-            return true;
+            return false; // Paper - always load the items, table may still remain
         } else {
             return false;
         }
     }
 
     protected boolean e(NBTTagCompound nbttagcompound) {
+        lootableData.saveNbt(nbttagcompound); // Paper
         if (this.g == null) {
             return false;
         } else {
@@ -41,15 +44,15 @@ public abstract class TileEntityLootable extends TileEntityContainer implements 
                 nbttagcompound.setLong("LootTableSeed", this.h);
             }
 
-            return true;
+            return false; // Paper - always save the items, table may still remain
         }
     }
 
     public void d(@Nullable EntityHuman entityhuman) {
-        if (this.g != null && this.world.getMinecraftServer() != null) {
+        if (lootableData.shouldReplenish(entityhuman) && this.world.getMinecraftServer() != null) { // Paper
             LootTable loottable = this.world.getMinecraftServer().getLootTableRegistry().getLootTable(this.g);
 
-            this.g = null;
+            lootableData.processRefill(entityhuman); // Paper
             Random random;
 
             if (this.h == 0L) {

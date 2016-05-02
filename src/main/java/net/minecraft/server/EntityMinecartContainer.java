@@ -15,10 +15,11 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
 
     private NonNullList<ItemStack> items;
     private boolean b;
-    private MinecraftKey c;
+    private MinecraftKey c; public MinecraftKey getLootTableKey() { return c; } public void setLootTable(MinecraftKey key) { c = key; } // Paper - OBFHELPER
     public long lootTableSeed;
 
     // CraftBukkit start
+    { lootableData = new com.destroystokyo.paper.loottable.PaperLootableInventoryData(new com.destroystokyo.paper.loottable.PaperMinecartLootableInventory(this)); } // Paper
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
     private int maxStack = MAX_STACK;
 
@@ -168,12 +169,13 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
 
     protected void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
+        lootableData.saveNbt(nbttagcompound); // Paper
         if (this.c != null) {
             nbttagcompound.setString("LootTable", this.c.toString());
             if (this.lootTableSeed != 0L) {
                 nbttagcompound.setLong("LootTableSeed", this.lootTableSeed);
             }
-        } else {
+        } if (true) { // Paper - Always save the items, Table may stick around
             ContainerUtil.a(nbttagcompound, this.items);
         }
 
@@ -181,11 +183,12 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
 
     protected void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
+        lootableData.loadNbt(nbttagcompound); // Paper
         this.items = NonNullList.a(this.getSize(), ItemStack.a);
         if (nbttagcompound.hasKeyOfType("LootTable", 8)) {
             this.c = new MinecraftKey(nbttagcompound.getString("LootTable"));
             this.lootTableSeed = nbttagcompound.getLong("LootTableSeed");
-        } else {
+        } if (true) { // Paper - always load the items, table may still remain
             ContainerUtil.b(nbttagcompound, this.items);
         }
 
@@ -234,10 +237,10 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
     }
 
     public void f(@Nullable EntityHuman entityhuman) {
-        if (this.c != null && this.world.getMinecraftServer() != null) {
+        if (lootableData.shouldReplenish(entityhuman) && this.world.getMinecraftServer() != null) { // Paper
             LootTable loottable = this.world.getMinecraftServer().getLootTableRegistry().getLootTable(this.c);
 
-            this.c = null;
+            lootableData.processRefill(entityhuman); // Paper
             Random random;
 
             if (this.lootTableSeed == 0L) {
