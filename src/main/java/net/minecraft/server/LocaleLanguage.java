@@ -44,10 +44,12 @@ public class LocaleLanguage {
 
     }
 
+    public static LocaleLanguage getInstance() { return a(); } // Paper - OBFHELPER
     public static LocaleLanguage a() {
         return LocaleLanguage.c;
     }
 
+    public synchronized String translateKey(String key) { return a(key); } // Paper - OBFHELPER
     public synchronized String a(String s) {
         return this.c(s);
     }
