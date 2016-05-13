@@ -11,10 +11,10 @@ public class PathfinderGoalSelector {
 
     private static final Logger a = LogManager.getLogger();
     private final Set<PathfinderGoalSelector.PathfinderGoalSelectorItem> b = Sets.newLinkedHashSet();
-    private final Set<PathfinderGoalSelector.PathfinderGoalSelectorItem> c = Sets.newLinkedHashSet();
+    private final Set<PathfinderGoalSelector.PathfinderGoalSelectorItem> c = Sets.newLinkedHashSet();private Set<PathfinderGoalSelector.PathfinderGoalSelectorItem> getExecutingTasks() { return c; }// Paper - OBFHELPER
     private final MethodProfiler d;
-    private int e;
-    private int f = 3;
+    private int e;private int getCurRate() { return e; } private void incRate() { this.e++; }// Paper - OBFHELPER
+    private int f = 3;private int getTickRate() { return f; } // Paper - OBFHELPER
     private int g;
 
     public PathfinderGoalSelector(MethodProfiler methodprofiler) {
@@ -24,6 +24,20 @@ public class PathfinderGoalSelector {
     public void a(int i, PathfinderGoal pathfindergoal) {
         this.b.add(new PathfinderGoalSelector.PathfinderGoalSelectorItem(i, pathfindergoal));
     }
+
+    // Paper start
+    public boolean inactiveTick() {
+        if (getCurRate() % getTickRate() != 0) {
+            incRate();
+            return false;
+        } else {
+            return true;
+        }
+    }
+    public boolean hasTasks() {
+        return !getExecutingTasks().isEmpty();
+    }
+    // Paper end
 
     public void a(PathfinderGoal pathfindergoal) {
         Iterator iterator = this.b.iterator();

@@ -2,12 +2,12 @@ package net.minecraft.server;
 
 public abstract class PathfinderGoalGotoTarget extends PathfinderGoal {
 
-    private final EntityCreature f;
+    private final EntityCreature f;public EntityCreature getEntity() { return f; } // Paper - OBFHELPER
     public double a;
     protected int b;
     protected int c;
     private int g;
-    protected BlockPosition d;
+    protected BlockPosition d; public BlockPosition getTarget() { return d; } public void setTarget(BlockPosition pos) { this.d = pos; getEntity().movingTarget = pos != BlockPosition.ZERO ? pos : null; } // Paper - OBFHELPER
     private boolean h;
     private final int i;
     private final int j;
@@ -16,6 +16,13 @@ public abstract class PathfinderGoalGotoTarget extends PathfinderGoal {
     public PathfinderGoalGotoTarget(EntityCreature entitycreature, double d0, int i) {
         this(entitycreature, d0, i, 1);
     }
+    // Paper start - activation range improvements
+    @Override
+    public void onTaskReset() {
+        super.onTaskReset();
+        setTarget(BlockPosition.ZERO);
+    }
+    // Paper end
 
     public PathfinderGoalGotoTarget(EntityCreature entitycreature, double d0, int i, int j) {
         this.d = BlockPosition.ZERO;
@@ -94,6 +101,7 @@ public abstract class PathfinderGoalGotoTarget extends PathfinderGoal {
                         blockposition_mutableblockposition.g(blockposition).d(i1, k - 1, j1);
                         if (this.f.f((BlockPosition) blockposition_mutableblockposition) && this.a(this.f.world, blockposition_mutableblockposition)) {
                             this.d = blockposition_mutableblockposition;
+                            setTarget(blockposition_mutableblockposition.toBlockPosition()); // Paper
                             return true;
                         }
                     }

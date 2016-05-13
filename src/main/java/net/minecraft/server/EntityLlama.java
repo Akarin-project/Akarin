@@ -363,6 +363,7 @@ public class EntityLlama extends EntityHorseChestedAbstract implements IRangedEn
         return this.bR != null;
     }
 
+    public boolean inCaravan() { return this.em(); } // Paper - OBFHELPER
     public boolean em() {
         return this.bQ != null;
     }

@@ -589,6 +589,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             this.recalcPosition();
         } else {
             if (enummovetype == EnumMoveType.PISTON) {
+                this.activatedTick = MinecraftServer.currentTick + 20; // Paper
                 long i = this.world.getTime();
 
                 if (i != this.aM) {

@@ -387,6 +387,7 @@ public class BlockPosition extends BaseBlockPosition {
             this.c = i;
         }
 
+        public BlockPosition toBlockPosition() { return h(); } // Paper - OBFHELPER
         public BlockPosition h() {
             return new BlockPosition(this);
         }

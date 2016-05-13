@@ -150,12 +150,14 @@ public class SpigotWorldConfig
     public int animalActivationRange = 32;
     public int monsterActivationRange = 32;
     public int miscActivationRange = 16;
+    public int waterActivationRange = 16; // Paper
     public boolean tickInactiveVillagers = true;
     private void activationRange()
     {
         animalActivationRange = getInt( "entity-activation-range.animals", animalActivationRange );
         monsterActivationRange = getInt( "entity-activation-range.monsters", monsterActivationRange );
         miscActivationRange = getInt( "entity-activation-range.misc", miscActivationRange );
+        waterActivationRange = getInt( "entity-activation-range.water", waterActivationRange ); // Paper
         tickInactiveVillagers = getBoolean( "entity-activation-range.tick-inactive-villagers", tickInactiveVillagers );
         log( "Entity Activation Range: An " + animalActivationRange + " / Mo " + monsterActivationRange + " / Mi " + miscActivationRange + " / Tiv " + tickInactiveVillagers );
     }

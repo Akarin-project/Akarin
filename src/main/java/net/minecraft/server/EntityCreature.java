@@ -7,6 +7,7 @@ import org.bukkit.event.entity.EntityUnleashEvent;
 public abstract class EntityCreature extends EntityInsentient {
 
     public org.bukkit.craftbukkit.entity.CraftCreature getBukkitCreature() { return (org.bukkit.craftbukkit.entity.CraftCreature) super.getBukkitEntity(); } // Paper
+    public BlockPosition movingTarget = null; public BlockPosition getMovingTarget() { return movingTarget; } // Paper
     private BlockPosition a;
     private float b;
 

@@ -105,6 +105,17 @@ public abstract class EntityInsentient extends EntityLiving {
         return this.lookController;
     }
 
+    // Paper start
+    @Override
+    public void inactiveTick() {
+        super.inactiveTick();
+        this.goalSelector.inactiveTick();
+        if (this.targetSelector.inactiveTick()) {
+            this.targetSelector.doTick();
+        }
+    }
+    // Paper end
+
     public ControllerMove getControllerMove() {
         return this.moveController;
     }

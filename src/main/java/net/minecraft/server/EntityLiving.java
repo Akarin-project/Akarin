@@ -74,7 +74,7 @@ public abstract class EntityLiving extends Entity {
     public float aT;
     public float aU;
     public EntityHuman killer;
-    protected int lastDamageByPlayerTime;
+    public int lastDamageByPlayerTime; // Paper - public
     protected boolean killed;
     protected int ticksFarFromPlayer;
     protected float aZ;
