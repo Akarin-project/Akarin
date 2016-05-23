@@ -147,4 +147,49 @@ public class EntityTNTPrimed extends Entity {
     public int getFuseTicks() {
         return this.c;
     }
+
+    // Paper start - Optional prevent TNT from moving in water
+    @Override
+    public boolean pushedByWater() {
+        return !world.paperConfig.preventTntFromMovingInWater && super.pushedByWater();
+    }
+
+    /**
+     * Author: Jedediah Smith <jedediah@silencegreys.com>
+     */
+    @Override
+    public boolean doWaterMovement() {
+        if (!world.paperConfig.preventTntFromMovingInWater) return super.doWaterMovement();
+
+        // Preserve velocity while calling the super method
+        double oldMotX = this.motX;
+        double oldMotY = this.motY;
+        double oldMotZ = this.motZ;
+
+        super.doWaterMovement();
+
+        this.motX = oldMotX;
+        this.motY = oldMotY;
+        this.motZ = oldMotZ;
+
+        if (this.inWater) {
+            // Send position and velocity updates to nearby players on every tick while the TNT is in water.
+            // This does pretty well at keeping their clients in sync with the server.
+            EntityTrackerEntry ete = ((WorldServer) this.getWorld()).getTracker().trackedEntities.get(this.getId());
+            if (ete != null) {
+                PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(this);
+                PacketPlayOutEntityTeleport positionPacket = new PacketPlayOutEntityTeleport(this);
+
+                ete.trackedPlayers.stream()
+                        .filter(viewer -> (viewer.locX - this.locX) * (viewer.locY - this.locY) * (viewer.locZ - this.locZ) < 16 * 16)
+                        .forEach(viewer -> {
+                    viewer.playerConnection.sendPacket(velocityPacket);
+                    viewer.playerConnection.sendPacket(positionPacket);
+                });
+            }
+        }
+
+        return this.inWater;
+    }
+    // Paper end
 }

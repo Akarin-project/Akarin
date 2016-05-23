@@ -1187,6 +1187,12 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     }
 
     public boolean aq() {
+        // Paper start
+        return this.doWaterMovement();
+    }
+
+    public boolean doWaterMovement() {
+        // Paper end
         return this.isInWater() || this.q();
     }
 
@@ -2738,6 +2744,11 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     }
 
     public boolean bw() {
+        return this.pushedByWater();
+    }
+
+    public boolean pushedByWater() {
+        // Paper end
         return true;
     }
 
