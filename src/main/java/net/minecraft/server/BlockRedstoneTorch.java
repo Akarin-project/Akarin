@@ -63,9 +63,17 @@ public class BlockRedstoneTorch extends BlockTorch {
     public static void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random, boolean flag) {
         List list = (List) BlockRedstoneTorch.b.get(world);
 
-        while (list != null && !list.isEmpty() && world.getTime() - ((BlockRedstoneTorch.RedstoneUpdateInfo) list.get(0)).b > 60L) {
-            list.remove(0);
+        // Paper start
+        if (list != null) {
+            int index = 0;
+            while (index < list.size() && world.getTime() - ((BlockRedstoneTorch.RedstoneUpdateInfo) list.get(index)).getTime() > 60L) {
+                index++;
+            }
+            if (index > 0) {
+                list.subList(0, index).clear();
+            }
         }
+        // Paper end
 
         // CraftBukkit start
         org.bukkit.plugin.PluginManager manager = world.getServer().getPluginManager();
@@ -169,7 +177,7 @@ public class BlockRedstoneTorch extends BlockTorch {
     public static class RedstoneUpdateInfo {
 
         private final BlockPosition a;
-        private final long b;
+        private final long b; final long getTime() { return this.b; } // Paper - OBFHELPER
 
         public RedstoneUpdateInfo(BlockPosition blockposition, long i) {
             this.a = blockposition;
