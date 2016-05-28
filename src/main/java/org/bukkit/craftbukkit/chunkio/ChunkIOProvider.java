@@ -35,9 +35,9 @@ class ChunkIOProvider implements AsynchronousExecutor.CallBackProvider<QueuedChu
 
     // sync stuff
     public void callStage2(QueuedChunk queuedChunk, Chunk chunk) throws RuntimeException {
-        if (chunk == null) {
+        if (chunk == null || queuedChunk.provider.chunks.containsKey(ChunkCoordIntPair.a(queuedChunk.x, queuedChunk.z))) { // Paper - also call original if it was already loaded
             // If the chunk loading failed just do it synchronously (may generate)
-            // queuedChunk.provider.originalGetChunkAt(queuedChunk.x, queuedChunk.z);
+            queuedChunk.provider.getChunkAt(queuedChunk.x, queuedChunk.z, true, true); // Paper - actually call original if it was already loaded
             return;
         }
         try (Timing ignored = queuedChunk.provider.world.timings.chunkIOStage2.startTimingIfSync()) { // Paper
