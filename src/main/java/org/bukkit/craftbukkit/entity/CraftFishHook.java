@@ -62,4 +62,15 @@ public class CraftFishHook extends AbstractProjectile implements FishHook {
         Validate.isTrue(chance >= 0 && chance <= 1, "The bite chance must be between 0 and 1.");
         this.biteChance = chance;
     }
+
+    // Paper start
+    @Override
+    public void remove() {
+        super.remove();
+        if (getHandle().owner != null) {
+            getHandle().owner.hookedFish = null;
+        }
+    }
+    // Paper end
+    
 }
