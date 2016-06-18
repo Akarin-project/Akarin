@@ -50,13 +50,14 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
             }
 
             try {
-                IChatBaseComponent ichatbasecomponent = IChatBaseComponent.ChatSerializer.a(s);
+                //IChatBaseComponent ichatbasecomponent = IChatBaseComponent.ChatSerializer.a(s); // Paper - move down - the old format might throw a json error
 
-                if (oldSign) {
+                if (oldSign && !isLoadingStructure) { // Paper - saved structures will be in the new format, but will not have isConverted
                     lines[i] = org.bukkit.craftbukkit.util.CraftChatMessage.fromString(s)[0];
                     continue;
                 }
                 // CraftBukkit end
+                IChatBaseComponent ichatbasecomponent = IChatBaseComponent.ChatSerializer.a(s); // Paper - after old sign
 
                 if (this.world instanceof WorldServer) {
                     try {

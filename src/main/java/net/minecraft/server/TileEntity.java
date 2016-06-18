@@ -11,6 +11,7 @@ import org.bukkit.inventory.InventoryHolder; // CraftBukkit
 public abstract class TileEntity implements KeyedObject { // Paper
 
     public Timing tickTimer = MinecraftTimings.getTileEntityTimings(this); // Paper
+    boolean isLoadingStructure = false; // Paper
     private static final Logger a = LogManager.getLogger();
     private final TileEntityTypes<?> e; public TileEntityTypes getTileEntityType() { return e; } // Paper - OBFHELPER
     protected World world;

@@ -215,9 +215,11 @@ public class DefinedStructure {
                                         definedstructure_blockinfo1.c.setInt("x", blockposition1.getX());
                                         definedstructure_blockinfo1.c.setInt("y", blockposition1.getY());
                                         definedstructure_blockinfo1.c.setInt("z", blockposition1.getZ());
+                                        tileentity.isLoadingStructure = true; // Paper
                                         tileentity.load(definedstructure_blockinfo1.c);
                                         tileentity.a(definedstructureinfo.b());
                                         tileentity.a(definedstructureinfo.c());
+                                        tileentity.isLoadingStructure = false; // Paper
                                     }
                                 }
 
