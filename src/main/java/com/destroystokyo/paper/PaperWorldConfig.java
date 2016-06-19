@@ -301,4 +301,18 @@ public class PaperWorldConfig {
         preventTntFromMovingInWater = getBoolean("prevent-tnt-from-moving-in-water", false);
         log("Prevent TNT from moving in water: " + preventTntFromMovingInWater);
     }
+
+    public long delayChunkUnloadsBy;
+    private void delayChunkUnloadsBy() {
+        delayChunkUnloadsBy = PaperConfig.getSeconds(getString("delay-chunk-unloads-by", "10s"));
+        if (delayChunkUnloadsBy > 0) {
+            log("Delaying chunk unloads by " + delayChunkUnloadsBy + " seconds");
+            delayChunkUnloadsBy *= 1000;
+        }
+    }
+
+    public boolean skipEntityTickingInChunksScheduledForUnload = true;
+    private void skipEntityTickingInChunksScheduledForUnload() {
+        skipEntityTickingInChunksScheduledForUnload = getBoolean("skip-entity-ticking-in-chunks-scheduled-for-unload", skipEntityTickingInChunksScheduledForUnload);
+    }
 }

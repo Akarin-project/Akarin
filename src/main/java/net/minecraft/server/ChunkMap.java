@@ -48,6 +48,15 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
                 }
             }
         }
+        // Paper start - if this is a spare chunk (not part of any players view distance), go ahead and queue it for unload.
+        if (!((WorldServer)chunk.world).getPlayerChunkMap().isChunkInUse(chunk.locX, chunk.locZ)) {
+            if (chunk.world.paperConfig.delayChunkUnloadsBy > 0) {
+                chunk.scheduledForUnload = System.currentTimeMillis();
+            } else {
+                ((WorldServer) chunk.world).getChunkProvider().unload(chunk);
+            }
+        }
+        // Paper end
         chunk.world.timings.syncChunkLoadPostTimer.stopTiming(); // Paper
         // CraftBukkit end
 

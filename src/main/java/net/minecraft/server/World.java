@@ -1292,7 +1292,13 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             if (!tileentity.x() && tileentity.hasWorld()) {
                 BlockPosition blockposition = tileentity.getPosition();
 
-                if (this.isLoaded(blockposition) && this.K.a(blockposition)) {
+                // Paper start - Skip ticking in chunks scheduled for unload
+                net.minecraft.server.Chunk chunk = this.getChunkIfLoaded(blockposition);
+                boolean shouldTick = chunk != null;
+                if(this.paperConfig.skipEntityTickingInChunksScheduledForUnload)
+                    shouldTick = shouldTick && chunk.scheduledForUnload == null;
+                if (shouldTick && this.K.a(blockposition)) {
+                    // Paper end
                     try {
                         this.methodProfiler.a(() -> {
                             return String.valueOf(TileEntityTypes.a(tileentity.C()));

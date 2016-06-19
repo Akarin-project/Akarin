@@ -452,7 +452,13 @@ public class PlayerChunkMap {
         Chunk chunk = playerchunk.f();
 
         if (chunk != null) {
-            this.getWorld().getChunkProvider().unload(chunk);
+            // Paper start - delay chunk unloads
+            if (world.paperConfig.delayChunkUnloadsBy <= 0) {
+                this.getWorld().getChunkProvider().unload(chunk);
+            } else {
+                chunk.scheduledForUnload = System.currentTimeMillis();
+            }
+            // Paper end
         }
 
     }

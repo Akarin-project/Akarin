@@ -323,6 +323,11 @@ public class ActivationRange
         {
             isActive = false;
         }
+        // Paper start - Skip ticking in chunks scheduled for unload
+        else if (entity.world.paperConfig.skipEntityTickingInChunksScheduledForUnload && (chunk == null || chunk.scheduledForUnload != null)) {
+            isActive = false;
+        }
+        // Paper end
         return isActive;
     }
 }

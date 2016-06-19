@@ -29,7 +29,22 @@ public class PlayerChunk {
 
         chunkproviderserver.a(i, j);
         this.chunk = chunkproviderserver.getChunkAt(i, j, true, false);
+        markChunkUsed(); // Paper - delay chunk unloads
     }
+
+    // Paper start
+    private void markChunkUsed() {
+        if (chunk == null) {
+            return;
+        }
+        if (chunkHasPlayers) {
+            chunk.scheduledForUnload = null;
+        } else if (chunk.scheduledForUnload == null) {
+            chunk.scheduledForUnload = System.currentTimeMillis();
+        }
+    }
+    private boolean chunkHasPlayers = false;
+    // Paper end
 
     public ChunkCoordIntPair a() {
         return this.location;
@@ -41,6 +56,8 @@ public class PlayerChunk {
         } else {
             if (this.players.isEmpty()) {
                 this.i = this.playerChunkMap.getWorld().getTime();
+                chunkHasPlayers = true; // Paper - delay chunk unloads
+                markChunkUsed(); // Paper - delay chunk unloads
             }
 
             this.players.add(entityplayer);
@@ -59,6 +76,8 @@ public class PlayerChunk {
 
             this.players.remove(entityplayer);
             if (this.players.isEmpty()) {
+                chunkHasPlayers = false; // Paper - delay chunk unloads
+                markChunkUsed(); // Paper - delay chunk unloads
                 this.playerChunkMap.b(this);
             }
 
@@ -70,6 +89,7 @@ public class PlayerChunk {
             return true;
         } else {
             this.chunk = this.playerChunkMap.getWorld().getChunkProvider().getChunkAt(this.location.x, this.location.z, true, flag);
+            markChunkUsed(); // Paper - delay chunk unloads
             return this.chunk != null;
         }
     }

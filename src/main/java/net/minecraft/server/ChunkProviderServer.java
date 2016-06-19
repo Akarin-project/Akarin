@@ -307,6 +307,19 @@ public class ChunkProviderServer implements IChunkProvider {
                 }
                 activityAccountant.endActivity(); // Spigot
             }
+            // Paper start - delayed chunk unloads
+            long now = System.currentTimeMillis();
+            long unloadAfter = world.paperConfig.delayChunkUnloadsBy;
+            if (unloadAfter > 0) {
+                //noinspection Convert2streamapi
+                for (Chunk chunk : chunks.values()) {
+                    if (chunk.scheduledForUnload != null && now - chunk.scheduledForUnload > unloadAfter) {
+                        chunk.scheduledForUnload = null;
+                        unload(chunk);
+                    }
+                }
+            }
+            // Paper end
 
             this.chunkScheduler.a(booleansupplier);
         }

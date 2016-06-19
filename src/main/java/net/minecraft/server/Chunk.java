@@ -40,6 +40,7 @@ public class Chunk implements IChunkAccess {
     private boolean i;public boolean isLoaded() { return i; } // Paper - OBFHELPER
     public final World world;
     public final Map<HeightMap.Type, HeightMap> heightMap;
+    public Long scheduledForUnload; // Paper - delay chunk unloads
     public final int locX;
     public final int locZ;
     private boolean l;
