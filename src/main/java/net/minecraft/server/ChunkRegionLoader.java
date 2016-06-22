@@ -1041,7 +1041,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     }
 
     public static void a(Entity entity, GeneratorAccess generatoraccess, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason) {
-        if (generatoraccess.addEntity(entity, reason) && entity.isVehicle()) {
+        if (!entity.valid && generatoraccess.addEntity(entity, reason) && entity.isVehicle()) { // Paper
             // CraftBukkit end
             Iterator iterator = entity.bP().iterator();
 

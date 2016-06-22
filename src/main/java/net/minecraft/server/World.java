@@ -992,6 +992,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
     public boolean addEntity(Entity entity, SpawnReason spawnReason) { // Changed signature, added SpawnReason
         org.spigotmc.AsyncCatcher.catchOp( "entity add"); // Spigot
+        if (entity.valid) { MinecraftServer.LOGGER.error("Attempted Double World add on " + entity, new Throwable()); return true; } // Paper
         if (!CraftEventFactory.doEntityAddEventCalling(this, entity, spawnReason)) {
             return false;
         }
