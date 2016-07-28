@@ -355,7 +355,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
                 if (d10 > org.spigotmc.SpigotConfig.movedWronglyThreshold) { // Spigot
                     flag1 = true;
-                    PlayerConnection.LOGGER.warn("{} moved wrongly!", entity.getDisplayName().getString());
+                    PlayerConnection.LOGGER.warn(entity.getName() + " (vehicle of " + this.player.getName() + ") moved wrongly!"); // Paper - More informative
                 }
                 Location curPos = this.getPlayer().getLocation(); // Spigot
 
