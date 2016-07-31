@@ -754,6 +754,13 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         if (entity1 != entity && this.playerConnection != null) {
             this.playerConnection.a(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
         }
+        // Paper start - "Fixes" an issue in which the vehicle player would not be notified that the passenger dismounted
+        if (entity instanceof EntityPlayer) {
+            WorldServer worldServer = (WorldServer) entity.getWorld();
+            worldServer.tracker.untrackEntity(this);
+            worldServer.tracker.track(this);
+        }
+        // Paper end
 
     }
 
