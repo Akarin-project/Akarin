@@ -1412,7 +1412,8 @@ public final class CraftServer implements Server {
             // Spigot Start
             GameProfile profile = null;
             // Only fetch an online UUID in online mode
-            if ( MinecraftServer.getServer().getOnlineMode() || org.spigotmc.SpigotConfig.bungee )
+            if ( MinecraftServer.getServer().getOnlineMode()
+                    || com.destroystokyo.paper.PaperConfig.isProxyOnlineMode()) // Paper - Handle via setting
             {
                 profile = console.getUserCache().getProfile( name );
             }
