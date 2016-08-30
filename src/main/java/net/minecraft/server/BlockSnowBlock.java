@@ -16,6 +16,8 @@ public class BlockSnowBlock extends Block {
         return 4;
     }
 
+    // Paper start - snow blocks don't need to tick
+    /*
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (world.getBrightness(EnumSkyBlock.BLOCK, blockposition) > 11) {
             // CraftBukkit start
@@ -28,4 +30,6 @@ public class BlockSnowBlock extends Block {
         }
 
     }
+    */
+    //Paper end
 }
