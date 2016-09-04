@@ -2082,7 +2082,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                     case CLONE:
                         if (packetplayinwindowclick.d() == 2) {
                             click = ClickType.MIDDLE;
-                            if (packetplayinwindowclick.c() == -999) {
+                            if (packetplayinwindowclick.c() < 0) { // Paper - GH-404
                                 action = InventoryAction.NOTHING;
                             } else {
                                 Slot slot = this.player.activeContainer.getSlot(packetplayinwindowclick.c());
