@@ -34,6 +34,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
     private static final Logger cc = LogManager.getLogger();
     public String locale = null; // CraftBukkit - lowercase // Paper - default to null
+    public long lastSave = MinecraftServer.currentTick; // Paper
     public PlayerConnection playerConnection;
     public final MinecraftServer server;
     public final PlayerInteractManager playerInteractManager;

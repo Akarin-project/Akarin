@@ -143,6 +143,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
     public ConsoleReader reader;
     public static int currentTick = 0; // Paper - Further improve tick loop
+    public boolean serverAutoSave = false; // Paper
     public final Thread primaryThread;
     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
     public int autosavePeriod;
@@ -938,22 +939,30 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             this.m.b().a(agameprofile);
         }
 
-        if (autosavePeriod > 0 && this.ticks % autosavePeriod == 0) { // CraftBukkit
             this.methodProfiler.enter("save");
-            this.playerList.savePlayers();
+
+        serverAutoSave = (autosavePeriod > 0 && this.ticks % autosavePeriod == 0); // Paper
+        int playerSaveInterval = com.destroystokyo.paper.PaperConfig.playerAutoSaveRate;
+        if (playerSaveInterval < 0) {
+            playerSaveInterval = autosavePeriod;
+        }
+        if (playerSaveInterval > 0) { // CraftBukkit // Paper
+            this.playerList.savePlayers(playerSaveInterval);
             // Spigot Start
+        } // Paper - Incremental Auto Saving
+
             // We replace this with saving each individual world as this.saveChunks(...) is broken,
             // and causes the main thread to sleep for random amounts of time depending on chunk activity
             // Also pass flag to only save modified chunks
             server.playerCommandState = true;
             for (World world : getWorlds()) {
-                world.getWorld().save(false);
+                if (world.paperConfig.autoSavePeriod > 0) world.getWorld().save(false); // Paper - Incremental / Configurable Auto Saving
             }
             server.playerCommandState = false;
             // this.saveChunks(true);
             // Spigot End
             this.methodProfiler.exit();
-        }
+        //} // Paper - Incremental Auto Saving
 
         this.methodProfiler.enter("snooper");
         if (getSnooperEnabled() && !this.snooper.d() && this.ticks > 100) { // Spigot

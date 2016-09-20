@@ -243,7 +243,7 @@ public class ChunkProviderServer implements IChunkProvider {
                     this.saveChunk(chunk, false); // Spigot
                     chunk.a(false);
                     ++i;
-                    if (i == 24 && !flag && false) { // Spigot
+                    if (!flag && i >= world.paperConfig.maxAutoSaveChunksPerTick) { // Spigot - // Paper - Incremental Auto Save - cap max
                         return false;
                     }
                 }

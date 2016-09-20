@@ -53,9 +53,9 @@ public class Chunk implements IChunkAccess {
     private final TickList<Block> s;
     private final TickList<FluidType> t;
     private boolean u;
-    private boolean v;
+    private boolean v;public boolean hasEntities() { return v; } // Paper - OBFHELPER
     private long lastSaved;
-    private boolean x;
+    private boolean x; public boolean isModified() { return x; } // Paper - OBFHELPER
     private int y;
     private long z;
     private int A;
@@ -1071,11 +1071,11 @@ public class Chunk implements IChunkAccess {
             if (this.v && this.world.getTime() != this.lastSaved || this.x) {
                 return true;
             }
-        } else if (this.v && this.world.getTime() >= this.lastSaved + MinecraftServer.getServer().autosavePeriod * 4) { // Spigot - Only save if we've passed 2 auto save intervals without modification
-            return true;
         }
-
-        return this.x;
+        // Paper start - Make world configurable and incremental
+        // This !flag section should say if isModified or hasEntities, then check auto save
+        return ((isModified() || hasEntities()) && this.world.getTime() >= this.lastSaved + world.paperConfig.autoSavePeriod);
+        // Paper end
     }
 
     public boolean isEmpty() {

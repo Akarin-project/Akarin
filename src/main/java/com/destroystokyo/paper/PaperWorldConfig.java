@@ -2,6 +2,7 @@ package com.destroystokyo.paper;
 
 import java.util.List;
 
+import net.minecraft.server.MinecraftServer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.spigotmc.SpigotWorldConfig;
 
@@ -314,5 +315,20 @@ public class PaperWorldConfig {
     public boolean skipEntityTickingInChunksScheduledForUnload = true;
     private void skipEntityTickingInChunksScheduledForUnload() {
         skipEntityTickingInChunksScheduledForUnload = getBoolean("skip-entity-ticking-in-chunks-scheduled-for-unload", skipEntityTickingInChunksScheduledForUnload);
+    }
+
+    public int autoSavePeriod = -1;
+    private void autoSavePeriod() {
+        autoSavePeriod = getInt("auto-save-interval", -1);
+        if (autoSavePeriod > 0) {
+            log("Auto Save Interval: " +autoSavePeriod + " (" + (autoSavePeriod / 20) + "s)");
+        } else if (autoSavePeriod < 0) {
+            autoSavePeriod = MinecraftServer.getServer().autosavePeriod;
+        }
+    }
+
+    public int maxAutoSaveChunksPerTick = 24;
+    private void maxAutoSaveChunksPerTick() {
+        maxAutoSaveChunksPerTick = getInt("max-auto-save-chunks-per-tick", 24);
     }
 }

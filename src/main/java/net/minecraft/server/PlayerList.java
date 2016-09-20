@@ -341,6 +341,7 @@ public abstract class PlayerList {
 
     protected void savePlayerFile(EntityPlayer entityplayer) {
         if (!entityplayer.getBukkitEntity().isPersistent()) return; // CraftBukkit
+        entityplayer.lastSave = MinecraftServer.currentTick; // Paper
         this.playerFileData.save(entityplayer);
         ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) entityplayer.getStatisticManager(); // CraftBukkit
 
@@ -1207,13 +1208,25 @@ public abstract class PlayerList {
 
     }
 
+    // Paper start
     public void savePlayers() {
+        savePlayers(null);
+    }
+
+    public void savePlayers(Integer interval) {
+        long now = MinecraftServer.currentTick;
         MinecraftTimings.savePlayers.startTiming(); // Paper
+        int numSaved = 0; // Paper
         for (int i = 0; i < this.players.size(); ++i) {
-            this.savePlayerFile((EntityPlayer) this.players.get(i));
+            EntityPlayer entityplayer = this.players.get(i);
+            if (interval == null || now - entityplayer.lastSave >= interval) {
+                this.savePlayerFile(entityplayer);
+                if (interval != null && ++numSaved <= com.destroystokyo.paper.PaperConfig.maxPlayerAutoSavePerTick) { break; } // Paper
+            }
         }
         MinecraftTimings.savePlayers.stopTiming(); // Paper
     }
+    // Paper end
 
     public WhiteList getWhitelist() {
         return this.whitelist;

@@ -855,8 +855,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         ChunkProviderServer chunkproviderserver = this.getChunkProvider();
 
         if (chunkproviderserver.d()) {
-            org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getWorld())); // CraftBukkit
+            if (flag) org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getWorld())); // CraftBukkit // Paper - Incremental Auto Saving - Only fire event on full save
             timings.worldSave.startTiming(); // Paper
+            if (flag || server.serverAutoSave) { // Paper
             if (iprogressupdate != null) {
                 iprogressupdate.a(new ChatMessage("menu.savingLevel", new Object[0]));
             }
@@ -865,6 +866,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             if (iprogressupdate != null) {
                 iprogressupdate.c(new ChatMessage("menu.savingChunks", new Object[0]));
             }
+            } // Paper
 
             timings.worldSaveChunks.startTiming(); // Paper
             chunkproviderserver.a(flag);
