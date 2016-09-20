@@ -144,7 +144,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         if (this.B) {
             if (++this.C > 80) {
                 PlayerConnection.LOGGER.warn("{} was kicked for floating too long!", this.player.getDisplayName().getString());
-                this.disconnect(new ChatMessage("multiplayer.disconnect.flying", new Object[0]));
+                this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickPlayerMessage); // Paper - use configurable kick message
                 return;
             }
         } else {
@@ -163,7 +163,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             if (this.D && this.player.getRootVehicle().bO() == this.player) {
                 if (++this.E > 80) {
                     PlayerConnection.LOGGER.warn("{} was kicked for floating a vehicle too long!", this.player.getDisplayName().getString());
-                    this.disconnect(new ChatMessage("multiplayer.disconnect.flying", new Object[0]));
+                    this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickVehicleMessage); // Paper - use configurable kick message
                     return;
                 }
             } else {
