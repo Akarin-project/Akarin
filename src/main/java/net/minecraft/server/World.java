@@ -1472,7 +1472,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
 
         i = MathHelper.floor(entity.locX / 16.0D);
-        j = MathHelper.floor(entity.locY / 16.0D);
+        j = Math.min(15, Math.max(0, MathHelper.floor(entity.locY / 16.0D))); // Paper - stay consistent with chunk add/remove behavior
         int k = MathHelper.floor(entity.locZ / 16.0D);
 
         if (!entity.inChunk || entity.chunkX != i || entity.chunkY != j || entity.chunkZ != k) {
