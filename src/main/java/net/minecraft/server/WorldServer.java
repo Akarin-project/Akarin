@@ -872,6 +872,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             chunkproviderserver.a(flag);
             timings.worldSaveChunks.stopTiming(); // Paper
             // CraftBukkit - ArrayList -> Collection
+            /* //Paper start - disable vanilla chunk GC
             java.util.Collection<Chunk> list = chunkproviderserver.a();
             Iterator iterator = list.iterator();
 
@@ -881,7 +882,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 if (chunk != null && !this.manager.a(chunk.locX, chunk.locZ)) {
                     chunkproviderserver.unload(chunk);
                 }
-            }
+            }*/
+            // Paper end
             timings.worldSave.stopTiming(); // Paper
         }
     }
