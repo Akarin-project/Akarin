@@ -843,6 +843,12 @@ public class Chunk implements IChunkAccess {
                             "Chunk coordinates: " + (this.locX * 16) + "," + (this.locZ * 16));
             e.printStackTrace();
             ServerInternalException.reportInternalException(e);
+
+            if (this.world.paperConfig.removeCorruptTEs) {
+                this.removeTileEntity(tileentity.getPosition());
+                this.markDirty();
+                org.bukkit.Bukkit.getLogger().info("Removing corrupt tile entity");
+            }
             // Paper end
             // CraftBukkit end
         }
@@ -852,6 +858,7 @@ public class Chunk implements IChunkAccess {
         this.h.put(new BlockPosition(nbttagcompound.getInt("x"), nbttagcompound.getInt("y"), nbttagcompound.getInt("z")), nbttagcompound);
     }
 
+    public void removeTileEntity(BlockPosition blockposition) { this.d(blockposition); } // Paper - OBFHELPER
     public void d(BlockPosition blockposition) {
         if (this.i) {
             TileEntity tileentity = (TileEntity) this.tileEntities.remove(blockposition);

@@ -331,4 +331,9 @@ public class PaperWorldConfig {
     private void maxAutoSaveChunksPerTick() {
         maxAutoSaveChunksPerTick = getInt("max-auto-save-chunks-per-tick", 24);
     }
+
+    public boolean removeCorruptTEs = false;
+    private void removeCorruptTEs() {
+        removeCorruptTEs = getBoolean("remove-corrupt-tile-entities", false);
+    }
 }
