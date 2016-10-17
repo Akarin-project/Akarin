@@ -163,6 +163,12 @@ public class EntityPig extends EntityAnimal {
                 entitypigzombie.setCustomNameVisible(this.getCustomNameVisible());
             }
 
+            // Paper start
+            if (CraftEventFactory.callEntityZapEvent(this, entitylightning, entitypigzombie).isCancelled()) {
+                return;
+            }
+            // Paper end
+
             // CraftBukkit start
             if (CraftEventFactory.callPigZapEvent(this, entitylightning, entitypigzombie).isCancelled()) {
                 return;

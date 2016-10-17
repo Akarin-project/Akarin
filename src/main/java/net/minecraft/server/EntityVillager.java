@@ -606,6 +606,12 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
         if (!this.world.isClientSide && !this.dead) {
             EntityWitch entitywitch = new EntityWitch(this.world);
 
+            // Paper start
+            if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityZapEvent(this, entitylightning, entitywitch).isCancelled()) {
+                return;
+            }
+            // Paper end
+
             entitywitch.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
             entitywitch.prepare(this.world.getDamageScaler(new BlockPosition(entitywitch)), (GroupDataEntity) null, (NBTTagCompound) null);
             entitywitch.setNoAI(this.isNoAI());
