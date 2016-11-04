@@ -156,7 +156,13 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
     }
 
-    public int getQueueSize() { return queue.size(); } // Paper
+    // Paper start
+    private long queuedSaves = 0;
+    private final java.util.concurrent.atomic.AtomicLong processedSaves = new java.util.concurrent.atomic.AtomicLong(0L);
+    public int getQueueSize() { return queue.size(); }
+    public long getQueuedSaves() { return queuedSaves; }
+    public long getProcessedSaves() { return processedSaves.longValue(); }
+    // Paper end
 
     // CraftBukkit start - Add async variant, provide compatibility
     @Nullable
@@ -348,6 +354,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     protected void a(ChunkCoordIntPair chunkcoordintpair, Supplier<NBTTagCompound> nbttagcompound) { // Spigot
         this.saveMap.put(chunkcoordintpair.asLong(), nbttagcompound); // Paper
         queue.add(new QueuedChunk(chunkcoordintpair, nbttagcompound)); // Paper - Chunk queue improvements
+        queuedSaves++; // Paper
         FileIOThread.a().a(this);
     }
 
@@ -375,6 +382,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             // Paper end
             ChunkCoordIntPair chunkcoordintpair = chunk.coords; // Paper - Chunk queue improvements
             Supplier<NBTTagCompound> nbttagcompound = chunk.compoundSupplier; // Spigot // Paper
+            processedSaves.incrementAndGet(); // Paper
 
             if (nbttagcompound == null) {
                 return true;

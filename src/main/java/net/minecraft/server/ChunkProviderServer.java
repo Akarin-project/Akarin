@@ -28,6 +28,11 @@ public class ChunkProviderServer implements IChunkProvider {
     public final LongSet unloadQueue = new LongOpenHashSet();
     public final ChunkGenerator<?> chunkGenerator;
     public final IChunkLoader chunkLoader;
+    // Paper start - chunk save stats
+    private long lastQueuedSaves = 0L; // Paper
+    private long lastProcessedSaves = 0L; // Paper
+    private long lastSaveStatPrinted = System.currentTimeMillis();
+    // Paper end
     public final Long2ObjectMap<Chunk> chunks = Long2ObjectMaps.synchronize(new ChunkMap(8192));
     private Chunk lastChunk;
     private final ChunkTaskScheduler chunkScheduler;
@@ -239,6 +244,29 @@ public class ChunkProviderServer implements IChunkProvider {
             // Paper start
             final ChunkRegionLoader chunkLoader = (ChunkRegionLoader) world.getChunkProvider().chunkLoader;
             final int queueSize = chunkLoader.getQueueSize();
+
+            final long now = System.currentTimeMillis();
+            final long timeSince = (now - lastSaveStatPrinted) / 1000;
+            final Integer printRateSecs = Integer.getInteger("printSaveStats");
+            if (printRateSecs != null && timeSince >= printRateSecs) {
+                final String timeStr = "/" + timeSince  +"s";
+                final long queuedSaves = chunkLoader.getQueuedSaves();
+                long queuedDiff = queuedSaves - lastQueuedSaves;
+                lastQueuedSaves = queuedSaves;
+
+                final long processedSaves = chunkLoader.getProcessedSaves();
+                long processedDiff = processedSaves - lastProcessedSaves;
+                lastProcessedSaves = processedSaves;
+
+                lastSaveStatPrinted = now;
+                if (processedDiff > 0 || queueSize > 0 || queuedDiff > 0) {
+                    System.out.println("[Chunk Save Stats] " + world.worldData.getName() +
+                        " - Current: " + queueSize +
+                        " - Queued: " + queuedDiff + timeStr +
+                        " - Processed: " +processedDiff + timeStr
+                    );
+                }
+            }
             if (!flag && queueSize > world.paperConfig.queueSizeAutoSaveThreshold){
                 return false;
             }
