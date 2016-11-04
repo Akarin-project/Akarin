@@ -193,7 +193,12 @@ public class BlockChest extends BlockTileEntity implements IFluidSource, IFluidC
                 return (ITileInventory) object;
             } else {
                 BlockPosition blockposition1 = blockposition.shift(k(iblockdata));
-                IBlockData iblockdata1 = world.getType(blockposition1);
+                // Paper start - don't load chunks if the other side of the chest is in unloaded chunk
+                final IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition1); // Paper
+                if (iblockdata1 ==  null) {
+                    return null;
+                }
+                // Paper end
 
                 if (iblockdata1.getBlock() == this) {
                     BlockPropertyChestType blockpropertychesttype1 = (BlockPropertyChestType) iblockdata1.get(BlockChest.b);
