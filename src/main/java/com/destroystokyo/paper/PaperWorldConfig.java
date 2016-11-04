@@ -332,6 +332,11 @@ public class PaperWorldConfig {
         maxAutoSaveChunksPerTick = getInt("max-auto-save-chunks-per-tick", 24);
     }
 
+    public int queueSizeAutoSaveThreshold = 50;
+    private void queueSizeAutoSaveThreshold() {
+        queueSizeAutoSaveThreshold = getInt("save-queue-limit-for-auto-save", 50);
+    }
+
     public boolean removeCorruptTEs = false;
     private void removeCorruptTEs() {
         removeCorruptTEs = getBoolean("remove-corrupt-tile-entities", false);

@@ -236,6 +236,13 @@ public class ChunkProviderServer implements IChunkProvider {
         synchronized (this.chunkLoader) {
             ObjectIterator objectiterator = this.chunks.values().iterator();
 
+            // Paper start
+            final ChunkRegionLoader chunkLoader = (ChunkRegionLoader) world.getChunkProvider().chunkLoader;
+            final int queueSize = chunkLoader.getQueueSize();
+            if (!flag && queueSize > world.paperConfig.queueSizeAutoSaveThreshold){
+                return false;
+            }
+            // Paper end
             while (objectiterator.hasNext()) {
                 Chunk chunk = (Chunk) objectiterator.next();
 

@@ -156,6 +156,8 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
     }
 
+    public int getQueueSize() { return queue.size(); } // Paper
+
     // CraftBukkit start - Add async variant, provide compatibility
     @Nullable
     public Chunk a(GeneratorAccess generatoraccess, int i, int j, Consumer<Chunk> consumer) throws IOException {
