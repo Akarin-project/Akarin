@@ -228,6 +228,15 @@ public class EntityFallingBlock extends Entity {
 
     protected void a(NBTTagCompound nbttagcompound) {
         this.block = GameProfileSerializer.d(nbttagcompound.getCompound("BlockState"));
+
+        // Paper start - Block FallingBlocks with Command Blocks
+        // Check mappings on update - dc = "repeating_command_block" - dd = "chain_command_block"
+        final Block b = this.block.getBlock();
+        if (this.world.paperConfig.filterNBTFromSpawnEgg && (b == Blocks.COMMAND_BLOCK || b == Blocks.REPEATING_COMMAND_BLOCK || b == Blocks.CHAIN_COMMAND_BLOCK)) {
+            this.block = Blocks.STONE.getBlockData();
+        }
+        // Paper end
+
         this.ticksLived = nbttagcompound.getInt("Time");
         if (nbttagcompound.hasKeyOfType("HurtEntities", 99)) {
             this.hurtEntities = nbttagcompound.getBoolean("HurtEntities");

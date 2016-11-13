@@ -3,6 +3,7 @@ package com.destroystokyo.paper;
 import java.util.List;
 
 import net.minecraft.server.MinecraftServer;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.spigotmc.SpigotWorldConfig;
 
@@ -340,5 +341,13 @@ public class PaperWorldConfig {
     public boolean removeCorruptTEs = false;
     private void removeCorruptTEs() {
         removeCorruptTEs = getBoolean("remove-corrupt-tile-entities", false);
+    }
+
+    public boolean filterNBTFromSpawnEgg = true;
+    private void fitlerNBTFromSpawnEgg() {
+        filterNBTFromSpawnEgg = getBoolean("filter-nbt-data-from-spawn-eggs-and-related", true);
+        if (!filterNBTFromSpawnEgg) {
+            Bukkit.getLogger().warning("Spawn Egg and Armor Stand NBT filtering disabled, this is a potential security risk");
+        }
     }
 }
