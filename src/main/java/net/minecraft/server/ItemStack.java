@@ -44,7 +44,7 @@ public final class ItemStack {
     private int e;
     @Deprecated
     private Item item;
-    private NBTTagCompound tag;
+    NBTTagCompound tag; // Paper -> package private
     private boolean h;
     private EntityItemFrame i;
     private ShapeDetectorBlock j;

@@ -253,6 +253,15 @@ public class PacketDataSerializer extends ByteBuf {
                 CraftItemStack.setItemMeta(itemstack, CraftItemStack.getItemMeta(itemstack));
                 // Spigot end
                 nbttagcompound = itemstack.getTag();
+                // Paper start
+                if (nbttagcompound != null && nbttagcompound.hasKeyOfType("SkullOwner", 10)) {
+                    NBTTagCompound owner = nbttagcompound.getCompound("SkullOwner");
+                    if (owner.hasKey("Id")) {
+                        nbttagcompound.setString("SkullOwnerOrig", owner.getString("Id"));
+                        TileEntitySkull.sanitizeUUID(owner);
+                    }
+                }
+                // Paper end
             }
 
             this.a(nbttagcompound);
@@ -272,6 +281,16 @@ public class PacketDataSerializer extends ByteBuf {
             itemstack.setTag(this.j());
             // CraftBukkit start
             if (itemstack.getTag() != null) {
+                // Paper start - Fix skulls of same owner - restore orig ID since we changed it on send to client
+                if (itemstack.tag.hasKey("SkullOwnerOrig")) {
+                    NBTTagCompound owner = itemstack.tag.getCompound("SkullOwner");
+                    String ownerOrig = itemstack.tag.getString("SkullOwnerOrig");
+                    if (!owner.isEmpty() && !ownerOrig.isEmpty()) {
+                        owner.setString("Id", ownerOrig);
+                    }
+                    itemstack.tag.remove("SkullOwnerOrig");
+                }
+                // Paper end
                 CraftItemStack.setItemMeta(itemstack, CraftItemStack.getItemMeta(itemstack));
             }
             // CraftBukkit end

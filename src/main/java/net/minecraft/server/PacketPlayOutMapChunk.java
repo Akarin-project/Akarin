@@ -38,6 +38,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
 
             if (this.f() || (i & 1 << j) != 0) {
                 NBTTagCompound nbttagcompound = tileentity.aa_();
+                if (tileentity instanceof TileEntitySkull) { TileEntitySkull.sanitizeTileEntityUUID(nbttagcompound); } // Paper
 
                 this.e.add(nbttagcompound);
             }
@@ -122,7 +123,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
             BiomeBase[] abiomebase = chunk.getBiomeIndex();
 
             for (l = 0; l < abiomebase.length; ++l) {
-                packetdataserializer.writeInt(IRegistry.BIOME.a((Object) abiomebase[l]));
+                packetdataserializer.writeInt(IRegistry.BIOME.a(abiomebase[l])); // Paper - Decompile fix
             }
         }
 
