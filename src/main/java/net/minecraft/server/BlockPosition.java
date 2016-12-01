@@ -202,18 +202,18 @@ public class BlockPosition extends BaseBlockPosition {
                     if (this.g == null) {
                         this.g = new BlockPosition.MutableBlockPosition(i, j, k);
                         return this.g;
-                    } else if (this.g.b == l && this.g.c == i1 && this.g.d == j1) {
+                    } else if (this.g.x == l && this.g.y == i1 && this.g.z == j1) {
                         return (BlockPosition.MutableBlockPosition) this.endOfData();
                     } else {
-                        if (this.g.b < l) {
-                            ++this.g.b;
-                        } else if (this.g.c < i1) {
-                            this.g.b = i; // Paper - decompile fix Readd line removed by the decompiler
-                            ++this.g.c;
-                        } else if (this.g.d < j1) {
-                            this.g.b = i; // Paper - decompile fix Readd line removed by the decompiler
-                            this.g.c = j; // Paper - decompile fix Readd line removed by the decompiler
-                            ++this.g.d;
+                        if (this.g.x < l) {
+                            ++this.g.x;
+                        } else if (this.g.y < i1) {
+                            this.g.x = i; // Paper - decompile fix Readd line removed by the decompiler
+                            ++this.g.y;
+                        } else if (this.g.z < j1) {
+                            this.g.x = i; // Paper - decompile fix Readd line removed by the decompiler
+                            this.g.y = j; // Paper - decompile fix Readd line removed by the decompiler
+                            ++this.g.z;
                         }
 
                         return this.g;
@@ -296,11 +296,12 @@ public class BlockPosition extends BaseBlockPosition {
     }
 
     public static class MutableBlockPosition extends BlockPosition {
-
+        // Paper start - comment out
+        /*
         protected int b;
         protected int c;
         protected int d;
-        // Paper start
+
         @Override
         public boolean isValidLocation() {
             return b >= -30000000 && d >= -30000000 && b < 30000000 && d < 30000000 && c >= 0 && c < 256;
@@ -309,6 +310,7 @@ public class BlockPosition extends BaseBlockPosition {
         public boolean isInvalidYLocation() {
             return c < 0 || c >= 256;
         }
+        */
         // Paper end
 
         public MutableBlockPosition() {
@@ -320,10 +322,13 @@ public class BlockPosition extends BaseBlockPosition {
         }
 
         public MutableBlockPosition(int i, int j, int k) {
-            super(0, 0, 0);
+            // Paper start
+            super(i, j, k);
+            /*
             this.b = i;
             this.c = j;
-            this.d = k;
+            this.d = k;*/
+            // Paper end
         }
 
         public BlockPosition a(double d0, double d1, double d2) {
@@ -342,6 +347,8 @@ public class BlockPosition extends BaseBlockPosition {
             return super.a(enumblockrotation).h();
         }
 
+        /*
+        // Paper start - use parent getters
         public int getX() {
             return this.b;
         }
@@ -352,13 +359,16 @@ public class BlockPosition extends BaseBlockPosition {
 
         public int getZ() {
             return this.d;
-        }
+        }*/
+        // Paper end
 
         public BlockPosition.MutableBlockPosition setValues(int i, int j, int k) { return c(i, j, k);} // Paper - OBFHELPER
         public BlockPosition.MutableBlockPosition c(int i, int j, int k) {
-            this.b = i;
-            this.c = j;
-            this.d = k;
+            // Paper start - use xyz
+            this.x = i;
+            this.y = j;
+            this.z = k;
+            // Paper end
             return this;
         }
 
@@ -376,15 +386,15 @@ public class BlockPosition extends BaseBlockPosition {
         }
 
         public BlockPosition.MutableBlockPosition c(EnumDirection enumdirection, int i) {
-            return this.c(this.b + enumdirection.getAdjacentX() * i, this.c + enumdirection.getAdjacentY() * i, this.d + enumdirection.getAdjacentZ() * i);
+            return this.c(x + enumdirection.getAdjacentX() * i, y + enumdirection.getAdjacentY() * i, z + enumdirection.getAdjacentZ() * i); // Paper - use xyz
         }
 
         public BlockPosition.MutableBlockPosition d(int i, int j, int k) {
-            return this.c(this.b + i, this.c + j, this.d + k);
+            return this.c(x + i, y + j, z + k); // Paper - use xyz
         }
 
         public void p(int i) {
-            this.c = i;
+            this.y = i; // Paper change to y
         }
 
         public BlockPosition toBlockPosition() { return h(); } // Paper - OBFHELPER
