@@ -268,6 +268,10 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         return this.getType(blockposition).isAir();
     }
 
+    public boolean isLoaded(BlockPosition blockposition) {
+        return getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4) != null; // Paper
+    }
+
     // Paper start
     public boolean isLoadedAndInBounds(BlockPosition blockposition) {
         return getWorldBorder().isInBounds(blockposition) && getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4) != null;
