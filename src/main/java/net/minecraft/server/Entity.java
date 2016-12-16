@@ -156,7 +156,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     public boolean ak;
     public boolean impulse;
     public int portalCooldown;
-    protected boolean an;
+    protected boolean an; public boolean inPortal() { return an; } // Paper - OBFHELPER
     protected int ao;
     public DimensionManager dimension;
     protected BlockPosition aq;

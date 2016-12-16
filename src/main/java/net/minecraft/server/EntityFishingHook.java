@@ -190,6 +190,12 @@ public class EntityFishingHook extends Entity {
             this.motY *= 0.92D;
             this.motZ *= 0.92D;
             this.setPosition(this.locX, this.locY, this.locZ);
+
+            // Paper start - These shouldn't be going through portals
+            if (this.inPortal()) {
+                this.die();
+            }
+            // Paper end
         }
     }
 
