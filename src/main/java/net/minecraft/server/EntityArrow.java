@@ -194,6 +194,16 @@ public abstract class EntityArrow extends Entity implements IProjectile {
                 }
             }
 
+            // Paper start - Call ProjectileCollideEvent
+            // TODO: flag - noclip - call cancelled?
+            if (movingobjectposition != null && movingobjectposition.entity != null) {
+                com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideEvent(this, movingobjectposition);
+                if (event.isCancelled()) {
+                    movingobjectposition = null;
+                }
+            }
+            // Paper end
+
             if (movingobjectposition != null && !flag) {
                 this.a(movingobjectposition);
                 this.impulse = true;

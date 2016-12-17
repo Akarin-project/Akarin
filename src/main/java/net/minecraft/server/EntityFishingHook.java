@@ -245,6 +245,16 @@ public class EntityFishingHook extends Entity {
 
         vec3d = new Vec3D(this.locX, this.locY, this.locZ);
         vec3d1 = new Vec3D(this.locX + this.motX, this.locY + this.motY, this.locZ + this.motZ);
+
+        // Paper start - Call ProjectileCollideEvent
+        if (movingobjectposition != null && movingobjectposition.entity != null) {
+            com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideEvent(this, movingobjectposition);
+            if (event.isCancelled()) {
+                movingobjectposition = null;
+            }
+        }
+        // Paper end
+
         if (movingobjectposition != null) {
             vec3d1 = new Vec3D(movingobjectposition.pos.x, movingobjectposition.pos.y, movingobjectposition.pos.z);
         }
