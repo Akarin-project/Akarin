@@ -752,6 +752,7 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
         public void a(IMerchant imerchant, MerchantRecipeList merchantrecipelist, Random random) {
             int i = this.a.a(random);
             World world = imerchant.getWorld();
+            if (!world.paperConfig.enableTreasureMaps) return; //Paper
             BlockPosition blockposition = world.a(this.b, imerchant.getPosition(), 100, true);
 
             if (blockposition != null) {
