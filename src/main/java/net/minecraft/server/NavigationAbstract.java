@@ -75,6 +75,7 @@ public abstract class NavigationAbstract {
 
     @Nullable
     public PathEntity b(BlockPosition blockposition) {
+        if (!getEntity().getWorld().getWorldBorder().isInBounds(blockposition)) return null; // Paper - don't path out of world border
         if (!this.b()) {
             return null;
         } else if (this.c != null && !this.c.b() && blockposition.equals(this.q)) {
@@ -101,7 +102,7 @@ public abstract class NavigationAbstract {
             return null;
         } else {
             BlockPosition blockposition = new BlockPosition(entity);
-
+            if (!getEntity().getWorld().getWorldBorder().isInBounds(blockposition)) return null; // Paper - don't path out of world border
             if (this.c != null && !this.c.b() && blockposition.equals(this.q)) {
                 return this.c;
             } else {

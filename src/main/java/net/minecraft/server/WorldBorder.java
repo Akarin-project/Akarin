@@ -19,7 +19,7 @@ public class WorldBorder {
 
     public WorldBorder() {}
 
-    public boolean a(BlockPosition blockposition) {
+    public boolean isInBounds(BlockPosition blockposition) { return a(blockposition); }public boolean a(BlockPosition blockposition) { // Paper - OBFHELPER
         return (double) (blockposition.getX() + 1) > this.b() && (double) blockposition.getX() < this.d() && (double) (blockposition.getZ() + 1) > this.c() && (double) blockposition.getZ() < this.e();
     }
 
