@@ -122,6 +122,7 @@ public abstract class StructureGenerator<C extends WorldGenFeatureConfiguration>
 
                             if (flag1 || flag2) {
                                 ChunkCoordIntPair chunkcoordintpair = this.a(chunkgenerator, seededrandom, j, k, i1, j1);
+                                if (!world.getWorldBorder().isChunkInBounds(chunkcoordintpair.x, chunkcoordintpair.z)) { continue; } // Paper
                                 StructureStart structurestart = this.a(world, chunkgenerator, seededrandom, chunkcoordintpair.a());
 
                                 if (structurestart != StructureGenerator.a) {
