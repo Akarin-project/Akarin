@@ -142,7 +142,7 @@ public final class ItemStack {
     }
 
     public boolean isEmpty() {
-        return this == ItemStack.a ? true : (this.getItem() != null && this.getItem() != Items.AIR ? this.count <= 0 : true);
+        return this == ItemStack.a || this.item == null || this.item == Items.AIR || this.count <= 0; // Paper
     }
 
     public ItemStack cloneAndSubtract(int i) {
