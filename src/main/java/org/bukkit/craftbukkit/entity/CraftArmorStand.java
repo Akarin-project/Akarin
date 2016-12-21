@@ -211,4 +211,16 @@ public class CraftArmorStand extends CraftLivingEntity implements ArmorStand {
     public void setMarker(boolean marker) {
         getHandle().setMarker(marker);
     }
+
+    // Paper start
+    @Override
+    public boolean canMove() {
+        return getHandle().canMove;
+    }
+
+    @Override
+    public void setCanMove(boolean move) {
+        getHandle().canMove = move;
+    }
+    // Paper end
 }

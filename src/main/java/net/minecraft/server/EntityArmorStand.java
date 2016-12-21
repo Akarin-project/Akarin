@@ -44,6 +44,7 @@ public class EntityArmorStand extends EntityLiving {
     public Vector3f rightArmPose;
     public Vector3f leftLegPose;
     public Vector3f rightLegPose;
+    public boolean canMove = true; // Paper
 
     public EntityArmorStand(World world) {
         super(EntityTypes.ARMOR_STAND, world);
@@ -754,4 +755,13 @@ public class EntityArmorStand extends EntityLiving {
     public boolean df() {
         return false;
     }
+
+    // Paper start
+    @Override
+    public void move(EnumMoveType moveType, double x, double y, double z) {
+        if (this.canMove) {
+            super.move(moveType, x, y, z);
+        }
+    }
+    // Paper end
 }
