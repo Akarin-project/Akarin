@@ -1561,7 +1561,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
     @Override
     protected boolean isFrozen() {
-        return super.isFrozen() || !getBukkitEntity().isOnline();
+        return super.isFrozen() || (this.playerConnection != null && this.playerConnection.isDisconnected()); // Paper
     }
 
     @Override
