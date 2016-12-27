@@ -208,6 +208,18 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     // Paper start
     @Override
+    public void sendActionBar(String message) {
+        if (getHandle().playerConnection == null || message == null || message.isEmpty()) return;
+        getHandle().playerConnection.sendPacket(new PacketPlayOutChat(new net.minecraft.server.ChatComponentText(message), net.minecraft.server.ChatMessageType.GAME_INFO));
+    }
+
+    @Override
+    public void sendActionBar(char alternateChar, String message) {
+        if (message == null || message.isEmpty()) return;
+        sendActionBar(org.bukkit.ChatColor.translateAlternateColorCodes(alternateChar, message));
+    }
+
+    @Override
     public void setPlayerListHeaderFooter(BaseComponent[] header, BaseComponent[] footer) {
          if (header != null) {
              String headerJson = net.md_5.bungee.chat.ComponentSerializer.toString(header);

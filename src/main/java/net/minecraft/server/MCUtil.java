@@ -2,6 +2,7 @@ package net.minecraft.server;
 
 import com.destroystokyo.paper.block.TargetBlockInfo;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -24,6 +25,24 @@ public final class MCUtil {
 
     private MCUtil() {}
 
+    /**
+     * Quickly generate a stack trace for current location
+     *
+     * @return Stacktrace
+     */
+    public static String stack() {
+        return ExceptionUtils.getFullStackTrace(new Throwable());
+    }
+
+    /**
+     * Quickly generate a stack trace for current location with message
+     *
+     * @param str
+     * @return Stacktrace
+     */
+    public static String stack(String str) {
+        return ExceptionUtils.getFullStackTrace(new Throwable(str));
+    }
 
     public static boolean isMainThread() {
         return MinecraftServer.getServer().isMainThread();
