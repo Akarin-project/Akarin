@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
+
 import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 
 public class EntityFireworks extends Entity {
@@ -10,7 +12,8 @@ public class EntityFireworks extends Entity {
     private static final DataWatcherObject<Integer> b = DataWatcher.a(EntityFireworks.class, DataWatcherRegistry.b);
     private int ticksFlown;
     public int expectedLifespan;
-    private EntityLiving e;
+    public UUID spawningEntity; // Paper
+    private EntityLiving e;public EntityLiving getBoostedEntity() { return e; } // Paper - OBFHELPER
 
     public EntityFireworks(World world) {
         super(EntityTypes.FIREWORK_ROCKET, world);
@@ -197,6 +200,12 @@ public class EntityFireworks extends Entity {
             nbttagcompound.set("FireworksItem", itemstack.save(new NBTTagCompound()));
         }
 
+        // Paper start
+        if (spawningEntity != null) {
+            nbttagcompound.setUUID("SpawningEntity", spawningEntity);
+        }
+        // Paper end
+
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -207,7 +216,11 @@ public class EntityFireworks extends Entity {
         if (!itemstack.isEmpty()) {
             this.datawatcher.set(EntityFireworks.FIREWORK_ITEM, itemstack);
         }
-
+        // Paper start
+        if (nbttagcompound.hasUUID("SpawningEntity")) {
+            spawningEntity = nbttagcompound.getUUID("SpawningEntity");
+        }
+        // Paper end
     }
 
     public boolean bk() {

@@ -16,6 +16,7 @@ public class ItemFireworks extends Item {
             BlockPosition blockposition = itemactioncontext.getClickPosition();
             ItemStack itemstack = itemactioncontext.getItemStack();
             EntityFireworks entityfireworks = new EntityFireworks(world, (double) ((float) blockposition.getX() + itemactioncontext.m()), (double) ((float) blockposition.getY() + itemactioncontext.n()), (double) ((float) blockposition.getZ() + itemactioncontext.o()), itemstack);
+            entityfireworks.spawningEntity = itemactioncontext.b.getUniqueID(); // Paper
 
             world.addEntity(entityfireworks);
             itemstack.subtract(1);
@@ -30,6 +31,7 @@ public class ItemFireworks extends Item {
 
             if (!world.isClientSide) {
                 EntityFireworks entityfireworks = new EntityFireworks(world, itemstack, entityhuman);
+                entityfireworks.spawningEntity = entityhuman.getUniqueID(); // Paper
 
                 world.addEntity(entityfireworks);
                 if (!entityhuman.abilities.canInstantlyBuild) {
