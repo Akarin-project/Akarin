@@ -100,6 +100,7 @@ public class BlockShulkerBox extends BlockTileEntity {
                     }
 
                     a(world, blockposition, itemstack);
+                    tileentityshulkerbox.clear(); // Paper - This was intended to be called in Vanilla (is checked in the if statement above if has been called) - Fixes dupe issues
                 }
             }
             world.updateAdjacentComparators(blockposition, iblockdata.getBlock());
