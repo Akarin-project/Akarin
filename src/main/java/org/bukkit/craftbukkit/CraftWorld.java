@@ -236,6 +236,7 @@ public class CraftWorld implements World {
     }
 
     private boolean unloadChunk0(int x, int z, boolean save) {
+        Boolean result = MCUtil.ensureMain("Unload Chunk", () -> { // Paper - Ensure never async
         net.minecraft.server.Chunk chunk = world.getChunkProvider().getChunkAt(x, z, false, false);
         if (chunk == null) {
             return true;
@@ -243,6 +244,7 @@ public class CraftWorld implements World {
 
         // If chunk had previously been queued to save, must do save to avoid loss of that data
         return world.getChunkProvider().unloadChunk(chunk, chunk.mustSave || save);
+        }); return result != null ? result : false; // Paper - Ensure never async
     }
 
     public boolean regenerateChunk(int x, int z) {
