@@ -1214,6 +1214,7 @@ public abstract class PlayerList {
     }
 
     public void savePlayers(Integer interval) {
+        MCUtil.ensureMain("Save Players", () -> { // Paper - ensure main
         long now = MinecraftServer.currentTick;
         MinecraftTimings.savePlayers.startTiming(); // Paper
         int numSaved = 0; // Paper
@@ -1225,6 +1226,7 @@ public abstract class PlayerList {
             }
         }
         MinecraftTimings.savePlayers.stopTiming(); // Paper
+        return null; }); // Paper - ensure main
     }
     // Paper end
 
