@@ -88,6 +88,29 @@ public class CraftWorld implements World {
     private int chunkLoadCount = 0;
     private int chunkGCTickCount;
 
+    // Paper start - Provide fast information methods
+    public int getEntityCount() {
+        return world.entityList.size();
+    }
+    public int getTileEntityCount() {
+        // We don't use the full world tile entity list, so we must iterate chunks
+        int size = 0;
+        for (net.minecraft.server.Chunk chunk : ((ChunkProviderServer) world.getChunkProvider()).chunks.values()) {
+            size += chunk.tileEntities.size();
+        }
+        return size;
+    }
+    public int getTickableTileEntityCount() {
+        return world.tileEntityListTick.size();
+    }
+    public int getChunkCount() {
+        return world.getChunkProvider().chunks.size();
+    }
+    public int getPlayerCount() {
+        return world.players.size();
+    }
+    // Paper end
+
     private static final Random rand = new Random();
 
     public CraftWorld(WorldServer world, ChunkGenerator gen, Environment env) {
