@@ -182,6 +182,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     public final boolean defaultActivationState;
     public long activatedTick = Integer.MIN_VALUE;
     public boolean fromMobSpawner;
+    protected int numCollisions = 0; // Paper
     public void inactiveTick() { }
     // Spigot end
 
