@@ -119,8 +119,11 @@ public class PlayerChunkMap {
         }
 
         if (!this.h.isEmpty()) {
-            long k = SystemUtils.getMonotonicNanos() + 50000000L;
-            int l = 49;
+            // Spigot start
+            org.spigotmc.SlackActivityAccountant activityAccountant = this.world.getMinecraftServer().slackActivityAccountant;
+            activityAccountant.startActivity(0.5);
+            // Spigot end
+
             Iterator iterator1 = this.h.iterator();
 
             while (iterator1.hasNext()) {
@@ -135,8 +138,7 @@ public class PlayerChunkMap {
                             this.g.remove(playerchunk1);
                         }
 
-                        --l;
-                        if (l < 0 || SystemUtils.getMonotonicNanos() > k) {
+                        if (activityAccountant.activityTimeIsExhausted()) { // Spigot
                             break;
                         }
                     }
@@ -146,6 +148,8 @@ public class PlayerChunkMap {
                 }
                 // CraftBukkit end
             }
+
+            activityAccountant.endActivity(); // Spigot
         }
 
         if (!this.g.isEmpty()) {

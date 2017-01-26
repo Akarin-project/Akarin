@@ -262,13 +262,21 @@ public class ChunkProviderServer implements IChunkProvider {
         }
     }
 
+    private static final double UNLOAD_QUEUE_RESIZE_FACTOR = 0.96; // Spigot
+
     public boolean unloadChunks(BooleanSupplier booleansupplier) {
         if (!this.world.savingDisabled) {
             if (!this.unloadQueue.isEmpty()) {
+                // Spigot start
+                org.spigotmc.SlackActivityAccountant activityAccountant = this.world.getMinecraftServer().slackActivityAccountant;
+                activityAccountant.startActivity(0.5);
+                int targetSize = (int) (this.unloadQueue.size() * UNLOAD_QUEUE_RESIZE_FACTOR);
+                // Spigot end
                 Iterator<Long> iterator = this.unloadQueue.iterator();
 
-                for (int i = 0; iterator.hasNext() && (booleansupplier.getAsBoolean() || i < 200 || this.unloadQueue.size() > 2000); iterator.remove()) {
+                while (iterator.hasNext()) { // Spigot
                     Long olong = (Long) iterator.next();
+                    iterator.remove(); // Spigot
                     IChunkLoader ichunkloader = this.chunkLoader;
 
                     synchronized (this.chunkLoader) {
@@ -281,10 +289,15 @@ public class ChunkProviderServer implements IChunkProvider {
                             }
                             // CraftBukkit end
 
-                            ++i;
+                            // Spigot start
+                            if (!booleansupplier.getAsBoolean() && this.unloadQueue.size() <= targetSize && activityAccountant.activityTimeIsExhausted()) {
+                                break;
+                            }
+                            // Spigot end
                         }
                     }
                 }
+                activityAccountant.endActivity(); // Spigot
             }
 
             this.chunkScheduler.a(booleansupplier);

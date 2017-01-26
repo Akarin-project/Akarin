@@ -63,6 +63,7 @@ import org.bukkit.craftbukkit.Main;
 import org.bukkit.event.server.ServerLoadEvent;
 // CraftBukkit end
 import org.bukkit.craftbukkit.SpigotTimings; // Spigot
+import org.spigotmc.SlackActivityAccountant; // Spigot
 
 public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStatistics, ICommandListener, Runnable {
 
@@ -151,6 +152,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public static final int TICK_TIME = 1000000000 / TPS;
     private static final int SAMPLE_INTERVAL = 100;
     public final double[] recentTps = new double[ 3 ];
+    public final SlackActivityAccountant slackActivityAccountant = new SlackActivityAccountant();
     // Spigot end
 
     public MinecraftServer(OptionSet options, Proxy proxy, DataFixer datafixer, CommandDispatcher commanddispatcher, YggdrasilAuthenticationService yggdrasilauthenticationservice, MinecraftSessionService minecraftsessionservice, GameProfileRepository gameprofilerepository, UserCache usercache) {
@@ -816,6 +818,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
     protected void a(BooleanSupplier booleansupplier) {
         SpigotTimings.serverTickTimer.startTiming(); // Spigot
+        this.slackActivityAccountant.tickStarted(); // Spigot
         long i = SystemUtils.getMonotonicNanos();
 
         ++this.ticks;
@@ -876,6 +879,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.methodProfiler.exit();
         this.methodProfiler.exit();
         org.spigotmc.WatchdogThread.tick(); // Spigot
+        this.slackActivityAccountant.tickEnded(l); // Spigot
         SpigotTimings.serverTickTimer.stopTiming(); // Spigot
         org.spigotmc.CustomTimingsHandler.tick(); // Spigot
     }
