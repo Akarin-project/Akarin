@@ -146,6 +146,12 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public File bukkitDataPackFolder;
     public CommandDispatcher vanillaCommandDispatcher;
     // CraftBukkit end
+    // Spigot start
+    public static final int TPS = 20;
+    public static final int TICK_TIME = 1000000000 / TPS;
+    private static final int SAMPLE_INTERVAL = 100;
+    public final double[] recentTps = new double[ 3 ];
+    // Spigot end
 
     public MinecraftServer(OptionSet options, Proxy proxy, DataFixer datafixer, CommandDispatcher commanddispatcher, YggdrasilAuthenticationService yggdrasilauthenticationservice, MinecraftSessionService minecraftsessionservice, GameProfileRepository gameprofilerepository, UserCache usercache) {
         this.ac = new ResourceManager(EnumResourcePackType.SERVER_DATA);
@@ -672,6 +678,13 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         return SystemUtils.getMonotonicMillis() < this.nextTick;
     }
 
+    // Spigot Start
+    private static double calcTps(double avg, double exp, double tps)
+    {
+        return ( avg * exp ) + ( tps * ( 1 - exp ) );
+    }
+    // Spigot End
+
     public void run() {
         try {
             if (this.init()) {
@@ -680,26 +693,34 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
                 this.m.setServerInfo(new ServerPing.ServerData("1.13.2", 404));
                 this.a(this.m);
 
+                // Spigot start
+                Arrays.fill( recentTps, 20 );
+                long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick, tickCount = 1;
                 while (this.isRunning) {
-                    long i = SystemUtils.getMonotonicMillis() - this.nextTick;
-
-                    if (i > 2000L && this.nextTick - this.lastOverloadTime >= 15000L) {
-                        long j = i / 50L;
-
-                        if (server.getWarnOnOverload()) // CraftBukkit
-                        MinecraftServer.LOGGER.warn("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", i, j);
-                        this.nextTick += j * 50L;
-                        this.lastOverloadTime = this.nextTick;
+                    curTime = System.nanoTime();
+                    wait = TICK_TIME - (curTime - lastTick) - catchupTime;
+                    if (wait > 0) {
+                        Thread.sleep(wait / 1000000);
+                        catchupTime = 0;
+                        continue;
+                    } else {
+                        catchupTime = Math.min(1000000000, Math.abs(wait));
                     }
+
+                    if ( tickCount++ % SAMPLE_INTERVAL == 0 )
+                    {
+                        double currentTps = 1E9 / ( curTime - tickSection ) * SAMPLE_INTERVAL;
+                        recentTps[0] = calcTps( recentTps[0], 0.92, currentTps ); // 1/exp(5sec/1min)
+                        recentTps[1] = calcTps( recentTps[1], 0.9835, currentTps ); // 1/exp(5sec/5min)
+                        recentTps[2] = calcTps( recentTps[2], 0.9945, currentTps ); // 1/exp(5sec/15min)
+                        tickSection = curTime;
+                    }
+                    lastTick = curTime;
 
                     MinecraftServer.currentTick = (int) (System.currentTimeMillis() / 50); // CraftBukkit
                     this.a(this::canSleepForTick);
                     this.nextTick += 50L;
-
-                    while (this.canSleepForTick()) {
-                        Thread.sleep(1L);
-                    }
-
+                    // Spigot end
                     this.P = true;
                 }
             } else {

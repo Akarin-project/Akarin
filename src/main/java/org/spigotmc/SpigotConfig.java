@@ -271,4 +271,9 @@ public class SpigotConfig
             }
         }
     }
+
+    private static void tpsCommand()
+    {
+        commands.put( "tps", new TicksPerSecondCommand( "tps" ) );
+    }
 }
