@@ -313,7 +313,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 // Spigot start
                 org.spigotmc.SlackActivityAccountant activityAccountant = this.world.getMinecraftServer().slackActivityAccountant;
                 activityAccountant.startActivity(0.5);
-                int targetSize = (int) (this.unloadQueue.size() * UNLOAD_QUEUE_RESIZE_FACTOR);
+                int targetSize = Math.min(this.unloadQueue.size() - 100,  (int) (this.unloadQueue.size() * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
                 // Spigot end
                 Iterator<Long> iterator = this.unloadQueue.iterator();
 
