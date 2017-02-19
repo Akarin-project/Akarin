@@ -763,5 +763,10 @@ public class EntityArmorStand extends EntityLiving {
             super.move(moveType, x, y, z);
         }
     }
+
+    @Override
+    public boolean canBreatheUnderwater() { // Skips a bit of damage handling code, probably a micro-optimization
+        return true;
+    }
     // Paper end
 }
