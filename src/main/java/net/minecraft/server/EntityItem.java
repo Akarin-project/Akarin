@@ -13,6 +13,7 @@ public class EntityItem extends Entity {
     private static final DataWatcherObject<ItemStack> b = DataWatcher.a(EntityItem.class, DataWatcherRegistry.g);
     public int age; // PAIL
     public int pickupDelay;
+    public boolean canMobPickup = true; // Paper
     private int e;
     private UUID f;
     private UUID g;
