@@ -85,6 +85,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public final Map<DimensionManager, WorldServer> worldServer = Maps.newLinkedHashMap(); // CraftBukkit - keep order, k+v already use identity methods
     private PlayerList playerList;
     private boolean isRunning = true;
+    private boolean isRestarting = false; // Paper - flag to signify we're attempting to restart
     private boolean isStopped;
     private int ticks;
     protected final Proxy c;
@@ -655,7 +656,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         if (this.playerList != null) {
             MinecraftServer.LOGGER.info("Saving players");
             this.playerList.savePlayers();
-            this.playerList.u();
+            this.playerList.u(isRestarting); // Paper
             try { Thread.sleep(100); } catch (InterruptedException ex) {} // CraftBukkit - SPIGOT-625 - give server at least a chance to send packets
         }
 
@@ -705,9 +706,16 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         return this.isRunning;
     }
 
+    // Paper start - allow passing of the intent to restart
     public void safeShutdown() {
-        this.isRunning = false;
+        safeShutdown(false);
     }
+
+    public void safeShutdown(boolean isRestarting) {
+        this.isRunning = false;
+        this.isRestarting = isRestarting;
+    }
+    // Paper end
 
     private boolean canSleepForTick() {
         return System.nanoTime() - lastTick + catchupTime < TICK_TIME; // Paper - improved "are we lagging" check to match our own
