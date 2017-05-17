@@ -1751,6 +1751,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         switch (packetplayinentityaction.c()) {
         case START_SNEAKING:
             this.player.setSneaking(true);
+
+            // Paper start - Hang on!
+            if (this.player.world.paperConfig.parrotsHangOnBetter) {
+                this.player.releaseShoulderEntities();
+            }
+            // Paper end
+
             break;
         case STOP_SNEAKING:
             this.player.setSneaking(false);
