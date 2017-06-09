@@ -280,4 +280,9 @@ public class PaperConfig {
             maxPlayerAutoSavePerTick = (playerAutoSaveRate == -1 || playerAutoSaveRate > 100) ? 10 : 20;
         }
     }
+
+    public static boolean suggestPlayersWhenNullTabCompletions = true;
+    private static void suggestPlayersWhenNull() {
+        suggestPlayersWhenNullTabCompletions = getBoolean("settings.suggest-player-names-when-null-tab-completions", suggestPlayersWhenNullTabCompletions);
+    }
 }

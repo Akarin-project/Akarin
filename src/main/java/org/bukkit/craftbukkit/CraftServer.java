@@ -2140,5 +2140,10 @@ public final class CraftServer implements Server {
         commandMap.registerServerAliases();
         return true;
     }
+
+    @Override
+    public boolean suggestPlayerNamesWhenNullTabCompletions() {
+        return com.destroystokyo.paper.PaperConfig.suggestPlayersWhenNullTabCompletions;
+    }
     // Paper end
 }
