@@ -47,6 +47,11 @@ public class AdvancementDataWorld implements IResourcePackListener {
             try {
                 IResource iresource = iresourcemanager.a(minecraftkey);
                 Throwable throwable = null;
+                // Spigot start
+                if (org.spigotmc.SpigotConfig.disabledAdvancements != null && (org.spigotmc.SpigotConfig.disabledAdvancements.contains("*") || org.spigotmc.SpigotConfig.disabledAdvancements.contains(minecraftkey.toString()))) {
+                    continue;
+                }
+                // Spigot end
 
                 try {
                     Advancement.SerializedAdvancement advancement_serializedadvancement = (Advancement.SerializedAdvancement) ChatDeserializer.a(AdvancementDataWorld.DESERIALIZER, IOUtils.toString(iresource.b(), StandardCharsets.UTF_8), Advancement.SerializedAdvancement.class);
