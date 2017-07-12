@@ -1400,6 +1400,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (container.getBukkitView().getType() != prop.getType()) {
             return false;
         }
+        // Paper start
+        if (prop == Property.REPAIR_COST && container instanceof net.minecraft.server.ContainerAnvil) {
+            ((net.minecraft.server.ContainerAnvil) container).levelCost = value;
+        }
+        // Paper end
         getHandle().setContainerData(container, prop.getId(), value);
         return true;
     }

@@ -375,9 +375,9 @@ public class ContainerAnvil extends Container {
         for (int i = 0; i < this.listeners.size(); ++i) {
             ICrafting icrafting = (ICrafting) this.listeners.get(i);
 
-            if (this.lastLevelCost != this.levelCost) {
+            //if (this.lastLevelCost != this.levelCost) { // Paper - this was the wrong solution to this, fixing it correctly in CraftPlayer
                 icrafting.setContainerData(this, 0, this.levelCost);
-            }
+            //} // Paper
         }
 
         this.lastLevelCost = this.levelCost;
