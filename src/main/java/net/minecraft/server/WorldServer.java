@@ -217,6 +217,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 result = fixTileEntity(pos, type, result);
             }
         }
+        // Paper Start - add TE fix checks for shulkers, see nms.BlockShulkerBox
+        else if (type instanceof BlockShulkerBox) {
+            if (!(result instanceof TileEntityShulkerBox)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        }
+        // Paper end
 
         return result;
     }
