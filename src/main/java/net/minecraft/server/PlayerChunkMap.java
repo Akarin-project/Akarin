@@ -186,7 +186,7 @@ public class PlayerChunkMap {
             try (Timing ignored = world.timings.doChunkMapUnloadChunks.startTiming()) { // Paper
             WorldProvider worldprovider = this.world.worldProvider;
 
-            if (!worldprovider.canRespawn()) {
+            if (!worldprovider.canRespawn() && !this.world.savingDisabled) { // Paper - respect saving disabled setting
                 this.world.getChunkProvider().b();
             }
             } // Paper timing
