@@ -278,6 +278,16 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return getHandle().killer == null ? null : (Player) getHandle().killer.getBukkitEntity();
     }
 
+    // Paper start
+    @Override
+    public void setKiller(Player killer) {
+        net.minecraft.server.EntityPlayer entityPlayer = killer == null ? null : ((CraftPlayer) killer).getHandle();
+        getHandle().killer = entityPlayer;
+        getHandle().lastDamager = entityPlayer;
+        getHandle().lastDamageByPlayerTime = entityPlayer == null ? 0 : 100; // 100 value taken from EntityLiving#damageEntity
+    }
+    // Paper end
+
     public boolean addPotionEffect(PotionEffect effect) {
         return addPotionEffect(effect, false);
     }
