@@ -61,7 +61,7 @@ public class EntityOcelot extends EntityTameableAnimal {
     }
 
     public boolean isTypeNotPersistent() {
-        return !this.isTamed() /*&& this.ticksLived > 2400*/; // CraftBukkit
+        return !this.isTamed() && !this.hasCustomName() && !this.isLeashed() /*&& this.ticksLived > 2400*/; // CraftBukkit - Paper (honor name and leash)
     }
 
     protected void initAttributes() {
