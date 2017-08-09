@@ -1273,7 +1273,11 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         this.methodProfiler.exitEnter("blockEntities");
         timings.tileEntityTick.startTiming(); // Spigot
         if (!this.tileEntityListUnload.isEmpty()) {
-            this.tileEntityListTick.removeAll(this.tileEntityListUnload);
+            // Paper start - Use alternate implementation with faster contains
+            java.util.Set<TileEntity> toRemove = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+            toRemove.addAll(tileEntityListUnload);
+            this.tileEntityListTick.removeAll(toRemove);
+            // Paper end
             //this.tileEntityList.removeAll(this.tileEntityListUnload); // Paper - remove unused list
             this.tileEntityListUnload.clear();
         }
