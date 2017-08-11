@@ -21,16 +21,21 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+// Spigot start
+import java.util.function.Supplier;
+import org.spigotmc.SupplierUtils;
+// Spigot end
 
 public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
     private static final Logger a = LogManager.getLogger();
-    private final Map<ChunkCoordIntPair, NBTTagCompound> b = Maps.newHashMap();
+    private final Map<ChunkCoordIntPair, Supplier<NBTTagCompound>> b = Maps.newHashMap();
     private final File c;
     private final DataFixer d;
     private PersistentStructureLegacy e;
     // private boolean f; // CraftBukkit
     public final LongSet blacklist = new LongOpenHashSet();
+    private static final double SAVE_QUEUE_TARGET_SIZE = 625; // Spigot
 
     public ChunkRegionLoader(File file, DataFixer datafixer) {
         this.c = file;
@@ -80,7 +85,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             return null;
         }
         // CraftBukkit end
-        NBTTagCompound nbttagcompound = (NBTTagCompound) this.b.get(new ChunkCoordIntPair(i, j));
+        NBTTagCompound nbttagcompound = SupplierUtils.getIfExists(this.b.get(new ChunkCoordIntPair(i, j))); // Spigot
 
         if (nbttagcompound != null) {
             return nbttagcompound;
@@ -114,7 +119,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                 nbttagcompound1 = GameProfileSerializer.a(this.d, DataFixTypes.CHUNK, nbttagcompound1, Math.max(1493, k));
                 if (k < 1631) {
                     nbttagcompound1.setInt("DataVersion", 1631);
-                    this.a(new ChunkCoordIntPair(i, j), nbttagcompound1);
+                    this.a(new ChunkCoordIntPair(i, j), new SupplierUtils.ValueSupplier<>(nbttagcompound1)); // Spigot
                 }
 
                 return nbttagcompound1;
@@ -263,7 +268,13 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
     }
 
+    // Spigot start
     public void saveChunk(World world, IChunkAccess ichunkaccess) throws IOException, ExceptionWorldConflict {
+        saveChunk(world, ichunkaccess, false); // Ideally we shouldn't use this, but easier than decompile errors
+    }
+
+    public void saveChunk(World world, IChunkAccess ichunkaccess, boolean unloaded) throws IOException, ExceptionWorldConflict {
+        // Spigot end
         world.checkSession();
 
         try {
@@ -274,8 +285,19 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
 
             nbttagcompound.set("Level", nbttagcompound1);
+            // Spigot start
+            Supplier<NBTTagCompound> completion;
+            final long worldTime = world.getTime();
+            final boolean worldHasSkyLight = world.worldProvider.g();
             if (ichunkaccess.i().d() == ChunkStatus.Type.LEVELCHUNK) {
-                this.saveBody((Chunk) ichunkaccess, world, nbttagcompound1);
+                final Chunk chunk = (Chunk) ichunkaccess;
+                saveEntities(nbttagcompound1, chunk, world);
+                completion = new Supplier<NBTTagCompound>() {
+                    public NBTTagCompound get() {
+                        saveBody(chunk, world, nbttagcompound1, worldTime, worldHasSkyLight);
+                        return nbttagcompound;
+                    }
+                };
             } else {
                 NBTTagCompound nbttagcompound2 = this.a(world, chunkcoordintpair.x, chunkcoordintpair.z);
 
@@ -283,17 +305,23 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                     return;
                 }
 
-                this.a((ProtoChunk) ichunkaccess, world, nbttagcompound1);
+                completion = new Supplier<NBTTagCompound>() {
+                    public NBTTagCompound get() {
+                        a((ProtoChunk) ichunkaccess, world, nbttagcompound1, worldTime, worldHasSkyLight);
+                        return nbttagcompound;
+                    }
+                };
             }
 
-            this.a(chunkcoordintpair, nbttagcompound);
+            this.a(chunkcoordintpair, SupplierUtils.createUnivaluedSupplier(completion, unloaded && this.b.size() < SAVE_QUEUE_TARGET_SIZE));
+            // Spigot end
         } catch (Exception exception) {
             ChunkRegionLoader.a.error("Failed to save chunk", exception);
         }
 
     }
 
-    protected void a(ChunkCoordIntPair chunkcoordintpair, NBTTagCompound nbttagcompound) {
+    protected void a(ChunkCoordIntPair chunkcoordintpair, Supplier<NBTTagCompound> nbttagcompound) { // Spigot
         this.b.put(chunkcoordintpair, nbttagcompound);
         FileIOThread.a().a(this);
     }
@@ -304,7 +332,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     }
 
     private boolean processSaveQueueEntry(boolean logCompletion) {
-        Iterator<Entry<ChunkCoordIntPair, NBTTagCompound>> iterator = this.b.entrySet().iterator();
+        Iterator<Entry<ChunkCoordIntPair, Supplier<NBTTagCompound>>> iterator = this.b.entrySet().iterator(); // Spigot
 
         if (!iterator.hasNext()) {
             if (logCompletion) { // CraftBukkit
@@ -317,14 +345,14 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
             iterator.remove();
             ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) entry.getKey();
-            NBTTagCompound nbttagcompound = (NBTTagCompound) entry.getValue();
+            Supplier<NBTTagCompound> nbttagcompound = (Supplier<NBTTagCompound>) entry.getValue(); // Spigot
 
             if (nbttagcompound == null) {
                 return true;
             } else {
                 try {
                     // CraftBukkit start
-                    RegionFileCache.write(this.c, chunkcoordintpair.x, chunkcoordintpair.z, nbttagcompound);
+                    RegionFileCache.write(this.c, chunkcoordintpair.x, chunkcoordintpair.z, SupplierUtils.getIfExists(nbttagcompound)); // Spigot
 
                     /*
                     NBTCompressedStreamTools.a(nbttagcompound, (DataOutput) dataoutputstream);
@@ -371,13 +399,13 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
     }
 
-    private void a(ProtoChunk protochunk, World world, NBTTagCompound nbttagcompound) {
+    private void a(ProtoChunk protochunk, World world, NBTTagCompound nbttagcompound, long worldTime, boolean worldHasSkyLight) { // Spigot
         int i = protochunk.getPos().x;
         int j = protochunk.getPos().z;
 
         nbttagcompound.setInt("xPos", i);
         nbttagcompound.setInt("zPos", j);
-        nbttagcompound.setLong("LastUpdate", world.getTime());
+        nbttagcompound.setLong("LastUpdate", worldTime); // Spigot
         nbttagcompound.setLong("InhabitedTime", protochunk.m());
         nbttagcompound.setString("Status", protochunk.i().b());
         ChunkConverter chunkconverter = protochunk.v();
@@ -387,7 +415,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
 
         ChunkSection[] achunksection = protochunk.getSections();
-        NBTTagList nbttaglist = this.a(world, achunksection);
+        NBTTagList nbttaglist = this.a(world, achunksection, worldHasSkyLight); // Spigot
 
         nbttagcompound.set("Sections", nbttaglist);
         BiomeBase[] abiomebase = protochunk.getBiomeIndex();
@@ -457,10 +485,10 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         nbttagcompound.set("Structures", this.a(i, j, protochunk.e(), protochunk.f()));
     }
 
-    private void saveBody(Chunk chunk, World world, NBTTagCompound nbttagcompound) {
+    private void saveBody(Chunk chunk, World world, NBTTagCompound nbttagcompound, long worldTime, boolean worldHasSkyLight) { // Spigot
         nbttagcompound.setInt("xPos", chunk.locX);
         nbttagcompound.setInt("zPos", chunk.locZ);
-        nbttagcompound.setLong("LastUpdate", world.getTime());
+        nbttagcompound.setLong("LastUpdate", worldTime); // Spigot
         nbttagcompound.setLong("InhabitedTime", chunk.m());
         nbttagcompound.setString("Status", chunk.i().b());
         ChunkConverter chunkconverter = chunk.F();
@@ -470,7 +498,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
 
         ChunkSection[] achunksection = chunk.getSections();
-        NBTTagList nbttaglist = this.a(world, achunksection);
+        NBTTagList nbttaglist = this.a(world, achunksection, worldHasSkyLight); // Spigot
 
         nbttagcompound.set("Sections", nbttaglist);
         BiomeBase[] abiomebase = chunk.getBiomeIndex();
@@ -481,6 +509,12 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
 
         nbttagcompound.setIntArray("Biomes", aint);
+
+        // Spigot start - End this method here and split off entity saving to another method
+    }
+
+    private void saveEntities(NBTTagCompound nbttagcompound, Chunk chunk, World world) {
+        // Spigot end
         chunk.f(false);
         NBTTagList nbttaglist1 = new NBTTagList();
 
@@ -771,9 +805,9 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         return protochunk;
     }
 
-    private NBTTagList a(World world, ChunkSection[] achunksection) {
+    private NBTTagList a(World world, ChunkSection[] achunksection, boolean worldHasSkyLight) { // Spigot
         NBTTagList nbttaglist = new NBTTagList();
-        boolean flag = world.worldProvider.g();
+        boolean flag = worldHasSkyLight; // Spigot
         ChunkSection[] achunksection1 = achunksection;
         int i = achunksection.length;
 

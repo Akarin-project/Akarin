@@ -205,10 +205,10 @@ public class ChunkProviderServer implements IChunkProvider {
         return chunk;
     }
 
-    public void saveChunk(IChunkAccess ichunkaccess) {
+    public void saveChunk(IChunkAccess ichunkaccess, boolean unloaded) { // Spigot
         try {
             ichunkaccess.setLastSaved(this.world.getTime());
-            this.chunkLoader.saveChunk(this.world, ichunkaccess);
+            this.chunkLoader.saveChunk(this.world, ichunkaccess, unloaded); // Spigot
         } catch (IOException ioexception) {
             ChunkProviderServer.a.error("Couldn't save chunk", ioexception);
         } catch (ExceptionWorldConflict exceptionworldconflict) {
@@ -232,7 +232,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 Chunk chunk = (Chunk) objectiterator.next();
 
                 if (chunk.c(flag)) {
-                    this.saveChunk(chunk);
+                    this.saveChunk(chunk, false); // Spigot
                     chunk.a(false);
                     ++i;
                     if (i == 24 && !flag && false) { // Spigot
@@ -333,7 +333,7 @@ public class ChunkProviderServer implements IChunkProvider {
         synchronized (this.chunkLoader) {
             chunk.removeEntities();
             if (save) {
-                this.saveChunk(chunk);
+                this.saveChunk(chunk, true); // Spigot
             }
             this.chunks.remove(chunk.chunkKey);
             this.lastChunk = null;

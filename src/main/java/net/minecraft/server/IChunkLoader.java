@@ -14,5 +14,7 @@ public interface IChunkLoader {
 
     void saveChunk(World world, IChunkAccess ichunkaccess) throws IOException, ExceptionWorldConflict;
 
+    void saveChunk(World world, IChunkAccess ichunkaccess, boolean unloaded) throws IOException, ExceptionWorldConflict; // Spigot
+
     void b();
 }
