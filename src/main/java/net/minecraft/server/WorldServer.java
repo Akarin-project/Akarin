@@ -1183,12 +1183,17 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
 
     public <T extends ParticleParam> int sendParticles(EntityPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
+        // Paper start - Particle API Expansion
+        return sendParticles(players, sender, t0, d0, d1, d2, i, d3, d4, d5, d6, force);
+    }
+    public <T extends ParticleParam> int sendParticles(List<EntityHuman> receivers, EntityPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
+        // Paper end
         PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(t0, force, (float) d0, (float) d1, (float) d2, (float) d3, (float) d4, (float) d5, (float) d6, i);
         // CraftBukkit end
         int j = 0;
 
-        for (int k = 0; k < this.players.size(); ++k) {
-            EntityPlayer entityplayer = (EntityPlayer) this.players.get(k);
+        for (EntityHuman entityhuman : receivers) { // Paper - Particle API Expansion
+            EntityPlayer entityplayer = (EntityPlayer) entityhuman; // Paper - Particle API Expansion
             if (sender != null && !entityplayer.getBukkitEntity().canSee(sender.getBukkitEntity())) continue; // CraftBukkit
 
             if (this.a(entityplayer, force, d0, d1, d2, packetplayoutworldparticles)) { // CraftBukkit
