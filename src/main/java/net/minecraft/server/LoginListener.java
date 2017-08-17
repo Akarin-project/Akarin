@@ -239,6 +239,10 @@ public class LoginListener implements PacketLoginInListener, ITickable {
                             LoginListener.this.i = LoginListener.this.a(gameprofile);
                             LoginListener.this.g = LoginListener.EnumProtocolState.READY_TO_ACCEPT;
                         } else {
+                            // Paper start
+                            if (com.destroystokyo.paper.PaperConfig.authenticationServersDownKickMessage != null) {
+                                LoginListener.this.disconnect(new ChatComponentText(com.destroystokyo.paper.PaperConfig.authenticationServersDownKickMessage));
+                            } else // Paper end
                             LoginListener.this.disconnect(new ChatMessage("multiplayer.disconnect.authservers_down", new Object[0]));
                             LoginListener.c.error("Couldn't verify username because servers are unavailable");
                         }
