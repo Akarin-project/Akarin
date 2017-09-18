@@ -131,8 +131,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
         */
         // Paper end
 
-        System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
-        System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
+        // Paper start - Use Log4j IOStreams
+        System.setOut(org.apache.logging.log4j.io.IoBuilder.forLogger(logger).setLevel(Level.INFO).buildPrintStream());
+        System.setErr(org.apache.logging.log4j.io.IoBuilder.forLogger(logger).setLevel(Level.WARN).buildPrintStream());
+        // Paper end
         // CraftBukkit end
 
         thread.setDaemon(true);
