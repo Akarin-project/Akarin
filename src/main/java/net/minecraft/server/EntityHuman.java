@@ -1479,6 +1479,7 @@ public abstract class EntityHuman extends EntityLiving {
         return 0;
     }
 
+    public void jump() { this.cH(); } // Paper - OBFHELPER
     public void cH() {
         super.cH();
         this.a(StatisticList.JUMP);

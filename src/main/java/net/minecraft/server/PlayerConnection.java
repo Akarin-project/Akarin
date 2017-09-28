@@ -58,6 +58,8 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.util.NumberConversions;
+import com.destroystokyo.paper.event.player.IllegalPacketEvent; // Paper
+import com.destroystokyo.paper.event.player.PlayerJumpEvent; // Paper
 import co.aikar.timings.MinecraftTimings; // Paper
 // CraftBukkit end
 
@@ -872,7 +874,34 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                             d8 = d5 - this.p;
                             d9 = d6 - this.q;
                             if (this.player.onGround && !packetplayinflying.b() && d8 > 0.0D) {
-                                this.player.cH();
+                                // Paper start - Add player jump event
+                                Player player = this.getPlayer();
+                                Location from = new Location(player.getWorld(), lastPosX, lastPosY, lastPosZ, lastYaw, lastPitch); // Get the Players previous Event location.
+                                Location to = player.getLocation().clone(); // Start off the To location as the Players current location.
+
+                                // If the packet contains movement information then we update the To location with the correct XYZ.
+                                if (packetplayinflying.hasPos) {
+                                    to.setX(packetplayinflying.x);
+                                    to.setY(packetplayinflying.y);
+                                    to.setZ(packetplayinflying.z);
+                                }
+
+                                // If the packet contains look information then we update the To location with the correct Yaw & Pitch.
+                                if (packetplayinflying.hasLook) {
+                                    to.setYaw(packetplayinflying.yaw);
+                                    to.setPitch(packetplayinflying.pitch);
+                                }
+
+                                PlayerJumpEvent event = new PlayerJumpEvent(player, from, to);
+
+                                if (event.callEvent()) {
+                                    this.player.jump();
+                                } else {
+                                    from = event.getFrom();
+                                    this.internalTeleport(from.getX(), from.getY(), from.getZ(), from.getYaw(), from.getPitch(), Collections.emptySet());
+                                    return;
+                                }
+                                // Paper end
                             }
 
                             this.player.move(EnumMoveType.PLAYER, d7, d8, d9);
