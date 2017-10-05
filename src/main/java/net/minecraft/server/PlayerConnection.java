@@ -2466,14 +2466,18 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     }
 
     public void a(PacketPlayInKeepAlive packetplayinkeepalive) {
-        PlayerConnectionUtils.ensureMainThread(packetplayinkeepalive, this, this.player.getWorldServer()); // CraftBukkit
+        //PlayerConnectionUtils.ensureMainThread(packetplayinkeepalive, this, this.player.getWorldServer()); // CraftBukkit // Paper - This shouldn't be on the main thread
         if (this.awaitingKeepAlive && packetplayinkeepalive.b() == this.h) {
             int i = (int) (SystemUtils.getMonotonicMillis() - this.lastKeepAlive);
 
             this.player.ping = (this.player.ping * 3 + i) / 4;
             this.awaitingKeepAlive = false;
         } else if (!this.player.getDisplayName().getString().equals(this.minecraftServer.G())) {
-            this.disconnect(new ChatMessage("disconnect.timeout", new Object[0]));
+            // Paper start - This needs to be handled on the main thread for plugins
+            minecraftServer.postToMainThread(() -> {
+                this.disconnect(new ChatMessage("disconnect.timeout", new Object[0]));
+            });
+            // Paper end
         }
 
     }
