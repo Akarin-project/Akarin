@@ -62,6 +62,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     private float t;
     private int u;
     private boolean v;
+    // Paper start - NetworkClient implementation
+    public int protocolVersion;
+    public java.net.InetSocketAddress virtualHost;
+    // Paper end
 
     public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
         this.h = enumprotocoldirection;

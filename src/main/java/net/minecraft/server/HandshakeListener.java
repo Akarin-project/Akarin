@@ -15,6 +15,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
 
     private final MinecraftServer a;
     private final NetworkManager b;
+    private NetworkManager getNetworkManager() { return b; } // Paper - OBFHELPER
 
     public HandshakeListener(MinecraftServer minecraftserver, NetworkManager networkmanager) {
         this.a = minecraftserver;
@@ -128,6 +129,10 @@ public class HandshakeListener implements PacketHandshakingInListener {
             throw new UnsupportedOperationException("Invalid intention " + packethandshakinginsetprotocol.b());
         }
 
+        // Paper start - NetworkClient implementation
+        this.getNetworkManager().protocolVersion = packethandshakinginsetprotocol.getProtocolVersion();
+        this.getNetworkManager().virtualHost = com.destroystokyo.paper.network.PaperNetworkClient.prepareVirtualHost(packethandshakinginsetprotocol.hostname, packethandshakinginsetprotocol.port);
+        // Paper end
     }
 
     public void a(IChatBaseComponent ichatbasecomponent) {}
