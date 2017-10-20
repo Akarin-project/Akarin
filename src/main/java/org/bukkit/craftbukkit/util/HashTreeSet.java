@@ -8,7 +8,7 @@ import java.util.TreeSet;
 
 public class HashTreeSet<V> implements Set<V> {
 
-    private HashSet<V> hash = new HashSet<V>();
+    private Set<V> hash = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<V>(); //Paper - Replace java.util.HashSet with ObjectOpenHashSet
     private TreeSet<V> tree = new TreeSet<V>();
 
     public HashTreeSet() {
