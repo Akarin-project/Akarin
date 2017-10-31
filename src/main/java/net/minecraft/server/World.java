@@ -954,6 +954,12 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         this.a(entityhuman, (double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, soundeffect, soundcategory, f, f1);
     }
 
+    // Paper start - OBFHELPER
+    public final void sendSoundEffect(@Nullable EntityHuman fromEntity, double x, double y, double z, SoundEffect soundeffect, SoundCategory soundcategory, float volume, float pitch) {
+        this.a(fromEntity, x, y, z, soundeffect, soundcategory, volume, pitch);
+    }
+    // Paper end
+
     public void a(@Nullable EntityHuman entityhuman, double d0, double d1, double d2, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {
         for (int i = 0; i < this.v.size(); ++i) {
             ((IWorldAccess) this.v.get(i)).a(entityhuman, soundeffect, soundcategory, d0, d1, d2, f, f1);
