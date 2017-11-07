@@ -275,6 +275,20 @@ public class CraftBlock implements Block {
     }
 
     public BlockState getState() {
+        // Paper start - allow disabling the use of snapshots
+        return getState(true);
+    }
+    public BlockState getState(boolean useSnapshot) {
+        boolean prev = CraftBlockEntityState.DISABLE_SNAPSHOT;
+        CraftBlockEntityState.DISABLE_SNAPSHOT = !useSnapshot;
+        try {
+            return getState0();
+        } finally {
+            CraftBlockEntityState.DISABLE_SNAPSHOT = prev;
+        }
+    }
+    public BlockState getState0() {
+        // Paper end
         Material material = getType();
 
         switch (material) {

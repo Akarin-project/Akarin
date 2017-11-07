@@ -206,7 +206,12 @@ public abstract class TileEntity implements KeyedObject { // Paper
     }
 
     // CraftBukkit start - add method
+    // Paper start
     public InventoryHolder getOwner() {
+        return getOwner(true);
+    }
+    public InventoryHolder getOwner(boolean useSnapshot) {
+        // Paper end
         if (world == null) return null;
         // Spigot start
         org.bukkit.block.Block block = world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
@@ -215,7 +220,7 @@ public abstract class TileEntity implements KeyedObject { // Paper
             return null;
         }
         // Spigot end
-        org.bukkit.block.BlockState state = block.getState();
+        org.bukkit.block.BlockState state = block.getState(useSnapshot); // Paper
         if (state instanceof InventoryHolder) return (InventoryHolder) state;
         return null;
     }
