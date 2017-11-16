@@ -395,7 +395,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             // CraftBukkit start - capture blockstates
             CraftBlockState blockstate = null;
             if (this.captureBlockStates) {
-                blockstate = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(this, blockposition, i);
+                blockstate = (CraftBlockState) world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()).getState(); // Paper - use CB getState to get a suitable snapshot
                 this.capturedBlockStates.add(blockstate);
             }
             // CraftBukkit end
