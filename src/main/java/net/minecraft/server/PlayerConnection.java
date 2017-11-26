@@ -507,10 +507,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     }
 
     public void a(PacketPlayInTabComplete packetplayintabcomplete) {
-        PlayerConnectionUtils.ensureMainThread(packetplayintabcomplete, this, this.player.getWorldServer());
+        // PlayerConnectionUtils.ensureMainThread(packetplayintabcomplete, this, this.player.getWorldServer()); // Paper - run this async
         // CraftBukkit start
         if (chatSpamField.addAndGet(this, 1) > 500 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
-            this.disconnect(new ChatMessage("disconnect.spam", new Object[0]));
+            minecraftServer.postToMainThread(() -> this.disconnect(new ChatMessage("disconnect.spam", new Object[0]))); // Paper
             return;
         }
         // CraftBukkit end
@@ -520,12 +520,35 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             stringreader.skip();
         }
 
-        ParseResults<CommandListenerWrapper> parseresults = this.minecraftServer.getCommandDispatcher().a().parse(stringreader, this.player.getCommandListener());
+        // Paper start - async tab completion
+        com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event;
+        java.util.List<String> completions = new java.util.ArrayList<>();
+        String buffer = packetplayintabcomplete.c();
+        event = new com.destroystokyo.paper.event.server.AsyncTabCompleteEvent(this.getPlayer(), completions,
+                buffer, true, null);
+        event.callEvent();
+        completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.getCompletions();
+        // If the event isn't handled, we can assume that we have no completions, and so we'll ask the server
+        if (!event.isHandled()) {
+            if (!event.isCancelled()) {
+                // Paper end - async tab completion
+            ParseResults<CommandListenerWrapper> parseresults = this.minecraftServer.getCommandDispatcher().a().parse(stringreader, this.player.getCommandListener());
 
         this.minecraftServer.getCommandDispatcher().a().getCompletionSuggestions(parseresults).thenAccept((suggestions) -> {
             if (((Suggestions) suggestions).isEmpty()) return; // CraftBukkit - don't send through empty suggestions - prevents [<args>] from showing for plugins with nothing more to offer
-            this.networkManager.sendPacket(new PacketPlayOutTabComplete(packetplayintabcomplete.b(), (Suggestions) suggestions)); // CraftBukkit - decompile error
-        });
+                this.networkManager.sendPacket(new PacketPlayOutTabComplete(packetplayintabcomplete.b(), (Suggestions) suggestions)); // CraftBukkit - decompile error
+            });
+            }
+        // Paper start - async tab completion
+        } else if (!completions.isEmpty()) {
+            com.mojang.brigadier.suggestion.SuggestionsBuilder builder = new com.mojang.brigadier.suggestion.SuggestionsBuilder(packetplayintabcomplete.c(), stringreader.getTotalLength());
+
+            builder = builder.createOffset(builder.getInput().lastIndexOf(' ') + 1);
+            completions.forEach(builder::suggest);
+            player.playerConnection.sendPacket(new PacketPlayOutTabComplete(packetplayintabcomplete.b(), builder.buildFuture().join()));
+        }
+        // Paper end - async tab completion
+
     }
 
     public void a(PacketPlayInSetCommandBlock packetplayinsetcommandblock) {
