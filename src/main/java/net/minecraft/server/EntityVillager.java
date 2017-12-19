@@ -412,7 +412,7 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
         }
 
         if (merchantrecipe.j()) {
-            this.world.addEntity(new EntityExperienceOrb(this.world, this.locX, this.locY + 0.5D, this.locZ, i));
+            this.world.addEntity(new EntityExperienceOrb(this.world, this.locX, this.locY + 0.5D, this.locZ, i, org.bukkit.entity.ExperienceOrb.SpawnReason.VILLAGER_TRADE, tradingPlayer, this)); // Paper
         }
 
         if (this.tradingPlayer instanceof EntityPlayer) {

@@ -9,7 +9,7 @@ import org.bukkit.event.inventory.FurnaceExtractEvent;
 
 public class SlotFurnaceResult extends Slot {
 
-    private final EntityHuman a;
+    private final EntityHuman a;public EntityHuman getPlayer() { return a; } // Paper OBFHELPER
     private int b;
 
     public SlotFurnaceResult(EntityHuman entityhuman, IInventory iinventory, int i, int j, int k) {
@@ -85,7 +85,7 @@ public class SlotFurnaceResult extends Slot {
                 while (i > 0) {
                     j = EntityExperienceOrb.getOrbValue(i);
                     i -= j;
-                    this.a.world.addEntity(new EntityExperienceOrb(this.a.world, this.a.locX, this.a.locY + 0.5D, this.a.locZ + 0.5D, j));
+                    this.a.world.addEntity(new EntityExperienceOrb(this.a.world, this.a.locX, this.a.locY + 0.5D, this.a.locZ + 0.5D, j, org.bukkit.entity.ExperienceOrb.SpawnReason.FURNACE, getPlayer())); // Paper
                 }
             }
 

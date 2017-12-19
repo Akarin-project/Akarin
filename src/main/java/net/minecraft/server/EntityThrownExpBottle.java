@@ -36,7 +36,7 @@ public class EntityThrownExpBottle extends EntityProjectile {
                 int j = EntityExperienceOrb.getOrbValue(i);
 
                 i -= j;
-                this.world.addEntity(new EntityExperienceOrb(this.world, this.locX, this.locY, this.locZ, j));
+                this.world.addEntity(new EntityExperienceOrb(this.world, this.locX, this.locY, this.locZ, j, org.bukkit.entity.ExperienceOrb.SpawnReason.EXP_BOTTLE, getShooter(), this)); // Paper
             }
 
             this.die();

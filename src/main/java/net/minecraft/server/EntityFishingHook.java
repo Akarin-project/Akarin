@@ -467,7 +467,7 @@ public class EntityFishingHook extends Entity {
                     this.world.addEntity(entityitem);
                     // CraftBukkit start - this.random.nextInt(6) + 1 -> playerFishEvent.getExpToDrop()
                     if (playerFishEvent.getExpToDrop() > 0) {
-                        this.owner.world.addEntity(new EntityExperienceOrb(this.owner.world, this.owner.locX, this.owner.locY + 0.5D, this.owner.locZ + 0.5D, playerFishEvent.getExpToDrop()));
+                        this.owner.world.addEntity(new EntityExperienceOrb(this.owner.world, this.owner.locX, this.owner.locY + 0.5D, this.owner.locZ + 0.5D, playerFishEvent.getExpToDrop(), org.bukkit.entity.ExperienceOrb.SpawnReason.FISHING, this.owner, this)); // Paper
                     }
                     // CraftBukkit end
                     if (itemstack1.getItem().a(TagsItem.FISHES)) {

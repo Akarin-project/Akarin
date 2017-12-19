@@ -450,13 +450,13 @@ public class Block implements IMaterial {
         }
     }
 
-    protected void dropExperience(World world, BlockPosition blockposition, int i) {
+    protected void dropExperience(World world, BlockPosition blockposition, int i, EntityPlayer player) { // Paper
         if (!world.isClientSide && world.getGameRules().getBoolean("doTileDrops")) {
             while (i > 0) {
                 int j = EntityExperienceOrb.getOrbValue(i);
 
                 i -= j;
-                world.addEntity(new EntityExperienceOrb(world, (double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, j));
+                world.addEntity(new EntityExperienceOrb(world, (double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, j, org.bukkit.entity.ExperienceOrb.SpawnReason.BLOCK_BREAK, player)); // Paper
             }
         }
 
