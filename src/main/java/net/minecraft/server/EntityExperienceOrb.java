@@ -246,10 +246,12 @@ public class EntityExperienceOrb extends Entity {
         }
     }
 
+    public int durToXp(int i) { return b(i); } // Paper OBFHELPER
     private int b(int i) {
         return i / 2;
     }
 
+    public int xpToDur(int i) { return c(i); } // Paper OBFHELPER
     private int c(int i) {
         return i * 2;
     }

@@ -242,6 +242,7 @@ public class EnchantmentManager {
         return getEnchantmentLevel(Enchantments.CHANNELING, itemstack) > 0;
     }
 
+    public static ItemStack getRandomEquippedItemWithEnchant(Enchantment enchantment, EntityLiving entityliving) { return b(enchantment, entityliving); } // Paper - OBFHELPER
     public static ItemStack b(Enchantment enchantment, EntityLiving entityliving) {
         List<ItemStack> list = enchantment.a(entityliving);
 
