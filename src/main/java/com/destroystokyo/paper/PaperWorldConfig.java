@@ -384,4 +384,13 @@ public class PaperWorldConfig {
         expMergeMaxValue = getInt("experience-merge-max-value", -1);
         log("Experience Merge Max Value: " + expMergeMaxValue);
     }
+
+    public int maxChunkSendsPerTick = 81;
+    private void maxChunkSendsPerTick() {
+        maxChunkSendsPerTick = getInt("max-chunk-sends-per-tick", maxChunkSendsPerTick);
+        if (maxChunkSendsPerTick <= 0) {
+            maxChunkSendsPerTick = 81;
+        }
+        log("Max Chunk Sends Per Tick: " + maxChunkSendsPerTick);
+    }
 }

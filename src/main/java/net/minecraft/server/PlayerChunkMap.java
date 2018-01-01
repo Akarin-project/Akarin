@@ -164,7 +164,7 @@ public class PlayerChunkMap {
         }
 
         if (!this.g.isEmpty()) {
-            j = 81;
+            j = world.paperConfig.maxChunkSendsPerTick; // Paper
             try (Timing ignored = world.timings.doChunkMapPendingSendToPlayers.startTiming()) { // Paper
             Iterator iterator2 = this.g.iterator();
 
