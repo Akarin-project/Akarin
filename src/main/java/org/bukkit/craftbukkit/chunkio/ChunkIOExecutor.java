@@ -34,4 +34,10 @@ public class ChunkIOExecutor {
     public static void tick() {
         instance.finishActive();
     }
+
+    // Paper start
+    public static boolean hasQueuedChunkLoad(World world, int x, int z) {
+        return instance.hasTask(new QueuedChunk(x, z, null, world, null));
+    }
+    // Paper end
 }

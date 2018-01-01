@@ -21,6 +21,7 @@ public class PlayerChunk {
     private int h;
     private long i;
     private boolean done;
+    boolean chunkExists; // Paper
 
     public PlayerChunk(PlayerChunkMap playerchunkmap, int i, int j) {
         this.playerChunkMap = playerchunkmap;
@@ -29,6 +30,7 @@ public class PlayerChunk {
 
         chunkproviderserver.a(i, j);
         this.chunk = chunkproviderserver.getChunkAt(i, j, true, false);
+        this.chunkExists = this.chunk != null || org.bukkit.craftbukkit.chunkio.ChunkIOExecutor.hasQueuedChunkLoad(playerChunkMap.getWorld(), i, j); // Paper
         markChunkUsed(); // Paper - delay chunk unloads
     }
 

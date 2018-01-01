@@ -393,4 +393,15 @@ public class PaperWorldConfig {
         }
         log("Max Chunk Sends Per Tick: " + maxChunkSendsPerTick);
     }
+
+    public int maxChunkGensPerTick = 10;
+    private void maxChunkGensPerTick() {
+        maxChunkGensPerTick = getInt("max-chunk-gens-per-tick", maxChunkGensPerTick);
+        if (maxChunkGensPerTick <= 0) {
+            maxChunkGensPerTick = Integer.MAX_VALUE;
+            log("Max Chunk Gens Per Tick: Unlimited (NOT RECOMMENDED)");
+        } else {
+            log("Max Chunk Gens Per Tick: " + maxChunkGensPerTick);
+        }
+    }
 }

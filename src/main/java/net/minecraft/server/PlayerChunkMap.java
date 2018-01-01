@@ -132,6 +132,7 @@ public class PlayerChunkMap {
             // Spigot start
             org.spigotmc.SlackActivityAccountant activityAccountant = this.world.getMinecraftServer().slackActivityAccountant;
             activityAccountant.startActivity(0.5);
+            int chunkGensAllowed = world.paperConfig.maxChunkGensPerTick; // Paper
             // Spigot end
 
             Iterator iterator1 = this.h.iterator();
@@ -141,6 +142,11 @@ public class PlayerChunkMap {
 
                 if (playerchunk1.f() == null) {
                     boolean flag = playerchunk1.a(PlayerChunkMap.b);
+                    // Paper start
+                    if (flag && !playerchunk1.chunkExists && chunkGensAllowed-- <= 0) {
+                        continue;
+                    }
+                    // Paper end
 
                     if (playerchunk1.a(flag)) {
                         iterator1.remove();
