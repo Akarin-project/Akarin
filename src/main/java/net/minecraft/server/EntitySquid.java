@@ -167,7 +167,7 @@ public class EntitySquid extends EntityWaterAnimal {
     }
 
     public boolean a(GeneratorAccess generatoraccess, boolean flag) {
-        return this.locY > 45.0D && this.locY < (double) generatoraccess.getSeaLevel();
+        return this.locY > this.world.spigotConfig.squidSpawnRangeMin && this.locY < (double) generatoraccess.getSeaLevel(); // Spigot
     }
 
     public void c(float f, float f1, float f2) {
