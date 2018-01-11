@@ -404,4 +404,9 @@ public class PaperWorldConfig {
             log("Max Chunk Gens Per Tick: " + maxChunkGensPerTick);
         }
     }
+
+    public double squidMaxSpawnHeight;
+    private void squidMaxSpawnHeight() {
+        squidMaxSpawnHeight = getDouble("squid-spawn-height.maximum", 0.0D);
+    }
 }

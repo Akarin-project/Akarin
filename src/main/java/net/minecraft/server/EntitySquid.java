@@ -167,7 +167,10 @@ public class EntitySquid extends EntityWaterAnimal {
     }
 
     public boolean a(GeneratorAccess generatoraccess, boolean flag) {
-        return this.locY > this.world.spigotConfig.squidSpawnRangeMin && this.locY < (double) generatoraccess.getSeaLevel(); // Spigot
+        // Paper - Make max spawn height configurable
+        final double maxHeight = world.paperConfig.squidMaxSpawnHeight > 0 ? world.paperConfig.squidMaxSpawnHeight : world.getSeaLevel();
+        return this.locY > this.world.spigotConfig.squidSpawnRangeMin && this.locY < maxHeight; // Spigot
+        // Paper end
     }
 
     public void c(float f, float f1, float f2) {
