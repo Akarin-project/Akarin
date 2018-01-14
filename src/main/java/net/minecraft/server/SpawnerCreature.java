@@ -47,6 +47,15 @@ public final class SpawnerCreature {
                     byte b0 = worldserver.spigotConfig.mobSpawnRange;
                     b0 = ( b0 > entityhuman.getViewDistance() ) ? (byte) entityhuman.getViewDistance() : b0; // Paper - Use player view distance API
                     b0 = ( b0 > 8 ) ? 8 : b0;
+                    // Paper start
+                    com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event;
+                    event = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(
+                            (org.bukkit.entity.Player) entityhuman.getBukkitEntity(), b0);
+                    if (!event.callEvent()) {
+                        continue;
+                    }
+                    b0 = event.getSpawnRadius();
+                    // Paperr end
 
                     for (int i1 = -b0; i1 <= b0; ++i1) {
                         for (k = -b0; k <= b0; ++k) {
