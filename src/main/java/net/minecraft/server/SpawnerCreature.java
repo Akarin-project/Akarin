@@ -164,9 +164,29 @@ public final class SpawnerCreature {
 
                                                         if (worldserver.a(enumcreaturetype, biomebase_biomemeta, (BlockPosition) blockposition_mutableblockposition)) {
                                                             EntityPositionTypes.Surface entitypositiontypes_surface = EntityPositionTypes.a(biomebase_biomemeta.b);
-
                                                             if (entitypositiontypes_surface != null && a(entitypositiontypes_surface, worldserver, blockposition_mutableblockposition, biomebase_biomemeta.b)) {
                                                                 EntityInsentient entityinsentient;
+
+                                                            // Paper start
+                                                            com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
+                                                            EntityTypes<? extends EntityInsentient> cls = biomebase_biomemeta.b;
+                                                            org.bukkit.entity.EntityType type = EntityTypes.clsToTypeMap.get(cls);
+                                                            if (type != null) {
+                                                                event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
+                                                                        MCUtil.toLocation(worldserver, blockposition_mutableblockposition),
+                                                                        type, SpawnReason.NATURAL
+                                                                );
+                                                                if (!event.callEvent()) {
+                                                                    if (event.shouldAbortSpawn()) {
+                                                                        continue label137; // right above the iterator for c (Chunk Pos Set)
+                                                                    }
+                                                                    j1 += l2;
+                                                                    ++j4;
+                                                                    continue;
+                                                                }
+                                                            }
+                                                            // Paper end
+
 
                                                                 try {
                                                                     entityinsentient = (EntityInsentient) biomebase_biomemeta.b.a((World) worldserver);

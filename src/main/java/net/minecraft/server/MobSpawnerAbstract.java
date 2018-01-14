@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Lists;
+
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -94,6 +95,28 @@ public abstract class MobSpawnerAbstract {
                     double d3 = j >= 1 ? nbttaglist.k(0) : (double) blockposition.getX() + (world.random.nextDouble() - world.random.nextDouble()) * (double) this.spawnRange + 0.5D;
                     double d4 = j >= 2 ? nbttaglist.k(1) : (double) (blockposition.getY() + world.random.nextInt(3) - 1);
                     double d5 = j >= 3 ? nbttaglist.k(2) : (double) blockposition.getZ() + (world.random.nextDouble() - world.random.nextDouble()) * (double) this.spawnRange + 0.5D;
+                    // Paper start
+                    if (this.getMobName() == null) {
+                        return;
+                    }
+                    String key = this.getMobName().getKey();
+                    org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.fromName(key);
+                    if (type != null) {
+                        com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
+                        event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
+                                MCUtil.toLocation(world, d3, d4, d5),
+                                type,
+                                org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER
+                        );
+                        if (!event.callEvent()) {
+                            flag = true;
+                            if (event.shouldAbortSpawn()) {
+                                break;
+                            }
+                            continue;
+                        }
+                    }
+                    // Paper end
                     Entity entity = ChunkRegionLoader.a(nbttagcompound, world, d3, d4, d5, false);
 
                     if (entity == null) {
