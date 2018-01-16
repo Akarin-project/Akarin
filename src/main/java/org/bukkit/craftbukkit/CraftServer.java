@@ -164,6 +164,10 @@ import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.server.TabCompleteEvent;
 import net.md_5.bungee.api.chat.BaseComponent;
 
+import javax.annotation.Nullable; // Paper
+import javax.annotation.Nonnull; // Paper
+
+
 public final class CraftServer implements Server {
     private final String serverName = "Paper"; // Paper
     private final String serverVersion;
@@ -2155,6 +2159,22 @@ public final class CraftServer implements Server {
     @Override
     public boolean suggestPlayerNamesWhenNullTabCompletions() {
         return com.destroystokyo.paper.PaperConfig.suggestPlayersWhenNullTabCompletions;
+    }
+
+    public com.destroystokyo.paper.profile.PlayerProfile createProfile(@Nonnull UUID uuid) {
+        return createProfile(uuid, null);
+    }
+
+    public com.destroystokyo.paper.profile.PlayerProfile createProfile(@Nonnull String name) {
+        return createProfile(null, name);
+    }
+
+    public com.destroystokyo.paper.profile.PlayerProfile createProfile(@Nullable UUID uuid, @Nullable String name) {
+        Player player = uuid != null ? Bukkit.getPlayer(uuid) : (name != null ? Bukkit.getPlayerExact(name) : null);
+        if (player != null) {
+            return new com.destroystokyo.paper.profile.CraftPlayerProfile((CraftPlayer)player);
+        }
+        return new com.destroystokyo.paper.profile.CraftPlayerProfile(uuid, name);
     }
     // Paper end
 }

@@ -43,7 +43,7 @@ public class UserCache {
 
     public static final SimpleDateFormat a = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
     private static boolean c;
-    private final Map<String, UserCache.UserCacheEntry> d = Maps.newHashMap();
+    private final Map<String, UserCache.UserCacheEntry> d = Maps.newHashMap();private final Map<String, UserCache.UserCacheEntry> nameCache = d; // Paper - OBFHELPER
     private final Map<UUID, UserCache.UserCacheEntry> e = Maps.newHashMap();
     private final Deque<GameProfile> f = new java.util.concurrent.LinkedBlockingDeque<GameProfile>(); // CraftBukkit
     private final GameProfileRepository g;
@@ -165,6 +165,13 @@ public class UserCache {
         return usercache_usercacheentry == null ? null : usercache_usercacheentry.a();
     }
 
+    // Paper start
+    @Nullable public GameProfile getProfileIfCached(String name) {
+        UserCache.UserCacheEntry entry = this.nameCache.get(name.toLowerCase(Locale.ROOT));
+        return entry == null ? null : entry.getProfile();
+    }
+    // Paper end
+
     @Nullable public GameProfile getProfile(UUID uuid) { return a(uuid);  } // Paper - OBFHELPER
     @Nullable
     public synchronized GameProfile a(UUID uuid) { // Paper - synchronize
@@ -274,7 +281,7 @@ public class UserCache {
 
     class UserCacheEntry {
 
-        private final GameProfile b;
+        private final GameProfile b;public GameProfile getProfile() { return b; } // Paper - OBFHELPER
         private final Date c;
 
         private UserCacheEntry(GameProfile gameprofile, Date date) {

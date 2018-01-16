@@ -1,7 +1,10 @@
 package net.minecraft.server;
 
 import com.destroystokyo.paper.block.TargetBlockInfo;
+import com.destroystokyo.paper.profile.CraftPlayerProfile;
+import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.mojang.authlib.GameProfile;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
@@ -156,6 +159,10 @@ public final class MCUtil {
             return null;
         }
         return run.get();
+    }
+
+    public static PlayerProfile toBukkit(GameProfile profile) {
+        return CraftPlayerProfile.asBukkitMirror(profile);
     }
 
     /**

@@ -1186,7 +1186,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             */ // CraftBukkit end
 
             String s1 = "."; // PAIL?
-            YggdrasilAuthenticationService yggdrasilauthenticationservice = new YggdrasilAuthenticationService(Proxy.NO_PROXY, UUID.randomUUID().toString());
+            YggdrasilAuthenticationService yggdrasilauthenticationservice = new com.destroystokyo.paper.profile.PaperAuthenticationService(Proxy.NO_PROXY, UUID.randomUUID().toString()); // Paper
             MinecraftSessionService minecraftsessionservice = yggdrasilauthenticationservice.createMinecraftSessionService();
             GameProfileRepository gameprofilerepository = yggdrasilauthenticationservice.createProfileRepository();
             UserCache usercache = new UserCache(gameprofilerepository, new File(s1, MinecraftServer.a.getName()));
@@ -1635,6 +1635,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.G = i;
     }
 
+    public MinecraftSessionService getSessionService() { return ap(); } // Paper - OBFHELPER
     public MinecraftSessionService ap() {
         return this.V;
     }
