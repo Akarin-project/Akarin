@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import com.destroystokyo.paper.inventory.meta.ArmorStandMeta; // Paper
 import net.minecraft.server.Block;
 import net.minecraft.server.IRegistry;
 import net.minecraft.server.ITileEntity;
@@ -315,7 +316,18 @@ public class ItemMetaTest extends AbstractTestingBase {
                     cleanStack.setItemMeta(meta);
                     return cleanStack;
                 }
+            },
+            // Paper start
+            new StackProvider(Material.ARMOR_STAND) {
+                @Override
+                ItemStack operate(ItemStack cleanStack) {
+                    final ArmorStandMeta meta = (ArmorStandMeta) cleanStack.getItemMeta();
+                    meta.setInvisible(true);
+                    cleanStack.setItemMeta(meta);
+                    return cleanStack;
+                }
             }
+            // paper end
         );
 
         assertThat("Forgotten test?", providers, hasSize(ItemStackTest.COMPOUND_MATERIALS.length - 4/* Normal item meta, skulls, eggs and tile entities */));

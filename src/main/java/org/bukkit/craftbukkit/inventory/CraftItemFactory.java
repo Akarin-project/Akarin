@@ -191,6 +191,8 @@ public final class CraftItemFactory implements ItemFactory {
             return meta instanceof CraftMetaSpawnEgg ? meta : new CraftMetaSpawnEgg(meta);
         case KNOWLEDGE_BOOK:
             return meta instanceof CraftMetaKnowledgeBook ? meta : new CraftMetaKnowledgeBook(meta);
+        case ARMOR_STAND:
+            return meta instanceof CraftMetaArmorStand ? meta : new CraftMetaArmorStand(meta); // Paper
         case FURNACE:
         case CHEST:
         case TRAPPED_CHEST:
