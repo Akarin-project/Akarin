@@ -111,6 +111,11 @@ public class PlayerInteractManager {
         if (event.isCancelled()) {
             // Let the client know the block still exists
             ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition));
+            // Paper start - brute force neighbor blocks for any attached blocks
+            for (EnumDirection dir : EnumDirection.values()) {
+                ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(world, blockposition.shift(dir)));
+            }
+            // Paper end
             // Update any tile entity data for this block
             TileEntity tileentity = this.world.getTileEntity(blockposition);
             if (tileentity != null) {
@@ -466,7 +471,25 @@ public class PlayerInteractManager {
                 ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutBlockChange(world, bottom ? blockposition.up() : blockposition.down()));
             } else if (iblockdata.getBlock() instanceof BlockCake) {
                 ((EntityPlayer) entityhuman).getBukkitEntity().sendHealthUpdate(); // SPIGOT-1341 - reset health for cake
+            // Paper start  - extend Player Interact cancellation // TODO: consider merging this into the extracted method
+            } else if (iblockdata.getBlock() instanceof BlockStructure) {
+                    ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutCloseWindow());
+            } else if (iblockdata.getBlock() instanceof BlockCommand) {
+                    ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutCloseWindow());
+            } else if (iblockdata.getBlock() instanceof BlockFlowerPot) {
+                // Send a block change to air and then send back the correct block, just to make the client happy
+                PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(this.world, blockposition);
+                packet.block = Blocks.AIR.getBlockData();
+                this.player.playerConnection.sendPacket(packet);
+
+                this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition));
+
+                TileEntity tileentity = this.world.getTileEntity(blockposition);
+                if (tileentity != null) {
+                    player.playerConnection.sendPacket(tileentity.getUpdatePacket());
+                }
             }
+            // Paper end - extend Player Interact cancellation
             ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory(); // SPIGOT-2867
             enuminteractionresult = (event.useItemInHand() != Event.Result.ALLOW) ? EnumInteractionResult.SUCCESS : EnumInteractionResult.PASS;
         } else if (this.gamemode == EnumGamemode.SPECTATOR) {
