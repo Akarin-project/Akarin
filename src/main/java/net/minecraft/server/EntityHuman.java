@@ -1029,6 +1029,7 @@ public abstract class EntityHuman extends EntityLiving {
 
                     boolean flag2 = flag && this.fallDistance > 0.0F && !this.onGround && !this.z_() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && entity instanceof EntityLiving;
 
+                    flag2 = flag2 && !world.paperConfig.disablePlayerCrits; // Paper
                     flag2 = flag2 && !this.isSprinting();
                     if (flag2) {
                         f *= 1.5F;
