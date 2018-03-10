@@ -5,7 +5,7 @@ import org.bukkit.inventory.InventoryHolder;
 
 public class InventoryEnderChest extends InventorySubcontainer {
 
-    private TileEntityEnderChest a;
+    private TileEntityEnderChest a; public TileEntityEnderChest getTileEntity() { return a; } // Paper - OBFHELPER
     // CraftBukkit start
     private final EntityHuman owner;
 
@@ -15,6 +15,7 @@ public class InventoryEnderChest extends InventorySubcontainer {
 
     @Override
     public Location getLocation() {
+        if (getTileEntity() == null) return null; // Paper - return null if there is no TE bound (opened by plugin)
         return new Location(this.a.getWorld().getWorld(), this.a.getPosition().getX(), this.a.getPosition().getY(), this.a.getPosition().getZ());
     }
 
