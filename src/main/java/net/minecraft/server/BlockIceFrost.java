@@ -25,7 +25,8 @@ public class BlockIceFrost extends BlockIce {
                     EnumDirection enumdirection = aenumdirection[j];
 
                     blockposition_b.g(blockposition).c(enumdirection);
-                    IBlockData iblockdata1 = world.getType(blockposition_b);
+                    IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition_b); // Paper - don't load chunks
+                    if (iblockdata1 == null) continue; // Paper
 
                     if (iblockdata1.getBlock() == this && !this.c(iblockdata1, world, blockposition_b)) {
                         world.getBlockTickList().a(blockposition_b, this, MathHelper.nextInt(random, world.paperConfig.frostedIceDelayMin, world.paperConfig.frostedIceDelayMax)); // Paper - use configurable min/max delay
@@ -87,7 +88,7 @@ public class BlockIceFrost extends BlockIce {
                 EnumDirection enumdirection = aenumdirection[l];
 
                 blockposition_b.g(blockposition).c(enumdirection);
-                if (iblockaccess.getType(blockposition_b).getBlock() == this) {
+                if (((World) iblockaccess).getBlockIfLoaded(blockposition_b) == this) { // Paper - don't load chunks
                     ++j;
                     if (j >= i) {
                         boolean flag = false;
