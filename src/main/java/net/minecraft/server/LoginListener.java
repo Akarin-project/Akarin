@@ -37,7 +37,7 @@ public class LoginListener implements PacketLoginInListener, ITickable {
     public final NetworkManager networkManager;
     private LoginListener.EnumProtocolState g;
     private int h;
-    private GameProfile i;
+    private GameProfile i; private void setGameProfile(GameProfile profile) { i = profile; } private GameProfile getGameProfile() { return i; } // Paper - OBFHELPER
     private final String j;
     private SecretKey loginKey;
     private EntityPlayer l;
@@ -283,12 +283,12 @@ public class LoginListener implements PacketLoginInListener, ITickable {
                             final org.bukkit.craftbukkit.CraftServer server = LoginListener.this.server.server;
 
                             // Paper start
-                            PlayerProfile profile = Bukkit.createProfile(uniqueId, playerName);
+                            PlayerProfile profile = CraftPlayerProfile.asBukkitMirror(getGameProfile());
                             AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(playerName, address, uniqueId, profile);
                             server.getPluginManager().callEvent(asyncEvent);
                             profile = asyncEvent.getPlayerProfile();
-                            profile.complete();
-                            i = CraftPlayerProfile.asAuthlibCopy(profile);
+                            profile.complete(true);
+                            setGameProfile(CraftPlayerProfile.asAuthlib(profile));
                             playerName = i.getName();
                             uniqueId = i.getId();
                             // Paper end

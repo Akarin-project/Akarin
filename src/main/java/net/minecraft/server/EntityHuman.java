@@ -63,7 +63,7 @@ public abstract class EntityHuman extends EntityLiving {
     protected int bZ;
     protected float ca = 0.02F;
     private int g;
-    private final GameProfile h;
+    private GameProfile h; public void setProfile(GameProfile profile) { this.h = profile; } // Paper - OBFHELPER
     private ItemStack cd;
     private final ItemCooldown ce;
     @Nullable
