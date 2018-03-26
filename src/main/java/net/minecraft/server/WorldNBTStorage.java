@@ -141,6 +141,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
     }
 
     public void save(EntityHuman entityhuman) {
+        if(!com.destroystokyo.paper.PaperConfig.savePlayerData) return; // Paper - Make player data saving configurable
         try {
             NBTTagCompound nbttagcompound = entityhuman.save(new NBTTagCompound());
             File file = new File(this.playerDir, entityhuman.bu() + ".dat.tmp");
