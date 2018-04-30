@@ -242,6 +242,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         if (nbttagcompound.hasKeyOfType("owner", 10)) {
             this.shooterId = GameProfileSerializer.b(nbttagcompound.getCompound("owner"));
         }
+        if (this instanceof EntityEnderPearl && this.world != null && this.world.paperConfig.disableEnderpearlExploit) { this.shooterId = null; } // Paper - Don't store shooter name for pearls to block enderpearl travel exploit
 
     }
 
