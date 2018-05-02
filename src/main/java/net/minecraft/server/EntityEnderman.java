@@ -127,7 +127,15 @@ public class EntityEnderman extends EntityMonster {
         this.setCarried(iblockdata);
     }
 
+    // Paper start - OBFHELPER - ok not really, but verify this on updates
     private boolean f(EntityHuman entityhuman) {
+        boolean shouldAttack = f_real(entityhuman);
+        com.destroystokyo.paper.event.entity.EndermanAttackPlayerEvent event = new com.destroystokyo.paper.event.entity.EndermanAttackPlayerEvent((org.bukkit.entity.Enderman) getBukkitEntity(), (org.bukkit.entity.Player) entityhuman.getBukkitEntity());
+        event.setCancelled(!shouldAttack);
+        return event.callEvent();
+    }
+    private boolean f_real(EntityHuman entityhuman) {
+        // Paper end
         ItemStack itemstack = (ItemStack) entityhuman.inventory.armor.get(3);
 
         if (itemstack.getItem() == Blocks.CARVED_PUMPKIN.getItem()) {
