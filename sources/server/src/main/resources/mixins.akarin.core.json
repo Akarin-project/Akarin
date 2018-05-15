@@ -1,0 +1,11 @@
+{
+    "required": true,
+    "minVersion": "0",
+    "package": "io.akarin.server.mixin.core",
+    "target": "@env(DEFAULT)",
+    "compatibilityLevel": "JAVA_8",
+    "server": [
+        "Bootstrap",
+		"DummyEula"
+    ]
+}
