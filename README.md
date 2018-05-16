@@ -1,6 +1,6 @@
 # Akarin
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12-blue.svg?style=flat)](https://www.minecraft.net/)
-[![bStats](https://img.shields.io/badge/bStats-Torch-blue.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
+[![bStats](https://img.shields.io/badge/bStats-Torch-brightgreen.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
 
 Introduction
 ---
