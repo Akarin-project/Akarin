@@ -15,7 +15,7 @@ It has a few key goals:
 
 Akarin is **under heavy development** yet, contribution is welcome and run a test before putting into production.
 
-Build
+Building
 ---
 #### Requirements
 * Java (JDK) 8 or above
