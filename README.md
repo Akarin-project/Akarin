@@ -30,6 +30,7 @@ Building
 Demonstration servers
 ---
 + **demo.akarin.io**
+
 *Contact me via the email below if you want to add your server here*
 
 Contributing
