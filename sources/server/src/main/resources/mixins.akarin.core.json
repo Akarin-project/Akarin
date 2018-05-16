@@ -6,6 +6,9 @@
     "compatibilityLevel": "JAVA_8",
     "server": [
         "Bootstrap",
-		"DummyEula"
+		"DummyEula",
+		"Watchcat",
+		
+		"MixinMinecraftServer"
     ]
 }
