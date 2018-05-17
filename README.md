@@ -1,4 +1,4 @@
-# Akarin
+# <img src="https://i.loli.net/2018/05/17/5afd851705e20.png" alt="Akarin Face" align="right">Akarin
 [![Travis CI](https://travis-ci.org/Akarin-project/Akarin.svg?branch=master)](https://travis-ci.org/Akarin-project/Akarin)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
 [![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.io)
@@ -44,7 +44,7 @@ Demonstration servers
 Contributing
 ---
 * Feel free to open an [Issue](https://github.com/Akarin-project/akarin/issues) if you have any problem with Akarin.
-* [Pull Request](https://github.com/Akarin-project/akarin/pulls) is welcomed, Akarin use [Mixin](https://github.com/SpongePowered/Mixin) to modify the code, you can checkout `sources` folder to see them. Moreover, add your name to the [LICENSE](.github/LICENSE.md) if you want to publish your code under the [MIT License](.github/licenses/MIT.md).
+* [Pull Request](https://github.com/Akarin-project/akarin/pulls) is welcomed, Akarin use [Mixin](https://github.com/SpongePowered/Mixin) to modify the code, you can checkout `sources` folder to see them. Moreover, add your name to the [LICENSE](LICENSE.md) if you want to publish your code under the [MIT License](licenses/MIT.md).
 * If you want to join the [Akarin-project](https://github.com/Akarin-project) team, you can send an email to `kira@kira.moe` with your experience and necessary information. Besides, welcome to join our [TIM Group](https://jq.qq.com/?_wv=1027&k=59q2kV4) to chat.
 
 ![Akarin project](https://i.loli.net/2018/05/13/5af7fbbfbcddf.png)
