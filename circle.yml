@@ -9,7 +9,7 @@ dependencies:
     - git config --global user.email "circle@circleci.com"
     - git config --global user.name "CircleCI"
     - chmod +x scripts/inst.sh
-    - ./scripts/inst.sh --setup
+    - ./scripts/inst.sh --setup --remote
 
 test:
   post:

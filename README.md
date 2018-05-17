@@ -1,7 +1,7 @@
 # Akarin
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.12.2-blue.svg?style=flat)](https://www.minecraft.net/)
 [![Travis CI](https://travis-ci.org/Akarin-project/Akarin.svg?branch=master)](https://travis-ci.org/Akarin-project/Akarin)
-[![bStats](https://img.shields.io/badge/bStats-Torch-brightgreen.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
+[![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
+[![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.io)
 
 Introduction
 ---
@@ -24,7 +24,7 @@ Get Akarin
 
 *Contact me via the email below or open an [Issue](https://github.com/Akarin-project/akarin/issues) if you want to add your website here*
 
-### Building
+### Build
 #### Requirements
 * Java (JDK) 8 or above
 * Maven
