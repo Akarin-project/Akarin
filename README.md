@@ -34,6 +34,7 @@ Get Akarin
 ./scripts/inst.sh --setup --fast
 ```
 *For non-modification compile, add `--fast` option to skip the test is recommended.*
+*Futhermore, if your machine have a insufficient memory, you may add `--remote` option to avoid decompile locally.*
 
 Demonstration servers
 ---
