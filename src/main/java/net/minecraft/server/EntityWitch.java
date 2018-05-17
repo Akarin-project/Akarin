@@ -154,7 +154,15 @@ public class EntityWitch extends EntityMonster implements IRangedEntity {
                 potionregistry = Potions.M;
             }
 
-            EntityPotion entitypotion = new EntityPotion(this.world, this, PotionUtil.a(new ItemStack(Items.SPLASH_POTION), potionregistry));
+            // Paper start
+            ItemStack potion = PotionUtil.a(new ItemStack(Items.SPLASH_POTION), potionregistry);
+            com.destroystokyo.paper.event.entity.WitchThrowPotionEvent event = new com.destroystokyo.paper.event.entity.WitchThrowPotionEvent((org.bukkit.entity.Witch) this.getBukkitEntity(), (org.bukkit.entity.LivingEntity) entityliving.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
+            if (!event.callEvent()) {
+                return;
+            }
+            potion = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getPotion());
+            EntityPotion entitypotion = new EntityPotion(this.world, this, potion);
+            // Paper end
 
             entitypotion.pitch -= -20.0F;
             entitypotion.shoot(d1, d2 + (double) (f1 * 0.2F), d3, 0.75F, 8.0F);
