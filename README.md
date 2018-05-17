@@ -1,5 +1,6 @@
 # Akarin
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.12.2-blue.svg?style=flat)](https://www.minecraft.net/)
+[![Travis CI](https://travis-ci.org/Akarin-project/Akarin.svg?branch=master)](https://travis-ci.org/Akarin-project/Akarin)
 [![bStats](https://img.shields.io/badge/bStats-Torch-brightgreen.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
 
 Introduction
@@ -9,14 +10,21 @@ Introduction
 As a [Paper](https://github.com/PaperMC/Paper) fork, it supports almost plugins that [Spigot](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse) can use.
 
 It has a few key goals:
-* Open Access - Make more game mechanism configurable.
-* Bedrock - Safety and stable is important for a server. 
-* Fast - Simplify the logic and import the multi-thread compute.
+* **Open Access** - Make more game mechanism configurable.
+* **Bedrock** - Safety and stable is important for a server. 
+* **Fast** - Simplify the logic and import the multi-thread compute.
 
 Akarin is **under heavy development** yet, contribution is welcome and run a test before putting into production.
 
-Building
+Get Akarin
 ---
+### Download
+#### Recommended Sites
++ [![Build Status](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg) **Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/master) - Checkout the 'Artifacts' tab of the latest build  *Login required*
+
+*Contact me via the email below or open an [Issue](https://github.com/Akarin-project/akarin/issues) if you want to add your website here*
+
+### Building
 #### Requirements
 * Java (JDK) 8 or above
 * Maven
@@ -31,7 +39,7 @@ Demonstration servers
 ---
 + **demo.akarin.io**
 
-*Contact me via the email below if you want to add your server here*
+*Contact me via the email below or open an [Issue](https://github.com/Akarin-project/akarin/issues) if you want to add your server here*
 
 Contributing
 ---

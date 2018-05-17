@@ -1,0 +1,16 @@
+machine:
+  java:
+    version: openjdk8
+
+dependencies:
+  cache-directories:
+    - "work/Paper/work/Minecraft"
+  override:
+    - git config --global user.email "circle@circleci.com"
+    - git config --global user.name "CircleCI"
+    - chmod +x scripts/inst.sh
+    - ./scripts/inst.sh --setup
+
+test:
+  post:
+    - yes|cp -rf ./akarin-1.12.2.jar $CIRCLE_ARTIFACTS
