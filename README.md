@@ -1,4 +1,4 @@
-# <img src="https://i.loli.net/2018/05/17/5afd851705e20.png" alt="Akarin Face" align="right">Akarin
+# <img src="https://i.loli.net/2018/05/17/5afd869c443ef.png" alt="Akarin Face" align="right">Akarin
 [![Travis CI](https://travis-ci.org/Akarin-project/Akarin.svg?branch=master)](https://travis-ci.org/Akarin-project/Akarin)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
 [![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.io)
