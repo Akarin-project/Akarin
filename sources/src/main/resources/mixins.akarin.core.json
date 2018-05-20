@@ -9,6 +9,7 @@
         "DummyEula",
         "Watchcat",
         
+		"MixinVersionCommand",
         "MixinMinecraftServer"
     ]
 }

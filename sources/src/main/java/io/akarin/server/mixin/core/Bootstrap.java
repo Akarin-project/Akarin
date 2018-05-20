@@ -21,7 +21,7 @@ public class Bootstrap {
     }
     
     /*
-     * Notify message
+     * Redirect notify message
      */
     @Redirect(method = "main", at = @At(
             value = "INVOKE_STRING",
