@@ -12,7 +12,9 @@ if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 	(
 		if [ "$2" == "--remote" ] || [ "$3" == "--remote" ] || [ "$4" == "--remote" ]; then
 			cd "$paperworkdir"
-			git clone https://github.com/Akarin-project/Minecraft.git
+			if [ ! -d "Minecraft" ]; then
+				git clone https://github.com/Akarin-project/Minecraft.git
+			fi
 		fi
 		
 		cd "$paperbasedir"

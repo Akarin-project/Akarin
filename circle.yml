@@ -4,7 +4,7 @@ machine:
 
 dependencies:
   cache-directories:
-    - "work/Paper/work/Minecraft"
+    - "/home/ubuntu/Akarin/work/Paper/work/Minecraft"
   override:
     - git config --global user.email "circle@circleci.com"
     - git config --global user.name "CircleCI"
