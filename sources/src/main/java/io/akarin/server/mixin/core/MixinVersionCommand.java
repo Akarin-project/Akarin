@@ -1,0 +1,144 @@
+package io.akarin.server.mixin.core;
+
+import java.util.Set;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.defaults.VersionCommand;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
+
+import io.akarin.api.LogWrapper;
+import net.minecraft.server.MCUtil;
+
+@Mixin(value = VersionCommand.class, remap = false)
+public class MixinVersionCommand {
+    @Shadow private static int getFromRepo(String repo, String hash) { return 0; }
+    
+    /**
+     * Match current version with repository and calculate the distance
+     * @param repo
+     * @param verInfo
+     * @return Version distance from lastest
+     */
+    @Overwrite
+    private static int getDistance(String repo, String verInfo) {
+        verInfo = verInfo.replace("\"", "");
+        return getFromRepo("Akarin-project/Akarin", verInfo);
+    }
+    
+    /**
+     * A workaround for unexpected calling
+     * @param currentVer
+     * @return Version distance from lastest
+     */
+    @Overwrite
+    private static int getFromJenkins(int currentVer) {
+        String[] parts = Bukkit.getVersion().substring("git-Akarin-".length()).split("[-\\s]");
+        return getFromRepo("Akarin-project/Akarin", parts[0]);
+    }
+    
+    @Shadow private boolean hasVersion;
+    @Shadow private String versionMessage;
+    @Shadow private @Final Set<CommandSender> versionWaiters;
+    
+    private volatile boolean versionObtaining;
+    private long lastCheckMillis;
+    
+    // The name can lead to misunderstand,
+    // this method doesn't send the whole version message (e.g. 'This server is running {} version' or 'Previous version'),
+    // it is only responsible for checking the version distance!
+    @Overwrite
+    private void sendVersion(CommandSender sender) {
+        // Skipping if already detected a custom version identifier (e.g. 'git-Akarin-')
+        // This should be lying in 'obtainVersion' method, but bump for faster returning
+        if (customVersion) return;
+        
+        if (versionObtaining) return;
+        // The volatile guarantees the safety between different threads.
+        // Remembers that we are still on main thread now,
+        // it's not guarantee that what time the last check ends,
+        // but it's guarantee that only one request will be accepted at the same time.
+        // After this, de-sync operations are safety - without lock -
+        // (this is really a special case that we cancel new tasks instead let them wait).
+        versionObtaining = true;
+        
+        if (hasVersion) {
+            long current = System.currentTimeMillis();
+            if (current - lastCheckMillis > 7200000 /* 2 hours */) {
+                lastCheckMillis = current;
+                obtainVersion(sender);
+                /* TODO Option: legacy-versioning-compat */ currentSender = sender;
+            } else {
+                sender.sendMessage(versionMessage);
+                return;
+            }
+        }
+    }
+    
+    private CommandSender currentSender;
+    private boolean customVersion;
+    
+    @Overwrite
+    private void obtainVersion() {
+        if (false /* TODO Option: legacy-versioning-compat */) {
+            /* TODO Option: legacy-versioning-compat = true */
+            LogWrapper.logger.warn("A legacy version lookup caught, legacy-versioning-compat enabled forcely!");
+            throw new UnsupportedOperationException();
+        } else {
+            obtainVersion(currentSender);
+            currentSender = null;
+        }
+    }
+    
+    private void obtainVersion(CommandSender sender) {
+        // We post all things because a custom version is rare (expiring is not rare),
+        // and we'd better post this task as early as we can, since it's a will (horrible destiny).
+        MCUtil.scheduleAsyncTask(() -> {
+            // This should be lying in 'sendVersion' method, but comes here for relax main thread
+            versionWaiters.add(sender);
+            
+            String version = Bukkit.getVersion();
+            if (version == null) {
+                version = "Unique"; // Custom - > Unique
+                customVersion = true;
+                return;
+            }
+            
+            if (version.startsWith("git-Akarin-")) {
+                
+                String[] parts = version.substring("git-Akarin-".length()).split("[-\\s]");
+                int distance = getDistance(null, parts[0]);
+                switch (distance) {
+                    case -1:
+                        setVersionMessage("Error obtaining version information");
+                        break;
+                    case 0:
+                        setVersionMessage("You are running the latest version");
+                        break;
+                    case -2:
+                        setVersionMessage("Unknown version");
+                        break;
+                    default:
+                        setVersionMessage("You are " + distance + " version(s) behind");
+                }
+            } else {
+                customVersion = true;
+            }
+            
+            versionObtaining = false;
+        });
+    }
+    
+    @Overwrite
+    private void setVersionMessage(String message) {
+        versionMessage = message;
+        hasVersion = true;
+        
+        for (CommandSender sender : versionWaiters) {
+            sender.sendMessage(versionMessage);
+        }
+        versionWaiters.clear();
+    }
+}
