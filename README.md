@@ -20,7 +20,8 @@ Get Akarin
 ---
 ### Download
 #### Recommended Sites
-+ [![Build Status](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg) **Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/master) - Checkout the 'Artifacts' tab of the latest build  *Login required*
++ [![Circle CI](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg) **Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/master) - Checkout the 'Artifacts' tab of the latest build  *Login required*
++ [**PCD Jenkins**](http://ci.ilummc.com/job/Akarin/) - *Kudos to [Izzel_Aliz](https://github.com/IzzelAliz)*
 
 *Contact me via the email below or open an [Issue](https://github.com/Akarin-project/akarin/issues) if you want to add your website here*
 
