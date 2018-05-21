@@ -25,8 +25,8 @@ fi
 echo "[Akarin] Ready to build"
 (
 	echo "[Akarin] Touch sources.."
-	yes 2>/dev/null | cp -rf "$basedir/sources/src" "$paperbasedir/Paper-Server/"
-	yes 2>/dev/null | cp -rf "$basedir/sources/pom.xml" "$paperbasedir/Paper-Server/"
+	yes | cp -rf "$basedir/sources/src" "$paperbasedir/Paper-Server/"
+	yes | cp -rf "$basedir/sources/pom.xml" "$paperbasedir/Paper-Server/"
 	
 	cd "$paperbasedir"
 	if [ "$2" == "--fast" ] || [ "$3" == "--fast" ] || [ "$4" == "--fast" ]; then
@@ -38,7 +38,7 @@ echo "[Akarin] Ready to build"
 	
 	minecraftversion=$(cat "$paperworkdir/BuildData/info.json"  | grep minecraftVersion | cut -d '"' -f 4)
 	rawjar="$paperbasedir/Paper-Server/target/akarin-$minecraftversion.jar"
-	yes 2>/dev/null | cp -rf "$rawjar" "$basedir/akarin-$minecraftversion.jar"
+	yes | cp -rf "$rawjar" "$basedir/akarin-$minecraftversion.jar"
 	
 	echo ""
 	echo "[Akarin] Build successful"
