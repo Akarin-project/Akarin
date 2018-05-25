@@ -1,12 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.destroystokyo.paper</groupId>
-    <artifactId>paper</artifactId>
+    <artifactId>akarin</artifactId>
     <packaging>jar</packaging>
     <version>1.12.2-R0.1-SNAPSHOT</version>
-    <name>Paper</name>
-    <url>https://github.com/PaperMC/Paper</url>
+    <name>Akarin</name>
+    <url>https://github.com/Akarin-project/Akarin</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -17,7 +17,7 @@ import com.destroystokyo.paper.Metrics.CustomChart;
 @Mixin(value = Metrics.class, remap = false)
 public class MixinMetrics {
     // The url to which the data is sent - bukkit/Torch (keep our old name)
-    @Shadow @Mutable @Final public static String URL = "https://bStats.org/submitData/bukkit";
+    @Shadow @Mutable @Final public final static String URL = "https://bStats.org/submitData/bukkit";
     
     // The name of the server software
     @Shadow @Final private String name;
@@ -57,7 +57,6 @@ public class MixinMetrics {
         int onlineMode = Bukkit.getOnlineMode() ? 1 : 0;
         String bukkitVersion = org.bukkit.Bukkit.getVersion();
         bukkitVersion = bukkitVersion.substring(bukkitVersion.indexOf("MC: ") + 4, bukkitVersion.length() - 1);
-        LogWrapper.logger.warn("Akarin debug: " + URL);
         
         JSONObject data = new JSONObject();
         data.put("playerAmount", playerAmount);

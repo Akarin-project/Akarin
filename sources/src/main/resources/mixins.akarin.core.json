@@ -11,6 +11,7 @@
         
 		"MixinMetrics",
 		"MixinPaperConfig",
+		"MixinCraftServer",
 		"MixinVersionCommand",
         "MixinMinecraftServer"
     ]
