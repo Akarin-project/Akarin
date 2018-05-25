@@ -47,7 +47,7 @@ Contributing
 ---
 * Feel free to open an [Issue](https://github.com/Akarin-project/akarin/issues) if you have any problem with Akarin.
 * [Pull Request](https://github.com/Akarin-project/akarin/pulls) is welcomed, Akarin use [Mixin](https://github.com/SpongePowered/Mixin) to modify the code, you can checkout `sources` folder to see them. Moreover, add your name to the [LICENSE](https://github.com/Akarin-project/Akarin/blob/master/LICENSE.md) if you want to publish your code under the [MIT License](https://github.com/Akarin-project/Akarin/blob/master/licenses/MIT.md).
-* If you want to join the [Akarin-project](https://github.com/Akarin-project) team, you can send an email to `kira@kira.moe` with your experience and necessary information. Besides, welcome to join our [TIM Group](https://jq.qq.com/?_wv=1027&k=59q2kV4) to chat.
+* If you want to join the [Akarin-project](https://github.com/Akarin-project) team, you can send an email to `kira@kira.moe` with your experience and necessary information. Besides, welcome to join our [TIM Group](https://jq.qq.com/?_wv=1027&k=59q2kV4) to chat *(Chinese)*.
 * Note that you need add `work/Paper/Paper-Server` to the `Build Path` of your IDE manually to organize the *NMS* import, the raw *NMS* dependency was dragged to the `Paper-Parent` project.
 
 ![Akarin project](https://i.loli.net/2018/05/13/5af7fbbfbcddf.png)
