@@ -3,7 +3,6 @@ package io.akarin.server.mixin.core;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import io.akarin.api.LogWrapper;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.spongepowered.asm.mixin.Final;

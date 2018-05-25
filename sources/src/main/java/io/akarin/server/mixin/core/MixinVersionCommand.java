@@ -64,16 +64,16 @@ public class MixinVersionCommand {
         // (this is really a special case that we cancel new tasks instead let them wait).
         versionObtaining = true;
         
-		if (hasVersion) {
-			long current = System.currentTimeMillis();
+        if (hasVersion) {
+            long current = System.currentTimeMillis();
             if (current - lastCheckMillis > 7200000 /* 2 hours */) {
                 lastCheckMillis = current;
-				hasVersion = false;
-			} else {
-				sender.sendMessage(versionMessage);
+                hasVersion = false;
+            } else {
+                sender.sendMessage(versionMessage);
                 return;
-			}
-		}
+            }
+        }
         if (!hasVersion) {
             obtainVersion(sender);
             /* TODO Option: legacy-versioning-compat */ currentSender = sender;
@@ -101,7 +101,7 @@ public class MixinVersionCommand {
         MCUtil.scheduleAsyncTask(() -> {
             // This should be lying in 'sendVersion' method, but comes here for relax main thread
             versionWaiters.add(sender);
-			sender.sendMessage("Checking version, please wait...");
+            sender.sendMessage("Checking version, please wait...");
             
             String version = Bukkit.getVersion();
             if (version == null) {
