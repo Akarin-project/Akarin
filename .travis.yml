@@ -11,7 +11,7 @@ before_install:
  
 before_script:
   - chmod +x scripts/inst.sh
-script: ./scripts/inst.sh --setup --remote
+script: ./scripts/inst.sh --setup
 
 cache:
   directories:
