@@ -46,7 +46,7 @@ public abstract class MetricsBootstrap {
         boolean logFailedRequests = config.getBoolean("logFailedRequests", false);
         // Only start Metrics, if it's enabled in the config
         if (config.getBoolean("enabled", true)) {
-            new Metrics("Akarin", serverUUID, logFailedRequests, Bukkit.getLogger()); // Paper -> Akarin
+            new Metrics("Torch", serverUUID, logFailedRequests, Bukkit.getLogger()); // Paper -> Torch
         }
     }
 }
