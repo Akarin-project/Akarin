@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(value = CraftServer.class, remap = false)
 public class MixinCraftServer {
-    @Shadow @Mutable @Final private final String serverName = "Paper"; // Paper -> Akarin
+    @Shadow @Mutable @Final private final String serverName = "Akarin"; // Paper -> Akarin
 }
