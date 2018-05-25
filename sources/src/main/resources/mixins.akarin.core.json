@@ -9,6 +9,8 @@
         "DummyEula",
         "Watchcat",
         
+		"MixinMetrics",
+		"MixinPaperConfig",
 		"MixinVersionCommand",
         "MixinMinecraftServer"
     ]
