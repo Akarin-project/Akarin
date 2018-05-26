@@ -39,7 +39,7 @@ Get Akarin
 
 Demonstration servers
 ---
-+ **demo.akarin.io**
++ **demo.akarin.io (pending)**
 
 *Contact me via the email below or open an [Issue](https://github.com/Akarin-project/akarin/issues) if you want to add your server here*
 
