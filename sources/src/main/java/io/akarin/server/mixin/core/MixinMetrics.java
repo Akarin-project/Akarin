@@ -1,22 +1,65 @@
 package io.akarin.server.mixin.core;
 
+import java.io.DataOutputStream;
+import java.net.URL;
 import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import org.bukkit.Bukkit;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import com.destroystokyo.paper.Metrics;
 import com.destroystokyo.paper.Metrics.CustomChart;
 
+import io.akarin.api.LogWrapper;
+
 @Mixin(value = Metrics.class, remap = false)
 public class MixinMetrics {
     // The url to which the data is sent - bukkit/Torch (keep our old name)
-    @Shadow @Mutable @Final public final static String URL = "https://bStats.org/submitData/bukkit";
+    private final static String URL = "https://bStats.org/submitData/bukkit";
+    
+    @Shadow @Final private static int B_STATS_VERSION;
+    @Shadow private static byte[] compress(String str) { return null; }
+    
+    /**
+     * Sends the data to the bStats server.
+     *
+     * @param data The data to send.
+     * @throws Exception If the request failed.
+     */
+    @Overwrite
+    private static void sendData(JSONObject data) throws Exception {
+        if (data == null) {
+            throw new IllegalArgumentException("Data cannot be null!");
+        }
+        HttpsURLConnection connection = (HttpsURLConnection) new URL(URL).openConnection();
+
+        // Compress the data to save bandwidth
+        byte[] compressedData = compress(data.toString());
+
+        // Add headers
+        connection.setRequestMethod("POST");
+        connection.addRequestProperty("Accept", "application/json");
+        connection.addRequestProperty("Connection", "close");
+        connection.addRequestProperty("Content-Encoding", "gzip"); // We gzip our request
+        connection.addRequestProperty("Content-Length", String.valueOf(compressedData.length));
+        connection.setRequestProperty("Content-Type", "application/json"); // We send our data in JSON format
+        connection.setRequestProperty("User-Agent", "MC-Server/" + B_STATS_VERSION);
+
+        // Send data
+        connection.setDoOutput(true);
+        DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream());
+        outputStream.write(compressedData);
+        outputStream.flush();
+        outputStream.close();
+
+        connection.getInputStream().close(); // We don't care about the response - Just send our data :)
+    }
     
     // The name of the server software
     @Shadow @Final private String name;
