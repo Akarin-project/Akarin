@@ -16,8 +16,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import com.destroystokyo.paper.Metrics;
 import com.destroystokyo.paper.Metrics.CustomChart;
 
-import io.akarin.api.LogWrapper;
-
 @Mixin(value = Metrics.class, remap = false)
 public class MixinMetrics {
     // The url to which the data is sent - bukkit/Torch (keep our old name)

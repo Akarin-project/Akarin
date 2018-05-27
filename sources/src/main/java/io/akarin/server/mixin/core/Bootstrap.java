@@ -45,6 +45,6 @@ public class Bootstrap {
             args = "ldc=Loading libraries, please wait..."
     ))
     private static void notifyLoading(PrintStream stream, String text) {
-        LogWrapper.logger.info("Loading libraries, please wait..");
+        LogWrapper.logger.info("Loading libraries as parallel capable..");
     }
 }

@@ -5,9 +5,10 @@
     "target": "@env(DEFAULT)",
     "compatibilityLevel": "JAVA_8",
     "server": [
+        "Watchcat",
         "Bootstrap",
         "DummyEula",
-        "Watchcat",
+	    "ParallelRegistry",
         
 		"MixinMetrics",
 		"MixinPaperConfig",
