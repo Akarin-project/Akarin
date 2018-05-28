@@ -27,7 +27,7 @@ import net.minecraft.server.SoundEffect;
 @Mixin(value = DispenserRegistry.class, remap = false)
 public class ParallelRegistry {
     private static final ThreadFactory STAGE_FACTORY = new ThreadFactoryBuilder().setNameFormat("Parallel Registry Thread - %1$d").build();
-    
+
     /**
      * Registry order: SoundEffect -> Block
      */

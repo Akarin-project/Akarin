@@ -9,10 +9,12 @@
         "Bootstrap",
         "DummyEula",
 	    "ParallelRegistry",
+		"NonblockingServerConnection",
         
 		"MixinMetrics",
 		"MixinPaperConfig",
 		"MixinCraftServer",
+		"MixinNetworkManager",
 		"MixinVersionCommand",
         "MixinMinecraftServer"
     ]
