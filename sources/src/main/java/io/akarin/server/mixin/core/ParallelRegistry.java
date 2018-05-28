@@ -44,7 +44,7 @@ public class ParallelRegistry {
     
     private static final int TERMINATION_IN_SEC = 30; // TODO configurable
     
-    // We've kept the original order in codes thought we use parallel
+    // We should keep the original order in codes thought orderless in runtime
     @Redirect(method = "c()V", at = @At(
             value = "INVOKE",
             target = "net/minecraft/server/SoundEffect.b()V"
@@ -54,7 +54,7 @@ public class ParallelRegistry {
             SoundEffect.b();
             Block.w();
             
-            STAGE_BLOCK_BASE.execute(() -> BlockFire.e()); // This single task only cost 4ms, however, firing a task only takes 1ms
+            STAGE_BLOCK_BASE.execute(() -> BlockFire.e()); // This single task only cost ~4ms, however, firing a task only takes ~1ms
             STAGE_BLOCK_BASE.execute(() -> {
                 Item.t();
                 PotionBrewer.a();
@@ -130,13 +130,14 @@ public class ParallelRegistry {
             shift = At.Shift.BEFORE
     ))
     private static void await(CallbackInfo info) throws InterruptedException {
+        // Shutdown BLOCK and STANDALONE stage
         STAGE_STANDALONE.shutdown();
         STAGE_BLOCK.shutdown();
-        
-        STAGE_STANDALONE.awaitTermination(TERMINATION_IN_SEC, TimeUnit.SECONDS);
         STAGE_BLOCK.awaitTermination(TERMINATION_IN_SEC, TimeUnit.SECONDS);
-        // This must after STAGE_BLOCK terminated
-        STAGE_BLOCK_BASE.shutdown();
+        
+        STAGE_BLOCK_BASE.shutdown(); // This must after STAGE_BLOCK terminated
         STAGE_BLOCK_BASE.awaitTermination(TERMINATION_IN_SEC, TimeUnit.SECONDS);
+
+        STAGE_STANDALONE.awaitTermination(TERMINATION_IN_SEC, TimeUnit.SECONDS); // Behind the shutdown of BLOCK_BASE should be faster
     }
 }
