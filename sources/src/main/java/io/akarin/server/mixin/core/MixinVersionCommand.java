@@ -45,6 +45,9 @@ public class MixinVersionCommand {
     
     private volatile boolean versionObtaining;
     private long lastCheckMillis;
+	
+	private CommandSender currentSender;
+    private boolean customVersion;
     
     // The name can lead to misunderstand,
     // this method doesn't send the whole version message (e.g. 'This server is running {} version' or 'Previous version'),
@@ -79,9 +82,6 @@ public class MixinVersionCommand {
             /* TODO Option: legacy-versioning-compat */ currentSender = sender;
         }
     }
-    
-    private CommandSender currentSender;
-    private boolean customVersion;
     
     @Overwrite
     private void obtainVersion() {
@@ -122,6 +122,7 @@ public class MixinVersionCommand {
                         break;
                     case -2:
                         setVersionMessage("Unknown version");
+						customVersion = true;
                         break;
                     default:
                         setVersionMessage("You are " + distance + " version(s) behind");
