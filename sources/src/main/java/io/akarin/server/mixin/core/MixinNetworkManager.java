@@ -3,9 +3,9 @@ package io.akarin.server.mixin.core;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+
 import io.netty.channel.Channel;
 import net.minecraft.server.ITickable;
-import net.minecraft.server.MCUtil;
 import net.minecraft.server.NetworkManager;
 import net.minecraft.server.PacketListener;
 
@@ -18,7 +18,8 @@ public class MixinNetworkManager {
     
     @Overwrite
     public void a() {
-        MCUtil.scheduleAsyncTask(() -> m());
+        this.m();
+        
         if (this.m instanceof ITickable) {
             ((ITickable) this.m).e();
         }
