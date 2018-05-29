@@ -45,8 +45,8 @@ public class MixinVersionCommand {
     
     private volatile boolean versionObtaining;
     private long lastCheckMillis;
-	
-	private CommandSender currentSender;
+    
+    private CommandSender currentSender;
     private boolean customVersion;
     
     // The name can lead to misunderstand,
@@ -122,7 +122,7 @@ public class MixinVersionCommand {
                         break;
                     case -2:
                         setVersionMessage("Unknown version");
-						customVersion = true;
+                        customVersion = true;
                         break;
                     default:
                         setVersionMessage("You are " + distance + " version(s) behind");

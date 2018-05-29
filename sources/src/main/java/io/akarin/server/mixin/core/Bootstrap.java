@@ -1,5 +1,6 @@
 package io.akarin.server.mixin.core;
 
+import java.io.File;
 import java.io.PrintStream;
 
 import org.bukkit.craftbukkit.Main;
@@ -10,12 +11,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import io.akarin.api.LogWrapper;
+import io.akarin.server.core.AkarinGlobalConfig;
 
 @Mixin(value = Main.class, remap = false)
 public class Bootstrap {
     @Inject(method = "main([Ljava/lang/String;)V", at = @At("HEAD"))
-    private static void configureMixin(CallbackInfo info) {
-        ;
+    private static void premain(CallbackInfo info) {
+        AkarinGlobalConfig.init(new File("akarin.yml"));
     }
     
     /*

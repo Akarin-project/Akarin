@@ -2,6 +2,7 @@ package io.akarin.server.mixin.core;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.google.common.collect.Lists;
 import io.akarin.api.LocalAddress;
 import io.akarin.api.WrappedCollections;
+import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.ChannelAdapter;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -76,7 +78,7 @@ public class NonblockingServerConnection {
      */
     @Overwrite
     public void a(InetAddress address, int port) throws IOException {
-        registerChannels(Collections.singleton(LocalAddress.create(address, port)));
+        registerChannels(Lists.newArrayList(LocalAddress.create(address, port)));
     }
     
     public void registerChannels(Collection<LocalAddress> data) throws IOException {
@@ -95,6 +97,16 @@ public class NonblockingServerConnection {
         
         ServerBootstrap bootstrap = new ServerBootstrap().channel(channelClass).childHandler(ChannelAdapter.create(h)).group(loopGroup);
         synchronized (g) {
+            data.addAll(Lists.transform(AkarinGlobalConfig.extraAddress, s -> {
+                String[] info = s.split(":");
+                try {
+                    logger.info("Attempt to bind server on " + s);
+                    return LocalAddress.create(InetAddress.getByName(info[0]), Integer.valueOf(info[1]));
+                } catch (NumberFormatException | UnknownHostException ex) {
+                    logger.error("Error on lookup additional host, wrong format?", ex);
+                    return null;
+                }
+            }));
             data.forEach(address -> g.add(bootstrap.localAddress(address.host(), address.port()).bind().syncUninterruptibly())); // supports multi-port bind
         }
     }
@@ -106,7 +118,7 @@ public class NonblockingServerConnection {
     public void b() {
         this.d = false;
         try {
-            synchronized (g) {
+            synchronized (g) { // safe fixes
                 for (ChannelFuture channel : g) channel.channel().close().sync();
             }
         } catch (InterruptedException ex) {
