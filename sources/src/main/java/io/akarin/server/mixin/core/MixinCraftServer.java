@@ -10,15 +10,15 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(value = CraftServer.class, remap = false)
 public class MixinCraftServer {
     @Shadow @Final @Mutable private String serverName;
-    private boolean unhookServerName = true;
+    private boolean needApplyServerName = true;
     
     @Overwrite
     public String getName() {
         // We cannot apply the name modification in <init> method,
         // cause the initializer will be added to the tail
-        if (unhookServerName) {
+        if (needApplyServerName) {
             serverName = "Akarin";
-            unhookServerName = false;
+            needApplyServerName = false;
         }
         return serverName;
     }

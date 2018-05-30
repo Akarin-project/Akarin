@@ -109,7 +109,7 @@ public class AkarinGlobalConfig {
         return time;
     }
 
-    private static void set(String path, Object val) {
+    public static void set(String path, Object val) {
         config.set(path, val);
     }
 
@@ -148,4 +148,8 @@ public class AkarinGlobalConfig {
         extraAddress = getList("network.extra-local-address", Lists.newArrayList());
     }
     
+    public static boolean legacyVersioningCompat;
+    private static void legacyVersioningCompat() {
+        legacyVersioningCompat = getBoolean("bonus.legacy-versioning-compat", false);
+    }
 }

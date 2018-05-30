@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import io.akarin.api.LogWrapper;
+import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MCUtil;
 
 @Mixin(value = VersionCommand.class, remap = false)
@@ -79,19 +80,19 @@ public class MixinVersionCommand {
         }
         if (!hasVersion) {
             obtainVersion(sender);
-            /* TODO Option: legacy-versioning-compat */ currentSender = sender;
+            if (AkarinGlobalConfig.legacyVersioningCompat) currentSender = sender;
         }
     }
     
     @Overwrite
     private void obtainVersion() {
-        if (false /* TODO Option: legacy-versioning-compat */) {
-            /* TODO Option: legacy-versioning-compat = true */
-            LogWrapper.logger.warn("A legacy version lookup caught, legacy-versioning-compat enabled forcely!");
-            throw new UnsupportedOperationException();
-        } else {
+        if (AkarinGlobalConfig.legacyVersioningCompat) {
             obtainVersion(currentSender);
-            currentSender = null;
+            currentSender = null; // try release
+        } else {
+            LogWrapper.logger.warn("A legacy version lookup was caught, legacy-versioning-compat enabled forcely!");
+            AkarinGlobalConfig.legacyVersioningCompat = true;
+            AkarinGlobalConfig.set("bonus.legacy-versioning-compat", true);
         }
     }
     
