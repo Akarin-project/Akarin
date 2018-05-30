@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -12,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.BiomeBase;
 import net.minecraft.server.Block;
 import net.minecraft.server.BlockFire;
@@ -42,7 +44,7 @@ public class ParallelRegistry {
      */
     private static final ExecutorService STAGE_STANDALONE = Executors.newWorkStealingPool(3);
     
-    private static final int TERMINATION_IN_SEC = 30; // TODO configurable
+    private static final int TERMINATION_IN_SEC = AkarinGlobalConfig.registryTerminationSeconds;
     
     // We should keep the original order in codes thought orderless in runtime
     @Redirect(method = "c()V", at = @At(
