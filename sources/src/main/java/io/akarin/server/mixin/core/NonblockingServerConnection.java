@@ -159,9 +159,7 @@ public class NonblockingServerConnection {
                 if (manager.preparing) continue;
                 
                 needRemoval = true;
-                synchronized (pending) {
-                    pending.add(manager);
-                }
+                pending.add(manager);
                 
                 manager.handleDisconnection();
             }
