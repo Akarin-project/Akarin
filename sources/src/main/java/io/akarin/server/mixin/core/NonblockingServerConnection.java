@@ -66,11 +66,6 @@ public class NonblockingServerConnection {
         }
     }
     
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void deployLists(CallbackInfo info) {
-        h = WrappedCollections.wrappedList(Lists.newCopyOnWriteArrayList());
-    }
-    
     @Shadow @Final private MinecraftServer f;
     
     /**
@@ -80,6 +75,8 @@ public class NonblockingServerConnection {
     public void a(InetAddress address, int port) throws IOException {
         registerChannels(Lists.newArrayList(LocalAddress.create(address, port)));
     }
+    
+    private boolean needDeployList = true;
     
     public void registerChannels(Collection<LocalAddress> data) throws IOException {
         Class<? extends ServerChannel> channelClass;
@@ -93,6 +90,12 @@ public class NonblockingServerConnection {
             channelClass = NioServerSocketChannel.class;
             loopGroup = ServerConnection.a.c();
             logger.info("Using nio channel type");
+        }
+        
+        // Since we cannot overwrite the initializer, here is the best chance to handle it
+        if (needDeployList) {
+            h = WrappedCollections.wrappedList(Lists.newCopyOnWriteArrayList());
+            needDeployList = false;
         }
         
         ServerBootstrap bootstrap = new ServerBootstrap().channel(channelClass).childHandler(ChannelAdapter.create(h)).group(loopGroup);
