@@ -15,5 +15,4 @@ script: ./scripts/inst.sh --setup
 
 cache:
   directories:
-    - '$HOME/.m2/repository'
     - 'work/Paper/work/Minecraft'
