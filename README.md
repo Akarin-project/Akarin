@@ -1,5 +1,5 @@
 # <img src="https://i.loli.net/2018/05/17/5afd869c443ef.png" alt="Akarin Face" align="right">Akarin
-[![Travis CI](https://travis-ci.org/Akarin-project/Akarin.svg?branch=master)](https://travis-ci.org/Akarin-project/Akarin)
+[![Build Status](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg)](https://circleci.com/gh/Akarin-project/Akarin/tree/master)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
 [![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.io)
 
@@ -20,7 +20,7 @@ Get Akarin
 ---
 ### Download
 #### Recommended Sites
-+ [![Circle CI](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg) **Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/master) - Checkout the 'Artifacts' tab of the latest build  *Login required*
++ [**Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/master) - Checkout the 'Artifacts' tab of the latest build  *Login required*
 + [![PCD Jenkins](http://ci.pcd.ac.cn/job/Akarin/badge/icon) **Jenkins**](http://ci.ilummc.com/job/Akarin/) - *Kudos to [Izzel_Aliz](https://github.com/IzzelAliz)*
 
 *Contact me via the email below or open an [Issue](https://github.com/Akarin-project/akarin/issues) if you want to add your website here*
