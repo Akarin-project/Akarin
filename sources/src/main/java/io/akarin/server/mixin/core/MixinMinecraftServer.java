@@ -1,10 +1,31 @@
 package io.akarin.server.mixin.core;
 
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import org.bukkit.craftbukkit.CraftServer;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 
+import co.aikar.timings.MinecraftTimings;
+import io.akarin.api.LogWrapper;
+import net.minecraft.server.CrashReport;
+import net.minecraft.server.CustomFunctionData;
+import net.minecraft.server.EntityPlayer;
+import net.minecraft.server.ITickable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.MojangStatisticsGenerator;
+import net.minecraft.server.PacketPlayOutUpdateTime;
+import net.minecraft.server.PlayerList;
+import net.minecraft.server.ReportedException;
+import net.minecraft.server.ServerConnection;
+import net.minecraft.server.SystemUtils;
+import net.minecraft.server.WorldServer;
 
 @Mixin(value = MinecraftServer.class, remap = false)
 public class MixinMinecraftServer {
@@ -21,4 +42,128 @@ public class MixinMinecraftServer {
     
     @Overwrite
     public void b(MojangStatisticsGenerator generator) {}
+    
+    @Shadow public CraftServer server;
+    @Shadow @Mutable protected Queue<FutureTask<?>> j;
+    @Shadow public Queue<Runnable> processQueue;
+    @Shadow private int ticks;
+    @Shadow public List<WorldServer> worlds;
+    @Shadow private PlayerList v;
+    @Shadow @Final private List<ITickable> o;
+    
+    @Shadow public PlayerList getPlayerList() { return null; }
+    @Shadow public ServerConnection an() { return null; }
+    @Shadow public CustomFunctionData aL() { return null; }
+    
+    private final ExecutorCompletionService<Void> STAGE_WORLD_TICK = new ExecutorCompletionService<Void>(Executors.newWorkStealingPool(3));
+    
+    @Overwrite
+    public void D() throws InterruptedException {
+        MinecraftTimings.bukkitSchedulerTimer.startTiming(); // Paper
+        this.server.getScheduler().mainThreadHeartbeat(this.ticks); // CraftBukkit
+        MinecraftTimings.bukkitSchedulerTimer.stopTiming(); // Paper
+        MinecraftTimings.minecraftSchedulerTimer.startTiming(); // Paper
+        Queue queue = this.j;
+        
+        // Spigot start
+        FutureTask<?> entry;
+        int count = this.j.size();
+        while (count-- > 0 && (entry = this.j.poll()) != null) {
+            SystemUtils.a(entry, MinecraftServer.LOGGER);
+        }
+        // Spigot end
+        MinecraftTimings.minecraftSchedulerTimer.stopTiming(); // Paper
+        
+        // CraftBukkit start
+        // Run tasks that are waiting on processing
+        MinecraftTimings.processQueueTimer.startTiming(); // Spigot
+        while (!processQueue.isEmpty()) {
+            processQueue.remove().run();
+        }
+        MinecraftTimings.processQueueTimer.stopTiming(); // Spigot
+        
+        MinecraftTimings.chunkIOTickTimer.startTiming(); // Spigot
+        org.bukkit.craftbukkit.chunkio.ChunkIOExecutor.tick();
+        MinecraftTimings.chunkIOTickTimer.stopTiming(); // Spigot
+        
+        MinecraftTimings.timeUpdateTimer.startTiming(); // Spigot
+        // Send time updates to everyone, it will get the right time from the world the player is in.
+        if (this.ticks % 20 == 0) {
+            for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
+                EntityPlayer entityplayer = this.getPlayerList().players.get(i);
+                entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
+            }
+        }
+        MinecraftTimings.timeUpdateTimer.stopTiming(); // Spigot
+        
+        int i;
+        
+        for (i = 0; i < this.worlds.size(); ++i) { // CraftBukkit
+            WorldServer worldserver = this.worlds.get(i);
+            // TODO Fix this feature
+            // TileEntityHopper.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
+            
+            STAGE_WORLD_TICK.submit(() -> {
+                try {
+                    worldserver.doTick();
+                } catch (Throwable throwable) {
+                    CrashReport crashreport;
+                    try {
+                        crashreport = CrashReport.a(throwable, "Exception ticking world");
+                    } catch (Throwable t){
+                        throw new RuntimeException("Error generating crash report", t);
+                    }
+                    worldserver.a(crashreport);
+                    throw new ReportedException(crashreport);
+                }
+            }, null);
+            
+            STAGE_WORLD_TICK.submit(() -> {
+                try {
+                    worldserver.tickEntities();
+                } catch (Throwable throwable1) {
+                    CrashReport crashreport = null;
+                    try {
+                        crashreport = CrashReport.a(throwable1, "Exception ticking world entities");
+                    } catch (Throwable t){
+                        throw new RuntimeException("Error generating crash report", t);
+                    }
+                    worldserver.a(crashreport);
+                    throw new ReportedException(crashreport);
+                }
+            }, null);
+            
+            LogWrapper.silentTiming = true;
+            worldserver.timings.doTick.startTiming();
+            STAGE_WORLD_TICK.take(); // Block
+            worldserver.timings.doTick.stopTiming();
+            
+            worldserver.timings.tickEntities.startTiming();
+            STAGE_WORLD_TICK.take(); // Entity
+            worldserver.timings.tickEntities.stopTiming();
+            LogWrapper.silentTiming = false;
+            
+            worldserver.getTracker().updatePlayers();
+            worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
+        }
+        
+        MinecraftTimings.connectionTimer.startTiming(); // Spigot
+        this.an().c();
+        MinecraftTimings.connectionTimer.stopTiming(); // Spigot
+        
+        MinecraftTimings.playerListTimer.startTiming(); // Spigot
+        this.v.tick();
+        MinecraftTimings.playerListTimer.stopTiming(); // Spigot
+        
+        MinecraftTimings.commandFunctionsTimer.startTiming(); // Spigot
+        this.aL().e();
+        MinecraftTimings.commandFunctionsTimer.stopTiming(); // Spigot
+        
+        MinecraftTimings.tickablesTimer.startTiming(); // Spigot
+        for (i = 0; i < this.o.size(); ++i) {
+            this.o.get(i).e();
+        }
+        MinecraftTimings.tickablesTimer.stopTiming(); // Spigot
+    }
+    
 }

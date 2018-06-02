@@ -8,12 +8,15 @@
         "Watchcat",
         "Bootstrap",
         "DummyEula",
+        "DesyncCatcher",
 	    "ParallelRegistry",
 		"NonblockingServerConnection",
         
+		"MixinMCUtil",
 		"MixinMetrics",
 		"MixinPaperConfig",
 		"MixinCraftServer",
+		"MixinTimingHandler",
 		"MixinVersionCommand",
         "MixinMinecraftServer",
 		"MixinTileEntityEnchantTable"
