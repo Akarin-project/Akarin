@@ -60,29 +60,29 @@ public class MixinMinecraftServer {
     
     @Overwrite
     public void D() throws InterruptedException {
-        MinecraftTimings.bukkitSchedulerTimer.startTiming(); // Paper
-        this.server.getScheduler().mainThreadHeartbeat(this.ticks); // CraftBukkit
-        MinecraftTimings.bukkitSchedulerTimer.stopTiming(); // Paper
-        MinecraftTimings.minecraftSchedulerTimer.startTiming(); // Paper
+        MinecraftTimings.bukkitSchedulerTimer.startTiming();
+        this.server.getScheduler().mainThreadHeartbeat(this.ticks);
+        MinecraftTimings.bukkitSchedulerTimer.stopTiming();
         
+        MinecraftTimings.minecraftSchedulerTimer.startTiming();
         FutureTask<?> entry;
         int count = this.j.size();
         while (count-- > 0 && (entry = this.j.poll()) != null) {
             SystemUtils.a(entry, MinecraftServer.LOGGER);
         }
-        MinecraftTimings.minecraftSchedulerTimer.stopTiming(); // Paper
+        MinecraftTimings.minecraftSchedulerTimer.stopTiming();
         
-        MinecraftTimings.processQueueTimer.startTiming(); // Spigot
+        MinecraftTimings.processQueueTimer.startTiming();
         while (!processQueue.isEmpty()) {
             processQueue.remove().run();
         }
-        MinecraftTimings.processQueueTimer.stopTiming(); // Spigot
+        MinecraftTimings.processQueueTimer.stopTiming();
         
-        MinecraftTimings.chunkIOTickTimer.startTiming(); // Spigot
+        MinecraftTimings.chunkIOTickTimer.startTiming();
         ChunkIOExecutor.tick();
-        MinecraftTimings.chunkIOTickTimer.stopTiming(); // Spigot
+        MinecraftTimings.chunkIOTickTimer.stopTiming();
         
-        MinecraftTimings.timeUpdateTimer.startTiming(); // Spigot
+        MinecraftTimings.timeUpdateTimer.startTiming();
         // Send time updates to everyone, it will get the right time from the world the player is in.
         if (this.ticks % 20 == 0) {
             for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
