@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -55,7 +56,7 @@ public class MixinMinecraftServer {
     @Shadow public ServerConnection an() { return null; }
     @Shadow public CustomFunctionData aL() { return null; }
     
-    private final ExecutorCompletionService<Void> STAGE_WORLD_TICK = new ExecutorCompletionService<Void>(Executors.newWorkStealingPool(3));
+    private final ExecutorCompletionService<Void> STAGE_WORLD_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(2, LogWrapper.STAGE_FACTORY));
     
     @Overwrite
     public void D() throws InterruptedException {
@@ -63,19 +64,14 @@ public class MixinMinecraftServer {
         this.server.getScheduler().mainThreadHeartbeat(this.ticks); // CraftBukkit
         MinecraftTimings.bukkitSchedulerTimer.stopTiming(); // Paper
         MinecraftTimings.minecraftSchedulerTimer.startTiming(); // Paper
-        Queue queue = this.j;
         
-        // Spigot start
         FutureTask<?> entry;
         int count = this.j.size();
         while (count-- > 0 && (entry = this.j.poll()) != null) {
             SystemUtils.a(entry, MinecraftServer.LOGGER);
         }
-        // Spigot end
         MinecraftTimings.minecraftSchedulerTimer.stopTiming(); // Paper
         
-        // CraftBukkit start
-        // Run tasks that are waiting on processing
         MinecraftTimings.processQueueTimer.startTiming(); // Spigot
         while (!processQueue.isEmpty()) {
             processQueue.remove().run();
@@ -83,7 +79,7 @@ public class MixinMinecraftServer {
         MinecraftTimings.processQueueTimer.stopTiming(); // Spigot
         
         MinecraftTimings.chunkIOTickTimer.startTiming(); // Spigot
-        org.bukkit.craftbukkit.chunkio.ChunkIOExecutor.tick();
+        ChunkIOExecutor.tick();
         MinecraftTimings.chunkIOTickTimer.stopTiming(); // Spigot
         
         MinecraftTimings.timeUpdateTimer.startTiming(); // Spigot
@@ -96,13 +92,12 @@ public class MixinMinecraftServer {
         }
         MinecraftTimings.timeUpdateTimer.stopTiming(); // Spigot
         
-        int i;
-        
-        for (i = 0; i < this.worlds.size(); ++i) { // CraftBukkit
+        for (int i = 0; i < this.worlds.size(); ++i) { // CraftBukkit
             WorldServer worldserver = this.worlds.get(i);
             // TODO Fix this feature
             // TileEntityHopper.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
             
+            LogWrapper.silentTiming = true;
             STAGE_WORLD_TICK.submit(() -> {
                 try {
                     worldserver.doTick();
@@ -122,7 +117,7 @@ public class MixinMinecraftServer {
                 try {
                     worldserver.tickEntities();
                 } catch (Throwable throwable1) {
-                    CrashReport crashreport = null;
+                    CrashReport crashreport;
                     try {
                         crashreport = CrashReport.a(throwable1, "Exception ticking world entities");
                     } catch (Throwable t){
@@ -133,37 +128,36 @@ public class MixinMinecraftServer {
                 }
             }, null);
             
-            LogWrapper.silentTiming = true;
             worldserver.timings.doTick.startTiming();
             STAGE_WORLD_TICK.take(); // Block
             worldserver.timings.doTick.stopTiming();
             
             worldserver.timings.tickEntities.startTiming();
             STAGE_WORLD_TICK.take(); // Entity
-            worldserver.timings.tickEntities.stopTiming();
             LogWrapper.silentTiming = false;
+            worldserver.timings.tickEntities.stopTiming();
             
             worldserver.getTracker().updatePlayers();
             worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
         }
         
-        MinecraftTimings.connectionTimer.startTiming(); // Spigot
+        MinecraftTimings.connectionTimer.startTiming();
         this.an().c();
-        MinecraftTimings.connectionTimer.stopTiming(); // Spigot
+        MinecraftTimings.connectionTimer.stopTiming();
         
-        MinecraftTimings.playerListTimer.startTiming(); // Spigot
+        MinecraftTimings.playerListTimer.startTiming();
         this.v.tick();
-        MinecraftTimings.playerListTimer.stopTiming(); // Spigot
+        MinecraftTimings.playerListTimer.stopTiming();
         
-        MinecraftTimings.commandFunctionsTimer.startTiming(); // Spigot
+        MinecraftTimings.commandFunctionsTimer.startTiming();
         this.aL().e();
-        MinecraftTimings.commandFunctionsTimer.stopTiming(); // Spigot
+        MinecraftTimings.commandFunctionsTimer.stopTiming();
         
-        MinecraftTimings.tickablesTimer.startTiming(); // Spigot
-        for (i = 0; i < this.o.size(); ++i) {
+        MinecraftTimings.tickablesTimer.startTiming();
+        for (int i = 0; i < this.o.size(); ++i) {
             this.o.get(i).e();
         }
-        MinecraftTimings.tickablesTimer.stopTiming(); // Spigot
+        MinecraftTimings.tickablesTimer.stopTiming();
     }
     
 }

@@ -157,9 +157,4 @@ public class AkarinGlobalConfig {
     private static void registryTerminationSeconds() {
         registryTerminationSeconds = getSeconds(getString("bootstrap.parallel-registry-termination", "9s"));
     }
-    
-    public static boolean primaryWorldServer;
-    private static void primaryWorldServer() {
-        primaryWorldServer = getBoolean("bonus.primary-world-server", false);
-    }
 }

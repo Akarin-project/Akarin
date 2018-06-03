@@ -2,7 +2,6 @@ package io.akarin.server.mixin.core;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,8 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
+import io.akarin.api.LogWrapper;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.BiomeBase;
 import net.minecraft.server.Block;
@@ -28,21 +26,19 @@ import net.minecraft.server.SoundEffect;
 
 @Mixin(value = DispenserRegistry.class, remap = false)
 public class ParallelRegistry {
-    private static final ThreadFactory STAGE_FACTORY = new ThreadFactoryBuilder().setNameFormat("Akarin Parallel Registry Thread - %1$d").build();
-
     /**
      * Registry order: SoundEffect -> Block
      */
-    private static final ExecutorService STAGE_BLOCK = Executors.newSingleThreadExecutor(STAGE_FACTORY);
+    private static final ExecutorService STAGE_BLOCK = Executors.newSingleThreadExecutor(LogWrapper.STAGE_FACTORY);
     /**
      * Registry order: Item -> PotionBrewer & orderless: BlockFire, BiomeBase (After STAGE_BLOCK)
      */
-    private static final ExecutorService STAGE_BLOCK_BASE  = Executors.newWorkStealingPool(3);
+    private static final ExecutorService STAGE_BLOCK_BASE  = Executors.newFixedThreadPool(3, LogWrapper.STAGE_FACTORY);
     
     /**
      * Registry order: MobEffectList -> PotionRegistry & orderless: Enchantment, EntityTypes
      */
-    private static final ExecutorService STAGE_STANDALONE = Executors.newWorkStealingPool(3);
+    private static final ExecutorService STAGE_STANDALONE = Executors.newFixedThreadPool(3, LogWrapper.STAGE_FACTORY);
     
     private static final int TERMINATION_IN_SEC = AkarinGlobalConfig.registryTerminationSeconds;
     
