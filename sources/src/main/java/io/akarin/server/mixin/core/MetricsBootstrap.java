@@ -1,4 +1,4 @@
-package io.akarin.server.core;
+package io.akarin.server.mixin.core;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,21 +6,23 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 
 import com.destroystokyo.paper.Metrics;
 
 import net.minecraft.server.MinecraftServer;
 
-public abstract class MetricsBootstrap {
-    // Dragged from 'PaperMetrics' cause it's a private subclass, this will be called from mixined 'PaperConfig' class
-    public static void startMetrics() {
+@Mixin(targets = "com.destroystokyo.paper.Metrics$PaperMetrics", remap = false)
+public class MetricsBootstrap {
+    @Overwrite
+    static void startMetrics() {
         // Get the config file
         File configFile = new File(new File((File) MinecraftServer.getServer().options.valueOf("plugins"), "bStats"), "config.yml");
         YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
 
         // Check if the config file exists
         if (!config.isSet("serverUuid")) {
-
             // Add default values
             config.addDefault("enabled", true);
             // Every server gets it's unique random id.
