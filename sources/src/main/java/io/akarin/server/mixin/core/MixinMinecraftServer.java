@@ -56,7 +56,7 @@ public class MixinMinecraftServer {
     @Shadow public ServerConnection an() { return null; }
     @Shadow public CustomFunctionData aL() { return null; }
     
-    private final ExecutorCompletionService<Void> STAGE_WORLD_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(2, LogWrapper.STAGE_FACTORY));
+    private final ExecutorCompletionService<Void> STAGE_WORLD_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(1, LogWrapper.STAGE_FACTORY));
     
     @Overwrite
     public void D() throws InterruptedException {
@@ -92,13 +92,12 @@ public class MixinMinecraftServer {
         }
         MinecraftTimings.timeUpdateTimer.stopTiming(); // Spigot
         
-        for (int i = 0; i < this.worlds.size(); ++i) { // CraftBukkit
-            WorldServer worldserver = this.worlds.get(i);
+        for (int i = 0; i < worlds.size(); ++i) { // CraftBukkit
+            WorldServer worldserver = worlds.get(i);
             // TODO Fix this feature
             // TileEntityHopper.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
             
-            LogWrapper.silentTiming = true;
-            STAGE_WORLD_TICK.submit(() -> {
+            Runnable tick = () -> {
                 try {
                     worldserver.doTick();
                 } catch (Throwable throwable) {
@@ -111,31 +110,39 @@ public class MixinMinecraftServer {
                     worldserver.a(crashreport);
                     throw new ReportedException(crashreport);
                 }
-            }, null);
+            };
             
-            STAGE_WORLD_TICK.submit(() -> {
+            int size = worlds.size();
+            if (size > 1) {
+                LogWrapper.silentTiming = true;
+                STAGE_WORLD_TICK.submit(tick, null);
+            } else {
+                worldserver.timings.doTick.startTiming();
+                tick.run();
+                worldserver.timings.doTick.stopTiming();
+            }
+            
+            try {
+                worldserver.timings.tickEntities.startTiming();
+                worlds.get(i + 1 < size ? i + 1 : 0).tickEntities();
+                worldserver.timings.tickEntities.stopTiming();
+            } catch (Throwable throwable) {
+                CrashReport crashreport;
                 try {
-                    worldserver.tickEntities();
-                } catch (Throwable throwable1) {
-                    CrashReport crashreport;
-                    try {
-                        crashreport = CrashReport.a(throwable1, "Exception ticking world entities");
-                    } catch (Throwable t){
-                        throw new RuntimeException("Error generating crash report", t);
-                    }
-                    worldserver.a(crashreport);
-                    throw new ReportedException(crashreport);
+                    crashreport = CrashReport.a(throwable, "Exception ticking world entities");
+                } catch (Throwable t){
+                    throw new RuntimeException("Error generating crash report", t);
                 }
-            }, null);
+                worldserver.a(crashreport);
+                throw new ReportedException(crashreport);
+            }
             
-            worldserver.timings.doTick.startTiming();
-            STAGE_WORLD_TICK.take(); // Block
-            worldserver.timings.doTick.stopTiming();
-            
-            worldserver.timings.tickEntities.startTiming();
-            STAGE_WORLD_TICK.take(); // Entity
-            LogWrapper.silentTiming = false;
-            worldserver.timings.tickEntities.stopTiming();
+            if (size > 1) {
+                worldserver.timings.doTick.startTiming();
+                STAGE_WORLD_TICK.take();
+                worldserver.timings.doTick.stopTiming();
+                LogWrapper.silentTiming = false;
+            }
             
             worldserver.getTracker().updatePlayers();
             worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
