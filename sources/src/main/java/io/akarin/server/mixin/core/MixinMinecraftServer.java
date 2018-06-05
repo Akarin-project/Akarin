@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -26,6 +27,7 @@ import net.minecraft.server.PlayerList;
 import net.minecraft.server.ReportedException;
 import net.minecraft.server.ServerConnection;
 import net.minecraft.server.SystemUtils;
+import net.minecraft.server.TileEntityHopper;
 import net.minecraft.server.WorldServer;
 
 @Mixin(value = MinecraftServer.class, remap = false)
@@ -105,13 +107,12 @@ public class MixinMinecraftServer {
                 entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
             }
         }
-        MinecraftTimings.timeUpdateTimer.stopTiming(); // Spigot
+        MinecraftTimings.timeUpdateTimer.stopTiming();
         
-        for (int i = 0; i < worlds.size(); ++i) { // CraftBukkit
+        for (int i = 0; i < worlds.size(); ++i) {
             WorldServer mainWorld = worlds.get(i);
             WorldServer entityWorld = worlds.get(i + 1 < worlds.size() ? i + 1 : 0);
-            // TODO Fix this feature
-            // TileEntityHopper.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
+            TileEntityHopper.skipHopperEvents = entityWorld.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
             
             LogWrapper.silentTiming = true;
             STAGE_ENTITY_TICK.submit(() -> tickEntities(entityWorld), null);
