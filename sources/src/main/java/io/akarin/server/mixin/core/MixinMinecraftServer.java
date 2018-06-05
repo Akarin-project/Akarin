@@ -56,7 +56,22 @@ public class MixinMinecraftServer {
     @Shadow public ServerConnection an() { return null; }
     @Shadow public CustomFunctionData aL() { return null; }
     
-    private final ExecutorCompletionService<Void> STAGE_WORLD_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(1, LogWrapper.STAGE_FACTORY));
+    private final ExecutorCompletionService<Void> STAGE_ENTITY_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(1, LogWrapper.STAGE_FACTORY));
+    
+    private void tickEntities(WorldServer world) {
+        try {
+            world.tickEntities();
+        } catch (Throwable throwable) {
+            CrashReport crashreport;
+            try {
+                crashreport = CrashReport.a(throwable, "Exception ticking world entities");
+            } catch (Throwable t){
+                throw new RuntimeException("Error generating crash report", t);
+            }
+            world.a(crashreport);
+            throw new ReportedException(crashreport);
+        }
+    }
     
     @Overwrite
     public void D() throws InterruptedException {
@@ -93,59 +108,36 @@ public class MixinMinecraftServer {
         MinecraftTimings.timeUpdateTimer.stopTiming(); // Spigot
         
         for (int i = 0; i < worlds.size(); ++i) { // CraftBukkit
-            WorldServer worldserver = worlds.get(i);
+            WorldServer mainWorld = worlds.get(i);
+            WorldServer entityWorld = worlds.get(i + 1 < worlds.size() ? i + 1 : 0);
             // TODO Fix this feature
             // TileEntityHopper.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
             
-            Runnable tick = () -> {
-                try {
-                    worldserver.doTick();
-                } catch (Throwable throwable) {
-                    CrashReport crashreport;
-                    try {
-                        crashreport = CrashReport.a(throwable, "Exception ticking world");
-                    } catch (Throwable t){
-                        throw new RuntimeException("Error generating crash report", t);
-                    }
-                    worldserver.a(crashreport);
-                    throw new ReportedException(crashreport);
-                }
-            };
-            
-            int size = worlds.size();
-            if (size > 1) {
-                LogWrapper.silentTiming = true;
-                STAGE_WORLD_TICK.submit(tick, null);
-            } else {
-                worldserver.timings.doTick.startTiming();
-                tick.run();
-                worldserver.timings.doTick.stopTiming();
-            }
+            LogWrapper.silentTiming = true;
+            STAGE_ENTITY_TICK.submit(() -> tickEntities(entityWorld), null);
             
             try {
-                worldserver.timings.tickEntities.startTiming();
-                worlds.get(i + 1 < size ? i + 1 : 0).tickEntities();
-                worldserver.timings.tickEntities.stopTiming();
+                mainWorld.timings.doTick.startTiming();
+                mainWorld.doTick();
+                mainWorld.timings.doTick.stopTiming();
             } catch (Throwable throwable) {
                 CrashReport crashreport;
                 try {
-                    crashreport = CrashReport.a(throwable, "Exception ticking world entities");
+                    crashreport = CrashReport.a(throwable, "Exception ticking world");
                 } catch (Throwable t){
                     throw new RuntimeException("Error generating crash report", t);
                 }
-                worldserver.a(crashreport);
+                mainWorld.a(crashreport);
                 throw new ReportedException(crashreport);
             }
             
-            if (size > 1) {
-                worldserver.timings.doTick.startTiming();
-                STAGE_WORLD_TICK.take();
-                worldserver.timings.doTick.stopTiming();
-                LogWrapper.silentTiming = false;
-            }
+            entityWorld.timings.tickEntities.startTiming();
+            STAGE_ENTITY_TICK.take();
+            entityWorld.timings.tickEntities.stopTiming();
             
-            worldserver.getTracker().updatePlayers();
-            worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
+            entityWorld.getTracker().updatePlayers();
+            LogWrapper.silentTiming = false;
+            mainWorld.explosionDensityCache.clear(); // Paper - Optimize explosions
         }
         
         MinecraftTimings.connectionTimer.startTiming();
