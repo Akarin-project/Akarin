@@ -55,6 +55,7 @@ public class VillageDoor {
         return this.f;
     }
 
+    public BlockPosition getPosition() { return d(); } // Paper - OBFHELPER
     public BlockPosition d() {
         return this.a;
     }
@@ -71,10 +72,12 @@ public class VillageDoor {
         return this.c.getAdjacentZ() * 2;
     }
 
+    public int getLastSeen() { return h(); } // Paper - OBFHELPER
     public int h() {
         return this.d;
     }
 
+    public void setLastSeen(int i) { a(i); } // Paper - OBFHELPER
     public void a(int i) {
         this.d = i;
     }

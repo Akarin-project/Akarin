@@ -136,7 +136,7 @@ public class PersistentVillage extends PersistentBase {
             for (int j = -4; j < 4; ++j) {
                 for (int k = -16; k < 16; ++k) {
                     blockposition_mutableblockposition.g(blockposition).d(i, j, k);
-                    IBlockData iblockdata = this.world.getType(blockposition_mutableblockposition);
+                    IBlockData iblockdata = this.world.paperConfig.villagesLoadChunks ? this.world.getType(blockposition_mutableblockposition) : this.world.getTypeIfLoaded(blockposition_mutableblockposition); // Paper
 
                     if (this.a(iblockdata)) {
                         VillageDoor villagedoor = this.c(blockposition_mutableblockposition);
@@ -228,7 +228,7 @@ public class PersistentVillage extends PersistentBase {
     }
 
     private boolean a(IBlockData iblockdata) {
-        return iblockdata.getBlock() instanceof BlockDoor && iblockdata.getMaterial() == Material.WOOD;
+        return iblockdata != null && iblockdata.getBlock() instanceof BlockDoor && iblockdata.getMaterial() == Material.WOOD; // Paper
     }
 
     public void a(NBTTagCompound nbttagcompound) {

@@ -425,4 +425,12 @@ public class PaperWorldConfig {
         disableEnderpearlExploit = getBoolean("game-mechanics.disable-unloaded-chunk-enderpearl-exploit", disableEnderpearlExploit);
         log("Disable Unloaded Chunk Enderpearl Exploit: " + (disableEnderpearlExploit ? "enabled" : "disabled"));
     }
+
+    public boolean villagesLoadChunks = false;
+    private void villagesLoadChunks() {
+        villagesLoadChunks = getBoolean("game-mechanics.villages-load-chunks", false);
+        if (villagesLoadChunks) {
+            log("Villages can load chunks - Warning this can cause intense TPS loss. Strongly consider disabling this.");
+        }
+    }
 }

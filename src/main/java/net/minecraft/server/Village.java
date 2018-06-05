@@ -11,10 +11,10 @@ import javax.annotation.Nullable;
 
 public class Village {
 
-    private World a;
+    private World a; private World getWorld() { return a; } // Paper - OBFHELPER
     private final List<VillageDoor> b = Lists.newArrayList();
     private BlockPosition c;
-    private BlockPosition d;
+    private BlockPosition d;private BlockPosition getCenter() { return d; } // Paper - OBFHELPER
     private int e;
     private int f;
     private int g;
@@ -44,6 +44,12 @@ public class Village {
     }
 
     public void a(int i) {
+        // Paper - don't tick village if chunk isn't loaded
+        Chunk chunk = getWorld().getChunkIfLoaded(getCenter());
+        if (chunk == null || !chunk.areNeighborsLoaded(1)) {
+            return;
+        }
+        // Paper end
         this.g = i;
         this.m();
         this.l();
@@ -292,6 +298,12 @@ public class Village {
 
         while (iterator.hasNext()) {
             VillageDoor villagedoor = (VillageDoor) iterator.next();
+            // Paper start - don't remove doors from unloaded chunks
+            if (!getWorld().isLoaded(villagedoor.getPosition())) {
+                villagedoor.setLastSeen(villagedoor.getLastSeen() + 1);
+                continue;
+            }
+            // Paper end
 
             if (flag1) {
                 villagedoor.a();
@@ -312,7 +324,9 @@ public class Village {
     }
 
     private boolean g(BlockPosition blockposition) {
-        IBlockData iblockdata = this.a.getType(blockposition);
+        IBlockData iblockdata = this.a.paperConfig.villagesLoadChunks ? this.a.getType(blockposition) : this.a.getTypeIfLoaded(blockposition); // Paper
+        if (iblockdata == null) return false; // Paper
+
         Block block = iblockdata.getBlock();
 
         return block instanceof BlockDoor ? iblockdata.getMaterial() == Material.WOOD : false;
