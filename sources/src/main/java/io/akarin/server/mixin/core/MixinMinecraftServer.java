@@ -82,16 +82,17 @@ public class MixinMinecraftServer {
         MinecraftTimings.bukkitSchedulerTimer.stopTiming();
         
         MinecraftTimings.minecraftSchedulerTimer.startTiming();
-        FutureTask<?> entry;
-        int count = this.j.size();
-        while (count-- > 0 && (entry = this.j.poll()) != null) {
-            SystemUtils.a(entry, MinecraftServer.LOGGER);
+        FutureTask<?> task;
+        int count = j.size();
+        while (count-- > 0 && (task = j.poll()) != null) {
+            SystemUtils.a(task, MinecraftServer.LOGGER);
         }
         MinecraftTimings.minecraftSchedulerTimer.stopTiming();
         
         MinecraftTimings.processQueueTimer.startTiming();
-        while (!processQueue.isEmpty()) {
-            processQueue.remove().run();
+        Runnable runnable;
+        while ((runnable = processQueue.poll()) != null) {
+            runnable.run();
         }
         MinecraftTimings.processQueueTimer.stopTiming();
         
