@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+
 import net.minecraft.server.MCUtil;
 
 @Mixin(value = MCUtil.class, remap = false)

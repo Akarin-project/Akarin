@@ -19,6 +19,7 @@
 		"MixinTimingHandler",
 		"MixinVersionCommand",
         "MixinMinecraftServer",
+		"MixinChunkIOExecutor",
 		"MixinTileEntityEnchantTable"
     ]
 }

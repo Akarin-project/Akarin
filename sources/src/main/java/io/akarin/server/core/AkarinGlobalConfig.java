@@ -157,4 +157,9 @@ public class AkarinGlobalConfig {
     private static void registryTerminationSeconds() {
         registryTerminationSeconds = getSeconds(getString("bootstrap.parallel-registry-termination", "9s"));
     }
+    
+    public static int playersPerIOThread;
+    private static void playersPerIOThread() {
+        playersPerIOThread = getInt("chunk.players-per-chunk-io-thread", 50);
+    }
 }
