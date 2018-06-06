@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import io.akarin.api.LogWrapper;
+import io.akarin.api.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.BiomeBase;
 import net.minecraft.server.Block;
@@ -29,16 +29,16 @@ public class ParallelRegistry {
     /**
      * Registry order: SoundEffect -> Block
      */
-    private static final ExecutorService STAGE_BLOCK = Executors.newSingleThreadExecutor(LogWrapper.STAGE_FACTORY);
+    private static final ExecutorService STAGE_BLOCK = Executors.newSingleThreadExecutor(Akari.STAGE_FACTORY);
     /**
      * Registry order: Item -> PotionBrewer & orderless: BlockFire, BiomeBase (After STAGE_BLOCK)
      */
-    private static final ExecutorService STAGE_BLOCK_BASE  = Executors.newFixedThreadPool(3, LogWrapper.STAGE_FACTORY);
+    private static final ExecutorService STAGE_BLOCK_BASE  = Executors.newFixedThreadPool(3, Akari.STAGE_FACTORY);
     
     /**
      * Registry order: MobEffectList -> PotionRegistry & orderless: Enchantment, EntityTypes
      */
-    private static final ExecutorService STAGE_STANDALONE = Executors.newFixedThreadPool(3, LogWrapper.STAGE_FACTORY);
+    private static final ExecutorService STAGE_STANDALONE = Executors.newFixedThreadPool(3, Akari.STAGE_FACTORY);
     
     private static final int TERMINATION_IN_SEC = AkarinGlobalConfig.registryTerminationSeconds;
     

@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import io.akarin.api.LogWrapper;
+import io.akarin.api.Akari;
 
 @Mixin(targets = "co.aikar.timings.TimingHandler", remap = false)
 public class MixinTimingHandler {
@@ -24,7 +24,7 @@ public class MixinTimingHandler {
     public void stopTiming() {
         if (enabled && --timingDepth == 0 && start != 0) {
             // Thread.currentThread() is an expensive operation, trying to avoid it
-            if (LogWrapper.silentTiming) { // It must be off-main thread now
+            if (Akari.silentTiming) { // It must be off-main thread now
                 start = 0;
                 return;
             } else {

@@ -1,5 +1,6 @@
 package io.akarin.server.mixin.core;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutorCompletionService;
@@ -14,8 +15,12 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
+import com.google.common.collect.Queues;
+
 import co.aikar.timings.MinecraftTimings;
-import io.akarin.api.LogWrapper;
+import co.aikar.timings.Timing;
+import co.aikar.timings.Timings;
+import io.akarin.api.Akari;
 import net.minecraft.server.CrashReport;
 import net.minecraft.server.CustomFunctionData;
 import net.minecraft.server.EntityPlayer;
@@ -58,7 +63,7 @@ public class MixinMinecraftServer {
     @Shadow public ServerConnection an() { return null; }
     @Shadow public CustomFunctionData aL() { return null; }
     
-    private final ExecutorCompletionService<Void> STAGE_ENTITY_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(1, LogWrapper.STAGE_FACTORY));
+    private final ExecutorCompletionService<Void> STAGE_ENTITY_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(1, Akari.STAGE_FACTORY));
     
     private void tickEntities(WorldServer world) {
         try {
@@ -77,6 +82,11 @@ public class MixinMinecraftServer {
     
     @Overwrite
     public void D() throws InterruptedException {
+        Runnable runnable;
+        Akari.callbackTiming().startTiming();
+        while ((runnable = Akari.callbackQueue.poll()) != null) runnable.run();
+        Akari.callbackTiming().stopTiming();
+        
         MinecraftTimings.bukkitSchedulerTimer.startTiming();
         this.server.getScheduler().mainThreadHeartbeat(this.ticks);
         MinecraftTimings.bukkitSchedulerTimer.stopTiming();
@@ -90,10 +100,7 @@ public class MixinMinecraftServer {
         MinecraftTimings.minecraftSchedulerTimer.stopTiming();
         
         MinecraftTimings.processQueueTimer.startTiming();
-        Runnable runnable;
-        while ((runnable = processQueue.poll()) != null) {
-            runnable.run();
-        }
+        while ((runnable = processQueue.poll()) != null) runnable.run();
         MinecraftTimings.processQueueTimer.stopTiming();
         
         MinecraftTimings.chunkIOTickTimer.startTiming();
@@ -115,7 +122,7 @@ public class MixinMinecraftServer {
             WorldServer entityWorld = worlds.get(i + 1 < worlds.size() ? i + 1 : 0);
             TileEntityHopper.skipHopperEvents = entityWorld.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
             
-            LogWrapper.silentTiming = true;
+            Akari.silentTiming = true;
             STAGE_ENTITY_TICK.submit(() -> tickEntities(entityWorld), null);
             
             try {
@@ -138,7 +145,7 @@ public class MixinMinecraftServer {
             entityWorld.timings.tickEntities.stopTiming();
             
             entityWorld.getTracker().updatePlayers();
-            LogWrapper.silentTiming = false;
+            Akari.silentTiming = false;
             mainWorld.explosionDensityCache.clear(); // Paper - Optimize explosions
         }
         

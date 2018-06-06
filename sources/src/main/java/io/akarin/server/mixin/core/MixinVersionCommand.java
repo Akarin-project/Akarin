@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import io.akarin.api.LogWrapper;
+import io.akarin.api.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MCUtil;
 
@@ -90,7 +90,7 @@ public class MixinVersionCommand {
             obtainVersion(currentSender);
             currentSender = null; // try release
         } else {
-            LogWrapper.logger.warn("A legacy version lookup was caught, legacy-versioning-compat enabled forcely!");
+            Akari.logger.warn("A legacy version lookup was caught, legacy-versioning-compat enabled forcely!");
             AkarinGlobalConfig.legacyVersioningCompat = true;
             AkarinGlobalConfig.set("bonus.legacy-versioning-compat", true);
         }

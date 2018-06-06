@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import io.akarin.api.LogWrapper;
+import io.akarin.api.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 
 @Mixin(value = Main.class, remap = false)
@@ -29,7 +29,7 @@ public class Bootstrap {
             args = "ldc=*** Warning, you've not updated in a while! ***"
     ))
     private static void notifyUpdate(PrintStream stream, String text) {
-        LogWrapper.logger.warn("You've not updated in a while, the current version may outdated");
+        Akari.logger.warn("You've not updated in a while, the current version may outdated");
     }
     
     @Redirect(method = "main", at = @At(
@@ -38,7 +38,7 @@ public class Bootstrap {
             args = "ldc=*** Please download a new build as per instructions from https://paperci.emc.gs/ ***"
     ))
     private static void notifyWebsite(PrintStream stream, String text) {
-        LogWrapper.logger.warn("Visit our website for latest information https://akarin.io/");
+        Akari.logger.warn("Visit our website for latest information https://akarin.io/");
     }
     
     @Redirect(method = "main", at = @At(
@@ -47,6 +47,6 @@ public class Bootstrap {
             args = "ldc=Loading libraries, please wait..."
     ))
     private static void notifyLoading(PrintStream stream, String text) {
-        LogWrapper.logger.info("Loading libraries as parallel capable..");
+        Akari.logger.info("Loading libraries as parallel capable..");
     }
 }

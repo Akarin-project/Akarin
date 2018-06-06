@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import io.akarin.api.LogWrapper;
+import io.akarin.api.Akari;
 
 public class AkarinGlobalConfig {
     
@@ -35,7 +35,7 @@ public class AkarinGlobalConfig {
             config.load(CONFIG_FILE);
         } catch (IOException ex) {
         } catch (InvalidConfigurationException ex) {
-            LogWrapper.logger.error("Could not load akarin.yml, please correct your syntax errors", ex);
+            Akari.logger.error("Could not load akarin.yml, please correct your syntax errors", ex);
             throw Throwables.propagate(ex);
         }
         config.options().header(HEADER);
@@ -56,7 +56,7 @@ public class AkarinGlobalConfig {
                     } catch (InvocationTargetException ex) {
                         throw Throwables.propagate(ex.getCause());
                     } catch (Exception ex) {
-                        LogWrapper.logger.error("Error invoking " + method, ex);
+                        Akari.logger.error("Error invoking " + method, ex);
                     }
                 }
             }
@@ -65,7 +65,7 @@ public class AkarinGlobalConfig {
         try {
             config.save(CONFIG_FILE);
         } catch (IOException ex) {
-            LogWrapper.logger.error("Could not save " + CONFIG_FILE, ex);
+            Akari.logger.error("Could not save " + CONFIG_FILE, ex);
         }
     }
 
