@@ -100,7 +100,11 @@ public class EntityWitch extends EntityMonster implements IRangedEntity {
                 }
 
                 if (potionregistry != null) {
-                    this.setSlot(EnumItemSlot.MAINHAND, PotionUtil.a(new ItemStack(Items.POTION), potionregistry));
+                    // Paper start
+                    ItemStack potion = PotionUtil.a(new ItemStack(Items.POTION), potionregistry);
+                    org.bukkit.inventory.ItemStack bukkitStack = com.destroystokyo.paper.event.entity.WitchReadyPotionEvent.process((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
+                    this.setSlot(EnumItemSlot.MAINHAND, org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(bukkitStack));
+                    // Paper end
                     this.bC = this.getItemInMainHand().k();
                     this.a(true);
                     this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_WITCH_DRINK, this.bV(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
