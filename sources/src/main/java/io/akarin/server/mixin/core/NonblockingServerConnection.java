@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,8 +16,9 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import com.google.common.collect.Lists;
+
+import io.akarin.api.Akari;
 import io.akarin.api.LocalAddress;
-import io.akarin.api.WrappedCollections;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.ChannelAdapter;
 import io.netty.bootstrap.ServerBootstrap;
@@ -47,20 +49,8 @@ public class NonblockingServerConnection {
      */
     @Shadow @Mutable @Final private List<NetworkManager> h;
     
-    private final List<NetworkManager> pending = WrappedCollections.wrappedList(Collections.synchronizedList(Lists.newLinkedList()));
-    
     @Overwrite
     private void addPending() {} // just keep compatibility
-    
-    /**
-     * Removes all pending endpoints from global NetworkManager list
-     */
-    private void removePending() {
-        synchronized (pending) {
-            h.removeAll(pending);
-            pending.clear();
-        }
-    }
     
     @Shadow @Final private MinecraftServer f;
     
@@ -71,8 +61,6 @@ public class NonblockingServerConnection {
     public void a(InetAddress address, int port) throws IOException {
         registerChannels(Lists.newArrayList(LocalAddress.create(address, port)));
     }
-    
-    private boolean needDeployList = true;
     
     public void registerChannels(Collection<LocalAddress> data) throws IOException {
         Class<? extends ServerChannel> channelClass;
@@ -86,12 +74,6 @@ public class NonblockingServerConnection {
             channelClass = NioServerSocketChannel.class;
             loopGroup = ServerConnection.a.c();
             logger.info("Using nio channel type");
-        }
-        
-        // Since we cannot overwrite the initializer, here is the best chance to handle it
-        if (needDeployList) {
-            h = WrappedCollections.wrappedList(Lists.newCopyOnWriteArrayList());
-            needDeployList = false;
         }
         
         ServerBootstrap bootstrap = new ServerBootstrap().channel(channelClass).childHandler(ChannelAdapter.create(h)).group(loopGroup);
@@ -125,47 +107,56 @@ public class NonblockingServerConnection {
         }
     }
     
+    public void processPackets(NetworkManager manager) {
+        try {
+            manager.a(); // PAIL: NetworkManager::processReceivedPackets
+        } catch (Exception ex) {
+            logger.warn("Failed to handle packet for {}", new Object[] { manager.getSocketAddress(), ex });
+            final ChatComponentText kick = new ChatComponentText("Internal server error");
+            
+            manager.sendPacket(new PacketPlayOutKickDisconnect(kick), new GenericFutureListener<Future<? super Void>>() {
+                @Override
+                public void operationComplete(Future<? super Void> future) throws Exception {
+                    manager.close(kick);
+                }
+            }, new GenericFutureListener[0]);
+            manager.stopReading();
+        }
+    }
+    
     /**
      * Will try to process the packets received by each NetworkManager, gracefully manage processing failures and cleans up dead connections (tick)
      */
     @Overwrite
-    public void c() {
-        // Spigot - This prevents players from 'gaming' the server, and strategically relogging to increase their position in the tick order
-        if (SpigotConfig.playerShuffle > 0 && MinecraftServer.currentTick % SpigotConfig.playerShuffle == 0) {
-            Collections.shuffle(h);
-        }
-        boolean needRemoval = false;
-        
-        for (NetworkManager manager : h) {
-            if (manager.h()) continue; // PAIL: NetworkManager::hasNoChannel
+    public void c() throws InterruptedException {
+        synchronized (h) {
+            // Spigot - This prevents players from 'gaming' the server, and strategically relogging to increase their position in the tick order
+            if (SpigotConfig.playerShuffle > 0 && MinecraftServer.currentTick % SpigotConfig.playerShuffle == 0) {
+                Collections.shuffle(h);
+            }
             
-            if (manager.isConnected()) {
-                try {
-                    manager.a(); // PAIL: NetworkManager::processReceivedPackets
-                } catch (Exception ex) {
-                    logger.warn("Failed to handle packet for {}", new Object[] { manager.getSocketAddress(), ex });
-                    final ChatComponentText kick = new ChatComponentText("Internal server error");
+            int submitted = 0;
+            Iterator<NetworkManager> it = h.iterator();
+            while (it.hasNext()) {
+                NetworkManager manager = it.next();
+                if (manager.h()) continue; // PAIL: NetworkManager::hasNoChannel
+                
+                if (manager.isConnected()) {
+                    Akari.STAGE_TICK.submit(() -> processPackets(manager), null);
+                    submitted++;
+                } else {
+                    // Spigot - Fix a race condition where a NetworkManager could be unregistered just before connection.
+                    if (manager.preparing) continue;
                     
-                    manager.sendPacket(new PacketPlayOutKickDisconnect(kick), new GenericFutureListener<Future<? super Void>>() {
-                        @Override
-                        public void operationComplete(Future<? super Void> future) throws Exception {
-                            manager.close(kick);
-                        }
-                    }, new GenericFutureListener[0]);
-                    manager.stopReading();
+                    it.remove();
+                    manager.handleDisconnection();
                 }
-            } else {
-                // Spigot - Fix a race condition where a NetworkManager could be unregistered just before connection.
-                if (manager.preparing) continue;
-                
-                needRemoval = true;
-                pending.add(manager);
-                
-                manager.handleDisconnection();
+            }
+            
+            for (int i = 0; i < submitted; i++) {
+                Akari.STAGE_TICK.take();
             }
         }
-        
-        if (needRemoval) removePending();
     }
 }
 

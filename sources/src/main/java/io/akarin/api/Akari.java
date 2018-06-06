@@ -2,6 +2,8 @@ package io.akarin.api;
 
 import java.lang.reflect.Method;
 import java.util.Queue;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,6 +35,11 @@ public abstract class Akari {
      * Main thread callback tasks
      */
     public static final Queue<Runnable> callbackQueue = Queues.newConcurrentLinkedQueue();
+    
+    /**
+     * A common tick pool
+     */
+    public static final ExecutorCompletionService<Void> STAGE_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(1, Akari.STAGE_FACTORY));
     
     /*
      * Timings

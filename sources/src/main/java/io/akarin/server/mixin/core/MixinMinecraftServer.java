@@ -1,10 +1,7 @@
 package io.akarin.server.mixin.core;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
@@ -15,11 +12,7 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.google.common.collect.Queues;
-
 import co.aikar.timings.MinecraftTimings;
-import co.aikar.timings.Timing;
-import co.aikar.timings.Timings;
 import io.akarin.api.Akari;
 import net.minecraft.server.CrashReport;
 import net.minecraft.server.CustomFunctionData;
@@ -62,8 +55,6 @@ public class MixinMinecraftServer {
     @Shadow public PlayerList getPlayerList() { return null; }
     @Shadow public ServerConnection an() { return null; }
     @Shadow public CustomFunctionData aL() { return null; }
-    
-    private final ExecutorCompletionService<Void> STAGE_ENTITY_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(1, Akari.STAGE_FACTORY));
     
     private void tickEntities(WorldServer world) {
         try {
@@ -123,7 +114,7 @@ public class MixinMinecraftServer {
             TileEntityHopper.skipHopperEvents = entityWorld.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
             
             Akari.silentTiming = true;
-            STAGE_ENTITY_TICK.submit(() -> tickEntities(entityWorld), null);
+            Akari.STAGE_TICK.submit(() -> tickEntities(entityWorld), null);
             
             try {
                 mainWorld.timings.doTick.startTiming();
@@ -141,7 +132,7 @@ public class MixinMinecraftServer {
             }
             
             entityWorld.timings.tickEntities.startTiming();
-            STAGE_ENTITY_TICK.take();
+            Akari.STAGE_TICK.take();
             entityWorld.timings.tickEntities.stopTiming();
             
             entityWorld.getTracker().updatePlayers();
