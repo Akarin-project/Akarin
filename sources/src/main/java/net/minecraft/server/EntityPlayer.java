@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
+
+import io.akarin.api.Akari;
 import io.netty.buffer.Unpooled;
 import java.util.ArrayDeque; // Paper
 import java.util.ArrayList;
@@ -419,8 +421,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             }
 
             if (this.oldLevel != this.expLevel) {
-                CraftEventFactory.callPlayerLevelChangeEvent(this.world.getServer().getPlayer(this), this.oldLevel, this.expLevel);
-                this.oldLevel = this.expLevel;
+                Akari.callbackQueue.add(() -> {
+                    CraftEventFactory.callPlayerLevelChangeEvent(this.world.getServer().getPlayer(this), this.oldLevel, this.expLevel);
+                    this.oldLevel = this.expLevel;
+                }); // Akarin
             }
             // CraftBukkit end
         } catch (Throwable throwable) {
