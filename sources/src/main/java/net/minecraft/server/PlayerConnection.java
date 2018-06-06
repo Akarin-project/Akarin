@@ -1,15 +1,13 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
-import com.google.common.util.concurrent.Futures;
+import io.akarin.api.Akari;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -147,8 +145,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.processedMovePackets = this.receivedMovePackets;
         if (this.B) {
             if (++this.C > 80) {
-                PlayerConnection.LOGGER.warn("{} was kicked for floating too long!", this.player.getName());
-                this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickPlayerMessage); // Paper - use configurable kick message
+                Akari.callbackQueue.add(() -> {
+                    PlayerConnection.LOGGER.warn("{} was kicked for floating too long!", this.player.getName());
+                    this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickPlayerMessage); // Paper - use configurable kick message
+                }); // Akarin - post to main thread
                 return;
             }
         } else {
@@ -166,8 +166,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             this.x = this.r.locZ;
             if (this.D && this.player.getVehicle().bE() == this.player) {
                 if (++this.E > 80) {
-                    PlayerConnection.LOGGER.warn("{} was kicked for floating a vehicle too long!", this.player.getName());
-                    this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickVehicleMessage); // Paper - use configurable kick message
+                    Akari.callbackQueue.add(() -> {
+                        PlayerConnection.LOGGER.warn("{} was kicked for floating a vehicle too long!", this.player.getName());
+                        this.disconnect(com.destroystokyo.paper.PaperConfig.flyingKickVehicleMessage); // Paper - use configurable kick message
+                    }); // Akarin - post to main thread
                     return;
                 }
             } else {
@@ -188,8 +190,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         if (this.isPendingPing()) {
             // We're pending a ping from the client
             if (!this.processedDisconnect && elapsedTime >= KEEPALIVE_LIMIT) { // check keepalive limit, don't fire if already disconnected
-                PlayerConnection.LOGGER.warn("{} was kicked due to keepalive timeout!", this.player.getName()); // more info
-                this.disconnect(new ChatMessage("disconnect.timeout"));
+                Akari.callbackQueue.add(() -> {
+                    PlayerConnection.LOGGER.warn("{} was kicked due to keepalive timeout!", this.player.getName()); // more info
+                    this.disconnect(new ChatMessage("disconnect.timeout"));
+                }); // Akarin - post to main thread
             }
         } else {
             if (elapsedTime >= 15000L) { // 15 seconds
@@ -216,8 +220,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
 
         if (this.player.J() > 0L && this.minecraftServer.getIdleTimeout() > 0 && MinecraftServer.aw() - this.player.J() > this.minecraftServer.getIdleTimeout() * 1000 * 60) {
-            this.player.resetIdleTimer(); // CraftBukkit - SPIGOT-854
-            this.disconnect(new ChatMessage("multiplayer.disconnect.idling", new Object[0]));
+            Akari.callbackQueue.add(() -> {
+                this.player.resetIdleTimer(); // CraftBukkit - SPIGOT-854
+                this.disconnect(new ChatMessage("multiplayer.disconnect.idling", new Object[0]));
+            }); // Akarin - post to main thread
         }
 
     }
@@ -2289,7 +2295,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     private long getCurrentMillis() { return d(); } // Paper - OBFHELPER
     private long d() {
-        return System.nanoTime() / 1000000L;
+        return System.currentTimeMillis(); // Akarin
     }
 
     @Override
