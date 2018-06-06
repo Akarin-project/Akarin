@@ -73,11 +73,6 @@ public class MixinMinecraftServer {
     
     @Overwrite
     public void D() throws InterruptedException {
-        Runnable runnable;
-        Akari.callbackTiming().startTiming();
-        while ((runnable = Akari.callbackQueue.poll()) != null) runnable.run();
-        Akari.callbackTiming().stopTiming();
-        
         MinecraftTimings.bukkitSchedulerTimer.startTiming();
         this.server.getScheduler().mainThreadHeartbeat(this.ticks);
         MinecraftTimings.bukkitSchedulerTimer.stopTiming();
@@ -90,6 +85,7 @@ public class MixinMinecraftServer {
         }
         MinecraftTimings.minecraftSchedulerTimer.stopTiming();
         
+        Runnable runnable;
         MinecraftTimings.processQueueTimer.startTiming();
         while ((runnable = processQueue.poll()) != null) runnable.run();
         MinecraftTimings.processQueueTimer.stopTiming();
@@ -143,6 +139,10 @@ public class MixinMinecraftServer {
         MinecraftTimings.connectionTimer.startTiming();
         this.an().c();
         MinecraftTimings.connectionTimer.stopTiming();
+        
+        Akari.callbackTiming().startTiming();
+        while ((runnable = Akari.callbackQueue.poll()) != null) runnable.run();
+        Akari.callbackTiming().stopTiming();
         
         MinecraftTimings.playerListTimer.startTiming();
         this.v.tick();

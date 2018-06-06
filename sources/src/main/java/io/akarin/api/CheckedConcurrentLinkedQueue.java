@@ -35,6 +35,7 @@
 
 package io.akarin.api;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.AbstractQueue;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
 
-import io.netty.channel.Channel.Unsafe;
+import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.PacketPlayOutMapChunk;
 import net.minecraft.server.NetworkManager.QueuedPacket;
 
@@ -214,7 +215,7 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
 
         static {
             try {
-                UNSAFE = sun.misc.Unsafe.getUnsafe();
+                UNSAFE = Akari.UNSAFE; // Akarin
                 Class<?> k = Node.class;
                 itemOffset = UNSAFE.objectFieldOffset
                     (k.getDeclaredField("item"));
@@ -993,11 +994,7 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
     private static final long tailOffset;
     static {
         try {
-            // Akarin start - use reflection to access unsafe
-            Method getUnsafe = Unsafe.class.getDeclaredMethod("getUnsafe");
-            getUnsafe.setAccessible(true);
-            UNSAFE = (sun.misc.Unsafe) getUnsafe.invoke(null, true);
-            // Akarin end
+            UNSAFE = Akari.UNSAFE; // Akarin
             Class<?> k = CheckedConcurrentLinkedQueue.class;
             headOffset = UNSAFE.objectFieldOffset
                 (k.getDeclaredField("head"));

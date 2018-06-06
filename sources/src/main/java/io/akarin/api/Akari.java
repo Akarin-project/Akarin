@@ -1,5 +1,6 @@
 package io.akarin.api;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Queue;
 import java.util.concurrent.ExecutorCompletionService;
@@ -14,6 +15,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
+import io.netty.channel.Channel.Unsafe;
 
 public abstract class Akari {
     /**
@@ -40,6 +42,22 @@ public abstract class Akari {
      * A common tick pool
      */
     public static final ExecutorCompletionService<Void> STAGE_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(1, Akari.STAGE_FACTORY));
+    
+    /*
+     * The unsafe
+     */
+    public static sun.misc.Unsafe UNSAFE = getUnsafe();
+    
+    private static sun.misc.Unsafe getUnsafe() {
+        try {
+            Field theUnsafe = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+            theUnsafe.setAccessible(true);
+            return (sun.misc.Unsafe) theUnsafe.get(null);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
+        }
+    }
     
     /*
      * Timings
