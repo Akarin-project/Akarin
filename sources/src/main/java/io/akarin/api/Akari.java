@@ -61,18 +61,16 @@ public abstract class Akari {
     /*
      * Timings
      */
-    private static Timing callbackTiming;
+    public static Timing worldTiming = getWorldTiming();
     
-    public static Timing callbackTiming() {
-        if (callbackTiming == null) {
-            try {
-                Method ofSafe = Timings.class.getDeclaredMethod("ofSafe", String.class);
-                ofSafe.setAccessible(true);
-                callbackTiming = (Timing) ofSafe.invoke(null, "Akarin - Callback");
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
+    private static Timing getWorldTiming() {
+        try {
+            Method ofSafe = Timings.class.getDeclaredMethod("ofSafe", String.class);
+            ofSafe.setAccessible(true);
+            return worldTiming = (Timing) ofSafe.invoke(null, "Akarin - World");
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
         }
-        return callbackTiming;
     }
 }

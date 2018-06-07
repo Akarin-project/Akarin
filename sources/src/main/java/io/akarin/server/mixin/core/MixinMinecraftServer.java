@@ -1,5 +1,6 @@
 package io.akarin.server.mixin.core;
 
+import java.io.File;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.FutureTask;
@@ -11,9 +12,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import co.aikar.timings.MinecraftTimings;
 import io.akarin.api.Akari;
+import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.CrashReport;
 import net.minecraft.server.CustomFunctionData;
 import net.minecraft.server.EntityPlayer;
@@ -26,6 +31,7 @@ import net.minecraft.server.ReportedException;
 import net.minecraft.server.ServerConnection;
 import net.minecraft.server.SystemUtils;
 import net.minecraft.server.TileEntityHopper;
+import net.minecraft.server.World;
 import net.minecraft.server.WorldServer;
 
 @Mixin(value = MinecraftServer.class, remap = false)
@@ -43,6 +49,14 @@ public class MixinMinecraftServer {
     
     @Overwrite
     public void b(MojangStatisticsGenerator generator) {}
+    
+    @Inject(method = "run()V", at = @At("HEAD"))
+    private void prerun(CallbackInfo info) {
+        for (int i = 0; i < worlds.size(); ++i) {
+            WorldServer world = worlds.get(i);
+            TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
+        }
+    }
     
     @Shadow public CraftServer server;
     @Shadow @Mutable protected Queue<FutureTask<?>> j;
@@ -63,6 +77,21 @@ public class MixinMinecraftServer {
             CrashReport crashreport;
             try {
                 crashreport = CrashReport.a(throwable, "Exception ticking world entities");
+            } catch (Throwable t){
+                throw new RuntimeException("Error generating crash report", t);
+            }
+            world.a(crashreport);
+            throw new ReportedException(crashreport);
+        }
+    }
+    
+    private void tickWorld(WorldServer world) {
+        try {
+            world.doTick();
+        } catch (Throwable throwable) {
+            CrashReport crashreport;
+            try {
+                crashreport = CrashReport.a(throwable, "Exception ticking world");
             } catch (Throwable t){
                 throw new RuntimeException("Error generating crash report", t);
             }
@@ -104,36 +133,40 @@ public class MixinMinecraftServer {
         }
         MinecraftTimings.timeUpdateTimer.stopTiming();
         
-        for (int i = 0; i < worlds.size(); ++i) {
-            WorldServer mainWorld = worlds.get(i);
-            WorldServer entityWorld = worlds.get(i + 1 < worlds.size() ? i + 1 : 0);
-            TileEntityHopper.skipHopperEvents = entityWorld.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
-            
-            Akari.silentTiming = true;
-            Akari.STAGE_TICK.submit(() -> tickEntities(entityWorld), null);
-            
-            try {
-                mainWorld.timings.doTick.startTiming();
-                mainWorld.doTick();
-                mainWorld.timings.doTick.stopTiming();
-            } catch (Throwable throwable) {
-                CrashReport crashreport;
-                try {
-                    crashreport = CrashReport.a(throwable, "Exception ticking world");
-                } catch (Throwable t){
-                    throw new RuntimeException("Error generating crash report", t);
-                }
-                mainWorld.a(crashreport);
-                throw new ReportedException(crashreport);
+        Akari.worldTiming.startTiming();
+        if (AkarinGlobalConfig.legacyWorldTimings) {
+            for (int i = 0; i < worlds.size(); ++i) {
+                worlds.get(i).timings.tickEntities.startTiming();
+                worlds.get(i).timings.doTick.startTiming();
             }
-            
-            entityWorld.timings.tickEntities.startTiming();
-            Akari.STAGE_TICK.take();
-            entityWorld.timings.tickEntities.stopTiming();
-            
-            entityWorld.getTracker().updatePlayers();
-            Akari.silentTiming = false;
-            mainWorld.explosionDensityCache.clear(); // Paper - Optimize explosions
+        }
+        Akari.silentTiming = true; // Disable timings
+        Akari.STAGE_TICK.submit(() -> {
+            for (int i = 0; i < worlds.size(); ++i) {
+                WorldServer world = worlds.get(i);
+                tickEntities(world);
+            }
+        }, null);
+        
+        for (int i = 0; i < worlds.size(); ++i) {
+            WorldServer world = worlds.get(i);
+            tickWorld(world);
+        }
+
+        Akari.STAGE_TICK.take();
+        Akari.silentTiming = false; // Enable timings
+        Akari.worldTiming.stopTiming();
+        if (AkarinGlobalConfig.legacyWorldTimings) {
+            for (int i = 0; i < worlds.size(); ++i) {
+                worlds.get(i).timings.tickEntities.stopTiming();
+                worlds.get(i).timings.doTick.startTiming();
+            }
+        }
+        
+        for (int i = 0; i < worlds.size(); ++i) {
+            WorldServer world = worlds.get(i);
+            world.getTracker().updatePlayers();
+            world.explosionDensityCache.clear(); // Paper - Optimize explosions
         }
         
         MinecraftTimings.connectionTimer.startTiming();

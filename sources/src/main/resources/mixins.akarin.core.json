@@ -16,7 +16,6 @@
 		"MixinMCUtil",
 		"MixinMetrics",
 		"MixinCraftServer",
-		"MixinTimingHandler",
 		"MixinVersionCommand",
         "MixinMinecraftServer",
 		"MixinChunkIOExecutor",

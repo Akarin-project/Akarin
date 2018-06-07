@@ -145,12 +145,12 @@ public class AkarinGlobalConfig {
     /*========================================================================*/
     public static List<String> extraAddress;
     private static void extraAddress() {
-        extraAddress = getList("network.extra-local-address", Lists.newArrayList());
+        extraAddress = getList("bootstrap.extra-local-address", Lists.newArrayList());
     }
     
     public static boolean legacyVersioningCompat;
     private static void legacyVersioningCompat() {
-        legacyVersioningCompat = getBoolean("bonus.legacy-versioning-compat", false);
+        legacyVersioningCompat = getBoolean("alternative.legacy-versioning-compat", false);
     }
     
     public static int registryTerminationSeconds;
@@ -160,6 +160,16 @@ public class AkarinGlobalConfig {
     
     public static int playersPerIOThread;
     private static void playersPerIOThread() {
-        playersPerIOThread = getInt("chunk.players-per-chunk-io-thread", 50);
+        playersPerIOThread = getInt("core.players-per-chunk-io-thread", 50);
+    }
+    
+    public static boolean silentAsyncTimings;
+    private static void silentAsyncTimings() {
+        silentAsyncTimings = getBoolean("core.silent-async-timing", false);
+    }
+    
+    public static boolean legacyWorldTimings;
+    private static void legacyWorldTimings() {
+        legacyWorldTimings = getBoolean("alternative.legacy-world-timings-required", false);
     }
 }
