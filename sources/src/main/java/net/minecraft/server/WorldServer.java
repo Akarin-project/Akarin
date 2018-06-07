@@ -32,7 +32,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     boolean stopPhysicsEvent = false; // Paper
     private final MinecraftServer server;
     public EntityTracker tracker;
-    private final PlayerChunkMap manager;
+    public final PlayerChunkMap manager; // Akarin - private -> public
     // private final Set<NextTickListEntry> nextTickListHash = Sets.newHashSet();
     private final HashTreeSet<NextTickListEntry> nextTickList = new HashTreeSet<NextTickListEntry>(); // CraftBukkit - HashTreeSet
     private final Map<UUID, Entity> entitiesByUUID = Maps.newHashMap();
@@ -59,7 +59,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.server = minecraftserver;
         this.tracker = new EntityTracker(this);
         this.manager = new PlayerChunkMap(this);
-        this.worldProvider.a((World) this);
+        this.worldProvider.a(this);
         this.chunkProvider = this.n();
         this.portalTravelAgent = new org.bukkit.craftbukkit.CraftTravelAgent(this); // CraftBukkit
         this.J();
@@ -67,6 +67,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.getWorldBorder().a(minecraftserver.aE());
     }
 
+    @Override
     public World b() {
         this.worldMaps = new PersistentCollection(this.dataManager);
         String s = PersistentVillage.a(this.worldProvider);
@@ -77,7 +78,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             this.worldMaps.a(s, this.villages);
         } else {
             this.villages = persistentvillage;
-            this.villages.a((World) this);
+            this.villages.a(this);
         }
 
         if (getServer().getScoreboardManager() == null) { // CraftBukkit
@@ -90,7 +91,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
 
         persistentscoreboard.a(this.scoreboard);
-        ((ScoreboardServer) this.scoreboard).a((Runnable) (new RunnableSaveScoreboard(persistentscoreboard)));
+        ((ScoreboardServer) this.scoreboard).a((new RunnableSaveScoreboard(persistentscoreboard)));
         // CraftBukkit start
         } else {
             this.scoreboard = getServer().getScoreboardManager().getMainScoreboard().getHandle();
@@ -267,6 +268,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
     // CraftBukkit end
 
+    @Override
     public void doTick() {
         super.doTick();
         if (this.getWorldData().isHardcore() && this.getDifficulty() != EnumDifficulty.HARD) {
@@ -318,9 +320,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.j();
         timings.chunkTicks.stopTiming(); // Paper
         this.methodProfiler.c("chunkMap");
-        timings.doChunkMap.startTiming(); // Spigot
-        this.manager.flush();
-        timings.doChunkMap.stopTiming(); // Spigot
+        // Akarin start - entity operation, move to main thread
+        // timings.doChunkMap.startTiming(); // Spigot
+        // this.manager.flush();
+        // timings.doChunkMap.stopTiming(); // Spigot
+        // Akarin end
         this.methodProfiler.c("village");
         timings.doVillages.startTiming(); // Spigot
         this.villages.tick();
@@ -353,6 +357,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return list != null && !list.isEmpty() ? list.contains(biomebase_biomemeta) : false;
     }
 
+    @Override
     public void everyoneSleeping() {
         this.Q = false;
         if (!this.players.isEmpty()) {
@@ -377,7 +382,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     protected void f() {
         this.Q = false;
-        List list = (List) this.players.stream().filter(EntityHuman::isSleeping).collect(Collectors.toList());
+        List list = this.players.stream().filter(EntityHuman::isSleeping).collect(Collectors.toList());
         Iterator iterator = list.iterator();
 
         while (iterator.hasNext()) {
@@ -440,6 +445,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
     }
 
+    @Override
     protected boolean isChunkLoaded(int i, int j, boolean flag) {
         return this.getChunkProviderServer().isLoaded(i, j);
     }
@@ -448,7 +454,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.methodProfiler.a("playerCheckLight");
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
             int i = this.random.nextInt(this.players.size());
-            EntityHuman entityhuman = (EntityHuman) this.players.get(i);
+            EntityHuman entityhuman = this.players.get(i);
             int j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
             int k = MathHelper.floor(entityhuman.locY) + this.random.nextInt(11) - 5;
             int l = MathHelper.floor(entityhuman.locZ) + this.random.nextInt(11) - 5;
@@ -459,6 +465,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.methodProfiler.b();
     }
 
+    @Override
     protected void j() {
         this.i();
         if (this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
@@ -498,16 +505,16 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     if (this.isRainingAt(blockposition)) {
                         DifficultyDamageScaler difficultydamagescaler = this.D(blockposition);
 
-                        if (this.getGameRules().getBoolean("doMobSpawning") && this.random.nextDouble() < (double) difficultydamagescaler.b() * paperConfig.skeleHorseSpawnChance) {
+                        if (this.getGameRules().getBoolean("doMobSpawning") && this.random.nextDouble() < difficultydamagescaler.b() * paperConfig.skeleHorseSpawnChance) {
                             EntityHorseSkeleton entityhorseskeleton = new EntityHorseSkeleton(this);
 
                             entityhorseskeleton.p(true);
                             entityhorseskeleton.setAgeRaw(0);
-                            entityhorseskeleton.setPosition((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ());
+                            entityhorseskeleton.setPosition(blockposition.getX(), blockposition.getY(), blockposition.getZ());
                             this.addEntity(entityhorseskeleton, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING); // CraftBukkit
-                            this.strikeLightning(new EntityLightning(this, (double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ(), true));
+                            this.strikeLightning(new EntityLightning(this, blockposition.getX(), blockposition.getY(), blockposition.getZ(), true));
                         } else {
-                            this.strikeLightning(new EntityLightning(this, (double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ(), false));
+                            this.strikeLightning(new EntityLightning(this, blockposition.getX(), blockposition.getY(), blockposition.getZ(), false));
                         }
                     }
                 }
@@ -552,7 +559,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
                                 this.methodProfiler.a("randomTick");
                                 if (block.isTicking()) {
-                                    block.a((World) this, new BlockPosition(i2 + j, k2 + chunksection.getYPosition(), j2 + k), iblockdata, this.random);
+                                    block.a(this, new BlockPosition(i2 + j, k2 + chunksection.getYPosition(), j2 + k), iblockdata, this.random);
                                 }
 
                                 this.methodProfiler.b();
@@ -575,6 +582,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 return entityliving != null && entityliving.isAlive() && WorldServer.this.h(entityliving.getChunkCoordinates());
             }
 
+            @Override
             public boolean apply(@Nullable Object object) {
                 return this.a((EntityLiving) object);
             }
@@ -591,22 +599,26 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
     }
 
+    @Override
     public boolean a(BlockPosition blockposition, Block block) {
         NextTickListEntry nextticklistentry = new NextTickListEntry(blockposition, block);
 
         return this.W.contains(nextticklistentry);
     }
 
+    @Override
     public boolean b(BlockPosition blockposition, Block block) {
         NextTickListEntry nextticklistentry = new NextTickListEntry(blockposition, block);
 
         return this.nextTickList.contains(nextticklistentry); // CraftBukkit
     }
 
+    @Override
     public void a(BlockPosition blockposition, Block block, int i) {
         this.a(blockposition, block, i, 0);
     }
 
+    @Override
     public void a(BlockPosition blockposition, Block block, int i, int j) {
         Material material = block.getBlockData().getMaterial();
 
@@ -616,7 +628,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     IBlockData iblockdata = this.getType(blockposition);
 
                     if (iblockdata.getMaterial() != Material.AIR && iblockdata.getBlock() == block) {
-                        iblockdata.getBlock().b((World) this, blockposition, iblockdata, this.random);
+                        iblockdata.getBlock().b(this, blockposition, iblockdata, this.random);
                     }
                 }
 
@@ -630,7 +642,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
         if (this.isLoaded(blockposition)) {
             if (material != Material.AIR) {
-                nextticklistentry.a((long) i + this.worldData.getTime());
+                nextticklistentry.a(i + this.worldData.getTime());
                 nextticklistentry.a(j);
             }
 
@@ -642,6 +654,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     }
 
+    @Override
     public void b(BlockPosition blockposition, Block block, int i, int j) {
         NextTickListEntry nextticklistentry = new NextTickListEntry(blockposition, block);
 
@@ -649,7 +662,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         Material material = block.getBlockData().getMaterial();
 
         if (material != Material.AIR) {
-            nextticklistentry.a((long) i + this.worldData.getTime());
+            nextticklistentry.a(i + this.worldData.getTime());
         }
 
         // CraftBukkit - use nextTickList
@@ -659,6 +672,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     }
 
+    @Override
     public void tickEntities() {
         if (false && this.players.isEmpty()) { // CraftBukkit - this prevents entity cleanup, other issues on servers with no players
             if (this.emptyTime++ >= 300) {
@@ -673,12 +687,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         spigotConfig.currentPrimedTnt = 0; // Spigot
     }
 
+    @Override
     protected void l() {
         super.l();
         this.methodProfiler.c("players");
 
         for (int i = 0; i < this.players.size(); ++i) {
-            Entity entity = (Entity) this.players.get(i);
+            Entity entity = this.players.get(i);
             Entity entity1 = entity.bJ();
 
             if (entity1 != null) {
@@ -725,6 +740,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.emptyTime = 0;
     }
 
+    @Override
     public boolean a(boolean flag) {
         if (this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
             return false;
@@ -750,7 +766,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 NextTickListEntry nextticklistentry;
 
                 for (int j = 0; j < i; ++j) {
-                    nextticklistentry = (NextTickListEntry) this.nextTickList.first();
+                    nextticklistentry = this.nextTickList.first();
                     if (!flag && nextticklistentry.b > this.worldData.getTime()) {
                         break;
                     }
@@ -780,7 +796,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                         if (iblockdata.getMaterial() != Material.AIR && Block.a(iblockdata.getBlock(), nextticklistentry.a())) {
                             try {
                                 stopPhysicsEvent = !paperConfig.firePhysicsEventForRedstone && (iblockdata.getBlock() instanceof BlockDiodeAbstract || iblockdata.getBlock() instanceof BlockRedstoneTorch); // Paper
-                                iblockdata.getBlock().b((World) this, nextticklistentry.a, iblockdata, this.random);
+                                iblockdata.getBlock().b(this, nextticklistentry.a, iblockdata, this.random);
                             } catch (Throwable throwable) {
                                 CrashReport crashreport = CrashReport.a(throwable, "Exception while ticking a block");
                                 CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Block being ticked");
@@ -803,6 +819,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
     }
 
+    @Override
     @Nullable
     public List<NextTickListEntry> a(Chunk chunk, boolean flag) {
         ChunkCoordIntPair chunkcoordintpair = chunk.k();
@@ -814,6 +831,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return this.a(new StructureBoundingBox(i, 0, k, j, 256, l), flag);
     }
 
+    @Override
     @Nullable
     public List<NextTickListEntry> a(StructureBoundingBox structureboundingbox, boolean flag) {
         ArrayList arraylist = null;
@@ -874,6 +892,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return this.server.getSpawnAnimals();
     }
 
+    @Override
     protected IChunkProvider n() {
         IChunkLoader ichunkloader = this.dataManager.createChunkLoader(this.worldProvider);
 
@@ -927,10 +946,12 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return arraylist;
     }
 
+    @Override
     public boolean a(EntityHuman entityhuman, BlockPosition blockposition) {
         return !this.server.a(this, blockposition, entityhuman) && this.getWorldBorder().a(blockposition);
     }
 
+    @Override
     public void a(WorldSettings worldsettings) {
         if (!this.worldData.v()) {
             try {
@@ -989,10 +1010,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             // CraftBukkit start
             if (this.generator != null) {
                 Random rand = new Random(this.getSeed());
-                org.bukkit.Location spawn = this.generator.getFixedSpawnLocation(((WorldServer) this).getWorld(), rand);
+                org.bukkit.Location spawn = this.generator.getFixedSpawnLocation(this.getWorld(), rand);
 
                 if (spawn != null) {
-                    if (spawn.getWorld() != ((WorldServer) this).getWorld()) {
+                    if (spawn.getWorld() != this.getWorld()) {
                         throw new IllegalStateException("Cannot set spawn point for " + this.worldData.getName() + " to be in another world (" + spawn.getWorld().getName() + ")");
                     } else {
                         this.worldData.setSpawn(new BlockPosition(spawn.getBlockX(), spawn.getBlockY(), spawn.getBlockZ()));
@@ -1129,6 +1150,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
 
     // CraftBukkit start
+    @Override
     public boolean addEntity(Entity entity, SpawnReason spawnReason) { // Changed signature, added SpawnReason
         // World.addEntity(Entity) will call this, and we still want to perform
         // existing entity checking when it's called with a SpawnReason
@@ -1136,6 +1158,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
     // CraftBukkit end
 
+    @Override
     public void a(Collection<Entity> collection) {
         ArrayList arraylist = Lists.newArrayList(collection);
         Iterator iterator = arraylist.iterator();
@@ -1159,7 +1182,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             UUID uuid = entity.getUniqueID();
 
             if (this.entitiesByUUID.containsKey(uuid)) {
-                Entity entity1 = (Entity) this.entitiesByUUID.get(uuid);
+                Entity entity1 = this.entitiesByUUID.get(uuid);
 
                 if (this.f.contains(entity1)) {
                     this.f.remove(entity1);
@@ -1179,6 +1202,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
     }
 
+    @Override
     protected void b(Entity entity) {
         super.b(entity);
         this.entitiesById.a(entity.getId(), entity);
@@ -1198,6 +1222,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     }
 
+    @Override
     protected void c(Entity entity) {
         super.c(entity);
         this.entitiesById.d(entity.getId());
@@ -1217,6 +1242,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     }
 
+    @Override
     public boolean strikeLightning(Entity entity) {
         // CraftBukkit start
         LightningStrikeEvent lightning = new LightningStrikeEvent(this.getWorld(), (org.bukkit.entity.LightningStrike) entity.getBukkitEntity());
@@ -1234,6 +1260,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
     }
 
+    @Override
     public void broadcastEntityEffect(Entity entity, byte b0) {
         this.getTracker().sendPacketToEntity(entity, new PacketPlayOutEntityStatus(entity, b0));
     }
@@ -1242,6 +1269,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return (ChunkProviderServer) super.getChunkProvider();
     }
 
+    @Override
     public Explosion createExplosion(@Nullable Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1) {
         // CraftBukkit start
         Explosion explosion = super.createExplosion(entity, d0, d1, d2, f, flag, flag1);
@@ -1267,13 +1295,14 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             EntityHuman entityhuman = (EntityHuman) iterator.next();
 
             if (entityhuman.d(d0, d1, d2) < 4096.0D) {
-                ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutExplosion(d0, d1, d2, f, explosion.getBlocks(), (Vec3D) explosion.b().get(entityhuman)));
+                ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutExplosion(d0, d1, d2, f, explosion.getBlocks(), explosion.b().get(entityhuman)));
             }
         }
 
         return explosion;
     }
 
+    @Override
     public void playBlockAction(BlockPosition blockposition, Block block, int i, int j) {
         BlockActionData blockactiondata = new BlockActionData(blockposition, block, i, j);
         Iterator iterator = this.U[this.V].iterator();
@@ -1303,7 +1332,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
                 if (this.a(blockactiondata)) {
                     // CraftBukkit - this.worldProvider.dimension -> this.dimension
-                    this.server.getPlayerList().sendPacketNearby((EntityHuman) null, (double) blockactiondata.a().getX(), (double) blockactiondata.a().getY(), (double) blockactiondata.a().getZ(), 64.0D, dimension, new PacketPlayOutBlockAction(blockactiondata.a(), blockactiondata.d(), blockactiondata.b(), blockactiondata.c()));
+                    this.server.getPlayerList().sendPacketNearby((EntityHuman) null, blockactiondata.a().getX(), blockactiondata.a().getY(), blockactiondata.a().getZ(), 64.0D, dimension, new PacketPlayOutBlockAction(blockactiondata.a(), blockactiondata.d(), blockactiondata.b(), blockactiondata.c()));
                 }
             }
 
@@ -1322,6 +1351,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.dataManager.a();
     }
 
+    @Override
     protected void t() {
         boolean flag = this.isRaining();
 
@@ -1363,6 +1393,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     }
 
+    @Override
     @Nullable
     public MinecraftServer getMinecraftServer() {
         return this.server;
@@ -1432,17 +1463,20 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     @Nullable
     public Entity getEntity(UUID uuid) {
-        return (Entity) this.entitiesByUUID.get(uuid);
+        return this.entitiesByUUID.get(uuid);
     }
 
+    @Override
     public ListenableFuture<Object> postToMainThread(Runnable runnable) {
         return this.server.postToMainThread(runnable);
     }
 
+    @Override
     public boolean isMainThread() {
         return this.server.isMainThread();
     }
 
+    @Override
     @Nullable
     public BlockPosition a(String s, BlockPosition blockposition, boolean flag) {
         return this.getChunkProviderServer().a(this, s, blockposition, flag);
@@ -1456,6 +1490,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return this.D;
     }
 
+    @Override
     public IChunkProvider getChunkProvider() {
         return this.getChunkProviderServer();
     }
