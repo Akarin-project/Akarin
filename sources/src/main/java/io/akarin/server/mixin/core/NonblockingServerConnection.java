@@ -31,6 +31,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.server.ChatComponentText;
+import net.minecraft.server.ITickable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NetworkManager;
 import net.minecraft.server.PacketPlayOutKickDisconnect;
@@ -135,15 +136,13 @@ public class NonblockingServerConnection {
                 Collections.shuffle(h);
             }
             
-            int submitted = 0;
             Iterator<NetworkManager> it = h.iterator();
             while (it.hasNext()) {
                 NetworkManager manager = it.next();
                 if (manager.h()) continue; // PAIL: NetworkManager::hasNoChannel
                 
                 if (manager.isConnected()) {
-                    Akari.STAGE_TICK.submit(() -> processPackets(manager), null);
-                    submitted++;
+                    processPackets(manager);
                 } else {
                     // Spigot - Fix a race condition where a NetworkManager could be unregistered just before connection.
                     if (manager.preparing) continue;
@@ -151,10 +150,6 @@ public class NonblockingServerConnection {
                     it.remove();
                     manager.handleDisconnection();
                 }
-            }
-            
-            for (int i = 0; i < submitted; i++) {
-                Akari.STAGE_TICK.take();
             }
         }
     }

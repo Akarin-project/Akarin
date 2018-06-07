@@ -1,6 +1,5 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.akarin.api.CheckedConcurrentLinkedQueue;

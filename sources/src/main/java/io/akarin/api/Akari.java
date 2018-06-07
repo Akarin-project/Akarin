@@ -15,7 +15,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
-import io.netty.channel.Channel.Unsafe;
 
 public abstract class Akari {
     /**

@@ -140,10 +140,6 @@ public class MixinMinecraftServer {
         this.an().c();
         MinecraftTimings.connectionTimer.stopTiming();
         
-        Akari.callbackTiming().startTiming();
-        while ((runnable = Akari.callbackQueue.poll()) != null) runnable.run();
-        Akari.callbackTiming().stopTiming();
-        
         MinecraftTimings.playerListTimer.startTiming();
         this.v.tick();
         MinecraftTimings.playerListTimer.stopTiming();
