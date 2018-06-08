@@ -187,4 +187,9 @@ public class AkarinGlobalConfig {
     private static void keepAliveTimeout() {
         keepAliveTimeout = getSeconds(getString("core.keep-alive-response-timeout", "30s"));
     }
+    
+    public static boolean allowSpawnerModify;
+    private static void allowSpawnerModify() {
+        allowSpawnerModify = getBoolean("alternative.allow-spawner-modify", true);
+    }
 }
