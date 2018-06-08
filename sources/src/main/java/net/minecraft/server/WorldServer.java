@@ -2,10 +2,7 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
-
-import io.netty.handler.codec.AsciiHeadersEncoder.NewlineType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,10 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
@@ -27,10 +21,8 @@ import org.apache.logging.log4j.Logger;
 import java.util.logging.Level;
 
 import org.bukkit.WeatherType;
-import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.util.HashTreeSet;
 
-import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.weather.LightningStrikeEvent;
 // CraftBukkit end
