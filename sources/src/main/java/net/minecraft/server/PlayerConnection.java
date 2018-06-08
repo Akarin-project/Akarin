@@ -66,7 +66,6 @@ import co.aikar.timings.MinecraftTimings; // Paper
  * 1) Add volatile to fields<br>
  * 2) Expose private members<br>
  * 3) Migrated keep alive packet handling to service thread<br>
- * 4) Use currentMillis() instead of nanoTime() / 1000000
  * @author cakoyo
  */
 public class PlayerConnection implements PacketListenerPlayIn, ITickable {
@@ -2299,7 +2298,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     private long getCurrentMillis() { return d(); } // Paper - OBFHELPER
     private long d() {
-        return System.currentTimeMillis(); // Akarin
+        return System.nanoTime() / 1000000L;
     }
 
     @Override

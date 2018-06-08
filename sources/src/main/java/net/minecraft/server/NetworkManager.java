@@ -240,23 +240,23 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
                 return true;
             }
 
-            this.j.readLock().lock(); // readLock -> writeLock (because of race condition between peek and poll) // Akarin - writeLock -> readLock
+            this.j.writeLock().lock(); // readLock -> writeLock (because of race condition between peek and poll)
 
             try {
                 while (!this.i.isEmpty()) {
-                    NetworkManager.QueuedPacket networkmanager_queuedpacket = ((CheckedConcurrentLinkedQueue) this.getPacketQueue()).checkedPoll(); // poll -> peek // Akarin
+                    NetworkManager.QueuedPacket networkmanager_queuedpacket = this.getPacketQueue().peek(); // poll -> peek
 
                     if (networkmanager_queuedpacket != null) { // Fix NPE (Spigot bug caused by handleDisconnection())
-                        if (networkmanager_queuedpacket == CheckedConcurrentLinkedQueue.emptyPacket) { // Check if the peeked packet is a chunk packet which is not ready // Akarin
+                        if (networkmanager_queuedpacket.getPacket() instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) networkmanager_queuedpacket.getPacket()).isReady()) { // Check if the peeked packet is a chunk packet which is not ready
                             return false; // Return false if the peeked packet is a chunk packet which is not ready
                         } else {
-                            // this.getPacketQueue().poll(); // poll here // Akarin - polled
+                            this.getPacketQueue().poll(); // poll here
                             this.dispatchPacket(networkmanager_queuedpacket.getPacket(), networkmanager_queuedpacket.getGenericFutureListeners()); // dispatch the packet
                         }
                     }
                 }
             } finally {
-                this.j.readLock().unlock(); // readLock -> writeLock (because of race condition between peek and poll) // Akarin - writeLock -> readLock
+                this.j.writeLock().unlock(); // readLock -> writeLock (because of race condition between peek and poll)
             }
 
         }
@@ -372,7 +372,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     public static class QueuedPacket { // Akarin - default -> public
 
         private final Packet<?> a; public final Packet<?> getPacket() { return this.a; } // Paper - Anti-Xray - OBFHELPER // Akarin - private -> public
-        private final GenericFutureListener<? extends Future<? super Void>>[] b; private final GenericFutureListener<? extends Future<? super Void>>[] getGenericFutureListeners() { return this.b; } // Paper - Anti-Xray - OBFHELPER
+        private final GenericFutureListener<? extends Future<? super Void>>[] b; public final GenericFutureListener<? extends Future<? super Void>>[] getGenericFutureListeners() { return this.b; } // Paper - Anti-Xray - OBFHELPER // Akarin - private -> public
 
         public QueuedPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
             this.a = packet;
