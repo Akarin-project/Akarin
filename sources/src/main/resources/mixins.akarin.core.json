@@ -9,18 +9,18 @@
         "Bootstrap",
         "DummyEula",
         "DesyncCatcher",
-	    "ParallelRegistry",
-	    "MetricsBootstrap",
-		"OptimisticNetworkManager",
-		"NonblockingServerConnection",
+        "ParallelRegistry",
+        "MetricsBootstrap",
+        "OptimisticNetworkManager",
+        "NonblockingServerConnection",
         
-		"MixinMCUtil",
-		"MixinMetrics",
-		"MixinCraftServer",
-		"MixinVersionCommand",
+        "MixinMCUtil",
+        "MixinMetrics",
+        "MixinCraftServer",
+        "MixinVersionCommand",
         "MixinMinecraftServer",
-		"MixinChunkIOExecutor",
-		"MixinPlayerConnection",
-		"MixinTileEntityEnchantTable"
+        "MixinChunkIOExecutor",
+        "MixinPlayerConnection",
+        "MixinTileEntityEnchantTable"
     ]
 }
