@@ -1,15 +1,12 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
-import com.google.common.util.concurrent.Futures;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -61,6 +58,15 @@ import com.destroystokyo.paper.event.player.PlayerJumpEvent; // Paper
 import co.aikar.timings.MinecraftTimings; // Paper
 // CraftBukkit end
 
+/**
+ * <b>Akarin Changes Note</b><br>
+ * <br>
+ * 1) Add volatile to fields<br>
+ * 2) Expose private members<br>
+ * 3) Migrated keep alive packet handling to service thread<br>
+ * 4) Use currentMillis() instead of nanoTime() / 1000000
+ * @author cakoyo
+ */
 public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     private static final Logger LOGGER = LogManager.getLogger();
@@ -1147,11 +1153,9 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         // CraftBukkit start - Rarely it would send a disconnect line twice
         if (this.processedDisconnect) {
             return;
-        // Akarin start - move to NetworkManager
-        } // else {
-        //    this.processedDisconnect = true;
-        // }
-        // Akarin end
+        }else {
+            this.processedDisconnect = true;
+        }
         // CraftBukkit end
         PlayerConnection.LOGGER.info("{} lost connection: {}", this.player.getName(), ichatbasecomponent.toPlainText());
         // CraftBukkit start - Replace vanilla quit message handling with our own.

@@ -31,6 +31,14 @@ import org.bukkit.Bukkit;
 
 import java.util.logging.Level;
 
+/**
+ * <b>Akarin Changes Note</b><br>
+ * <br>
+ * 1) Add volatile to fields<br>
+ * 2) Capable to silent async timing error<br>
+ * 3) Better handle sync stop by avoid double thread checking
+ * @author cakoyo
+ */
 class TimingHandler implements Timing {
 
     private static int idPool = 1;

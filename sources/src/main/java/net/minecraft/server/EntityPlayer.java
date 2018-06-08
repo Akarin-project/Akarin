@@ -30,6 +30,12 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.MainHand;
 // CraftBukkit end
 
+/**
+ * <b>Akarin Changes Note</b><br>
+ * <br>
+ * 1) Add volatile to fields<br>
+ * @author cakoyo
+ */
 public class EntityPlayer extends EntityHuman implements ICrafting {
 
     private static final Logger bV = LogManager.getLogger();

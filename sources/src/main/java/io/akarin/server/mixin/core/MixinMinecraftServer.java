@@ -192,9 +192,7 @@ public class MixinMinecraftServer {
     }
     
     public void tickConflictSync(WorldServer world) {
-        world.timings.doChunkMap.startTiming();
-        world.manager.flush();
-        world.timings.doChunkMap.stopTiming();
+        ;
     }
     
 }

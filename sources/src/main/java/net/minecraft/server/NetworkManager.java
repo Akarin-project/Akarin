@@ -29,6 +29,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
+/**
+ * <b>Akarin Changes Note</b><br>
+ * <br>
+ * 1) Add volatile to fields<br>
+ * 2) Expose private members<br>
+ * 3) Change writeLock back to readLock (Paper Anti-XRay modification) by integrating checks
+ * @author cakoyo
+ */
 public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     private static final Logger g = LogManager.getLogger();
