@@ -1,6 +1,5 @@
 package io.akarin.server.mixin.core;
 
-import java.io.File;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.FutureTask;
@@ -19,19 +18,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import co.aikar.timings.MinecraftTimings;
 import io.akarin.api.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
+import io.akarin.server.core.AkarinSlackScheduler;
 import net.minecraft.server.CrashReport;
 import net.minecraft.server.CustomFunctionData;
-import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.ITickable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.MojangStatisticsGenerator;
-import net.minecraft.server.PacketPlayOutUpdateTime;
 import net.minecraft.server.PlayerList;
 import net.minecraft.server.ReportedException;
 import net.minecraft.server.ServerConnection;
 import net.minecraft.server.SystemUtils;
 import net.minecraft.server.TileEntityHopper;
-import net.minecraft.server.World;
 import net.minecraft.server.WorldServer;
 
 @Mixin(value = MinecraftServer.class, remap = false)
@@ -50,12 +47,18 @@ public class MixinMinecraftServer {
     @Overwrite
     public void b(MojangStatisticsGenerator generator) {}
     
-    @Inject(method = "run()V", at = @At("HEAD"))
+    @Inject(method = "run()V", at = @At(
+            value = "INVOKE",
+            target = "net/minecraft/server/MinecraftServer.aw()J",
+            shift = At.Shift.BEFORE
+    ))
     private void prerun(CallbackInfo info) {
         for (int i = 0; i < worlds.size(); ++i) {
             WorldServer world = worlds.get(i);
             TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
         }
+        
+        AkarinSlackScheduler.boot();
     }
     
     @Shadow public CraftServer server;
@@ -122,16 +125,6 @@ public class MixinMinecraftServer {
         MinecraftTimings.chunkIOTickTimer.startTiming();
         ChunkIOExecutor.tick();
         MinecraftTimings.chunkIOTickTimer.stopTiming();
-        
-        MinecraftTimings.timeUpdateTimer.startTiming();
-        // Send time updates to everyone, it will get the right time from the world the player is in.
-        if (this.ticks % 20 == 0) {
-            for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
-                EntityPlayer entityplayer = this.getPlayerList().players.get(i);
-                entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
-            }
-        }
-        MinecraftTimings.timeUpdateTimer.stopTiming();
         
         Akari.worldTiming.startTiming();
         if (AkarinGlobalConfig.legacyWorldTimings) {
