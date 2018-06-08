@@ -139,8 +139,9 @@ public class MixinMinecraftServer {
         }
         Akari.silentTiming = true; // Disable timings
         Akari.STAGE_TICK.submit(() -> {
-            for (int i = 0; i < worlds.size(); ++i) {
-                WorldServer world = worlds.get(i);
+            // Never tick one world concurrently!
+            for (int i = 1; i <= worlds.size(); ++i) {
+                WorldServer world = worlds.get(i < worlds.size() ? i : 0);
                 tickEntities(world);
             }
         }, null);
@@ -149,7 +150,7 @@ public class MixinMinecraftServer {
             WorldServer world = worlds.get(i);
             tickWorld(world);
         }
-
+        
         Akari.STAGE_TICK.take();
         Akari.silentTiming = false; // Enable timings
         Akari.worldTiming.stopTiming();
