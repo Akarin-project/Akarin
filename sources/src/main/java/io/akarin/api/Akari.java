@@ -6,8 +6,6 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +14,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
-import net.minecraft.server.WorldData;
 
 public abstract class Akari {
     /**
