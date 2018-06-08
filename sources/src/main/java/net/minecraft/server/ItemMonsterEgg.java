@@ -7,6 +7,12 @@ import javax.annotation.Nullable;
 
 import io.akarin.server.core.AkarinGlobalConfig;
 
+/**
+ * <b>Akarin Changes Note</b><br>
+ * <br>
+ * 1) Add configuration check<br>
+ * @author cakoyo
+ */
 public class ItemMonsterEgg extends Item {
 
     public ItemMonsterEgg() {

@@ -35,6 +35,12 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.weather.LightningStrikeEvent;
 // CraftBukkit end
 
+/**
+ * <b>Akarin Changes Note</b><br>
+ * <br>
+ * 1) Add tick lock for per world<br>
+ * @author cakoyo
+ */
 public class WorldServer extends World implements IAsyncTaskHandler {
 
     private static final Logger a = LogManager.getLogger();

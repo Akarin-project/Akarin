@@ -4,8 +4,6 @@ import com.google.common.collect.Maps;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
 import javax.annotation.Nullable;
 // CraftBukkit start
 import org.bukkit.Bukkit;
@@ -13,6 +11,12 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 // CraftBukkit end
 
+/**
+ * <b>Akarin Changes Note</b><br>
+ * <br>
+ * 1) Add volatile to fields<br>
+ * @author cakoyo
+ */
 public class WorldData {
 
     private String b;
