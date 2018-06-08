@@ -165,7 +165,7 @@ public class AkarinGlobalConfig {
     
     public static boolean silentAsyncTimings;
     private static void silentAsyncTimings() {
-        silentAsyncTimings = getBoolean("core.silent-async-timing", false);
+        silentAsyncTimings = getBoolean("core.always-silent-async-timing", false);
     }
     
     public static boolean legacyWorldTimings;
