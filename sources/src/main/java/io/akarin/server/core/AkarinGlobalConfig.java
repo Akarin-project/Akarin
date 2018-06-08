@@ -172,4 +172,9 @@ public class AkarinGlobalConfig {
     private static void legacyWorldTimings() {
         legacyWorldTimings = getBoolean("alternative.legacy-world-timings-required", false);
     }
+    
+    public static int timeUpdateInterval;
+    private static void timeUpdateInterval() {
+        timeUpdateInterval = getSeconds(getString("core.world-time-update-interval", "1s"));
+    }
 }

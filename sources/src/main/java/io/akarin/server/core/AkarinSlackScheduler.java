@@ -31,7 +31,7 @@ public class AkarinSlackScheduler extends Thread {
         MinecraftServer server = MinecraftServer.getServer();
         
         // Send time updates to everyone, it will get the right time from the world the player is in.
-        if (++updateTime == 10) {
+        if (++updateTime == AkarinGlobalConfig.timeUpdateInterval * 10) {
             for (EntityPlayer player : server.getPlayerList().players) {
                 player.playerConnection.sendPacket(new PacketPlayOutUpdateTime(player.world.getTime(), player.getPlayerTime(), player.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
             }
