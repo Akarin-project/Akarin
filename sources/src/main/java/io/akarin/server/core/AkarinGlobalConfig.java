@@ -177,4 +177,14 @@ public class AkarinGlobalConfig {
     private static void timeUpdateInterval() {
         timeUpdateInterval = getSeconds(getString("core.world-time-update-interval", "1s"));
     }
+    
+    public static int keepAliveSendInterval;
+    private static void keepAliveSendInterval() {
+        keepAliveSendInterval = getSeconds(getString("core.keep-alive-packet-send-interval", "15s"));
+    }
+    
+    public static int keepAliveTimeout;
+    private static void keepAliveTimeout() {
+        keepAliveTimeout = getSeconds(getString("core.keep-alive-response-timeout", "30s"));
+    }
 }

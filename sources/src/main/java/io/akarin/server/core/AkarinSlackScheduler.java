@@ -46,14 +46,14 @@ public class AkarinSlackScheduler extends Thread {
             long elapsedTime = currentTime - conn.getLastPing();
             if (conn.isPendingPing()) {
                 // We're pending a ping from the client
-                if (!conn.processedDisconnect && elapsedTime >= PlayerConnection.KEEPALIVE_LIMIT) { // check keepalive limit, don't fire if already disconnected
+                if (!conn.processedDisconnect && elapsedTime >= AkarinGlobalConfig.keepAliveTimeout * 1000L) { // check keepalive limit, don't fire if already disconnected
                     Akari.callbackQueue.add(() -> {
                         Akari.logger.warn("{} was kicked due to keepalive timeout!", conn.player.getName()); // more info
                         conn.disconnect("disconnect.timeout");
                     });
                 }
             } else {
-                if (elapsedTime >= 15000L) { // 15 seconds
+                if (elapsedTime >= AkarinGlobalConfig.keepAliveSendInterval * 1000L) { // 15 seconds default
                     conn.setPendingPing(true);
                     conn.setLastPing(currentTime);
                     conn.setKeepAliveID(currentTime);
