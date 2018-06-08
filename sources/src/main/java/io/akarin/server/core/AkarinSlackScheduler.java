@@ -1,9 +1,6 @@
 package io.akarin.server.core;
 
-import org.bukkit.entity.Player;
-
 import io.akarin.api.Akari;
-import net.minecraft.server.ChatMessage;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PacketPlayOutKeepAlive;

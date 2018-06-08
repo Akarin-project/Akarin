@@ -140,15 +140,20 @@ public class MixinMinecraftServer {
         Akari.silentTiming = true; // Disable timings
         Akari.STAGE_TICK.submit(() -> {
             // Never tick one world concurrently!
+            // TODO better treat world index
             for (int i = 1; i <= worlds.size(); ++i) {
                 WorldServer world = worlds.get(i < worlds.size() ? i : 0);
-                tickEntities(world);
+                synchronized (world.tickLock) {
+                    tickEntities(world);
+                }
             }
         }, null);
         
         for (int i = 0; i < worlds.size(); ++i) {
             WorldServer world = worlds.get(i);
-            tickWorld(world);
+            synchronized (world.tickLock) {
+                tickWorld(world);
+            }
         }
         
         Akari.STAGE_TICK.take();
