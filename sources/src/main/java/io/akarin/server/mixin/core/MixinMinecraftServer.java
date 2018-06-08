@@ -163,6 +163,10 @@ public class MixinMinecraftServer {
             }
         }
         
+        Akari.callbackTiming.startTiming();
+        while ((runnable = Akari.callbackQueue.poll()) != null) runnable.run();
+        Akari.callbackTiming.stopTiming();
+        
         for (int i = 0; i < worlds.size(); ++i) {
             WorldServer world = worlds.get(i);
             tickConflictSync(world);

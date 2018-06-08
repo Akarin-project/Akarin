@@ -15,6 +15,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
+import net.minecraft.server.Chunk;
 
 public abstract class Akari {
     /**
@@ -61,13 +62,15 @@ public abstract class Akari {
     /*
      * Timings
      */
-    public static Timing worldTiming = getWorldTiming();
+    public static Timing worldTiming = getTiming("Akarin - World");
     
-    private static Timing getWorldTiming() {
+    public static Timing callbackTiming = getTiming("Akarin - Callback");
+    
+    private static Timing getTiming(String name) {
         try {
             Method ofSafe = Timings.class.getDeclaredMethod("ofSafe", String.class);
             ofSafe.setAccessible(true);
-            return worldTiming = (Timing) ofSafe.invoke(null, "Akarin - World");
+            return worldTiming = (Timing) ofSafe.invoke(null, name);
         } catch (Throwable t) {
             t.printStackTrace();
             return null;
