@@ -24,8 +24,6 @@
 package co.aikar.timings;
 
 import co.aikar.util.LoadingIntMap;
-import io.akarin.api.Akari;
-import io.akarin.server.core.AkarinGlobalConfig;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.bukkit.Bukkit;
 
@@ -35,8 +33,6 @@ import java.util.logging.Level;
  * <b>Akarin Changes Note</b><br>
  * <br>
  * 1) Add volatile to fields<br>
- * 2) Capable to silent async timing error<br>
- * 3) Better handle sync stop by avoid double thread checking
  * @author cakoyo
  */
 class TimingHandler implements Timing {
@@ -103,7 +99,7 @@ class TimingHandler implements Timing {
     @Override
     public void stopTimingIfSync() {
         if (Bukkit.isPrimaryThread()) {
-            stopTiming(true); // Akarin - avoid twice thread check
+            stopTiming();
         }
     }
 
@@ -119,27 +115,13 @@ class TimingHandler implements Timing {
 
     @Override
     public void stopTiming() {
-        // Akarin start - avoid twice thread check
-        stopTiming(false);
-    }
-    
-    public void stopTiming(boolean sync) {
         if (enabled && --timingDepth == 0 && start != 0) {
-            // Akarin start - silent async timing
-            if (Akari.silentTiming) { // It must be off-main thread now
+            if (!Bukkit.isPrimaryThread()) {
+                Bukkit.getLogger().log(Level.SEVERE, "stopTiming called async for " + name);
+                new Throwable().printStackTrace();
                 start = 0;
                 return;
-            } else {
-                if (!sync && !Bukkit.isPrimaryThread()) {
-                    if (AkarinGlobalConfig.silentAsyncTimings) {
-                        Bukkit.getLogger().log(Level.SEVERE, "stopTiming called async for " + name);
-                        new Throwable().printStackTrace();
-                    }
-                    start = 0;
-                    return;
-                }
             }
-            // Akarin end
             addDiff(System.nanoTime() - start);
             start = 0;
         }

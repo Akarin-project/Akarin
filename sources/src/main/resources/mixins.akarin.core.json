@@ -11,6 +11,7 @@
         "bootstrap.MixinMetrics",
         "bootstrap.ParallelRegistry",
         "bootstrap.MetricsBootstrap",
+        "bootstrap.MixinTimingHandler",
         
         "core.MixinMCUtil",
         "core.WeakBigTree",
