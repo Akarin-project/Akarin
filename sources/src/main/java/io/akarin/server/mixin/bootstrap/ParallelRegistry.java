@@ -136,6 +136,6 @@ public class ParallelRegistry {
         STAGE_BLOCK_BASE.shutdown(); // This must after STAGE_BLOCK terminated
         STAGE_BLOCK_BASE.awaitTermination(TERMINATION_IN_SEC, TimeUnit.SECONDS);
 
-        STAGE_STANDALONE.awaitTermination(TERMINATION_IN_SEC, TimeUnit.SECONDS); // Behind the shutdown of BLOCK_BASE should be faster
+        STAGE_STANDALONE.awaitTermination(TERMINATION_IN_SEC, TimeUnit.SECONDS); // Behind the shutdown of BLOCK_BASE should faster
     }
 }

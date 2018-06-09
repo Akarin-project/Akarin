@@ -16,6 +16,7 @@
         "core.WeakBigTree",
         "core.DesyncCatcher",
         "core.MixinCraftServer",
+		"core.MonsterEggGuardian",
         "core.MixinVersionCommand",
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",

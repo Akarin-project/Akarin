@@ -1,11 +1,14 @@
 package io.akarin.server.mixin.core;
 
+import java.util.Random;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.server.BlockPosition;
 import net.minecraft.server.World;
 import net.minecraft.server.WorldGenBigTree;
 
@@ -16,8 +19,8 @@ import net.minecraft.server.WorldGenBigTree;
 public class WeakBigTree {
     @Shadow private World l;
     
-    @Inject(method = "generate(Lnet/minecraft/server/World;Ljava/util/Random;Lnet/minecraft/server/BlockPosition;)Z", at = @At("RETURN"))
-    private void clearWorldRef(CallbackInfo info) {
+    @Inject(method = "generate", at = @At("RETURN"))
+    private void clearWorldRef(World world, Random random, BlockPosition pos, CallbackInfoReturnable<?> info) {
         l = null; // Akarin - remove references to world objects to avoid memory leaks
     }
 }
