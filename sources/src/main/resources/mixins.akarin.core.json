@@ -13,6 +13,7 @@
         "bootstrap.MetricsBootstrap",
         
         "core.MixinMCUtil",
+        "core.WeakBigTree",
         "core.DesyncCatcher",
         "core.MixinCraftServer",
         "core.MixinVersionCommand",

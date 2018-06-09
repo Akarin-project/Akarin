@@ -26,6 +26,7 @@ package io.akarin.server.mixin.core;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import net.minecraft.server.DamageSource;
@@ -47,6 +48,7 @@ public class WeakEnchantmentManager {
     @Shadow private static void a(EnchantmentManager.EnchantmentModifier modifier, Iterable<ItemStack> iterable) {}
     @Shadow private static void a(EnchantmentManager.EnchantmentModifier modifier, ItemStack itemstack) {}
     
+    @Overwrite
     public static int a(Iterable<ItemStack> iterable, DamageSource damageSource) {
         EnchantmentManager.a.a = 0; // PAIL: damageModifier
         EnchantmentManager.a.b = damageSource;
@@ -55,6 +57,7 @@ public class WeakEnchantmentManager {
         return EnchantmentManager.a.a;
     }
     
+    @Overwrite
     public static void a(EntityLiving user, Entity attacker) { // PAIL: applyThornEnchantments
         EnchantmentManager.c.b = attacker;
         EnchantmentManager.c.a = user;
@@ -72,6 +75,7 @@ public class WeakEnchantmentManager {
         // SAkarin end
     }
 
+    @Overwrite
     public static void b(EntityLiving user, Entity target) { // PAIL: applyArthropodEnchantments
         EnchantmentManager.d.a = user;
         EnchantmentManager.d.b = target;
