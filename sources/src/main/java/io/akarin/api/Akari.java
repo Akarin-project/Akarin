@@ -44,7 +44,7 @@ public abstract class Akari {
     /*
      * The unsafe
      */
-    public static sun.misc.Unsafe UNSAFE = getUnsafe();
+    public final static sun.misc.Unsafe UNSAFE = getUnsafe();
     
     private static sun.misc.Unsafe getUnsafe() {
         try {
@@ -60,15 +60,15 @@ public abstract class Akari {
     /*
      * Timings
      */
-    public static Timing worldTiming = getTiming("Akarin - World");
+    public final static Timing worldTiming = getTiming("Akarin - World");
     
-    public static Timing callbackTiming = getTiming("Akarin - Callback");
+    public final static Timing callbackTiming = getTiming("Akarin - Callback");
     
     private static Timing getTiming(String name) {
         try {
             Method ofSafe = Timings.class.getDeclaredMethod("ofSafe", String.class);
             ofSafe.setAccessible(true);
-            return worldTiming = (Timing) ofSafe.invoke(null, name);
+            return (Timing) ofSafe.invoke(null, name);
         } catch (Throwable t) {
             t.printStackTrace();
             return null;

@@ -8,12 +8,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
+import com.google.common.base.Predicate;
+
 import io.akarin.api.CheckedConcurrentLinkedQueue;
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.server.NetworkManager;
+import net.minecraft.server.NetworkManager.QueuedPacket;
 import net.minecraft.server.Packet;
+import net.minecraft.server.PacketPlayOutMapChunk;
 
 @Mixin(value = NetworkManager.class, remap = false)
 public class OptimisticNetworkManager {
@@ -23,6 +27,16 @@ public class OptimisticNetworkManager {
     
     @Shadow private Queue<NetworkManager.QueuedPacket> getPacketQueue() { return null; }
     @Shadow private void dispatchPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>>[] genericFutureListeners) {}
+    
+    private static final Predicate<QueuedPacket> IS_CHUNK_READY = new Predicate<QueuedPacket>() {
+        @Override
+        public boolean apply(QueuedPacket item) {
+            Packet<?> packet = item.getPacket();
+            return !(packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady()); // Check if the peeked packet is a chunk packet which is not ready
+        }
+    };
+    
+    private static final QueuedPacket SIGNAL_PACKET = new QueuedPacket(null, null);
     
     @Overwrite
     private boolean m() {
@@ -34,10 +48,10 @@ public class OptimisticNetworkManager {
             this.j.readLock().lock();
             try {
                 while (!this.i.isEmpty()) {
-                    NetworkManager.QueuedPacket packet = ((CheckedConcurrentLinkedQueue) getPacketQueue()).checkedPoll();
+                    NetworkManager.QueuedPacket packet = ((CheckedConcurrentLinkedQueue<QueuedPacket>) getPacketQueue()).poll(IS_CHUNK_READY, SIGNAL_PACKET);
                     
                     if (packet != null) { // Fix NPE (Spigot bug caused by handleDisconnection())
-                        if (packet == CheckedConcurrentLinkedQueue.emptyPacket) { // Check if the peeked packet is a chunk packet which is not ready
+                        if (packet == SIGNAL_PACKET) {
                             return false; // Return false if the peeked packet is a chunk packet which is not ready
                         } else {
                             dispatchPacket(packet.getPacket(), packet.getGenericFutureListeners()); // dispatch the packet

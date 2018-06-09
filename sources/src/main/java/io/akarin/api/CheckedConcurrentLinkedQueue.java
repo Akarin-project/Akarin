@@ -35,8 +35,6 @@
 
 package io.akarin.api;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,10 +44,6 @@ import java.util.Queue;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
-
-import io.akarin.server.core.AkarinGlobalConfig;
-import net.minecraft.server.PacketPlayOutMapChunk;
-import net.minecraft.server.NetworkManager.QueuedPacket;
 
 /**
  * An unbounded thread-safe {@linkplain Queue queue} based on linked nodes.
@@ -106,11 +100,38 @@ import net.minecraft.server.NetworkManager.QueuedPacket;
  *
  * @since 1.5
  * @author Doug Lea
- * @param <QueuedPacket> the type of elements held in this collection
+ * @param <E> the type of elements held in this collection
  */
-public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
-        implements Queue<QueuedPacket>, java.io.Serializable {
+public class CheckedConcurrentLinkedQueue<E> extends AbstractQueue<E>
+        implements Queue<E>, java.io.Serializable {
     private static final long serialVersionUID = 196745693267521676L;
+    
+    public E poll(com.google.common.base.Predicate<E> predicate, E singalInstance) {
+        restartFromHead:
+        for (;;) {
+            for (Node<E> h = head, p = h, q;;) {
+                E item = p.item;
+                
+                if (predicate.apply(item)) return singalInstance; // Test predicate
+
+                if (item != null && p.casItem(item, null)) {
+                    // Successful CAS is the linearization point
+                    // for item to be removed from this queue.
+                    if (p != h) // hop two nodes at a time
+                        updateHead(h, ((q = p.next) != null) ? q : p);
+                    return item;
+                }
+                else if ((q = p.next) == null) {
+                    updateHead(h, p);
+                    return null;
+                }
+                else if (p == q)
+                    continue restartFromHead;
+                else
+                    p = q;
+            }
+        }
+    }
 
     /*
      * This is a modification of the Michael & Scott algorithm,
@@ -215,7 +236,7 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
 
         static {
             try {
-                UNSAFE = Akari.UNSAFE; // Akarin
+                UNSAFE = Akari.UNSAFE;
                 Class<?> k = Node.class;
                 itemOffset = UNSAFE.objectFieldOffset
                     (k.getDeclaredField("item"));
@@ -239,7 +260,7 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      * - it is permitted for tail to lag behind head, that is, for tail
      *   to not be reachable from head!
      */
-    private transient volatile Node<QueuedPacket> head;
+    private transient volatile Node<E> head;
 
     /**
      * A node from which the last node on list (that is, the unique
@@ -253,13 +274,13 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      *   to not be reachable from head!
      * - tail.next may or may not be self-pointing to tail.
      */
-    private transient volatile Node<QueuedPacket> tail;
+    private transient volatile Node<E> tail;
 
     /**
      * Creates a {@code ConcurrentLinkedQueue} that is initially empty.
      */
     public CheckedConcurrentLinkedQueue() {
-        head = tail = new Node<QueuedPacket>(null);
+        head = tail = new Node<E>(null);
     }
 
     /**
@@ -271,11 +292,11 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      * @throws NullPointerException if the specified collection or any
      *         of its elements are null
      */
-    public CheckedConcurrentLinkedQueue(Collection<? extends QueuedPacket> c) {
-        Node<QueuedPacket> h = null, t = null;
-        for (QueuedPacket e : c) {
+    public CheckedConcurrentLinkedQueue(Collection<? extends E> c) {
+        Node<E> h = null, t = null;
+        for (E e : c) {
             checkNotNull(e);
-            Node<QueuedPacket> newNode = new Node<QueuedPacket>(e);
+            Node<E> newNode = new Node<E>(e);
             if (h == null)
                 h = t = newNode;
             else {
@@ -284,7 +305,7 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
             }
         }
         if (h == null)
-            h = t = new Node<QueuedPacket>(null);
+            h = t = new Node<E>(null);
         head = h;
         tail = t;
     }
@@ -300,7 +321,7 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      * @throws NullPointerException if the specified element is null
      */
     @Override
-    public boolean add(QueuedPacket e) {
+    public boolean add(E e) {
         return offer(e);
     }
 
@@ -308,7 +329,7 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      * Tries to CAS head to p. If successful, repoint old head to itself
      * as sentinel for succ(), below.
      */
-    final void updateHead(Node<QueuedPacket> h, Node<QueuedPacket> p) {
+    final void updateHead(Node<E> h, Node<E> p) {
         if (h != p && casHead(h, p))
             h.lazySetNext(h);
     }
@@ -318,8 +339,8 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      * linked to self, which will only be true if traversing with a
      * stale pointer that is now off the list.
      */
-    final Node<QueuedPacket> succ(Node<QueuedPacket> p) {
-        Node<QueuedPacket> next = p.next;
+    final Node<E> succ(Node<E> p) {
+        Node<E> next = p.next;
         return (p == next) ? head : next;
     }
 
@@ -331,12 +352,12 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      * @throws NullPointerException if the specified element is null
      */
     @Override
-    public boolean offer(QueuedPacket e) {
+    public boolean offer(E e) {
         checkNotNull(e);
-        final Node<QueuedPacket> newNode = new Node<QueuedPacket>(e);
+        final Node<E> newNode = new Node<E>(e);
 
-        for (Node<QueuedPacket> t = tail, p = t;;) {
-            Node<QueuedPacket> q = p.next;
+        for (Node<E> t = tail, p = t;;) {
+            Node<E> q = p.next;
             if (q == null) {
                 // p is last node
                 if (p.casNext(null, newNode)) {
@@ -362,12 +383,12 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
     }
 
     @Override
-    public QueuedPacket poll() {
+    public E poll() {
         restartFromHead:
         for (;;) {
-            for (Node<QueuedPacket> h = head, p = h, q;;) {
-                QueuedPacket item = p.item;
-                
+            for (Node<E> h = head, p = h, q;;) {
+                E item = p.item;
+
                 if (item != null && p.casItem(item, null)) {
                     // Successful CAS is the linearization point
                     // for item to be removed from this queue.
@@ -386,46 +407,13 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
             }
         }
     }
-    
-    // Akarin start - Add checked poll
-    public static QueuedPacket emptyPacket = new QueuedPacket(null, null);
-    
-    public QueuedPacket checkedPoll() {
-        restartFromHead:
-        for (;;) {
-            for (Node<QueuedPacket> h = head, p = h, q;;) {
-                QueuedPacket item = p.item;
-                //
-                if (item.getPacket() instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) item.getPacket()).isReady()) { // Check if the peeked packet is a chunk packet which is not ready
-                    return emptyPacket; // Return false if the peeked packet is a chunk packet which is not ready
-                }
-                //
-                if (item != null && p.casItem(item, null)) {
-                    // Successful CAS is the linearization point
-                    // for item to be removed from this queue.
-                    if (p != h) // hop two nodes at a time
-                        updateHead(h, ((q = p.next) != null) ? q : p);
-                    return item;
-                }
-                else if ((q = p.next) == null) {
-                    updateHead(h, p);
-                    return null;
-                }
-                else if (p == q)
-                    continue restartFromHead;
-                else
-                    p = q;
-            }
-        }
-    }
-    // Akarin end
 
     @Override
-    public QueuedPacket peek() {
+    public E peek() {
         restartFromHead:
         for (;;) {
-            for (Node<QueuedPacket> h = head, p = h, q;;) {
-                QueuedPacket item = p.item;
+            for (Node<E> h = head, p = h, q;;) {
+                E item = p.item;
                 if (item != null || (q = p.next) == null) {
                     updateHead(h, p);
                     return item;
@@ -446,10 +434,10 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      * and the need to add a retry loop to deal with the possibility
      * of losing a race to a concurrent poll().
      */
-    Node<QueuedPacket> first() {
+    Node<E> first() {
         restartFromHead:
         for (;;) {
-            for (Node<QueuedPacket> h = head, p = h, q;;) {
+            for (Node<E> h = head, p = h, q;;) {
                 boolean hasItem = (p.item != null);
                 if (hasItem || (q = p.next) == null) {
                     updateHead(h, p);
@@ -492,7 +480,7 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
     @Override
     public int size() {
         int count = 0;
-        for (Node<QueuedPacket> p = first(); p != null; p = succ(p))
+        for (Node<E> p = first(); p != null; p = succ(p))
             if (p.item != null)
                 // Collection.size() spec says to max out
                 if (++count == Integer.MAX_VALUE)
@@ -511,8 +499,8 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
     @Override
     public boolean contains(Object o) {
         if (o == null) return false;
-        for (Node<QueuedPacket> p = first(); p != null; p = succ(p)) {
-            QueuedPacket item = p.item;
+        for (Node<E> p = first(); p != null; p = succ(p)) {
+            E item = p.item;
             if (item != null && o.equals(item))
                 return true;
         }
@@ -533,10 +521,10 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
     @Override
     public boolean remove(Object o) {
         if (o != null) {
-            Node<QueuedPacket> next, pred = null;
-            for (Node<QueuedPacket> p = first(); p != null; pred = p, p = next) {
+            Node<E> next, pred = null;
+            for (Node<E> p = first(); p != null; pred = p, p = next) {
                 boolean removed = false;
-                QueuedPacket item = p.item;
+                E item = p.item;
                 if (item != null) {
                     if (!o.equals(item)) {
                         next = succ(p);
@@ -568,16 +556,16 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      * @throws IllegalArgumentException if the collection is this queue
      */
     @Override
-    public boolean addAll(Collection<? extends QueuedPacket> c) {
+    public boolean addAll(Collection<? extends E> c) {
         if (c == this)
             // As historically specified in AbstractQueue#addAll
             throw new IllegalArgumentException();
 
         // Copy c into a private chain of Nodes
-        Node<QueuedPacket> beginningOfTheEnd = null, last = null;
-        for (QueuedPacket e : c) {
+        Node<E> beginningOfTheEnd = null, last = null;
+        for (E e : c) {
             checkNotNull(e);
-            Node<QueuedPacket> newNode = new Node<QueuedPacket>(e);
+            Node<E> newNode = new Node<E>(e);
             if (beginningOfTheEnd == null)
                 beginningOfTheEnd = last = newNode;
             else {
@@ -589,8 +577,8 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
             return false;
 
         // Atomically append the chain at the tail of this collection
-        for (Node<QueuedPacket> t = tail, p = t;;) {
-            Node<QueuedPacket> q = p.next;
+        for (Node<E> t = tail, p = t;;) {
+            Node<E> q = p.next;
             if (q == null) {
                 // p is last node
                 if (p.casNext(null, beginningOfTheEnd)) {
@@ -635,9 +623,9 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
     @Override
     public Object[] toArray() {
         // Use ArrayList to deal with resizing.
-        ArrayList<QueuedPacket> al = new ArrayList<QueuedPacket>();
-        for (Node<QueuedPacket> p = first(); p != null; p = succ(p)) {
-            QueuedPacket item = p.item;
+        ArrayList<E> al = new ArrayList<E>();
+        for (Node<E> p = first(); p != null; p = succ(p)) {
+            E item = p.item;
             if (item != null)
                 al.add(item);
         }
@@ -684,9 +672,9 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
     public <T> T[] toArray(T[] a) {
         // try to use sent-in array
         int k = 0;
-        Node<QueuedPacket> p;
+        Node<E> p;
         for (p = first(); p != null && k < a.length; p = succ(p)) {
-            QueuedPacket item = p.item;
+            E item = p.item;
             if (item != null)
                 a[k++] = (T)item;
         }
@@ -697,9 +685,9 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
         }
 
         // If won't fit, use ArrayList version
-        ArrayList<QueuedPacket> al = new ArrayList<QueuedPacket>();
-        for (Node<QueuedPacket> q = first(); q != null; q = succ(q)) {
-            QueuedPacket item = q.item;
+        ArrayList<E> al = new ArrayList<E>();
+        for (Node<E> q = first(); q != null; q = succ(q)) {
+            E item = q.item;
             if (item != null)
                 al.add(item);
         }
@@ -716,15 +704,15 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      * @return an iterator over the elements in this queue in proper sequence
      */
     @Override
-    public Iterator<QueuedPacket> iterator() {
+    public Iterator<E> iterator() {
         return new Itr();
     }
 
-    private class Itr implements Iterator<QueuedPacket> {
+    private class Itr implements Iterator<E> {
         /**
          * Next node to return item for.
          */
-        private Node<QueuedPacket> nextNode;
+        private Node<E> nextNode;
 
         /**
          * nextItem holds on to item fields because once we claim
@@ -732,12 +720,12 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
          * the following next() call even if it was in the process of
          * being removed when hasNext() was called.
          */
-        private QueuedPacket nextItem;
+        private E nextItem;
 
         /**
          * Node of the last returned item, to support remove.
          */
-        private Node<QueuedPacket> lastRet;
+        private Node<E> lastRet;
 
         Itr() {
             advance();
@@ -747,11 +735,11 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
          * Moves to next valid node and returns item to return for
          * next(), or null if no such.
          */
-        private QueuedPacket advance() {
+        private E advance() {
             lastRet = nextNode;
-            QueuedPacket x = nextItem;
+            E x = nextItem;
 
-            Node<QueuedPacket> pred, p;
+            Node<E> pred, p;
             if (nextNode == null) {
                 p = first();
                 pred = null;
@@ -766,14 +754,14 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
                     nextItem = null;
                     return x;
                 }
-                QueuedPacket item = p.item;
+                E item = p.item;
                 if (item != null) {
                     nextNode = p;
                     nextItem = item;
                     return x;
                 } else {
                     // skip over nulls
-                    Node<QueuedPacket> next = succ(p);
+                    Node<E> next = succ(p);
                     if (pred != null && next != null)
                         pred.casNext(p, next);
                     p = next;
@@ -787,14 +775,14 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
         }
 
         @Override
-        public QueuedPacket next() {
+        public E next() {
             if (nextNode == null) throw new NoSuchElementException();
             return advance();
         }
 
         @Override
         public void remove() {
-            Node<QueuedPacket> l = lastRet;
+            Node<E> l = lastRet;
             if (l == null) throw new IllegalStateException();
             // rely on a future traversal to relink.
             l.item = null;
@@ -817,7 +805,7 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
         s.defaultWriteObject();
 
         // Write out all elements in the proper order.
-        for (Node<QueuedPacket> p = first(); p != null; p = succ(p)) {
+        for (Node<E> p = first(); p != null; p = succ(p)) {
             Object item = p.item;
             if (item != null)
                 s.writeObject(item);
@@ -839,11 +827,11 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
         s.defaultReadObject();
 
         // Read in elements until trailing null sentinel found
-        Node<QueuedPacket> h = null, t = null;
+        Node<E> h = null, t = null;
         Object item;
         while ((item = s.readObject()) != null) {
             @SuppressWarnings("unchecked")
-            Node<QueuedPacket> newNode = new Node<QueuedPacket>((QueuedPacket) item);
+            Node<E> newNode = new Node<E>((E) item);
             if (h == null)
                 h = t = newNode;
             else {
@@ -852,26 +840,26 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
             }
         }
         if (h == null)
-            h = t = new Node<QueuedPacket>(null);
+            h = t = new Node<E>(null);
         head = h;
         tail = t;
     }
 
     /** A customized variant of Spliterators.IteratorSpliterator */
-    static final class CLQSpliterator implements Spliterator<QueuedPacket> {
+    static final class CLQSpliterator<E> implements Spliterator<E> {
         static final int MAX_BATCH = 1 << 25;  // max batch array size;
-        final CheckedConcurrentLinkedQueue queue;
-        Node<QueuedPacket> current;    // current node; null until initialized
+        final CheckedConcurrentLinkedQueue<E> queue;
+        Node<E> current;    // current node; null until initialized
         int batch;          // batch size for splits
         boolean exhausted;  // true when no more nodes
-        CLQSpliterator(CheckedConcurrentLinkedQueue queue) {
+        CLQSpliterator(CheckedConcurrentLinkedQueue<E> queue) {
             this.queue = queue;
         }
 
         @Override
-        public Spliterator<QueuedPacket> trySplit() {
-            Node<QueuedPacket> p;
-            final CheckedConcurrentLinkedQueue q = this.queue;
+        public Spliterator<E> trySplit() {
+            Node<E> p;
+            final CheckedConcurrentLinkedQueue<E> q = this.queue;
             int b = batch;
             int n = (b <= 0) ? 1 : (b >= MAX_BATCH) ? MAX_BATCH : b + 1;
             if (!exhausted &&
@@ -898,15 +886,15 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
         }
 
         @Override
-        public void forEachRemaining(Consumer<? super QueuedPacket> action) {
-            Node<QueuedPacket> p;
+        public void forEachRemaining(Consumer<? super E> action) {
+            Node<E> p;
             if (action == null) throw new NullPointerException();
-            final CheckedConcurrentLinkedQueue q = this.queue;
+            final CheckedConcurrentLinkedQueue<E> q = this.queue;
             if (!exhausted &&
                 ((p = current) != null || (p = q.first()) != null)) {
                 exhausted = true;
                 do {
-                    QueuedPacket e = p.item;
+                    E e = p.item;
                     if (p == (p = p.next))
                         p = q.first();
                     if (e != null)
@@ -916,13 +904,13 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
         }
 
         @Override
-        public boolean tryAdvance(Consumer<? super QueuedPacket> action) {
-            Node<QueuedPacket> p;
+        public boolean tryAdvance(Consumer<? super E> action) {
+            Node<E> p;
             if (action == null) throw new NullPointerException();
-            final CheckedConcurrentLinkedQueue q = this.queue;
+            final CheckedConcurrentLinkedQueue<E> q = this.queue;
             if (!exhausted &&
                 ((p = current) != null || (p = q.first()) != null)) {
-                QueuedPacket e;
+                E e;
                 do {
                     e = p.item;
                     if (p == (p = p.next))
@@ -965,8 +953,8 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
      * @since 1.8
      */
     @Override
-    public Spliterator<QueuedPacket> spliterator() {
-        return new CLQSpliterator(this);
+    public Spliterator<E> spliterator() {
+        return new CLQSpliterator<E>(this);
     }
 
     /**
@@ -979,11 +967,11 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
             throw new NullPointerException();
     }
 
-    private boolean casTail(Node<QueuedPacket> cmp, Node<QueuedPacket> val) {
+    private boolean casTail(Node<E> cmp, Node<E> val) {
         return UNSAFE.compareAndSwapObject(this, tailOffset, cmp, val);
     }
 
-    private boolean casHead(Node<QueuedPacket> cmp, Node<QueuedPacket> val) {
+    private boolean casHead(Node<E> cmp, Node<E> val) {
         return UNSAFE.compareAndSwapObject(this, headOffset, cmp, val);
     }
 
@@ -994,7 +982,7 @@ public class CheckedConcurrentLinkedQueue extends AbstractQueue<QueuedPacket>
     private static final long tailOffset;
     static {
         try {
-            UNSAFE = Akari.UNSAFE; // Akarin
+            UNSAFE = Akari.UNSAFE;
             Class<?> k = CheckedConcurrentLinkedQueue.class;
             headOffset = UNSAFE.objectFieldOffset
                 (k.getDeclaredField("head"));
