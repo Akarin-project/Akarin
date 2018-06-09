@@ -21,6 +21,8 @@ import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.AkarinSlackScheduler;
 import net.minecraft.server.CrashReport;
 import net.minecraft.server.CustomFunctionData;
+import net.minecraft.server.Entity;
+import net.minecraft.server.EntityTameableAnimal;
 import net.minecraft.server.ITickable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.MojangStatisticsGenerator;

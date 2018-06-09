@@ -18,6 +18,8 @@
         "core.MixinVersionCommand",
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
+        "core.MixinEntityHorseAbstract",
+        "core.MixinEntityTameableAnimal",
         "core.MixinTileEntityEnchantTable",
         
         "nsc.MixinPlayerConnection",
