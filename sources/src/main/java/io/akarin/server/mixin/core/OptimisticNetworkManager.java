@@ -28,7 +28,7 @@ public class OptimisticNetworkManager {
     @Shadow private Queue<NetworkManager.QueuedPacket> getPacketQueue() { return null; }
     @Shadow private void dispatchPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>>[] genericFutureListeners) {}
     
-    private static final Predicate<QueuedPacket> IS_CHUNK_READY = new Predicate<QueuedPacket>() {
+    private static final Predicate<QueuedPacket> IS_CHUNK_NOT_READY = new Predicate<QueuedPacket>() {
         @Override
         public boolean apply(QueuedPacket item) {
             Packet<?> packet = item.getPacket();
@@ -48,7 +48,7 @@ public class OptimisticNetworkManager {
             this.j.readLock().lock();
             try {
                 while (!this.i.isEmpty()) {
-                    NetworkManager.QueuedPacket packet = ((CheckedConcurrentLinkedQueue<QueuedPacket>) getPacketQueue()).poll(IS_CHUNK_READY, SIGNAL_PACKET);
+                    NetworkManager.QueuedPacket packet = ((CheckedConcurrentLinkedQueue<QueuedPacket>) getPacketQueue()).poll(IS_CHUNK_NOT_READY, SIGNAL_PACKET);
                     
                     if (packet != null) { // Fix NPE (Spigot bug caused by handleDisconnection())
                         if (packet == SIGNAL_PACKET) {
