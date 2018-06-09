@@ -138,8 +138,19 @@ public class TileEntityEndGateway extends TileEntityEnderPortal implements ITick
 
                 }
                 // CraftBukkit end
+                // Paper start - EntityTeleportEndGatewayEvent - replicated from above
+                org.bukkit.craftbukkit.entity.CraftEntity bukkitEntity = entity.getBukkitEntity();
+                org.bukkit.Location location = new Location(world.getWorld(), (double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D);
+                location.setPitch(bukkitEntity.getLocation().getPitch());
+                location.setYaw(bukkitEntity.getLocation().getYaw());
 
-                entity.enderTeleportTo((double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D);
+                com.destroystokyo.paper.event.entity.EntityTeleportEndGatewayEvent event = new com.destroystokyo.paper.event.entity.EntityTeleportEndGatewayEvent(bukkitEntity, bukkitEntity.getLocation(), location, new org.bukkit.craftbukkit.block.CraftEndGateway(MCUtil.toLocation(world, this.getPosition()).getBlock()));
+                if (!event.callEvent()) {
+                    return;
+                }
+
+                entity.enderTeleportTo(event.getTo().getX(), event.getTo().getY(), event.getTo().getZ());
+                // Paper end - EntityTeleportEndGatewayEvent
             }
 
             this.f();
