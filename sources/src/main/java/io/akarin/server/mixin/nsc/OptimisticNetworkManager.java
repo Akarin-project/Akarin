@@ -8,8 +8,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.google.common.base.Predicate;
-
 import io.akarin.api.CheckedConcurrentLinkedQueue;
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.Future;
@@ -28,14 +26,6 @@ public class OptimisticNetworkManager {
     @Shadow private Queue<NetworkManager.QueuedPacket> getPacketQueue() { return null; }
     @Shadow private void dispatchPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>>[] genericFutureListeners) {}
     
-    private static final Predicate<QueuedPacket> IS_CHUNK_NOT_READY = new Predicate<QueuedPacket>() {
-        @Override
-        public boolean apply(QueuedPacket item) {
-            Packet<?> packet = item.getPacket();
-            return packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady(); // Check if the peeked packet is a chunk packet which is not ready
-        }
-    };
-    
     private static final QueuedPacket SIGNAL_PACKET = new QueuedPacket(null, null);
     
     @Overwrite
@@ -48,7 +38,9 @@ public class OptimisticNetworkManager {
             this.j.readLock().lock();
             try {
                 while (!this.i.isEmpty()) {
-                    NetworkManager.QueuedPacket packet = ((CheckedConcurrentLinkedQueue<QueuedPacket>) getPacketQueue()).poll(IS_CHUNK_NOT_READY, SIGNAL_PACKET);
+                    NetworkManager.QueuedPacket packet = ((CheckedConcurrentLinkedQueue<QueuedPacket>) getPacketQueue()).poll(item -> {
+                        return item.getPacket() instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) item.getPacket()).isReady();
+                    }, SIGNAL_PACKET);
                     
                     if (packet != null) { // Fix NPE (Spigot bug caused by handleDisconnection())
                         if (packet == SIGNAL_PACKET) {
