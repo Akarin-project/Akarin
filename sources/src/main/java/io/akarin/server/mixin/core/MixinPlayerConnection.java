@@ -9,6 +9,6 @@ import net.minecraft.server.PlayerConnection;
 public class MixinPlayerConnection {
     @Overwrite
     private long d() {
-        return System.currentTimeMillis();
+        return System.currentTimeMillis(); // nanoTime() / 1000000L
     }
 }

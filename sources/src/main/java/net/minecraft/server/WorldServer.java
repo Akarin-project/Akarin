@@ -3,7 +3,6 @@ package net.minecraft.server;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,10 +29,11 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 /**
  * <b>Akarin Changes Note</b><br>
  * <br>
- * 1) Add tick lock for per world<br>
+ * 1) Add lock object for per world<br>
  * @author cakoyo
  */
 public class WorldServer extends World implements IAsyncTaskHandler {
+    public final Object tickLock = new Object(); // Akarin - in case concurrently tick one world
 
     private static final Logger a = LogManager.getLogger();
     boolean stopPhysicsEvent = false; // Paper
@@ -52,8 +52,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     private final WorldServer.BlockActionDataList[] U = new WorldServer.BlockActionDataList[] { new WorldServer.BlockActionDataList(null), new WorldServer.BlockActionDataList(null)};
     private int V;
     private final List<NextTickListEntry> W = Lists.newArrayList();
-    
-    public final Object tickLock = new Object(); // Akarin - in case concurrently tick one world
 
     // CraftBukkit start
     public final int dimension;

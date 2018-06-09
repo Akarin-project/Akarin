@@ -107,7 +107,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     private int receivedMovePackets;
     private int processedMovePackets;
     private AutoRecipe H = new AutoRecipe();
-    private static final long KEEPALIVE_LIMIT = /*Long.getLong("paper.playerconnection.keepalive", 30)*/ AkarinGlobalConfig.keepAliveTimeout * 1000; // Paper - provide property to set keepalive limit // Akarin - more accessible - keep for compatibility
+    private static final long KEEPALIVE_LIMIT = /*Long.getLong("paper.playerconnection.keepalive", 30)*/ AkarinGlobalConfig.keepAliveTimeout * 1000; // Paper - provide property to set keepalive limit // Akarin - more accessible - keep changes
 
     public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
         this.minecraftServer = minecraftserver;
@@ -1154,7 +1154,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         // CraftBukkit start - Rarely it would send a disconnect line twice
         if (this.processedDisconnect) {
             return;
-        }else {
+        } else {
             this.processedDisconnect = true;
         }
         // CraftBukkit end

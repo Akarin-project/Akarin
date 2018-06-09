@@ -17,6 +17,7 @@ import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+
 import java.net.SocketAddress;
 import java.util.Queue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -34,7 +35,6 @@ import org.apache.logging.log4j.MarkerManager;
  * <br>
  * 1) Add volatile to fields<br>
  * 2) Expose private members<br>
- * 3) Change writeLock back to readLock (Paper Anti-XRay modification) by integrating checks
  * @author cakoyo
  */
 public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
