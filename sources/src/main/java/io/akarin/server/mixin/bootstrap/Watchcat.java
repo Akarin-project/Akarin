@@ -1,4 +1,4 @@
-package io.akarin.server.mixin.core;
+package io.akarin.server.mixin.bootstrap;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;

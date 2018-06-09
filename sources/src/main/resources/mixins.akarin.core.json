@@ -1,26 +1,27 @@
 {
     "required": true,
     "minVersion": "0",
-    "package": "io.akarin.server.mixin.core",
+    "package": "io.akarin.server.mixin",
     "target": "@env(DEFAULT)",
     "compatibilityLevel": "JAVA_8",
     "server": [
-        "Watchcat",
-        "Bootstrap",
-        "DummyEula",
-        "DesyncCatcher",
-        "ParallelRegistry",
-        "MetricsBootstrap",
-        "OptimisticNetworkManager",
-        "NonblockingServerConnection",
+        "bootstrap.Watchcat",
+        "bootstrap.Bootstrap",
+        "bootstrap.DummyEula",
+        "bootstrap.MixinMetrics",
+        "bootstrap.ParallelRegistry",
+        "bootstrap.MetricsBootstrap",
         
-        "MixinMCUtil",
-        "MixinMetrics",
-        "MixinCraftServer",
-        "MixinVersionCommand",
-        "MixinMinecraftServer",
-        "MixinChunkIOExecutor",
-        "MixinPlayerConnection",
-        "MixinTileEntityEnchantTable"
+        "core.MixinMCUtil",
+        "core.DesyncCatcher",
+        "core.MixinCraftServer",
+        "core.MixinVersionCommand",
+        "core.MixinMinecraftServer",
+        "core.MixinChunkIOExecutor",
+        "core.MixinTileEntityEnchantTable",
+        
+        "nsc.MixinPlayerConnection",
+        "nsc.OptimisticNetworkManager",
+        "nsc.NonblockingServerConnection"
     ]
 }

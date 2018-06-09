@@ -1,4 +1,4 @@
-package io.akarin.server.mixin.core;
+package io.akarin.server.mixin.nsc;
 
 import java.util.Queue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;

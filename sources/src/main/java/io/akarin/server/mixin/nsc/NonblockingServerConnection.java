@@ -1,4 +1,4 @@
-package io.akarin.server.mixin.core;
+package io.akarin.server.mixin.nsc;
 
 import java.io.IOException;
 import java.net.InetAddress;
