@@ -18,6 +18,7 @@
         "core.MixinVersionCommand",
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
+        "core.WeakEnchantmentManager",
         "core.MixinEntityHorseAbstract",
         "core.MixinEntityTameableAnimal",
         "core.MixinTileEntityEnchantTable",
