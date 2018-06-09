@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package io.akarin.server.mixin.core;
+package io.akarin.server.mixin.optimization;
 
 import java.util.UUID;
 

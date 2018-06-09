@@ -1,4 +1,4 @@
-package io.akarin.server.mixin.core;
+package io.akarin.server.mixin.optimization;
 
 import java.util.Random;
 

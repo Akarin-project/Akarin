@@ -11,23 +11,24 @@
         "bootstrap.MixinMetrics",
         "bootstrap.ParallelRegistry",
         "bootstrap.MetricsBootstrap",
-        "bootstrap.MixinTimingHandler",
         
         "core.MixinMCUtil",
-        "core.WeakBigTree",
         "core.DesyncCatcher",
         "core.MixinCraftServer",
+        "core.MixinTimingHandler",
 		"core.MonsterEggGuardian",
         "core.MixinVersionCommand",
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
-        "core.WeakEnchantmentManager",
-        "core.MixinEntityHorseAbstract",
-        "core.MixinEntityTameableAnimal",
-        "core.MixinTileEntityEnchantTable",
         
         "nsc.MixinPlayerConnection",
         "nsc.OptimisticNetworkManager",
-        "nsc.NonblockingServerConnection"
+        "nsc.NonblockingServerConnection",
+        
+        "optimization.WeakBigTree",
+        "optimization.WeakEnchantmentManager",
+        "optimization.MixinEntityHorseAbstract",
+        "optimization.MixinEntityTameableAnimal",
+        "optimization.MixinTileEntityEnchantTable"
     ]
 }
