@@ -32,7 +32,7 @@ public class OptimisticNetworkManager {
         @Override
         public boolean apply(QueuedPacket item) {
             Packet<?> packet = item.getPacket();
-            return !(packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady()); // Check if the peeked packet is a chunk packet which is not ready
+            return packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady(); // Check if the peeked packet is a chunk packet which is not ready
         }
     };
     
