@@ -8,8 +8,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import co.aikar.timings.Timing;
-import co.aikar.timings.TimingsManager;
 import io.akarin.api.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 
@@ -34,17 +32,6 @@ public class MixinTimingHandler {
     }
     
     @Shadow void addDiff(long diff) {}
-    
-    
-    
-    public Timing startTiming() {
-        if (enabled && ++timingDepth == 1) {
-            start = System.nanoTime();
-            parent = TimingsManager.CURRENT;
-            TimingsManager.CURRENT = this;
-        }
-        return this;
-    }
     
     public void stopTiming(boolean sync) {
         if (enabled && --timingDepth == 0 && start != 0) {
