@@ -70,34 +70,34 @@ public abstract class MixinChunk implements IMixinChunk {
     private long lightUpdateTime;
     private ExecutorService lightExecutorService;
     
-    @Shadow private boolean m; // PAIL: isGapLightingUpdated
-    @Shadow private boolean r; // PAIL: ticked
+    @Shadow(aliases = "m") private boolean isGapLightingUpdated;
+    @Shadow(aliases = "r") private boolean ticked;
     @Shadow @Final private ChunkSection[] sections;
     @Shadow @Final public int locX;
     @Shadow @Final public int locZ;
     @Shadow @Final public World world;
     @Shadow @Final public int[] heightMap;
     /** Which columns need their skylightMaps updated. */
-    @Shadow @Final private boolean[] i; // PAIL: updateSkylightColumns
+    @Shadow(aliases = "i") @Final private boolean[] updateSkylightColumns;
     /** Queue containing the BlockPosition of tile entities queued for creation */
-    @Shadow @Final private ConcurrentLinkedQueue<BlockPosition> y; // PAIL: tileEntityPosQueue
+    @Shadow(aliases = "y") @Final private ConcurrentLinkedQueue<BlockPosition> tileEntityPosQueue;
     /** Boolean value indicating if the terrain is populated. */
-    @Shadow private boolean done; // isTerrainPopulated
+    @Shadow(aliases = "done") private boolean isTerrainPopulated;
     @Shadow(aliases = "lit") private boolean isLightPopulated;
     /** Lowest value in the heightmap. */
-    @Shadow private int v; // PAIL: heightMapMinimum
+    @Shadow(aliases = "v") private int heightMapMinimum;
     
-    @Shadow public abstract int b(int x, int z); // PAIL: getHeightValue
-    @Shadow @Nullable public abstract TileEntity g(BlockPosition pos); // PAIL: createNewTileEntity
-    @Shadow @Nullable public abstract TileEntity a(BlockPosition pos, Chunk.EnumTileEntityState state); // PAIL: getTileEntity
+    @Shadow(aliases = "b") public abstract int getHeightValue(int x, int z);
+    @Shadow(aliases = "g") @Nullable public abstract TileEntity createNewTileEntity(BlockPosition pos);
+    @Shadow(aliases = "a") @Nullable public abstract TileEntity getTileEntity(BlockPosition pos, Chunk.EnumTileEntityState state);
     @Shadow @Final public abstract IBlockData getBlockData(BlockPosition pos);
     @Shadow @Final public abstract IBlockData getBlockData(int x, int y, int z);
     @Shadow public abstract boolean isUnloading();
     /** Checks the height of a block next to a sky-visible block and schedules a lighting update as necessary */
-    @Shadow public abstract void b(int x, int z, int maxValue); // PAIL: checkSkylightNeighborHeight
-    @Shadow public abstract void a(int x, int z, int startY, int endY); // PAIL: updateSkylightNeighborHeight
-    @Shadow public abstract void z(); // PAIL: setSkylightUpdated
-    @Shadow public abstract int g(); // PAIL: getTopFilledSegment
+    @Shadow(aliases = "b") public abstract void checkSkylightNeighborHeight(int x, int z, int maxValue);
+    @Shadow(aliases = "a") public abstract void updateSkylightNeighborHeight(int x, int z, int startY, int endY);
+    @Shadow(aliases = "z") public abstract void setSkylightUpdated();
+    @Shadow(aliases = "g") public abstract int getTopFilledSegment();
     @Shadow public abstract void markDirty();
     
     @Inject(method = "<init>", at = @At("RETURN"))
@@ -123,16 +123,16 @@ public abstract class MixinChunk implements IMixinChunk {
     @Inject(method = "b(Z)V", at = @At("HEAD"), cancellable = true)
     private void onTickHead(boolean skipRecheckGaps, CallbackInfo ci) {
         final List<Chunk> neighbors = this.getSurroundingChunks();
-        if (this.m && this.world.worldProvider.m() && !skipRecheckGaps && !neighbors.isEmpty()) { // PAIL: isGapLightingUpdated - hasSkyLight
+        if (this.isGapLightingUpdated && this.world.worldProvider.m() && !skipRecheckGaps && !neighbors.isEmpty()) { // PAIL: isGapLightingUpdated - hasSkyLight
             this.lightExecutorService.execute(() -> {
                 this.recheckGapsAsync(neighbors);
             });
-            this.m = false; // PAIL: isGapLightingUpdated
+            this.isGapLightingUpdated = false;
         }
         
-        this.r = true; // PAIL: ticked
+        this.ticked = true;
         
-        if (!this.isLightPopulated && this.done && !neighbors.isEmpty()) {
+        if (!this.isLightPopulated && this.isTerrainPopulated && !neighbors.isEmpty()) {
             this.lightExecutorService.execute(() -> {
                 this.checkLightAsync(neighbors);
             });
@@ -140,11 +140,11 @@ public abstract class MixinChunk implements IMixinChunk {
             this.isLightPopulated = true;
         }
         
-        while (!this.y.isEmpty()) { // PAIL: tileEntityPosQueue
-            BlockPosition blockpos = this.y.poll(); // PAIL: tileEntityPosQueue
+        while (!this.tileEntityPosQueue.isEmpty()) {
+            BlockPosition blockpos = this.tileEntityPosQueue.poll();
             
-            if (this.a(blockpos, Chunk.EnumTileEntityState.CHECK) == null && this.getBlockData(blockpos).getBlock().isTileEntity()) { // PAIL: getTileEntity
-                TileEntity tileentity = this.g(blockpos); // PAIL: createNewTileEntity
+            if (this.getTileEntity(blockpos, Chunk.EnumTileEntityState.CHECK) == null && this.getBlockData(blockpos).getBlock().isTileEntity()) { // PAIL: getTileEntity
+                TileEntity tileentity = this.createNewTileEntity(blockpos);
                 this.world.setTileEntity(blockpos, tileentity);
                 this.world.b(blockpos, blockpos); // PAIL: markBlockRangeForRenderUpdate
             }
@@ -180,9 +180,9 @@ public abstract class MixinChunk implements IMixinChunk {
     private void recheckGapsAsync(List<Chunk> neighbors) {
         for (int i = 0; i < 16; ++i) {
             for (int j = 0; j < 16; ++j) {
-                if (this.i[i + j * 16]) { // PAIL: updateSkylightColumns
-                    this.i[i + j * 16] = false; // PAIL: updateSkylightColumns
-                    int k = this.b(i, j); // PAIL: getHeightValue
+                if (this.updateSkylightColumns[i + j * 16]) {
+                    this.updateSkylightColumns[i + j * 16] = false;
+                    int k = this.getHeightValue(i, j);
                     int l = this.locX * 16 + i;
                     int i1 = this.locZ * 16 + j;
                     int j1 = Integer.MAX_VALUE;
@@ -195,10 +195,10 @@ public abstract class MixinChunk implements IMixinChunk {
                         j1 = Math.min(j1, chunk.w()); // PAIL: getLowestHeight
                     }
                     
-                    this.b(l, i1, j1); // PAIL: checkSkylightNeighborHeight
+                    this.checkSkylightNeighborHeight(l, i1, j1);
                     
                     for (EnumDirection enumfacing1 : EnumDirection.EnumDirectionLimit.HORIZONTAL) {
-                        this.b(l + enumfacing1.getAdjacentX(), i1 + enumfacing1.getAdjacentZ(), k); // PAIL: checkSkylightNeighborHeight
+                        this.checkSkylightNeighborHeight(l + enumfacing1.getAdjacentX(), i1 + enumfacing1.getAdjacentZ(), k);
                     }
                 }
             }
@@ -269,7 +269,7 @@ public abstract class MixinChunk implements IMixinChunk {
      * @param neighbors A thread-safe list of surrounding neighbor chunks
      */
     private void checkLightAsync(List<Chunk> neighbors) {
-        this.done = true;
+        this.isTerrainPopulated = true;
         this.isLightPopulated = true;
         BlockPosition blockpos = new BlockPosition(this.locX << 4, 0, this.locZ << 4);
         
@@ -296,7 +296,7 @@ public abstract class MixinChunk implements IMixinChunk {
                     chunk.a(enumfacing.opposite()); // PAIL: checkLightSide
                 }
                 
-                this.z(); // PAIL: setSkylightUpdated
+                this.setSkylightUpdated();
             }
         }
     }
@@ -310,7 +310,7 @@ public abstract class MixinChunk implements IMixinChunk {
      * @return True if light update was successful, false if not
      */
     private boolean checkLightAsync(int x, int z, List<Chunk> neighbors) {
-        int i = this.g(); // PAIL: getTopFilledSegment
+        int i = this.getTopFilledSegment();
         boolean flag = false;
         boolean flag1 = false;
         MutableBlockPosition blockpos$mutableblockpos = new MutableBlockPosition((this.locX << 4) + x, 0, (this.locZ << 4) + z);
@@ -536,16 +536,16 @@ public abstract class MixinChunk implements IMixinChunk {
                 k2 = i;
             }
             
-            if (l1 < this.v) { // PAIL: heightMapMinimum
-                this.v = l1; // PAIL: heightMapMinimum
+            if (l1 < this.heightMapMinimum) {
+                this.heightMapMinimum = l1;
             }
             
             if (this.world.worldProvider.m()) { // PAIL: hasSkyLight
                 for (EnumDirection enumfacing : EnumDirection.EnumDirectionLimit.HORIZONTAL) {
-                    this.a(k + enumfacing.getAdjacentX(), l + enumfacing.getAdjacentZ(), j2, k2); // PAIL: updateSkylightNeighborHeight
+                    this.updateSkylightNeighborHeight(k + enumfacing.getAdjacentX(), l + enumfacing.getAdjacentZ(), j2, k2); // PAIL: updateSkylightNeighborHeight
                 }
                 
-                this.a(k, l, j2, k2); // PAIL: updateSkylightNeighborHeight
+                this.updateSkylightNeighborHeight(k, l, j2, k2);
             }
             
             this.markDirty();

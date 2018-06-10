@@ -18,10 +18,10 @@ import java.util.Map.Entry;
  */
 public class EnchantmentManager {
 
-    public static final EnchantmentManager.EnchantmentModifierProtection a = new EnchantmentManager.EnchantmentModifierProtection(null); // Akarin - private -> public
+    private static final EnchantmentManager.EnchantmentModifierProtection a = new EnchantmentManager.EnchantmentModifierProtection(null);
     private static final EnchantmentManager.EnchantmentModifierDamage b = new EnchantmentManager.EnchantmentModifierDamage(null);
-    public static final EnchantmentManager.EnchantmentModifierThorns c = new EnchantmentManager.EnchantmentModifierThorns(null); // Akarin - private -> public
-    public static final EnchantmentManager.EnchantmentModifierArthropods d = new EnchantmentManager.EnchantmentModifierArthropods(null); // Akarin - private -> public
+    private static final EnchantmentManager.EnchantmentModifierThorns c = new EnchantmentManager.EnchantmentModifierThorns(null);
+    private static final EnchantmentManager.EnchantmentModifierArthropods d = new EnchantmentManager.EnchantmentModifierArthropods(null);
 
     public static int getEnchantmentLevel(Enchantment enchantment, ItemStack itemstack) {
         if (itemstack.isEmpty()) {

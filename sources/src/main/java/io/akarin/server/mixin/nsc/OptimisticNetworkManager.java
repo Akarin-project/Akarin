@@ -18,26 +18,26 @@ import net.minecraft.server.Packet;
 import net.minecraft.server.PacketPlayOutMapChunk;
 
 @Mixin(value = NetworkManager.class, remap = false)
-public class OptimisticNetworkManager {
+public abstract class OptimisticNetworkManager {
     @Shadow public Channel channel;
-    @Shadow @Final private Queue<NetworkManager.QueuedPacket> i;
-    @Shadow @Final private ReentrantReadWriteLock j;
+    @Shadow(aliases = "i") @Final private Queue<NetworkManager.QueuedPacket> packets;
+    @Shadow(aliases = "j") @Final private ReentrantReadWriteLock queueLock;
     
-    @Shadow private Queue<NetworkManager.QueuedPacket> getPacketQueue() { return null; }
-    @Shadow private void dispatchPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>>[] genericFutureListeners) {}
+    @Shadow public abstract Queue<NetworkManager.QueuedPacket> getPacketQueue();
+    @Shadow public abstract void dispatchPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>>[] genericFutureListeners);
     
     private static final QueuedPacket SIGNAL_PACKET = new QueuedPacket(null, null);
     
     @Overwrite
     private boolean m() {
         if (this.channel != null && this.channel.isOpen()) {
-            if (this.i.isEmpty()) { // return if the packet queue is empty so that the write lock by Anti-Xray doesn't affect the vanilla performance at all
+            if (this.packets.isEmpty()) { // return if the packet queue is empty so that the write lock by Anti-Xray doesn't affect the vanilla performance at all
                 return true;
             }
 
-            this.j.readLock().lock();
+            this.queueLock.readLock().lock();
             try {
-                while (!this.i.isEmpty()) {
+                while (!this.packets.isEmpty()) {
                     NetworkManager.QueuedPacket packet = ((CheckedConcurrentLinkedQueue<QueuedPacket>) getPacketQueue()).poll(item -> {
                         return item.getPacket() instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) item.getPacket()).isReady();
                     }, SIGNAL_PACKET);
@@ -51,7 +51,7 @@ public class OptimisticNetworkManager {
                     }
                 }
             } finally {
-                this.j.readLock().unlock();
+                this.queueLock.readLock().unlock();
             }
             
         }

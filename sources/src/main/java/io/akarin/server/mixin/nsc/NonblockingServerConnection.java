@@ -42,16 +42,16 @@ public class NonblockingServerConnection {
     /**
      * Contains all endpoints added to this NetworkSystem
      */
-    @Shadow @Mutable @Final private List<ChannelFuture> g;
+    @Shadow(aliases = "g") @Mutable @Final private List<ChannelFuture> endPoints;
     /**
      * A list containing all NetworkManager instances of all endpoints
      */
-    @Shadow @Mutable @Final private List<NetworkManager> h;
+    @Shadow(aliases = "h") @Mutable @Final private List<NetworkManager> networkManagers;
     
     @Overwrite
     private void addPending() {} // just keep compatibility
     
-    @Shadow @Final private MinecraftServer f;
+    @Shadow(aliases = "f") @Final private MinecraftServer server;
     
     /**
      * Adds channels (endpoint) that listens on publicly accessible network ports
@@ -65,7 +65,7 @@ public class NonblockingServerConnection {
         Class<? extends ServerChannel> channelClass;
         EventLoopGroup loopGroup;
         
-        if (Epoll.isAvailable() && this.f.af()) { // PAIL: MinecraftServer::useNativeTransport
+        if (Epoll.isAvailable() && this.server.af()) { // PAIL: MinecraftServer::useNativeTransport
             channelClass = EpollServerSocketChannel.class;
             loopGroup = ServerConnection.b.c();
             logger.info("Using epoll channel type");
@@ -75,8 +75,8 @@ public class NonblockingServerConnection {
             logger.info("Using nio channel type");
         }
         
-        ServerBootstrap bootstrap = new ServerBootstrap().channel(channelClass).childHandler(ChannelAdapter.create(h)).group(loopGroup);
-        synchronized (g) {
+        ServerBootstrap bootstrap = new ServerBootstrap().channel(channelClass).childHandler(ChannelAdapter.create(networkManagers)).group(loopGroup);
+        synchronized (endPoints) {
             data.addAll(Lists.transform(AkarinGlobalConfig.extraAddress, s -> {
                 String[] info = s.split(":");
                 try {
@@ -87,7 +87,7 @@ public class NonblockingServerConnection {
                     return null;
                 }
             }));
-            data.forEach(address -> g.add(bootstrap.localAddress(address.host(), address.port()).bind().syncUninterruptibly())); // supports multi-port bind
+            data.forEach(address -> endPoints.add(bootstrap.localAddress(address.host(), address.port()).bind().syncUninterruptibly())); // supports multi-port bind
         }
     }
     
@@ -98,8 +98,8 @@ public class NonblockingServerConnection {
     public void b() {
         this.d = false;
         try {
-            synchronized (g) { // safe fixes
-                for (ChannelFuture channel : g) channel.channel().close().sync();
+            synchronized (endPoints) { // safe fixes
+                for (ChannelFuture channel : endPoints) channel.channel().close().sync();
             }
         } catch (InterruptedException ex) {
             logger.error("Interrupted whilst closing channel");
@@ -128,13 +128,13 @@ public class NonblockingServerConnection {
      */
     @Overwrite
     public void c() throws InterruptedException {
-        synchronized (h) {
+        synchronized (networkManagers) {
             // Spigot - This prevents players from 'gaming' the server, and strategically relogging to increase their position in the tick order
             if (SpigotConfig.playerShuffle > 0 && MinecraftServer.currentTick % SpigotConfig.playerShuffle == 0) {
-                Collections.shuffle(h);
+                Collections.shuffle(networkManagers);
             }
             
-            Iterator<NetworkManager> it = h.iterator();
+            Iterator<NetworkManager> it = networkManagers.iterator();
             while (it.hasNext()) {
                 NetworkManager manager = it.next();
                 if (manager.h()) continue; // PAIL: NetworkManager::hasNoChannel

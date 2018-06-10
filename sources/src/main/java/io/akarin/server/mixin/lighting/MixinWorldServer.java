@@ -56,7 +56,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     private final ExecutorService lightExecutorService = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder().setNameFormat("Akarin Async Light Thread").build());
     
     @Override
-    public boolean c(EnumSkyBlock lightType, BlockPosition pos) { // PAIL: checkLightFor
+    public boolean checkLightFor(EnumSkyBlock lightType, BlockPosition pos) { // PAIL: checkLightFor
         return updateLightAsync(lightType, pos, null);
     }
     
@@ -75,12 +75,12 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             int k1 = pos.getZ();
 
             if (l > k) {
-                this.J[j++] = 133152;
+                this.J[j++] = 133152; // PAIL: lightUpdateBlockList
             } else if (l < k) {
-                this.J[j++] = 133152 | k << 18;
+                this.J[j++] = 133152 | k << 18; // PAIL: lightUpdateBlockList
 
                 while (i < j) {
-                    int l1 = this.J[i++];
+                    int l1 = this.J[i++]; // PAIL: lightUpdateBlockList
                     int i2 = (l1 & 63) - 32 + i1;
                     int j2 = (l1 >> 6 & 63) - 32 + j1;
                     int k2 = (l1 >> 12 & 63) - 32 + k1;
@@ -113,8 +113,8 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                                     i3 = this.getLightForAsync(lightType, blockpos$pooledmutableblockpos, currentChunk, neighbors);
                                     // Sponge end
 
-                                    if (i3 == l2 - l4 && j < this.J.length) {
-                                        this.J[j++] = i4 - i1 + 32 | j4 - j1 + 32 << 6 | k4 - k1 + 32 << 12 | l2 - l4 << 18;
+                                    if (i3 == l2 - l4 && j < this.J.length) { // PAIL: lightUpdateBlockList
+                                        this.J[j++] = i4 - i1 + 32 | j4 - j1 + 32 << 6 | k4 - k1 + 32 << 12 | l2 - l4 << 18; // PAIL: lightUpdateBlockList
                                     }
                                 }
                                 
@@ -128,7 +128,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             }
 
             while (i < j) {
-                int i5 = this.J[i++];
+                int i5 = this.J[i++]; // PAIL: lightUpdateBlockList
                 int j5 = (i5 & 63) - 32 + i1;
                 int k5 = (i5 >> 6 & 63) - 32 + j1;
                 int l5 = (i5 >> 12 & 63) - 32 + k1;
@@ -143,32 +143,32 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                         int k6 = Math.abs(j5 - i1);
                         int l6 = Math.abs(k5 - j1);
                         int i7 = Math.abs(l5 - k1);
-                        boolean flag = j < this.J.length - 6;
+                        boolean flag = j < this.J.length - 6; // PAIL: lightUpdateBlockList
 
                         if (k6 + l6 + i7 < 17 && flag) {
                             // Sponge start - use thread safe method getLightForAsync
                             if (this.getLightForAsync(lightType, blockpos1.west(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - 1 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 - k1 + 32 << 12);
+                                this.J[j++] = j5 - 1 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.east(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 + 1 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 - k1 + 32 << 12);
+                                this.J[j++] = j5 + 1 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.down(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - i1 + 32 + (k5 - 1 - j1 + 32 << 6) + (l5 - k1 + 32 << 12);
+                                this.J[j++] = j5 - i1 + 32 + (k5 - 1 - j1 + 32 << 6) + (l5 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.up(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - i1 + 32 + (k5 + 1 - j1 + 32 << 6) + (l5 - k1 + 32 << 12);
+                                this.J[j++] = j5 - i1 + 32 + (k5 + 1 - j1 + 32 << 6) + (l5 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.north(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 - 1 - k1 + 32 << 12);
+                                this.J[j++] = j5 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 - 1 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.south(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 + 1 - k1 + 32 << 12);
+                                this.J[j++] = j5 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 + 1 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
                             }
                             // Sponge end
                         }
@@ -251,6 +251,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         return true;
     }
     
+    @Override
     public ExecutorService getLightingExecutor() {
         return this.lightExecutorService;
     }
@@ -341,7 +342,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             final Chunk chunk = this.getLightChunk(pos, currentChunk, neighbors);
             if (chunk != null && !chunk.isUnloading()) {
                 chunk.a(type, pos, lightValue); // PAIL: setBrightness
-                this.m(pos); // PAIL: notifyLightSet
+                this.notifyLightSet(pos); // PAIL: notifyLightSet
             }
         }
     }

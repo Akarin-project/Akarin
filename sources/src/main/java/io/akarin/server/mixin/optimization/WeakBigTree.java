@@ -17,10 +17,10 @@ import net.minecraft.server.WorldGenBigTree;
  */
 @Mixin(value = WorldGenBigTree.class, remap = false)
 public class WeakBigTree {
-    @Shadow private World l;
+    @Shadow(aliases = "l") private World worldReference;
     
     @Inject(method = "generate", at = @At("RETURN"))
     private void clearWorldRef(World world, Random random, BlockPosition pos, CallbackInfoReturnable<?> info) {
-        l = null; // Akarin - remove references to world objects to avoid memory leaks
+        world = null; // Akarin - remove references to world objects to avoid memory leaks
     }
 }

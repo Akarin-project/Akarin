@@ -42,20 +42,21 @@ import net.minecraft.server.World;
 
 @Mixin(value = EntityHorseAbstract.class, remap = false)
 public abstract class MixinEntityHorseAbstract extends Entity {
-    @Shadow @Final private static DataWatcherObject<Optional<UUID>> bJ;
+    @Shadow(aliases = "bJ") @Final private static DataWatcherObject<Optional<UUID>> OWNER_UNIQUE_ID;
     
     @Nullable private Optional<UUID> cachedOwnerId;
     
+    @Nullable
     @Overwrite
-    @Nullable public UUID getOwnerUUID() {
-        if (cachedOwnerId == null) cachedOwnerId = datawatcher.get(bJ);
+    public UUID getOwnerUUID() {
+        if (cachedOwnerId == null) cachedOwnerId = datawatcher.get(OWNER_UNIQUE_ID);
         return cachedOwnerId.orNull();
     }
     
     @Overwrite
     public void setOwnerUUID(@Nullable UUID uuid) {
         cachedOwnerId = Optional.fromNullable(uuid);
-        datawatcher.set(bJ, cachedOwnerId);
+        datawatcher.set(OWNER_UNIQUE_ID, cachedOwnerId);
     }
     
     /**

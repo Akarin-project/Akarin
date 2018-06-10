@@ -38,8 +38,8 @@ public abstract class MixinWorld {
     @Shadow protected IChunkProvider chunkProvider;
     @Shadow int[] J; // PAIL: lightUpdateBlockList
     
-    @Shadow public abstract boolean c(EnumSkyBlock lightType, BlockPosition pos); // PAIL: checkLightFor
+    @Shadow(aliases = "c") public abstract boolean checkLightFor(EnumSkyBlock lightType, BlockPosition pos);
     @Shadow public abstract MinecraftServer getMinecraftServer();
     @Shadow public abstract boolean areChunksLoaded(BlockPosition center, int radius, boolean allowEmpty);
-    @Shadow public abstract void m(BlockPosition pos); // PAIL: notifyLightSet
+    @Shadow(aliases = "m") public abstract void notifyLightSet(BlockPosition pos);
 }

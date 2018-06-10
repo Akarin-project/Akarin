@@ -32,7 +32,7 @@ import net.minecraft.server.TileEntityHopper;
 import net.minecraft.server.WorldServer;
 
 @Mixin(value = MinecraftServer.class, remap = false)
-public class MixinMinecraftServer {
+public abstract class MixinMinecraftServer {
     @Overwrite
     public String getServerModName() {
         return "Akarin";
@@ -57,7 +57,6 @@ public class MixinMinecraftServer {
             WorldServer world = worlds.get(i);
             TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
         }
-        
         AkarinSlackScheduler.boot();
     }
     
@@ -69,9 +68,9 @@ public class MixinMinecraftServer {
     @Shadow private PlayerList v;
     @Shadow @Final private List<ITickable> o;
     
-    @Shadow public PlayerList getPlayerList() { return null; }
-    @Shadow public ServerConnection an() { return null; }
-    @Shadow public CustomFunctionData aL() { return null; }
+    @Shadow public abstract PlayerList getPlayerList();
+    @Shadow public abstract ServerConnection an();
+    @Shadow public abstract CustomFunctionData aL();
     
     private boolean tickEntities(WorldServer world) {
         try {

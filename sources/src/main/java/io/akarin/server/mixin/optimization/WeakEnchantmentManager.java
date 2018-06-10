@@ -41,55 +41,55 @@ import net.minecraft.server.ItemStack;
  */
 @Mixin(value = EnchantmentManager.class, remap = false)
 public class WeakEnchantmentManager {
-    @Shadow @Final private static EnchantmentManager.EnchantmentModifierProtection a;
-    @Shadow @Final private static EnchantmentManager.EnchantmentModifierThorns c;
-    @Shadow @Final private static EnchantmentManager.EnchantmentModifierArthropods d;
+    @Shadow(aliases = "a") @Final private static EnchantmentManager.EnchantmentModifierProtection protection;
+    @Shadow(aliases = "c") @Final private static EnchantmentManager.EnchantmentModifierThorns throns;
+    @Shadow(aliases = "d") @Final private static EnchantmentManager.EnchantmentModifierArthropods arthropods;
     
-    @Shadow private static void a(EnchantmentManager.EnchantmentModifier modifier, Iterable<ItemStack> iterable) {}
-    @Shadow private static void a(EnchantmentManager.EnchantmentModifier modifier, ItemStack itemstack) {}
+    @Shadow(aliases = "a") private static void applyEnchantmentModifierArray(EnchantmentManager.EnchantmentModifier modifier, Iterable<ItemStack> iterable) {}
+    @Shadow(aliases = "a") private static void applyEnchantmentModifier(EnchantmentManager.EnchantmentModifier modifier, ItemStack itemstack) {}
     
     @Overwrite
     public static int a(Iterable<ItemStack> iterable, DamageSource damageSource) {
-        EnchantmentManager.a.a = 0; // PAIL: damageModifier
-        EnchantmentManager.a.b = damageSource;
-        a(EnchantmentManager.a, iterable);
-        a.b = null; // Akarin - Remove reference to Damagesource
-        return EnchantmentManager.a.a;
+        protection.a = 0; // PAIL: damageModifier
+        protection.b = damageSource;
+        applyEnchantmentModifierArray(protection, iterable);
+        protection.b = null; // Akarin - Remove reference to Damagesource
+        return protection.a;
     }
     
     @Overwrite
     public static void a(EntityLiving user, Entity attacker) { // PAIL: applyThornEnchantments
-        EnchantmentManager.c.b = attacker;
-        EnchantmentManager.c.a = user;
+        throns.b = attacker;
+        throns.a = user;
         if (user != null) {
-            a(EnchantmentManager.c, user.aQ()); // PAIL: applyEnchantmentModifierArray, getEquipmentAndArmor
+            applyEnchantmentModifierArray(throns, user.aQ()); // PAIL: getEquipmentAndArmor
         }
         
         if (attacker instanceof EntityHuman) {
-            a(EnchantmentManager.c, user.getItemInMainHand()); // PAIL: applyEnchantmentModifier
+            applyEnchantmentModifier(throns, user.getItemInMainHand());
         }
         
         // Akarin Start - remove references to entity objects to avoid memory leaks
-        c.b = null;
-        c.a = null;
-        // SAkarin end
+        throns.b = null;
+        throns.a = null;
+        // Akarin end
     }
 
     @Overwrite
     public static void b(EntityLiving user, Entity target) { // PAIL: applyArthropodEnchantments
-        EnchantmentManager.d.a = user;
-        EnchantmentManager.d.b = target;
+        arthropods.a = user;
+        arthropods.b = target;
         if (user != null) {
-            a(EnchantmentManager.d, user.aQ()); // PAIL: applyEnchantmentModifierArray, getEquipmentAndArmor
+            applyEnchantmentModifierArray(arthropods, user.aQ()); // PAIL: getEquipmentAndArmor
         }
         
         if (user instanceof EntityHuman) {
-            a(EnchantmentManager.d, user.getItemInMainHand()); // PAIL: applyEnchantmentModifier
+            applyEnchantmentModifier(arthropods, user.getItemInMainHand());
         }
         
         // Akarin Start - remove references to entity objects to avoid memory leaks
-        d.a = null;
-        d.b = null;
+        arthropods.a = null;
+        arthropods.b = null;
         // Akarin end
     }
 }

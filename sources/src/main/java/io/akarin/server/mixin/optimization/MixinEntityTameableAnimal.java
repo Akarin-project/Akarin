@@ -46,8 +46,9 @@ public abstract class MixinEntityTameableAnimal extends Entity {
     
     @Nullable private Optional<UUID> cachedOwnerId;
     
+    @Nullable
     @Overwrite
-    @Nullable public UUID getOwnerUUID() {
+    public UUID getOwnerUUID() {
         if (cachedOwnerId == null) cachedOwnerId = datawatcher.get(by);
         return cachedOwnerId.orNull();
     }

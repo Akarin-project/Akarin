@@ -25,8 +25,6 @@
 package io.akarin.server.mixin.cps;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.annotation.Nullable;
 
 import org.spongepowered.asm.mixin.Final;

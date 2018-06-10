@@ -15,7 +15,7 @@ import net.minecraft.server.IChunkLoader;
 import net.minecraft.server.WorldServer;
 
 @Mixin(value = ChunkProviderServer.class, remap = false)
-public class MixinChunkProviderServer {
+public abstract class MixinChunkProviderServer {
     @Shadow @Final public WorldServer world;
     @Shadow public Long2ObjectOpenHashMap<Chunk> chunks;
     
@@ -26,11 +26,11 @@ public class MixinChunkProviderServer {
             // Akarin - avoid using the queue and simply check the unloaded flag during unloads
             // this.unloadQueue.add(Long.valueOf(ChunkCoordIntPair.a(chunk.locX, chunk.locZ)));
             pendingUnloadChunks++;
-            chunk.setShouldUnload(true); // PAIL: shouldUnload
+            chunk.setShouldUnload(true);
         }
     }
     
-    @Shadow public boolean unloadChunk(Chunk chunk, boolean save) { return true; }
+    @Shadow public abstract boolean unloadChunk(Chunk chunk, boolean save);
     @Shadow @Final private IChunkLoader chunkLoader;
     @Shadow @Final private static double UNLOAD_QUEUE_RESIZE_FACTOR;
     
