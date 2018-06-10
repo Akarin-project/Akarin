@@ -11,6 +11,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * <b>Akarin Changes Note</b><br>
+ * <br>
+ * 1) Make entries-set concurrent<br>
+ * 2) Add lock for entries-set operations<br>
+ * @author cakoyo
+ */
 public class EntityTracker {
 
     private static final Logger a = LogManager.getLogger();
