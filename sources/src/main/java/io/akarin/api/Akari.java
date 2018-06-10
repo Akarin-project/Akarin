@@ -39,7 +39,7 @@ public abstract class Akari {
     /**
      * A common tick pool
      */
-    public static final ExecutorCompletionService<Void> STAGE_TICK = new ExecutorCompletionService<Void>(Executors.newFixedThreadPool(1, Akari.STAGE_FACTORY));
+    public static final ExecutorCompletionService<?> STAGE_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool(1, Akari.STAGE_FACTORY));
     
     /*
      * The unsafe

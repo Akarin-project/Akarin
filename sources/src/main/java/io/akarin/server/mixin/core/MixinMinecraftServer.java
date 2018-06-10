@@ -3,6 +3,8 @@ package io.akarin.server.mixin.core;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -73,7 +75,7 @@ public class MixinMinecraftServer {
     @Shadow public ServerConnection an() { return null; }
     @Shadow public CustomFunctionData aL() { return null; }
     
-    private void tickEntities(WorldServer world) {
+    private boolean tickEntities(WorldServer world) {
         try {
             world.tickEntities();
         } catch (Throwable throwable) {
@@ -86,6 +88,7 @@ public class MixinMinecraftServer {
             world.a(crashreport);
             throw new ReportedException(crashreport);
         }
+        return true;
     }
     
     private void tickWorld(WorldServer world) {
@@ -143,7 +146,7 @@ public class MixinMinecraftServer {
             // TODO better treat world index
             for (int i = 1; i <= worlds.size(); ++i) {
                 WorldServer world = worlds.get(i < worlds.size() ? i : 0);
-                synchronized (world.tickLock) {
+                synchronized (world) {
                     tickEntities(world);
                 }
             }
@@ -151,7 +154,7 @@ public class MixinMinecraftServer {
         
         for (int i = 0; i < worlds.size(); ++i) {
             WorldServer world = worlds.get(i);
-            synchronized (world.tickLock) {
+            synchronized (world) {
                 tickWorld(world);
             }
         }
