@@ -21,6 +21,9 @@
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
         
+        "cps.MixinCraftWorld",
+        "cps.MixinChunkProviderServer",
+        
         "nsc.MixinPlayerConnection",
         "nsc.OptimisticNetworkManager",
         "nsc.NonblockingServerConnection",
