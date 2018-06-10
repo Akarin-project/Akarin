@@ -24,28 +24,22 @@
  */
 package io.akarin.server.mixin.lighting;
 
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
-import io.akarin.api.mixin.IMixinChunk;
-import net.minecraft.server.ChunkProviderServer;
-import net.minecraft.server.WorldServer;
+import net.minecraft.server.BlockPosition;
+import net.minecraft.server.EnumSkyBlock;
+import net.minecraft.server.IChunkProvider;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.World;
 
-@Mixin(value = ChunkProviderServer.class, remap = false, priority = 1001)
-public class MixinChunkProviderServer {
-    @Shadow @Final public WorldServer world;
-
-    @Redirect(method = "unloadChunks", at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/server/Chunk;isUnloading()Z"
-    ))
-    public boolean shouldUnload(IMixinChunk chunk) {
-        if (chunk.getPendingLightUpdates().get() > 0 || this.world.getTime() - chunk.getLightUpdateTime() < 20) {
-            return false;
-        }
-        return true;
-    }
+@Mixin(value = World.class, remap = false)
+public abstract class MixinWorld {
+    @Shadow protected IChunkProvider chunkProvider;
+    @Shadow int[] J; // PAIL: lightUpdateBlockList
+    
+    @Shadow public abstract boolean c(EnumSkyBlock lightType, BlockPosition pos); // PAIL: checkLightFor
+    @Shadow public abstract MinecraftServer getMinecraftServer();
+    @Shadow public abstract boolean areChunksLoaded(BlockPosition center, int radius, boolean allowEmpty);
+    @Shadow public abstract void m(BlockPosition pos); // PAIL: notifyLightSet
 }

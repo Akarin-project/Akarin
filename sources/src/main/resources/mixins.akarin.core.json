@@ -1,6 +1,6 @@
 {
     "required": true,
-    "minVersion": "1",
+    "minVersion": "0.7.8",
     "package": "io.akarin.server.mixin",
     "target": "@env(DEFAULT)",
     "compatibilityLevel": "JAVA_8",
@@ -21,12 +21,18 @@
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
         
+        "cps.MixinChunk",
         "cps.MixinCraftWorld",
         "cps.MixinChunkProviderServer",
         
         "nsc.MixinPlayerConnection",
         "nsc.OptimisticNetworkManager",
         "nsc.NonblockingServerConnection",
+        
+        "lighting.MixinChunk",
+        "lighting.MixinWorld",
+        "lighting.MixinWorldServer",
+        "lighting.MixinChunkProviderServer",
         
         "optimization.WeakBigTree",
         "optimization.WeakEnchantmentManager",
