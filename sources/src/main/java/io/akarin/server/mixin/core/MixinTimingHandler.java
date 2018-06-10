@@ -27,7 +27,6 @@ public class MixinTimingHandler {
     
     @Overwrite
     public void stopTiming() {
-        // Akarin start - avoid twice thread check
         stopTiming(false);
     }
     
