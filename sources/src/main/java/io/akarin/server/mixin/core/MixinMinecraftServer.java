@@ -3,8 +3,6 @@ package io.akarin.server.mixin.core;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
