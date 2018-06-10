@@ -19,7 +19,7 @@ public class MixinChunkProviderServer {
     @Shadow @Final public WorldServer world;
     @Shadow public Long2ObjectOpenHashMap<Chunk> chunks;
     
-    public int pendingUnloadChunks; // For keeping unload target-size features
+    public int pendingUnloadChunks; // For keeping unload target-size feature
     
     public void unload(Chunk chunk) {
         if (this.world.worldProvider.c(chunk.locX, chunk.locZ)) {

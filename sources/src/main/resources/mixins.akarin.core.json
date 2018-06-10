@@ -1,6 +1,6 @@
 {
     "required": true,
-    "minVersion": "0",
+    "minVersion": "1",
     "package": "io.akarin.server.mixin",
     "target": "@env(DEFAULT)",
     "compatibilityLevel": "JAVA_8",
@@ -16,7 +16,7 @@
         "core.DesyncCatcher",
         "core.MixinCraftServer",
         "core.MixinTimingHandler",
-		"core.MonsterEggGuardian",
+        "core.MonsterEggGuardian",
         "core.MixinVersionCommand",
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
