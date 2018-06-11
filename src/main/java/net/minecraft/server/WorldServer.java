@@ -997,6 +997,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
 
     protected void c(Entity entity) {
+        if (!this.entitiesByUUID.containsKey(entity.getUniqueID()) && !entity.valid) return; // Paper - Already removed, dont fire twice - this looks like it can happen even without our changes
         super.c(entity);
         this.entitiesById.d(entity.getId());
         this.entitiesByUUID.remove(entity.getUniqueID());

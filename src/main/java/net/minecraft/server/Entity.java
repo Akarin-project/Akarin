@@ -2608,7 +2608,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             }
             // CraftBukkit end */
 
-            this.world.kill(this);
+            this.world.removeEntity(this); // Paper - Fully remove entity, can't have dupes in the UUID map
             this.dead = false;
             this.world.methodProfiler.enter("reposition");
             /* CraftBukkit start - Handled in calculateTarget
