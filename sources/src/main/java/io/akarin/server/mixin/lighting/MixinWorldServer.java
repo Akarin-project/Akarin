@@ -99,8 +99,8 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
 
                         if (l2 > 0) {
                             int j3 = MathHelper.a(i2 - i1); // TODO MathHelper
-                            int k3 = Math.abs(j2 - j1);
-                            int l3 = Math.abs(k2 - k1);
+                            int k3 = MathHelper.a(j2 - j1);
+                            int l3 = MathHelper.a(k2 - k1);
 
                             if (j3 + k3 + l3 < 17) {
                                 PooledBlockPosition blockpos$pooledmutableblockpos = PooledBlockPosition.aquire();

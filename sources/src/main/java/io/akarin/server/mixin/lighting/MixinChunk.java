@@ -124,18 +124,14 @@ public abstract class MixinChunk implements IMixinChunk {
     private void onTickHead(boolean skipRecheckGaps, CallbackInfo ci) {
         final List<Chunk> neighbors = this.getSurroundingChunks();
         if (this.isGapLightingUpdated && this.world.worldProvider.m() && !skipRecheckGaps && !neighbors.isEmpty()) { // PAIL: isGapLightingUpdated - hasSkyLight
-            this.lightExecutorService.execute(() -> {
-                this.recheckGapsAsync(neighbors);
-            });
+            this.recheckGapsAsync(neighbors);
             this.isGapLightingUpdated = false;
         }
         
         this.ticked = true;
         
         if (!this.isLightPopulated && this.isTerrainPopulated && !neighbors.isEmpty()) {
-            this.lightExecutorService.execute(() -> {
-                this.checkLightAsync(neighbors);
-            });
+            this.checkLightAsync(neighbors);
             // set to true to avoid requeuing the same task when not finished
             this.isLightPopulated = true;
         }
@@ -203,7 +199,7 @@ public abstract class MixinChunk implements IMixinChunk {
                 }
             }
             
-            this.isGapLightingUpdated = false; // TODO
+            // this.isGapLightingUpdated = false;
         }
     }
     
@@ -232,7 +228,7 @@ public abstract class MixinChunk implements IMixinChunk {
     
     @Inject(method = "o()V", at = @At("HEAD"), cancellable = true)
     private void checkLightHead(CallbackInfo ci) {
-        if (this.world.getMinecraftServer().isStopped() || this.lightExecutorService.isShutdown()) {
+        if (this.world.getMinecraftServer().isStopped()) {
             return;
         }
         
@@ -247,13 +243,11 @@ public abstract class MixinChunk implements IMixinChunk {
         
         if (Akari.isPrimaryThread()) { // Akarin
             try {
-                this.lightExecutorService.execute(() -> {
-                    this.checkLightAsync(neighborChunks);
-                });
+                this.checkLightAsync(neighborChunks);
             } catch (RejectedExecutionException ex) {
                 // This could happen if ServerHangWatchdog kills the server
                 // between the start of the method and the execute() call.
-                if (!this.world.getMinecraftServer().isStopped() && !this.lightExecutorService.isShutdown()) {
+                if (!this.world.getMinecraftServer().isStopped()) {
                     throw ex;
                 }
             }
@@ -451,9 +445,7 @@ public abstract class MixinChunk implements IMixinChunk {
     
     @Inject(method = "c(III)V", at = @At("HEAD"), cancellable = true)
     private void onRelightBlock(int x, int y, int z, CallbackInfo ci) {
-        this.lightExecutorService.execute(() -> {
-            this.relightBlockAsync(x, y, z);
-        });
+        this.relightBlockAsync(x, y, z);
         ci.cancel();
     }
     
