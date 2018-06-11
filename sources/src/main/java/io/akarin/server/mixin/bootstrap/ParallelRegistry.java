@@ -135,4 +135,5 @@ public class ParallelRegistry {
 
         STAGE_STANDALONE.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); // Behind the shutdown of BLOCK_BASE should faster
     }
+    
 }
