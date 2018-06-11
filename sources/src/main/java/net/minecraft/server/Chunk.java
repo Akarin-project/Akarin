@@ -18,6 +18,12 @@ import com.google.common.collect.Lists; // CraftBukkit
 import org.bukkit.Server; // CraftBukkit
 import org.bukkit.craftbukkit.util.CraftMagicNumbers; // Paper
 
+/**
+ * <b>Akarin Changes Note</b><br>
+ * <br>
+ * 1) Expose private members<br>
+ * @author cakoyo
+ */
 public class Chunk {
 
     private static final Logger e = LogManager.getLogger();
