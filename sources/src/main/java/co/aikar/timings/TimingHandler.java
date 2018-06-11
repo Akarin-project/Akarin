@@ -24,7 +24,6 @@
 package co.aikar.timings;
 
 import co.aikar.util.LoadingIntMap;
-import io.akarin.api.Akari;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.bukkit.Bukkit;
 

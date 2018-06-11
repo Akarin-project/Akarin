@@ -13,8 +13,8 @@
         "bootstrap.MetricsBootstrap",
         
         "core.MixinMCUtil",
-        "core.DesyncCatcher",
         "core.MixinCraftServer",
+        "core.MixinAsyncCatcher",
         "core.MixinTimingHandler",
         "core.MonsterEggGuardian",
         "core.MixinVersionCommand",
