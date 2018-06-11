@@ -74,34 +74,34 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             final IMixinChunk spongeChunk = (IMixinChunk) currentChunk;
             int i = 0;
             int j = 0;
-            int k = this.getLightForAsync(lightType, pos, currentChunk, neighbors); // Sponge - use thread safe method
-            int l = this.getRawBlockLightAsync(lightType, pos, currentChunk, neighbors); // Sponge - use thread safe method
-            int i1 = pos.getX();
-            int j1 = pos.getY();
-            int k1 = pos.getZ();
+            int current = this.getLightForAsync(lightType, pos, currentChunk, neighbors); // Sponge - use thread safe method
+            int rawLight = this.getRawBlockLightAsync(lightType, pos, currentChunk, neighbors); // Sponge - use thread safe method
+            int x = pos.getX();
+            int y = pos.getY();
+            int z = pos.getZ();
             
-            if (l > k) {
+            if (rawLight > current) {
                 this.J[j++] = 133152; // PAIL: lightUpdateBlockList
-            } else if (l < k) {
-                this.J[j++] = 133152 | k << 18; // PAIL: lightUpdateBlockList
-
+            } else if (rawLight < current) {
+                this.J[j++] = 133152 | current << 18; // PAIL: lightUpdateBlockList
+                
                 while (i < j) {
                     int l1 = this.J[i++]; // PAIL: lightUpdateBlockList
-                    int i2 = (l1 & 63) - 32 + i1;
-                    int j2 = (l1 >> 6 & 63) - 32 + j1;
-                    int k2 = (l1 >> 12 & 63) - 32 + k1;
+                    int i2 = (l1 & 63) - 32 + x;
+                    int j2 = (l1 >> 6 & 63) - 32 + y;
+                    int k2 = (l1 >> 12 & 63) - 32 + z;
                     int l2 = l1 >> 18 & 15;
                     BlockPosition blockpos = new BlockPosition(i2, j2, k2);
                     int i3 = this.getLightForAsync(lightType, blockpos, currentChunk, neighbors); // Sponge - use thread safe method
-
+                    
                     if (i3 == l2) {
                         this.setLightForAsync(lightType, blockpos, 0, currentChunk, neighbors); // Sponge - use thread safe method
-
+                        
                         if (l2 > 0) {
-                            int j3 = MathHelper.a(i2 - i1); // abs
-                            int k3 = MathHelper.a(j2 - j1);
-                            int l3 = MathHelper.a(k2 - k1);
-
+                            int j3 = MathHelper.a(i2 - x); // abs
+                            int k3 = MathHelper.a(j2 - y);
+                            int l3 = MathHelper.a(k2 - z);
+                            
                             if (j3 + k3 + l3 < 17) {
                                 PooledBlockPosition blockpos$pooledmutableblockpos = PooledBlockPosition.aquire();
 
@@ -120,7 +120,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                                     // Sponge end
 
                                     if (i3 == l2 - l4 && j < this.J.length) { // PAIL: lightUpdateBlockList
-                                        this.J[j++] = i4 - i1 + 32 | j4 - j1 + 32 << 6 | k4 - k1 + 32 << 12 | l2 - l4 << 18; // PAIL: lightUpdateBlockList
+                                        this.J[j++] = i4 - x + 32 | j4 - y + 32 << 6 | k4 - z + 32 << 12 | l2 - l4 << 18; // PAIL: lightUpdateBlockList
                                     }
                                 }
                                 
@@ -135,46 +135,46 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
 
             while (i < j) {
                 int i5 = this.J[i++]; // PAIL: lightUpdateBlockList
-                int j5 = (i5 & 63) - 32 + i1;
-                int k5 = (i5 >> 6 & 63) - 32 + j1;
-                int l5 = (i5 >> 12 & 63) - 32 + k1;
+                int j5 = (i5 & 63) - 32 + x;
+                int k5 = (i5 >> 6 & 63) - 32 + y;
+                int l5 = (i5 >> 12 & 63) - 32 + z;
                 BlockPosition blockpos1 = new BlockPosition(j5, k5, l5);
                 int i6 = this.getLightForAsync(lightType, blockpos1, currentChunk, neighbors); // Sponge - use thread safe method
                 int j6 = this.getRawBlockLightAsync(lightType, blockpos1, currentChunk, neighbors); // Sponge - use thread safe method
-
+                
                 if (j6 != i6) {
                     this.setLightForAsync(lightType, blockpos1, j6, currentChunk, neighbors); // Sponge - use thread safe method
-
+                    
                     if (j6 > i6) {
-                        int k6 = Math.abs(j5 - i1);
-                        int l6 = Math.abs(k5 - j1);
-                        int i7 = Math.abs(l5 - k1);
+                        int k6 = Math.abs(j5 - x);
+                        int l6 = Math.abs(k5 - y);
+                        int i7 = Math.abs(l5 - z);
                         boolean flag = j < this.J.length - 6; // PAIL: lightUpdateBlockList
 
                         if (k6 + l6 + i7 < 17 && flag) {
                             // Sponge start - use thread safe method getLightForAsync
                             if (this.getLightForAsync(lightType, blockpos1.west(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - 1 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[j++] = j5 - 1 - x + 32 + (k5 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.east(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 + 1 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[j++] = j5 + 1 - x + 32 + (k5 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.down(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - i1 + 32 + (k5 - 1 - j1 + 32 << 6) + (l5 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[j++] = j5 - x + 32 + (k5 - 1 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.up(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - i1 + 32 + (k5 + 1 - j1 + 32 << 6) + (l5 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[j++] = j5 - x + 32 + (k5 + 1 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.north(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 - 1 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[j++] = j5 - x + 32 + (k5 - y + 32 << 6) + (l5 - 1 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.south(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - i1 + 32 + (k5 - j1 + 32 << 6) + (l5 + 1 - k1 + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[j++] = j5 - x + 32 + (k5 - y + 32 << 6) + (l5 + 1 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
                             // Sponge end
                         }
@@ -305,38 +305,38 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         if (lightType == EnumSkyBlock.SKY && chunk.c(pos)) { // PAIL: canSeeSky
             return 15;
         } else {
-            IBlockData blockState = chunk.getBlockData(pos);
-            int blockLight = blockState.d(); // getLightValue
-            int i = lightType == EnumSkyBlock.SKY ? 0 : blockLight;
-            int j = blockState.c(); // PAIL: getLightOpacity
-
-            if (j >= 15 && blockLight > 0) {
-                j = 1;
+            IBlockData blockData = chunk.getBlockData(pos);
+            int blockLight = blockData.d(); // getLightValue
+            int rawLight = lightType == EnumSkyBlock.SKY ? 0 : blockLight;
+            int opacity = blockData.c(); // PAIL: getLightOpacity
+            
+            if (opacity >= 15 && blockLight > 0) {
+                opacity = 1;
             }
-
-            if (j < 1) {
-                j = 1;
+            
+            if (opacity < 1) {
+                opacity = 1;
             }
-
-            if (j >= 15) {
+            
+            if (opacity >= 15) {
                 return 0;
-            } else if (i >= 14) {
-                return i;
+            } else if (rawLight >= 14) {
+                return rawLight;
             } else {
                 for (EnumDirection facing : EnumDirection.values()) {
                     BlockPosition blockpos = pos.shift(facing);
-                    int k = this.getLightForAsync(lightType, blockpos, currentChunk, neighbors) - j;
+                    int current = this.getLightForAsync(lightType, blockpos, currentChunk, neighbors) - opacity;
                     
-                    if (k > i) {
-                        i = k;
+                    if (current > rawLight) {
+                        rawLight = current;
                     }
                     
-                    if (i >= 14) {
-                        return i;
+                    if (rawLight >= 14) {
+                        return rawLight;
                     }
                 }
-
-                return i;
+                
+                return rawLight;
             }
         }
     }

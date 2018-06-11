@@ -13,11 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.ChunkProviderServer;
-import net.minecraft.server.Enchantment;
-import net.minecraft.server.EntityTypes;
 import net.minecraft.server.IChunkLoader;
-import net.minecraft.server.MobEffectList;
-import net.minecraft.server.PotionRegistry;
 import net.minecraft.server.WorldServer;
 
 @Mixin(value = ChunkProviderServer.class, remap = false)
@@ -51,7 +47,7 @@ public abstract class MixinChunkProviderServer {
             long unloadAfter = world.paperConfig.delayChunkUnloadsBy;
             int targetSize = Math.min(pendingUnloadChunks - 100,  (int) (pendingUnloadChunks * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
             
-            for (int i = 0; i < chunks.size() && pendingUnloadChunks > targetSize; i++) {
+            while (it.hasNext() && pendingUnloadChunks > targetSize) {
                 Chunk chunk = it.next();
                 
                 if (chunk != null && chunk.isUnloading()) {
