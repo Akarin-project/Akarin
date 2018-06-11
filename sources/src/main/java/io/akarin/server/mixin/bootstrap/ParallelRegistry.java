@@ -128,12 +128,12 @@ public class ParallelRegistry {
         // Shutdown BLOCK and STANDALONE stage
         STAGE_STANDALONE.shutdown();
         STAGE_BLOCK.shutdown();
-        STAGE_BLOCK.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+        STAGE_BLOCK.awaitTermination(10, TimeUnit.MINUTES);
         
         STAGE_BLOCK_BASE.shutdown(); // This must after STAGE_BLOCK terminated
-        STAGE_BLOCK_BASE.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+        STAGE_BLOCK_BASE.awaitTermination(20, TimeUnit.MINUTES);
 
-        STAGE_STANDALONE.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); // Behind the shutdown of BLOCK_BASE should faster
+        STAGE_STANDALONE.awaitTermination(30, TimeUnit.MINUTES); // Behind the shutdown of BLOCK_BASE should faster
     }
     
 }
