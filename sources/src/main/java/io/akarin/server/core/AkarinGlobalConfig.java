@@ -196,7 +196,7 @@ public class AkarinGlobalConfig {
     
     public static List<String> mockPackageList;
     private static void mockPluginList() {
-        mockPackageList = getList("core.thread-safe.mock-package-name-contains", Lists.newArrayList());
+        mockPackageList = getList("core.thread-safe.mock-package-name-contains", Lists.newArrayList("me.konsolas.aac"));
     }
     
     public static boolean enableAsyncCatcher;
