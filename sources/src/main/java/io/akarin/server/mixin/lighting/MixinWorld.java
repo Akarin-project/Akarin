@@ -42,6 +42,5 @@ public abstract class MixinWorld {
     @Shadow(aliases = "c") public abstract boolean checkLightFor(EnumSkyBlock lightType, BlockPosition pos);
     @Shadow public abstract MinecraftServer getMinecraftServer();
     @Shadow public abstract boolean areChunksLoaded(BlockPosition center, int radius, boolean allowEmpty);
-    @Shadow(aliases = "m") public abstract void notifyLightSet(BlockPosition pos);
     @Shadow public abstract Chunk getChunkIfLoaded(int x, int z);
 }

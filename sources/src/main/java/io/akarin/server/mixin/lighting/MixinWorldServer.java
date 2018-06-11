@@ -54,9 +54,9 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     private static final short XZ_MASK = 0xF;
     private static final short Y_SHORT_MASK = 0xFF;
     
-    private final ExecutorService lightExecutorService = preparExecutorService();;
+    private final ExecutorService lightExecutorService = getExecutorService();;
     
-    private ExecutorService preparExecutorService() {
+    private ExecutorService getExecutorService() {
         return AkarinGlobalConfig.asyncLightingWorkStealing ?
                 Executors.newFixedThreadPool(AkarinGlobalConfig.asyncLightingThreads, new ThreadFactoryBuilder().setNameFormat("Akarin Async Light Thread").build()) : Executors.newWorkStealingPool(AkarinGlobalConfig.asyncLightingThreads);
     }
@@ -79,7 +79,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             int i1 = pos.getX();
             int j1 = pos.getY();
             int k1 = pos.getZ();
-
+            
             if (l > k) {
                 this.J[j++] = 133152; // PAIL: lightUpdateBlockList
             } else if (l < k) {
@@ -98,7 +98,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                         this.setLightForAsync(lightType, blockpos, 0, currentChunk, neighbors); // Sponge - use thread safe method
 
                         if (l2 > 0) {
-                            int j3 = MathHelper.a(i2 - i1); // TODO MathHelper
+                            int j3 = MathHelper.a(i2 - i1); // abs
                             int k3 = MathHelper.a(j2 - j1);
                             int l3 = MathHelper.a(k2 - k1);
 
@@ -237,13 +237,13 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         if (northWestChunk != null) {
             neighbors.add(northWestChunk);
         }
-
+        
         for (Chunk neighborChunk : neighbors) {
             final IMixinChunk neighbor = (IMixinChunk) neighborChunk;
             neighbor.getPendingLightUpdates().incrementAndGet();
             neighbor.setLightUpdateTime(chunk.getWorld().getTime());
         }
-
+        
         if (Akari.isPrimaryThread()) { // Akarin
             this.lightExecutorService.execute(() -> {
                 this.checkLightAsync(lightType, pos, chunk, neighbors);
@@ -285,15 +285,15 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         if (pos.getY() < 0) {
             pos = new BlockPosition(pos.getX(), 0, pos.getZ());
         }
-        if (!(pos.isValidLocation())) {
+        if (!pos.isValidLocation()) {
             return lightType.c; // PAIL: defaultLightValue
         }
 
         final Chunk chunk = this.getLightChunk(pos, currentChunk, neighbors);
         if (chunk == null || chunk.isUnloading()) {
-            return lightType.c; // PAIL: defaultLightValue
+            return 0; // Akarin - fixes cave light - defaultLightValue -> 0
         }
-
+        
         return chunk.getBrightness(lightType, pos);
     }
 
@@ -345,8 +345,8 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         if (pos.isValidLocation()) {
             final Chunk chunk = this.getLightChunk(pos, currentChunk, neighbors);
             if (chunk != null && !chunk.isUnloading()) {
-                chunk.a(type, pos, lightValue); // PAIL: setBrightness
-                this.notifyLightSet(pos);
+                chunk.a(type, pos, lightValue); // PAIL: setLightFor
+                // this.notifyLightSet(pos); - client side
             }
         }
     }

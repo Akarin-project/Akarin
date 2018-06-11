@@ -124,14 +124,18 @@ public abstract class MixinChunk implements IMixinChunk {
     private void onTickHead(boolean skipRecheckGaps, CallbackInfo ci) {
         final List<Chunk> neighbors = this.getSurroundingChunks();
         if (this.isGapLightingUpdated && this.world.worldProvider.m() && !skipRecheckGaps && !neighbors.isEmpty()) { // PAIL: isGapLightingUpdated - hasSkyLight
-            this.recheckGapsAsync(neighbors);
+            this.lightExecutorService.execute(() -> {
+                this.recheckGapsAsync(neighbors);
+            });
             this.isGapLightingUpdated = false;
         }
         
         this.ticked = true;
         
         if (!this.isLightPopulated && this.isTerrainPopulated && !neighbors.isEmpty()) {
-            this.checkLightAsync(neighbors);
+            this.lightExecutorService.execute(() -> {
+                this.checkLightAsync(neighbors);
+            });
             // set to true to avoid requeuing the same task when not finished
             this.isLightPopulated = true;
         }
@@ -228,7 +232,7 @@ public abstract class MixinChunk implements IMixinChunk {
     
     @Inject(method = "o()V", at = @At("HEAD"), cancellable = true)
     private void checkLightHead(CallbackInfo ci) {
-        if (this.world.getMinecraftServer().isStopped()) {
+        if (this.world.getMinecraftServer().isStopped() || this.lightExecutorService.isShutdown()) {
             return;
         }
         
@@ -243,11 +247,13 @@ public abstract class MixinChunk implements IMixinChunk {
         
         if (Akari.isPrimaryThread()) { // Akarin
             try {
-                this.checkLightAsync(neighborChunks);
+                this.lightExecutorService.execute(() -> {
+                    this.checkLightAsync(neighborChunks);
+                });
             } catch (RejectedExecutionException ex) {
                 // This could happen if ServerHangWatchdog kills the server
                 // between the start of the method and the execute() call.
-                if (!this.world.getMinecraftServer().isStopped()) {
+                if (!this.world.getMinecraftServer().isStopped() && !this.lightExecutorService.isShutdown()) {
                     throw ex;
                 }
             }
@@ -445,7 +451,9 @@ public abstract class MixinChunk implements IMixinChunk {
     
     @Inject(method = "c(III)V", at = @At("HEAD"), cancellable = true)
     private void onRelightBlock(int x, int y, int z, CallbackInfo ci) {
-        this.relightBlockAsync(x, y, z);
+        this.lightExecutorService.execute(() -> {
+            this.relightBlockAsync(x, y, z);
+        });
         ci.cancel();
     }
     
@@ -464,7 +472,7 @@ public abstract class MixinChunk implements IMixinChunk {
             j = y;
         }
         
-        while (j > 0 && this.getBlockData(x, j - 1, z).c() == 0) {
+        while (j > 0 && this.getBlockData(x, j - 1, z).c() == 0) { // PAIL: getLightOpacity
             --j;
         }
         
@@ -481,7 +489,7 @@ public abstract class MixinChunk implements IMixinChunk {
                         
                         if (extendedblockstorage2 != Chunk.EMPTY_CHUNK_SECTION) {
                             extendedblockstorage2.a(x, j1 & 15, z, 15); // PAIL: setSkyLight
-                            this.world.m(new BlockPosition((this.locX << 4) + x, j1, (this.locZ << 4) + z)); // PAIL: notifyLightSet
+                            // this.world.m(new BlockPosition((this.locX << 4) + x, j1, (this.locZ << 4) + z)); // PAIL: notifyLightSet - client side
                         }
                     }
                 } else {
@@ -490,7 +498,7 @@ public abstract class MixinChunk implements IMixinChunk {
                         
                         if (extendedblockstorage != Chunk.EMPTY_CHUNK_SECTION) {
                             extendedblockstorage.a(x, i1 & 15, z, 0); // PAIL: setSkyLight
-                            this.world.m(new BlockPosition((this.locX << 4) + x, i1, (this.locZ << 4) + z)); // PAIL: notifyLightSet
+                            // this.world.m(new BlockPosition((this.locX << 4) + x, i1, (this.locZ << 4) + z)); // PAIL: notifyLightSet - client side
                         }
                     }
                 }
