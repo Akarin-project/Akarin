@@ -33,7 +33,10 @@ echo "[Akarin] Ready to build"
 	if [ "$2" == "--fast" ] || [ "$3" == "--fast" ] || [ "$4" == "--fast" ]; then
 		echo "[Akarin] Test has been skipped"
 		mvn clean install -DskipTests
-	else 
+	else
+		rm -rf Paper-API/src
+		rm -rf Paper-Server/src
+		./paper patch
 		mvn clean install
 	fi
 	
