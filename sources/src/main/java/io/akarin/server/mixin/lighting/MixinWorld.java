@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import net.minecraft.server.BlockPosition;
+import net.minecraft.server.Chunk;
 import net.minecraft.server.EnumSkyBlock;
 import net.minecraft.server.IChunkProvider;
 import net.minecraft.server.MinecraftServer;
@@ -42,4 +43,5 @@ public abstract class MixinWorld {
     @Shadow public abstract MinecraftServer getMinecraftServer();
     @Shadow public abstract boolean areChunksLoaded(BlockPosition center, int radius, boolean allowEmpty);
     @Shadow(aliases = "m") public abstract void notifyLightSet(BlockPosition pos);
+    @Shadow public abstract Chunk getChunkIfLoaded(int x, int z);
 }

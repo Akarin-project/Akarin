@@ -42,6 +42,7 @@ import net.minecraft.server.EnumDirection;
 import net.minecraft.server.EnumSkyBlock;
 import net.minecraft.server.IBlockData;
 import net.minecraft.server.MCUtil;
+import net.minecraft.server.MathHelper;
 import net.minecraft.server.WorldServer;
 import net.minecraft.server.BlockPosition.PooledBlockPosition;
 
@@ -97,7 +98,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                         this.setLightForAsync(lightType, blockpos, 0, currentChunk, neighbors); // Sponge - use thread safe method
 
                         if (l2 > 0) {
-                            int j3 = Math.abs(i2 - i1); // TODO MathHelper
+                            int j3 = MathHelper.a(i2 - i1); // TODO MathHelper
                             int k3 = Math.abs(j2 - j1);
                             int l3 = Math.abs(k2 - k1);
 
@@ -188,7 +189,6 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                 final IMixinChunk neighbor = (IMixinChunk) neighborChunk;
                 neighbor.getPendingLightUpdates().decrementAndGet();
             }
-
             // Sponge end
             return true;
         }

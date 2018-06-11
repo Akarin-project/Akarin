@@ -34,7 +34,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -204,7 +203,7 @@ public abstract class MixinChunk implements IMixinChunk {
                 }
             }
             
-            // this.isGapLightingUpdated = false;
+            this.isGapLightingUpdated = false; // TODO
         }
     }
     
