@@ -177,7 +177,7 @@
                 <version>1.3</version>
                 <configuration>
                     <outputPrefix>git-Akarin-</outputPrefix>
-                    <scmDirectory>..</scmDirectory>
+                    <scmDirectory>../..</scmDirectory> <!-- Akarin -->
                 </configuration>
                 <executions>
                     <execution>
