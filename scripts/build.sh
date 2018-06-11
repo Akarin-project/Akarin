@@ -26,17 +26,19 @@ fi
 echo "[Akarin] Ready to build"
 (
 	echo "[Akarin] Touch sources.."
-	\cp -rf "$basedir/sources/src" "$paperbasedir/Paper-Server/"
-	\cp -rf "$basedir/sources/pom.xml" "$paperbasedir/Paper-Server/"
 	
 	cd "$paperbasedir"
 	if [ "$2" == "--fast" ] || [ "$3" == "--fast" ] || [ "$4" == "--fast" ]; then
 		echo "[Akarin] Test has been skipped"
+		\cp -rf "$basedir/sources/src" "$paperbasedir/Paper-Server/"
+		\cp -rf "$basedir/sources/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install -DskipTests
 	else
 		rm -rf Paper-API/src
 		rm -rf Paper-Server/src
 		./paper patch
+		\cp -rf "$basedir/sources/src" "$paperbasedir/Paper-Server/"
+		\cp -rf "$basedir/sources/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install
 	fi
 	
