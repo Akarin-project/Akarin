@@ -133,6 +133,11 @@
             <artifactId>mixin</artifactId>
             <version>0.7.8-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>me.nallar.whocalled</groupId>
+            <artifactId>WhoCalled</artifactId>
+            <version>1.1</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -147,6 +152,10 @@
         <repository>
             <id>spongepowered-repo</id>
             <url>https://repo.spongepowered.org/maven/</url>
+        </repository>
+        <repository>
+            <id>nallar-repo</id>
+            <url>http://repo.nallar.me/</url>
         </repository>
     </repositories>
 

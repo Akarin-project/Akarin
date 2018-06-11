@@ -33,6 +33,7 @@ import org.bukkit.Bukkit;
 import org.spongepowered.asm.mixin.Mixin;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import io.akarin.api.Akari;
 import io.akarin.api.mixin.IMixinChunk;
 import io.akarin.api.mixin.IMixinWorldServer;
 import io.akarin.server.core.AkarinGlobalConfig;
@@ -240,7 +241,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             neighbor.setLightUpdateTime(chunk.getWorld().getTime());
         }
 
-        if (Bukkit.isPrimaryThread()) {
+        if (Akari.isPrimaryThread()) { // Akarin
             this.lightExecutorService.execute(() -> {
                 this.checkLightAsync(lightType, pos, chunk, neighbors);
             });

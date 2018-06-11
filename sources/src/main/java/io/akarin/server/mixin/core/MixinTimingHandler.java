@@ -20,7 +20,7 @@ public class MixinTimingHandler {
     
     @Overwrite
     public void stopTimingIfSync() {
-        if (Bukkit.isPrimaryThread()) {
+        if (Akari.isPrimaryThread()) { // Akarin
             stopTiming(true); // Avoid twice thread check
         }
     }
@@ -38,7 +38,7 @@ public class MixinTimingHandler {
                 start = 0;
                 return;
             } else {
-                if (!sync && !Bukkit.isPrimaryThread()) {
+                if (!sync && !Akari.isPrimaryThread()) { // Akarin
                     if (AkarinGlobalConfig.silentAsyncTimings) {
                         Bukkit.getLogger().log(Level.SEVERE, "stopTiming called async for " + name);
                         new Throwable().printStackTrace();

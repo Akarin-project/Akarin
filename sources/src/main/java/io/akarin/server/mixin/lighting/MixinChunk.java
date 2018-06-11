@@ -45,6 +45,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.google.common.collect.Lists;
 
+import io.akarin.api.Akari;
 import io.akarin.api.mixin.IMixinChunk;
 import io.akarin.api.mixin.IMixinWorldServer;
 import net.minecraft.server.BlockPosition;
@@ -245,7 +246,7 @@ public abstract class MixinChunk implements IMixinChunk {
             return;
         }
         
-        if (Bukkit.isPrimaryThread()) {
+        if (Akari.isPrimaryThread()) { // Akarin
             try {
                 this.lightExecutorService.execute(() -> {
                     this.checkLightAsync(neighborChunks);

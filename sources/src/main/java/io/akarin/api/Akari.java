@@ -8,12 +8,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bukkit.entity.Minecart;
 
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
+import net.minecraft.server.MinecraftServer;
 
 public abstract class Akari {
     /**
@@ -40,6 +42,12 @@ public abstract class Akari {
      * A common tick pool
      */
     public static final ExecutorCompletionService<?> STAGE_TICK = new ExecutorCompletionService<>(Executors.newSingleThreadExecutor(Akari.STAGE_FACTORY));
+    
+    public static volatile boolean mayMock;
+    
+    public static boolean isPrimaryThread() {
+        return Thread.currentThread().equals(MinecraftServer.getServer().primaryThread);
+    }
     
     /*
      * The unsafe

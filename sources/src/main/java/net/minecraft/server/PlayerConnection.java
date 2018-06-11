@@ -3,6 +3,7 @@ package net.minecraft.server;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
 
+import io.akarin.api.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -1384,7 +1385,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
         if (!async && s.startsWith("/")) {
             // Paper Start
-            if (!org.spigotmc.AsyncCatcher.shuttingDown && !org.bukkit.Bukkit.isPrimaryThread()) {
+            if (!org.spigotmc.AsyncCatcher.shuttingDown && !Akari.isPrimaryThread()) { // Akarin
                 final String fCommandLine = s;
                 MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Command Dispatched Async: " + fCommandLine);
                 MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Please notify author of plugin causing this execution to fix this bug! see: http://bit.ly/1oSiM6C", new Throwable());
