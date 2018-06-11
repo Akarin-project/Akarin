@@ -45,14 +45,14 @@ public class WeakEnchantmentManager {
     @Shadow(aliases = "c") @Final private static EnchantmentManager.EnchantmentModifierThorns thorns;
     @Shadow(aliases = "d") @Final private static EnchantmentManager.EnchantmentModifierArthropods arthropods;
     
-    @Shadow(aliases = "a") private static void applyEnchantmentModifierArray(EnchantmentManager.EnchantmentModifier modifier, Iterable<ItemStack> iterable) {}
-    @Shadow(aliases = "a") private static void applyEnchantmentModifier(EnchantmentManager.EnchantmentModifier modifier, ItemStack itemstack) {}
+    @Shadow private static void a(EnchantmentManager.EnchantmentModifier modifier, Iterable<ItemStack> iterable) {}
+    @Shadow private static void a(EnchantmentManager.EnchantmentModifier modifier, ItemStack itemstack) {}
     
     @Overwrite
     public static int a(Iterable<ItemStack> iterable, DamageSource damageSource) {
         protection.a = 0; // PAIL: damageModifier
         protection.b = damageSource;
-        applyEnchantmentModifierArray(protection, iterable);
+        a(protection, iterable); // PAIL: applyEnchantmentModifierArray
         protection.b = null; // Akarin - Remove reference to Damagesource
         return protection.a;
     }
@@ -62,11 +62,11 @@ public class WeakEnchantmentManager {
         thorns.b = attacker;
         thorns.a = user;
         if (user != null) {
-            applyEnchantmentModifierArray(thorns, user.aQ()); // PAIL: getEquipmentAndArmor
+            a(thorns, user.aQ()); // PAIL: applyEnchantmentModifierArray - getEquipmentAndArmor
         }
         
         if (attacker instanceof EntityHuman) {
-            applyEnchantmentModifier(thorns, user.getItemInMainHand());
+            a(thorns, user.getItemInMainHand()); // PAIL: applyEnchantmentModifier
         }
         
         // Akarin Start - remove references to entity objects to avoid memory leaks
@@ -80,11 +80,11 @@ public class WeakEnchantmentManager {
         arthropods.a = user;
         arthropods.b = target;
         if (user != null) {
-            applyEnchantmentModifierArray(arthropods, user.aQ()); // PAIL: getEquipmentAndArmor
+            a(arthropods, user.aQ()); // PAIL: applyEnchantmentModifierArray - getEquipmentAndArmor
         }
         
         if (user instanceof EntityHuman) {
-            applyEnchantmentModifier(arthropods, user.getItemInMainHand());
+            a(arthropods, user.getItemInMainHand()); // PAIL: applyEnchantmentModifier
         }
         
         // Akarin Start - remove references to entity objects to avoid memory leaks
