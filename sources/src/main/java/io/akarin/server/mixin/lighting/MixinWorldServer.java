@@ -29,7 +29,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.spongepowered.asm.mixin.Mixin;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -54,8 +53,12 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     private static final short XZ_MASK = 0xF;
     private static final short Y_SHORT_MASK = 0xFF;
     
-    private final ExecutorService lightExecutorService = AkarinGlobalConfig.asyncLightingWorkStealing ?
-            Executors.newFixedThreadPool(AkarinGlobalConfig.asyncLightingThreads, new ThreadFactoryBuilder().setNameFormat("Akarin Async Light Thread").build()) : Executors.newWorkStealingPool(AkarinGlobalConfig.asyncLightingThreads);
+    private final ExecutorService lightExecutorService = preparExecutorService();;
+    
+    private ExecutorService preparExecutorService() {
+        return AkarinGlobalConfig.asyncLightingWorkStealing ?
+                Executors.newFixedThreadPool(AkarinGlobalConfig.asyncLightingThreads, new ThreadFactoryBuilder().setNameFormat("Akarin Async Light Thread").build()) : Executors.newWorkStealingPool(AkarinGlobalConfig.asyncLightingThreads);
+    }
     
     @Override
     public boolean checkLightFor(EnumSkyBlock lightType, BlockPosition pos) { // PAIL: checkLightFor
