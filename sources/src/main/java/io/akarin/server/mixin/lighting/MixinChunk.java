@@ -203,7 +203,7 @@ public abstract class MixinChunk implements IMixinChunk {
                 }
             }
             
-            // this.m = false; // PAIL: isGapLightingUpdated
+            // this.isGapLightingUpdated = false;
         }
     }
     
@@ -250,11 +250,11 @@ public abstract class MixinChunk implements IMixinChunk {
                 this.lightExecutorService.execute(() -> {
                     this.checkLightAsync(neighborChunks);
                 });
-            } catch (RejectedExecutionException e) {
+            } catch (RejectedExecutionException ex) {
                 // This could happen if ServerHangWatchdog kills the server
                 // between the start of the method and the execute() call.
                 if (!this.world.getMinecraftServer().isStopped() && !this.lightExecutorService.isShutdown()) {
-                    throw e;
+                    throw ex;
                 }
             }
         } else {

@@ -27,7 +27,6 @@ package io.akarin.server.mixin.lighting;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
@@ -36,6 +35,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.akarin.api.mixin.IMixinChunk;
 import io.akarin.api.mixin.IMixinWorldServer;
+import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.EnumDirection;
@@ -53,7 +53,8 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     private static final short XZ_MASK = 0xF;
     private static final short Y_SHORT_MASK = 0xFF;
     
-    private final ExecutorService lightExecutorService = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder().setNameFormat("Akarin Async Light Thread").build());
+    private final ExecutorService lightExecutorService = AkarinGlobalConfig.asyncLightingWorkStealing ?
+            Executors.newFixedThreadPool(AkarinGlobalConfig.asyncLightingThreads, new ThreadFactoryBuilder().setNameFormat("Akarin Async Light Thread").build()) : Executors.newWorkStealingPool(AkarinGlobalConfig.asyncLightingThreads);
     
     @Override
     public boolean checkLightFor(EnumSkyBlock lightType, BlockPosition pos) { // PAIL: checkLightFor
@@ -239,7 +240,6 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             neighbor.setLightUpdateTime(chunk.getWorld().getTime());
         }
 
-        //System.out.println("size = " + ((ThreadPoolExecutor) this.lightExecutorService).getQueue().size());
         if (Bukkit.isPrimaryThread()) {
             this.lightExecutorService.execute(() -> {
                 this.checkLightAsync(lightType, pos, chunk, neighbors);
@@ -342,7 +342,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             final Chunk chunk = this.getLightChunk(pos, currentChunk, neighbors);
             if (chunk != null && !chunk.isUnloading()) {
                 chunk.a(type, pos, lightValue); // PAIL: setBrightness
-                this.notifyLightSet(pos); // PAIL: notifyLightSet
+                this.notifyLightSet(pos);
             }
         }
     }
