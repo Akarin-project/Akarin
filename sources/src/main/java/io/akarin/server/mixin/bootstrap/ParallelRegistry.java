@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import io.akarin.api.Akari;
-import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.BiomeBase;
 import net.minecraft.server.Block;
 import net.minecraft.server.BlockFire;
@@ -39,8 +38,6 @@ public class ParallelRegistry {
      * Registry order: MobEffectList -> PotionRegistry & orderless: Enchantment, EntityTypes
      */
     private static final ExecutorService STAGE_STANDALONE = Executors.newFixedThreadPool(3, Akari.STAGE_FACTORY);
-    
-    private static final int TERMINATION_IN_SEC = AkarinGlobalConfig.registryTerminationSeconds;
     
     // We should keep the original order in codes thought orderless in runtime
     @Redirect(method = "c()V", at = @At(
@@ -131,11 +128,11 @@ public class ParallelRegistry {
         // Shutdown BLOCK and STANDALONE stage
         STAGE_STANDALONE.shutdown();
         STAGE_BLOCK.shutdown();
-        STAGE_BLOCK.awaitTermination(TERMINATION_IN_SEC, TimeUnit.SECONDS);
+        STAGE_BLOCK.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
         
         STAGE_BLOCK_BASE.shutdown(); // This must after STAGE_BLOCK terminated
-        STAGE_BLOCK_BASE.awaitTermination(TERMINATION_IN_SEC, TimeUnit.SECONDS);
+        STAGE_BLOCK_BASE.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
 
-        STAGE_STANDALONE.awaitTermination(TERMINATION_IN_SEC, TimeUnit.SECONDS); // Behind the shutdown of BLOCK_BASE should faster
+        STAGE_STANDALONE.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS); // Behind the shutdown of BLOCK_BASE should faster
     }
 }

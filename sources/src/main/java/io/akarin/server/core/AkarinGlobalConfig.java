@@ -16,6 +16,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import io.akarin.api.Akari;
 
+@SuppressWarnings("unused")
 public class AkarinGlobalConfig {
     
     private static File CONFIG_FILE;
@@ -151,11 +152,6 @@ public class AkarinGlobalConfig {
     public static boolean legacyVersioningCompat;
     private static void legacyVersioningCompat() {
         legacyVersioningCompat = getBoolean("alternative.legacy-versioning-compat", false);
-    }
-    
-    public static int registryTerminationSeconds;
-    private static void registryTerminationSeconds() {
-        registryTerminationSeconds = getSeconds(getString("bootstrap.parallel-registry-termination", "9s"));
     }
     
     public static int playersPerIOThread;
