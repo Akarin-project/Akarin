@@ -21,7 +21,6 @@
         "core.MixinTimingHandler",
         "core.MonsterEggGuardian",
         "core.MixinVersionCommand",
-        "core.MixinCommandAbstract",
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
         
