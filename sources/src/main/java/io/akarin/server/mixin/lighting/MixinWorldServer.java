@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import javax.annotation.Nullable;
 
 import org.spongepowered.asm.mixin.Mixin;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.akarin.api.Akari;
@@ -92,9 +93,9 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                     int k2 = (l1 >> 12 & 63) - 32 + z;
                     int l2 = l1 >> 18 & 15;
                     BlockPosition blockpos = new BlockPosition(i2, j2, k2);
-                    int i3 = this.getLightForAsync(lightType, blockpos, currentChunk, neighbors); // Sponge - use thread safe method
+                    int lightLevel = this.getLightForAsync(lightType, blockpos, currentChunk, neighbors); // Sponge - use thread safe method
                     
-                    if (i3 == l2) {
+                    if (lightLevel == l2) {
                         this.setLightForAsync(lightType, blockpos, 0, currentChunk, neighbors); // Sponge - use thread safe method
                         
                         if (l2 > 0) {
@@ -103,28 +104,28 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                             int l3 = MathHelper.a(k2 - z);
                             
                             if (j3 + k3 + l3 < 17) {
-                                PooledBlockPosition blockpos$pooledmutableblockpos = PooledBlockPosition.aquire();
-
+                                PooledBlockPosition mutableBlockpos = PooledBlockPosition.aquire();
+                                
                                 for (EnumDirection enumfacing : EnumDirection.values()) {
                                     int i4 = i2 + enumfacing.getAdjacentX();
                                     int j4 = j2 + enumfacing.getAdjacentX();
                                     int k4 = k2 + enumfacing.getAdjacentX();
-                                    blockpos$pooledmutableblockpos.setValues(i4, j4, k4);
+                                    mutableBlockpos.setValues(i4, j4, k4);
                                     // Sponge start - get chunk safely
-                                    final Chunk pooledChunk = this.getLightChunk(blockpos$pooledmutableblockpos, currentChunk, neighbors);
+                                    final Chunk pooledChunk = this.getLightChunk(mutableBlockpos, currentChunk, neighbors);
                                     if (pooledChunk == null) {
                                         continue;
                                     }
-                                    int l4 = Math.max(1, pooledChunk.getBlockData(blockpos$pooledmutableblockpos).c()); // PAIL: getLightOpacity
-                                    i3 = this.getLightForAsync(lightType, blockpos$pooledmutableblockpos, currentChunk, neighbors);
+                                    int opacity = Math.max(1, pooledChunk.getBlockData(mutableBlockpos).c()); // PAIL: getLightOpacity
+                                    lightLevel = this.getLightForAsync(lightType, mutableBlockpos, currentChunk, neighbors);
                                     // Sponge end
-
-                                    if (i3 == l2 - l4 && j < this.J.length) { // PAIL: lightUpdateBlockList
-                                        this.J[j++] = i4 - x + 32 | j4 - y + 32 << 6 | k4 - z + 32 << 12 | l2 - l4 << 18; // PAIL: lightUpdateBlockList
+                                    
+                                    if (lightLevel == l2 - opacity && j < this.J.length) { // PAIL: lightUpdateBlockList
+                                        this.J[j++] = i4 - x + 32 | j4 - y + 32 << 6 | k4 - z + 32 << 12 | l2 - opacity << 18; // PAIL: lightUpdateBlockList
                                     }
                                 }
                                 
-                                blockpos$pooledmutableblockpos.free();
+                                mutableBlockpos.free();
                             }
                         }
                     }
@@ -181,7 +182,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                     }
                 }
             }
-
+            
             // Sponge start - Asynchronous light updates
             spongeChunk.getQueuedLightingUpdates(lightType).remove((Short) this.blockPosToShort(pos));
             spongeChunk.getPendingLightUpdates().decrementAndGet();
@@ -296,7 +297,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         
         return chunk.getBrightness(lightType, pos);
     }
-
+    
     private int getRawBlockLightAsync(EnumSkyBlock lightType, BlockPosition pos, Chunk currentChunk, List<Chunk> neighbors) {
         final Chunk chunk = getLightChunk(pos, currentChunk, neighbors);
         if (chunk == null || chunk.isUnloading()) {

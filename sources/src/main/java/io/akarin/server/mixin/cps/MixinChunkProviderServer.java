@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import io.akarin.api.Akari;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.ChunkProviderServer;
@@ -39,37 +40,34 @@ public abstract class MixinChunkProviderServer {
     @Overwrite
     public boolean unloadChunks() {
         if (!this.world.savingDisabled) {
-            SlackActivityAccountant activityAccountant = world.getMinecraftServer().slackActivityAccountant;
-            activityAccountant.startActivity(0.5);
-            
-            Iterator<Chunk> it = chunks.values().iterator();
             long now = System.currentTimeMillis();
             long unloadAfter = world.paperConfig.delayChunkUnloadsBy;
-            int targetSize = Math.min(pendingUnloadChunks - 100,  (int) (pendingUnloadChunks * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
+            SlackActivityAccountant activityAccountant = world.getMinecraftServer().slackActivityAccountant;
+            Iterator<Chunk> it = chunks.values().iterator();
             
-            while (it.hasNext() && pendingUnloadChunks > targetSize) {
+            while (it.hasNext()) {
+                activityAccountant.startActivity(0.5);
+                
                 Chunk chunk = it.next();
+                if (unloadAfter > 0) {
+                    if (chunk.scheduledForUnload != null && now - chunk.scheduledForUnload > unloadAfter) {
+                        chunk.scheduledForUnload = null;
+                        unload(chunk);
+                    }
+                }
+                int targetSize = Math.min(pendingUnloadChunks - 100,  (int) (pendingUnloadChunks * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
                 
                 if (chunk != null && chunk.isUnloading()) {
-                    if (unloadAfter > 0) {
-                        // We changed Paper's delay unload logic, the original behavior is just mark as unloading
-                        if (chunk.scheduledForUnload == null || now - chunk.scheduledForUnload < unloadAfter) {
-                            continue;
-                        }
-                        chunk.scheduledForUnload = null;
-                    }
-                    
                     // If a plugin cancelled it, we shouldn't trying unload it for a while
                     chunk.setShouldUnload(false); // Paper
                     
                     if (!unloadChunk(chunk, true)) continue; // Event cancelled
-                    pendingUnloadChunks--;
                     it.remove();
                     
-                    if (activityAccountant.activityTimeIsExhausted()) break;
+                    if (--pendingUnloadChunks <= targetSize && activityAccountant.activityTimeIsExhausted()) break;
                 }
+                activityAccountant.endActivity();
             }
-            activityAccountant.endActivity();
             this.chunkLoader.b(); // PAIL: chunkTick
         }
         return false;
@@ -77,9 +75,9 @@ public abstract class MixinChunkProviderServer {
     
     @Redirect(method = "unloadChunk", at = @At(
             value = "INVOKE",
-            target = "it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.remove(J)Lnet/minecraft/server/Chunk;"
+            target = "it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.remove(J)Ljava/lang/Object;"
     ))
-    private Chunk remove(Long2ObjectOpenHashMap<Chunk> chunks, Object chunkHash) {
+    private Object remove(Long2ObjectOpenHashMap<Chunk> chunks, long chunkHash) {
         return null;
     }
     

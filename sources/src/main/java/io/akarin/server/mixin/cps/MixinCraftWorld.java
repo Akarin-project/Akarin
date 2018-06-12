@@ -4,24 +4,16 @@ import java.util.Set;
 
 import org.bukkit.craftbukkit.CraftWorld;
 import org.spongepowered.asm.lib.Opcodes;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.Inject;
-
-import net.minecraft.server.Chunk;
-import net.minecraft.server.PlayerChunk;
+import net.minecraft.server.WorldServer;
 
 @Mixin(value = CraftWorld.class, remap = false)
 public class MixinCraftWorld {
-    @Inject(method = "processChunkGC()V", at = @At(
-            value = "INVOKE",
-            target = "net/minecraft/server/ChunkProviderServer.unload(Lnet/minecraft/server/Chunk;)V"
-    ))
-    public void cancelUnloading(Chunk chunk, CallbackInfo ci) {
-        if (chunk.isUnloading()) ci.cancel();
-    }
+    @Shadow @Final private WorldServer world;
     
     @Redirect(method = "processChunkGC()V", at = @At(
             value = "INVOKE",
@@ -38,15 +30,7 @@ public class MixinCraftWorld {
             opcode = Opcodes.INVOKEINTERFACE
     ))
     public boolean regenChunk(Set<Long> set, Object chunkHash) {
-        return false;
-    }
-    
-    @Inject(method = "processChunkGC()V", at = @At(
-            value = "FIELD",
-            target = "net/minecraft/server/PlayerChunk.chunk:Lnet/minecraft/server/Chunk;",
-            opcode = Opcodes.PUTFIELD
-    ))
-    public void noUnload(PlayerChunk playerChunk, Chunk chunk, CallbackInfo ci) {
-        chunk.setShouldUnload(false);
+        world.getChunkProviderServer().unload(world.getChunkProviderServer().chunks.get(chunkHash));
+        return true;
     }
 }
