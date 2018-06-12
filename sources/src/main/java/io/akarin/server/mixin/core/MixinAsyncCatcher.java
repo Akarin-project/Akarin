@@ -15,7 +15,7 @@ public class MixinAsyncCatcher {
     
     @Overwrite
     public static void catchOp(String reason) {
-        if (AkarinGlobalConfig.enableAsyncCatcher && enabled && Thread.currentThread() != MinecraftServer.getServer().primaryThread) {
+        if (AkarinGlobalConfig.enableAsyncCatcher && Akari.mayEnableAsyncCathcer && enabled && Thread.currentThread() != MinecraftServer.getServer().primaryThread) {
             if (AkarinGlobalConfig.throwOnAsyncCaught) {
                 throw new IllegalStateException("Asynchronous " + reason + "!");
             } else {

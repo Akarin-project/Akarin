@@ -8,8 +8,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.entity.Minecart;
-
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -17,6 +15,7 @@ import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
 import net.minecraft.server.MinecraftServer;
 
+@SuppressWarnings("restriction")
 public abstract class Akari {
     /**
      * A common logger used by mixin classes
@@ -31,7 +30,7 @@ public abstract class Akari {
     /**
      * A common thread pool factory
      */
-    public static final ThreadFactory STAGE_FACTORY = new ThreadFactoryBuilder().setNameFormat("Akarin Schedule Thread - %1$d").build();
+    public static final ThreadFactory STAGE_FACTORY = new ThreadFactoryBuilder().setNameFormat("Akarin Schedule Thread").build();
     
     /**
      * Main thread callback tasks
@@ -43,7 +42,7 @@ public abstract class Akari {
      */
     public static final ExecutorCompletionService<?> STAGE_TICK = new ExecutorCompletionService<>(Executors.newSingleThreadExecutor(Akari.STAGE_FACTORY));
     
-    public static volatile boolean mayMock;
+    public static boolean mayEnableAsyncCathcer;
     
     public static boolean isPrimaryThread() {
         return Thread.currentThread().equals(MinecraftServer.getServer().primaryThread);

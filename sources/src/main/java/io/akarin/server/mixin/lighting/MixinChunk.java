@@ -123,7 +123,7 @@ public abstract class MixinChunk implements IMixinChunk {
     @Inject(method = "b(Z)V", at = @At("HEAD"), cancellable = true)
     private void onTickHead(boolean skipRecheckGaps, CallbackInfo ci) {
         final List<Chunk> neighbors = this.getSurroundingChunks();
-        if (this.isGapLightingUpdated && this.world.worldProvider.m() && !skipRecheckGaps && !neighbors.isEmpty()) { // PAIL: isGapLightingUpdated - hasSkyLight
+        if (this.isGapLightingUpdated && this.world.worldProvider.m() && !skipRecheckGaps && !neighbors.isEmpty()) { // PAIL: hasSkyLight
             this.lightExecutorService.execute(() -> {
                 this.recheckGapsAsync(neighbors);
             });
@@ -274,13 +274,13 @@ public abstract class MixinChunk implements IMixinChunk {
         BlockPosition blockpos = new BlockPosition(this.locX << 4, 0, this.locZ << 4);
         
         if (this.world.worldProvider.m()) { // PAIL: hasSkyLight
-            label44:
+            reCheckLight:
             
             for (int i = 0; i < 16; ++i) {
                 for (int j = 0; j < 16; ++j) {
                     if (!this.checkLightAsync(i, j, neighbors)) {
                         this.isLightPopulated = false;
-                        break label44;
+                        break reCheckLight;
                     }
                 }
             }

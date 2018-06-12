@@ -30,7 +30,6 @@ import java.util.concurrent.Executors;
 import javax.annotation.Nullable;
 
 import org.spongepowered.asm.mixin.Mixin;
-
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.akarin.api.Akari;
@@ -55,7 +54,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     private static final short XZ_MASK = 0xF;
     private static final short Y_SHORT_MASK = 0xFF;
     
-    private final ExecutorService lightExecutorService = getExecutorService();;
+    private final ExecutorService lightExecutorService = getExecutorService();
     
     private ExecutorService getExecutorService() {
         return AkarinGlobalConfig.asyncLightingWorkStealing ?
@@ -130,10 +129,10 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                         }
                     }
                 }
-
+                
                 i = 0;
             }
-
+            
             while (i < j) {
                 int i5 = this.J[i++]; // PAIL: lightUpdateBlockList
                 int j5 = (i5 & 63) - 32 + x;
@@ -151,7 +150,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                         int l6 = Math.abs(k5 - y);
                         int i7 = Math.abs(l5 - z);
                         boolean flag = j < this.J.length - 6; // PAIL: lightUpdateBlockList
-
+                        
                         if (k6 + l6 + i7 < 17 && flag) {
                             // Sponge start - use thread safe method getLightForAsync
                             if (this.getLightForAsync(lightType, blockpos1.west(), currentChunk, neighbors) < j6) {
@@ -204,22 +203,22 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         if (currentChunk == null) {
             currentChunk = MCUtil.getLoadedChunkWithoutMarkingActive(chunkProvider, pos.getX() >> 4, pos.getZ() >> 4);
         }
-
+        
         final IMixinChunk spongeChunk = (IMixinChunk) currentChunk;
         if (currentChunk == null || currentChunk.isUnloading() || !spongeChunk.areNeighborsLoaded()) {
             return false;
         }
-
+        
         final short shortPos = this.blockPosToShort(pos);
         if (spongeChunk.getQueuedLightingUpdates(lightType).contains(shortPos)) {
             return false;
         }
-
+        
         final Chunk chunk = currentChunk;
         spongeChunk.getQueuedLightingUpdates(lightType).add(shortPos);
         spongeChunk.getPendingLightUpdates().incrementAndGet();
         spongeChunk.setLightUpdateTime(chunk.getWorld().getTime());
-
+        
         List<Chunk> neighbors = spongeChunk.getNeighbors();
         // add diagonal chunks
         Chunk southEastChunk = ((IMixinChunk) spongeChunk.getNeighborChunk(0)).getNeighborChunk(2);
@@ -281,7 +280,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         
         return null;
     }
-
+    
     private int getLightForAsync(EnumSkyBlock lightType, BlockPosition pos, Chunk currentChunk, List<Chunk> neighbors) {
         if (pos.getY() < 0) {
             pos = new BlockPosition(pos.getX(), 0, pos.getZ());
@@ -289,10 +288,10 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         if (!pos.isValidLocation()) {
             return lightType.c; // PAIL: defaultLightValue
         }
-
+        
         final Chunk chunk = this.getLightChunk(pos, currentChunk, neighbors);
         if (chunk == null || chunk.isUnloading()) {
-            return 0; // Akarin - fixes cave light - defaultLightValue -> 0
+            return lightType.c; // PAIL: defaultLightValue
         }
         
         return chunk.getBrightness(lightType, pos);
@@ -347,11 +346,11 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             final Chunk chunk = this.getLightChunk(pos, currentChunk, neighbors);
             if (chunk != null && !chunk.isUnloading()) {
                 chunk.a(type, pos, lightValue); // PAIL: setLightFor
-                // this.notifyLightSet(pos); - client side
+                // this.notifyLightSet(pos); // client side
             }
         }
     }
-
+    
     private short blockPosToShort(BlockPosition pos) {
         short serialized = (short) setNibble(0, pos.getX() & XZ_MASK, 0, NUM_XZ_BITS);
         serialized = (short) setNibble(serialized, pos.getY() & Y_SHORT_MASK, 1, NUM_SHORT_Y_BITS);

@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
 
 @Mixin(value = WatchdogThread.class, remap = false)
@@ -74,6 +75,11 @@ public class Watchcat extends Thread {
                 }
                 log.log(Level.SEVERE, "------------------------------");
                 
+                if (AkarinGlobalConfig.noResponseDoGC) {
+                    log.log(Level.SEVERE, "Attempting to garbage collect, may takes a few seconds");
+                    System.runFinalization();
+                    System.gc();
+                }
                 if (restart) RestartCommand.restart();
                 break;
             }

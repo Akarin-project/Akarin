@@ -30,7 +30,7 @@ public class MixinCraftWorld {
             opcode = Opcodes.INVOKEINTERFACE
     ))
     public boolean regenChunk(Set<Long> set, Object chunkHash) {
-        world.getChunkProviderServer().unload(world.getChunkProviderServer().chunks.get(chunkHash));
+        world.getChunkProviderServer().chunks.get(chunkHash).setShouldUnload(false);
         return true;
     }
 }

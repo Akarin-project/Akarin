@@ -36,7 +36,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.google.common.collect.Lists;
 
+import io.akarin.api.Akari;
 import io.akarin.api.mixin.IMixinChunk;
+import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.EnumDirection;
 import net.minecraft.server.MCUtil;
@@ -99,8 +101,10 @@ public abstract class MixinChunk implements IMixinChunk {
     
     @Inject(method = "addEntities", at = @At("RETURN"))
     public void onLoadReturn(CallbackInfo ci) {
+        BlockPosition origin = new BlockPosition(locX, 0, locZ);
         for (EnumDirection direction : CARDINAL_DIRECTIONS) {
-            Chunk neighbor = MCUtil.getLoadedChunkWithoutMarkingActive(world.getChunkProvider(), locX, locZ);
+            BlockPosition shift = origin.shift(direction);
+            Chunk neighbor = MCUtil.getLoadedChunkWithoutMarkingActive(world.getChunkProvider(), shift.getX(), shift.getZ());
             if (neighbor != null) {
                 int neighborIndex = directionToIndex(direction);
                 int oppositeNeighborIndex = directionToIndex(direction.opposite());
@@ -112,8 +116,10 @@ public abstract class MixinChunk implements IMixinChunk {
     
     @Inject(method = "removeEntities", at = @At("RETURN"))
     public void onUnload(CallbackInfo ci) {
+        BlockPosition origin = new BlockPosition(locX, 0, locZ);
         for (EnumDirection direction : CARDINAL_DIRECTIONS) {
-            Chunk neighbor = MCUtil.getLoadedChunkWithoutMarkingActive(world.getChunkProvider(), locX, locZ);
+            BlockPosition shift = origin.shift(direction);
+            Chunk neighbor = MCUtil.getLoadedChunkWithoutMarkingActive(world.getChunkProvider(), shift.getX(), shift.getZ());
             if (neighbor != null) {
                 int neighborIndex = directionToIndex(direction);
                 int oppositeNeighborIndex = directionToIndex(direction.opposite());

@@ -189,6 +189,11 @@ public class AkarinGlobalConfig {
         asyncLightingThreads = getInt("core.async-lighting.executor-threads", 2);
     }
     
+    public static boolean asyncLightingWorkStealing;
+    private static void asyncLightingWorkStealing() {
+        asyncLightingWorkStealing = getBoolean("core.async-lighting.use-work-stealing", false);
+    }
+    
     public static boolean enableMockPlugin;
     private static void enableMockPlugin() {
         enableMockPlugin = getBoolean("core.thread-safe.enable-mock-plugins", false);
@@ -209,13 +214,13 @@ public class AkarinGlobalConfig {
         throwOnAsyncCaught = getBoolean("core.thread-safe.async-catcher.throw-on-caught", true);
     }
     
-    public static boolean asyncLightingWorkStealing;
-    private static void asyncLightingWorkStealing() {
-        asyncLightingWorkStealing = getBoolean("core.async-lighting.use-work-stealing", false);
-    }
-    
     public static boolean allowSpawnerModify;
     private static void allowSpawnerModify() {
         allowSpawnerModify = getBoolean("alternative.allow-spawner-modify", true);
+    }
+    
+    public static boolean noResponseDoGC;
+    private static void noResponseDoGC() {
+        noResponseDoGC = getBoolean("alternative.gc-before-stuck-restart", true);
     }
 }

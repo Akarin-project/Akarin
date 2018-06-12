@@ -138,6 +138,7 @@ public abstract class MixinMinecraftServer {
             }
         }
         Akari.silentTiming = true; // Disable timings
+        Akari.mayEnableAsyncCathcer = false;
         Akari.STAGE_TICK.submit(() -> {
             // Never tick one world concurrently!
             // TODO better treat world index
@@ -157,6 +158,7 @@ public abstract class MixinMinecraftServer {
         }
         
         Akari.STAGE_TICK.take();
+        Akari.mayEnableAsyncCathcer = true;
         Akari.silentTiming = false; // Enable timings
         Akari.worldTiming.stopTiming();
         if (AkarinGlobalConfig.legacyWorldTimings) {

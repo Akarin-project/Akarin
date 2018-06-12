@@ -42,9 +42,9 @@ public class Chunk {
     public final Map<BlockPosition, TileEntity> tileEntities;
     public final List<Entity>[] entitySlices; // Spigot
     final PaperLightingQueue.LightingQueue lightingQueue = new PaperLightingQueue.LightingQueue(this); // Paper
-    private boolean done;
-    private boolean lit;
-    private boolean r; private boolean isTicked() { return r; }; // Paper - OBFHELPER
+    private volatile boolean done; // Akarin - volatile
+    private volatile boolean lit; // Akarin - volatile
+    private volatile boolean r; private boolean isTicked() { return r; }; // Paper - OBFHELPER // Akarin - volatile
     private boolean s;
     private boolean t;
     private long lastSaved;
@@ -1143,7 +1143,7 @@ public class Chunk {
          * For now at least we will simply send all chunks, in accordance with pre 1.7 behaviour.
          */
         // Paper Start
-        // if randomLightUpdates are enabled, we should always return true, otherwise chunks may never send
+        // if randomLightUpdates are disabled, we should always return true, otherwise chunks may never send
         // to the client due to not being lit, otherwise retain standard behavior and only send properly lit chunks.
         return !this.world.spigotConfig.randomLightUpdates || (this.isTicked() && this.done && this.lit);
         // Paper End
