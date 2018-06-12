@@ -223,4 +223,19 @@ public class AkarinGlobalConfig {
     private static void noResponseDoGC() {
         noResponseDoGC = getBoolean("alternative.gc-before-stuck-restart", true);
     }
+    
+    public static String messageKick;
+    private static void messageKick() {
+        messageKick = getString("messages.kick-player", "Kicked by an operator.");
+    }
+    
+    public static String messageBan;
+    private static void messageBan() {
+        messageBan = getString("messages.ban-player-name", "You are banned from this server.");
+    }
+    
+    public static String messageBanIp;
+    private static void messageBanIp() {
+        messageBanIp = getString("messages.ban-player-ip", "You have been IP banned.");
+    }
 }

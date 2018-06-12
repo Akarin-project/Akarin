@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import io.akarin.api.Akari;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.PlayerChunk;
 
