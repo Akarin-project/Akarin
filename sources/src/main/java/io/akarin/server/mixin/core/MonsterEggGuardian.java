@@ -12,7 +12,6 @@ import net.minecraft.server.ItemMonsterEgg;
 
 @Mixin(value = ItemMonsterEgg.class, remap = false)
 public class MonsterEggGuardian {
-    
     @Redirect(method = "a", at = @At(
             value = "FIELD",
             target = "net/minecraft/server/Blocks.MOB_SPAWNER:Lnet/minecraft/server/Block;",

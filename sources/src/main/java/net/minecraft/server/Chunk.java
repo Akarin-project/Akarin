@@ -21,7 +21,8 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers; // Paper
 /**
  * <b>Akarin Changes Note</b><br>
  * <br>
- * 1) Expose private members<br>
+ * 1) Add volatile to fields<br>
+ * 2) Expose private members<br>
  * @author cakoyo
  */
 public class Chunk {

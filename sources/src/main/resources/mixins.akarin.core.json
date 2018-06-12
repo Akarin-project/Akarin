@@ -35,6 +35,7 @@
         "lighting.MixinChunkProviderServer",
         
         "optimization.WeakBigTree",
+        "optimization.MixinPlayerChunk",
         "optimization.WeakEnchantmentManager",
         "optimization.MixinEntityHorseAbstract",
         "optimization.MixinEntityTameableAnimal",
