@@ -39,6 +39,7 @@
         
         "optimization.WeakBigTree",
         "optimization.MixinPlayerChunk",
+		"optimization.PandaRedstoneWire",
         "optimization.WeakEnchantmentManager",
         "optimization.MixinEntityHorseAbstract",
         "optimization.MixinEntityTameableAnimal",

@@ -22,7 +22,7 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers; // Paper
  * <b>Akarin Changes Note</b><br>
  * <br>
  * 1) Add volatile to fields<br>
- * 2) Expose private members<br>
+ * 2) Add OBFHELPER<br>
  * @author cakoyo
  */
 public class Chunk {
@@ -1305,7 +1305,8 @@ public class Chunk {
         this.h(false);
     }
 
-    public void a(EnumDirection enumdirection) { // Akarin - private -> public - PAIL: checkLightSide
+    public void checkLightSide(EnumDirection direction) { a(direction); } // Akarin - OBFHELPER
+    private void a(EnumDirection enumdirection) {
         if (this.done) {
             int i;
 

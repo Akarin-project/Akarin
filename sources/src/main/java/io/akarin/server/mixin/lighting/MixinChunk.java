@@ -293,7 +293,7 @@ public abstract class MixinChunk implements IMixinChunk {
                     if (chunk == null) {
                         continue;
                     }
-                    chunk.a(enumfacing.opposite()); // PAIL: checkLightSide
+                    chunk.checkLightSide(enumfacing.opposite());
                 }
                 
                 this.setSkylightUpdated();
