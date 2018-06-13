@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 import com.mojang.authlib.GameProfile;
 
+import io.akarin.api.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.CommandAbstract;
 import net.minecraft.server.CommandBan;
@@ -28,17 +29,19 @@ public class MixinCommandBan {
             if (profile == null) {
                 throw new CommandException("commands.ban.failed", new Object[] {args[0]});
             } else {
+                // Akarin start - use string
+                boolean hasReason = true; // Akarin
                 String message = null;
                 if (args.length >= 2) {
-                    // Akarin start - use string
                     message = "";
                     for (int i = 2; i < args.length; i++) {
                         message = message + args[i];
                     }
-                    // Akarin end
                 } else {
-                    message = AkarinGlobalConfig.messageBan; // Akarin - modify message
+                    hasReason = false; // Akarin
+                    message = Akari.EMPTY_STRING; // Akarin - modify message
                 }
+                // Akarin end
                 
                 GameProfileBanEntry entry = new GameProfileBanEntry(profile, (Date) null, sender.getName(), (Date) null, message);
                 
@@ -46,7 +49,7 @@ public class MixinCommandBan {
                 EntityPlayer entityplayer = server.getPlayerList().getPlayer(args[0]);
                 
                 if (entityplayer != null) {
-                    entityplayer.playerConnection.disconnect(message);
+                    entityplayer.playerConnection.disconnect(hasReason ? message : AkarinGlobalConfig.messageBan);
                 }
                 
                 CommandAbstract.a(sender, (ICommand) this, "commands.ban.success", args[0]); // PAIL: notifyCommandListener

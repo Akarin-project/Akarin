@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+
+import io.akarin.api.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.CommandAbstract;
 import net.minecraft.server.CommandBanIp;
@@ -19,7 +21,13 @@ import net.minecraft.server.MinecraftServer;
 public class MixinCommandBanIp {
     @Overwrite // PAIL: banIp
     protected void a(MinecraftServer server, ICommandListener sender, String args, @Nullable String banReason) {
-        if (banReason == null) banReason = AkarinGlobalConfig.messageBanIp; // Akarin - modify message
+        // Akarin start - modify message
+        boolean hasReason = true;
+        if (banReason == null) {
+            banReason = Akari.EMPTY_STRING;
+            hasReason = false;
+        }
+        // Akarin end
         IpBanEntry ipbanentry = new IpBanEntry(args, (Date) null, sender.getName(), (Date) null, banReason);
 
         server.getPlayerList().getIPBans().add(ipbanentry);
@@ -29,7 +37,7 @@ public class MixinCommandBanIp {
         for (int i = 0; i < banPlayerNames.length; i++) {
             EntityPlayer each = withIpPlayers.get(i);
             banPlayerNames[i] = each.getName();
-            each.playerConnection.disconnect(banReason);
+            each.playerConnection.disconnect(hasReason ? banReason : AkarinGlobalConfig.messageBanIp); // Akarin
         }
         
         if (withIpPlayers.isEmpty()) {

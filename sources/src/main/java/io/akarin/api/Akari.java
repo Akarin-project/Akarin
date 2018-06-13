@@ -48,6 +48,8 @@ public abstract class Akari {
         return Thread.currentThread().equals(MinecraftServer.getServer().primaryThread);
     }
     
+    public static final String EMPTY_STRING = "";
+    
     /*
      * The unsafe
      */

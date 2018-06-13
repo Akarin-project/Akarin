@@ -226,21 +226,51 @@ public class AkarinGlobalConfig {
     
     public static String messageKick;
     private static void messageKick() {
-        messageKick = getString("messages.kick-player", "Kicked by an operator.");
+        messageKick = getString("messages.disconnect.kick-player", "Kicked by an operator.");
     }
     
     public static String messageBan;
     private static void messageBan() {
-        messageBan = getString("messages.ban-player-name", "You are banned from this server.");
+        messageBan = getString("messages.disconnect.ban-player-name", "You are banned from this server!");
+    }
+    
+    public static String messageBanReason;
+    private static void messageBanReason() {
+        messageBanReason = getString("messages.disconnect.ban-player-name-reason", "Reason: ");
+    }
+    
+    public static String messageBanExpires;
+    private static void messageBanExpires() {
+        messageBanExpires = getString("messages.disconnect.ban-player-name-expires", "Your ban will be removed on ");
     }
     
     public static String messageBanIp;
     private static void messageBanIp() {
-        messageBanIp = getString("messages.ban-player-ip", "You have been IP banned.");
+        messageBanIp = getString("messages.disconnect.ban-player-ip", "Your IP address is banned from this server!");
     }
     
-    public static String kickKeepAlive;
-    private static void kickKeepAlive() {
-        kickKeepAlive = getString("messages.kick-player-timeout-keep-alive", "Timed out");
+    public static String messageDupLogin;
+    private static void messageDupLogin() {
+        messageDupLogin = getString("messages.disconnect.kick-player-duplicate-login", "You logged in from another location");
+    }
+    
+    public static String messageJoin;
+    private static void messageJoin() {
+        messageJoin = getString("messages.connect.player-join-server", "§e%s joined the game");
+    }
+    
+    public static String messageJoinRenamed;
+    private static void messageJoinRenamed() {
+        messageJoinRenamed = getString("messages.connect.renamed-player-join-server", "§e%s (formerly known as %s) joined the game");
+    }
+    
+    public static String messageKickKeepAlive;
+    private static void messagekickKeepAlive() {
+        messageKickKeepAlive = getString("messages.disconnect.kick-player-timeout-keep-alive", "Timed out");
+    }
+    
+    public static String messagePlayerQuit;
+    private static void messagePlayerQuit() {
+        messagePlayerQuit = getString("messages.disconnect.player-quit-server", "§e%s left the game");
     }
 }
