@@ -47,6 +47,12 @@ import org.bukkit.util.Vector;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 // CraftBukkit end
 
+/**
+ * <b>Akarin Changes Note</b><br>
+ * <br>
+ * 1) Modify disconnect and connect messages<br>
+ * @author cakoyo
+ */
 public abstract class PlayerList {
 
     public static final File a = new File("banned-players.json");

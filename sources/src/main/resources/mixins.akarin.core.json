@@ -13,10 +13,10 @@
         "bootstrap.MetricsBootstrap",
         
         "core.MixinMCUtil",
-        "core.MixinPlayerList",
         "core.MixinCommandBan",
         "core.MixinCommandKick",
         "core.MixinCraftServer",
+        "core.MixinWorldServer",
         "core.MixinCommandBanIp",
         "core.MixinAsyncCatcher",
         "core.MixinTimingHandler",

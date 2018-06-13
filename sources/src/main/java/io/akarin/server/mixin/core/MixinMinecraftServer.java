@@ -174,7 +174,7 @@ public abstract class MixinMinecraftServer {
         
         for (int i = 0; i < worlds.size(); ++i) {
             WorldServer world = worlds.get(i);
-            tickConflictSync(world);
+            tickUnsafeSync(world);
             
             world.getTracker().updatePlayers();
             world.explosionDensityCache.clear(); // Paper - Optimize explosions
@@ -199,8 +199,10 @@ public abstract class MixinMinecraftServer {
         MinecraftTimings.tickablesTimer.stopTiming();
     }
     
-    public void tickConflictSync(WorldServer world) {
-        ;
+    public void tickUnsafeSync(WorldServer world) {
+        world.timings.doChunkMap.startTiming();
+        world.manager.flush();
+        world.timings.doChunkMap.stopTiming();
     }
     
 }
