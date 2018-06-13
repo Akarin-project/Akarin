@@ -30,7 +30,7 @@ public class MixinCraftServer {
     
     @Overwrite
     public boolean isPrimaryThread() {
-        if (AkarinGlobalConfig.enableMockPlugin) {
+        if (AkarinGlobalConfig.enableMockPlugin && !AkarinGlobalConfig.mockPackageList.isEmpty()) {
             // Mock forcely main thread plugins
             String callerPackage = WhoCalled.$.getCallingClass().getPackage().getName();
             if (callerPackage.startsWith("net.minecraft") || callerPackage.startsWith("org.bukkit") ||
