@@ -36,7 +36,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.google.common.collect.Lists;
 
-import io.akarin.api.mixin.IMixinChunk;
+import io.akarin.api.internal.mixin.IMixinChunk;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.EnumDirection;

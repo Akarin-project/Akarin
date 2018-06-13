@@ -44,9 +44,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.google.common.collect.Lists;
 
-import io.akarin.api.Akari;
-import io.akarin.api.mixin.IMixinChunk;
-import io.akarin.api.mixin.IMixinWorldServer;
+import io.akarin.api.internal.Akari;
+import io.akarin.api.internal.mixin.IMixinChunk;
+import io.akarin.api.internal.mixin.IMixinWorldServer;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Blocks;
 import net.minecraft.server.Chunk;

@@ -3,7 +3,7 @@ package net.minecraft.server;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
 
-import io.akarin.api.Akari;
+import io.akarin.api.internal.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;

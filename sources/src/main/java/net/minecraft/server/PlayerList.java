@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 
-import io.akarin.api.Akari;
+import io.akarin.api.internal.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.netty.buffer.Unpooled;
 import java.io.File;

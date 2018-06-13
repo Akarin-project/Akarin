@@ -1,4 +1,4 @@
-package io.akarin.api;
+package io.akarin.api.internal.collections;
 
 import java.io.Serializable;
 import java.io.ObjectOutputStream;

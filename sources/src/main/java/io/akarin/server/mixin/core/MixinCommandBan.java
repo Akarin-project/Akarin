@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 import com.mojang.authlib.GameProfile;
 
-import io.akarin.api.Akari;
+import io.akarin.api.internal.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.CommandAbstract;
 import net.minecraft.server.CommandBan;

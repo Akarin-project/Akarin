@@ -32,9 +32,9 @@ import javax.annotation.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import io.akarin.api.Akari;
-import io.akarin.api.mixin.IMixinChunk;
-import io.akarin.api.mixin.IMixinWorldServer;
+import io.akarin.api.internal.Akari;
+import io.akarin.api.internal.mixin.IMixinChunk;
+import io.akarin.api.internal.mixin.IMixinWorldServer;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Chunk;

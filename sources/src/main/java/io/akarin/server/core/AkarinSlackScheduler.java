@@ -1,6 +1,6 @@
 package io.akarin.server.core;
 
-import io.akarin.api.Akari;
+import io.akarin.api.internal.Akari;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PacketPlayOutKeepAlive;

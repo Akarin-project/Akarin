@@ -1,4 +1,4 @@
-package io.akarin.api;
+package io.akarin.api.internal;
 
 import java.net.InetAddress;
 

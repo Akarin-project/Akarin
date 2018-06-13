@@ -17,8 +17,8 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import com.google.common.collect.Lists;
 
-import io.akarin.api.Akari;
-import io.akarin.api.LocalAddress;
+import io.akarin.api.internal.Akari;
+import io.akarin.api.internal.LocalAddress;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.ChannelAdapter;
 import io.netty.bootstrap.ServerBootstrap;

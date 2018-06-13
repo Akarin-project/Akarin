@@ -33,7 +33,7 @@
  * at http://creativecommons.org/publicdomain/zero/1.0/
  */
 
-package io.akarin.api;
+package io.akarin.api.internal.collections;
 
 import java.util.AbstractQueue;
 import java.util.ArrayList;
@@ -44,6 +44,8 @@ import java.util.Queue;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+
+import io.akarin.api.internal.Akari;
 
 /**
  * An unbounded thread-safe {@linkplain Queue queue} based on linked nodes.

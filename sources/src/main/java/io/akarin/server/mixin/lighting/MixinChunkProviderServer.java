@@ -30,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import io.akarin.api.mixin.IMixinChunk;
+import io.akarin.api.internal.mixin.IMixinChunk;
 import net.minecraft.server.ChunkProviderServer;
 import net.minecraft.server.WorldServer;
 

@@ -3,6 +3,8 @@ package io.akarin.server.core;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
+import io.akarin.api.internal.Akari;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -14,7 +16,6 @@ import java.util.regex.Pattern;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import io.akarin.api.Akari;
 
 @SuppressWarnings("unused")
 public class AkarinGlobalConfig {

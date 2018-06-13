@@ -1,4 +1,4 @@
-package io.akarin.api;
+package io.akarin.api.internal;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

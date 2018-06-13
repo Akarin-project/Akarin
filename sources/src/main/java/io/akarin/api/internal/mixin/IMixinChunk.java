@@ -1,4 +1,4 @@
-package io.akarin.api.mixin;
+package io.akarin.api.internal.mixin;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
