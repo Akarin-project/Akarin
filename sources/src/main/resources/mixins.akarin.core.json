@@ -28,7 +28,6 @@
         "cps.MixinCraftWorld",
         "cps.MixinChunkProviderServer",
         
-        "nsc.MixinPlayerConnection",
         "nsc.OptimisticNetworkManager",
         "nsc.NonblockingServerConnection",
         

@@ -42,7 +42,7 @@ public class AkarinSlackScheduler extends Thread {
             PlayerConnection conn = player.playerConnection;
             // Paper - give clients a longer time to respond to pings as per pre 1.12.2 timings
             // This should effectively place the keepalive handling back to "as it was" before 1.12.2
-            long currentTime = System.currentTimeMillis();
+            long currentTime = System.nanoTime() / 1000000L;
             long elapsedTime = currentTime - conn.getLastPing();
             if (conn.isPendingPing()) {
                 // We're pending a ping from the client

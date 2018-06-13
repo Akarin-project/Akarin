@@ -238,4 +238,9 @@ public class AkarinGlobalConfig {
     private static void messageBanIp() {
         messageBanIp = getString("messages.ban-player-ip", "You have been IP banned.");
     }
+    
+    public static String kickKeepAlive;
+    private static void kickKeepAlive() {
+        kickKeepAlive = getString("messages.kick-player-timeout-keep-alive", "Timed out");
+    }
 }
