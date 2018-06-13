@@ -236,12 +236,12 @@ public class AkarinGlobalConfig {
     
     public static String messageBanReason;
     private static void messageBanReason() {
-        messageBanReason = getString("messages.disconnect.ban-player-name-reason", "Reason: ");
+        messageBanReason = getString("messages.disconnect.ban-reason", "Reason: ");
     }
     
     public static String messageBanExpires;
     private static void messageBanExpires() {
-        messageBanExpires = getString("messages.disconnect.ban-player-name-expires", "Your ban will be removed on ");
+        messageBanExpires = getString("messages.disconnect.ban-expires", "Your ban will be removed on ");
     }
     
     public static String messageBanIp;
