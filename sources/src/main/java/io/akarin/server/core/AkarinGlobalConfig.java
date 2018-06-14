@@ -232,22 +232,22 @@ public class AkarinGlobalConfig {
     
     public static String messageBan;
     private static void messageBan() {
-        messageBan = getString("messages.disconnect.ban-player-name", "You are banned from this server!");
+        messageBan = getString("messages.disconnect.ban-player-name", "You are banned from this server! %s %s");
     }
     
     public static String messageBanReason;
     private static void messageBanReason() {
-        messageBanReason = getString("messages.disconnect.ban-reason", "Reason: ");
+        messageBanReason = getString("messages.disconnect.ban-reason", "\nReason: ");
     }
     
     public static String messageBanExpires;
     private static void messageBanExpires() {
-        messageBanExpires = getString("messages.disconnect.ban-expires", "Your ban will be removed on ");
+        messageBanExpires = getString("messages.disconnect.ban-expires", "\nYour ban will be removed on ");
     }
     
     public static String messageBanIp;
     private static void messageBanIp() {
-        messageBanIp = getString("messages.disconnect.ban-player-ip", "Your IP address is banned from this server!");
+        messageBanIp = getString("messages.disconnect.ban-player-ip", "Your IP address is banned from this server! %s %s");
     }
     
     public static String messageDupLogin;

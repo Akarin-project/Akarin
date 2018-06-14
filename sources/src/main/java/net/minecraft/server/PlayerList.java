@@ -551,11 +551,10 @@ public abstract class PlayerList {
         if (getProfileBans().isBanned(gameprofile) && !getProfileBans().get(gameprofile).hasExpired()) {
             GameProfileBanEntry gameprofilebanentry = this.k.get(gameprofile);
 
-            s = AkarinGlobalConfig.messageBan + (gameprofilebanentry.getReason().equals(Akari.EMPTY_STRING) ? Akari.EMPTY_STRING : (AkarinGlobalConfig.messageBan + "\n" + gameprofilebanentry.getReason())); // Akarin - modify message
-            if (gameprofilebanentry.getExpires() != null) {
-                s = s + AkarinGlobalConfig.messageBanExpires + PlayerList.g.format(gameprofilebanentry.getExpires()); // Akarin - modify message
-            }
-
+            s = LocaleI18n.a(AkarinGlobalConfig.messageBan,
+                    gameprofilebanentry.getReason().equals(Akari.EMPTY_STRING) ? Akari.EMPTY_STRING : AkarinGlobalConfig.messageBanReason + gameprofilebanentry.getReason(),
+                    gameprofilebanentry.getExpires() == null ? Akari.EMPTY_STRING : AkarinGlobalConfig.messageBanExpires + PlayerList.g.format(gameprofilebanentry.getExpires())); // Akarin - modify message
+            
             // return s;
             if (!gameprofilebanentry.hasExpired()) event.disallow(PlayerLoginEvent.Result.KICK_BANNED, s); // Spigot
         } else if (!this.isWhitelisted(gameprofile, event)) { // Paper
@@ -564,11 +563,10 @@ public abstract class PlayerList {
         } else if (getIPBans().isBanned(socketaddress) && !getIPBans().get(socketaddress).hasExpired()) {
             IpBanEntry ipbanentry = this.l.get(socketaddress);
 
-            s = AkarinGlobalConfig.messageBanIp + (ipbanentry.getReason().equals(Akari.EMPTY_STRING) ? Akari.EMPTY_STRING : (AkarinGlobalConfig.messageBanReason + "\n" + ipbanentry.getReason())); // Akarin - modify message
-            if (ipbanentry.getExpires() != null) {
-                s = s + AkarinGlobalConfig.messageBanExpires + PlayerList.g.format(ipbanentry.getExpires()); // Akarin - modify message
-            }
-
+            s = LocaleI18n.a(AkarinGlobalConfig.messageBan,
+                    ipbanentry.getReason().equals(Akari.EMPTY_STRING) ? Akari.EMPTY_STRING : AkarinGlobalConfig.messageBanReason + ipbanentry.getReason(),
+                    ipbanentry.getExpires() == null ? Akari.EMPTY_STRING : AkarinGlobalConfig.messageBanExpires + PlayerList.g.format(ipbanentry.getExpires())); // Akarin - modify message
+            
             // return s;
             event.disallow(PlayerLoginEvent.Result.KICK_BANNED, s);
         } else {
