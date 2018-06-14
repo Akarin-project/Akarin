@@ -7,6 +7,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.bukkit.event.Event;
+import org.bukkit.event.block.BlockRedstoneEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -122,7 +124,7 @@ public abstract class PandaRedstoneWire extends Block {
          * usage but likely still worth it
          */
         this.updatedRedstoneWire.clear();
-
+        
         // Execute updates
         for (BlockPosition posi : blocksNeedingUpdate) {
             world.applyPhysics(posi, (BlockRedstoneWire) (Object) this, false);
@@ -143,7 +145,7 @@ public abstract class PandaRedstoneWire extends Block {
             // In case this wire was removed, check the surrounding wires
             this.checkSurroundingWires(worldIn, position);
         }
-
+        
         while (!turnOff.isEmpty()) {
             BlockPosition pos = turnOff.remove(0);
             IBlockData state = worldIn.getType(pos);
@@ -152,10 +154,19 @@ public abstract class PandaRedstoneWire extends Block {
             int blockPower = worldIn.z(pos); // PAIL: isBlockIndirectlyGettingPowered
             this.canProvidePower = true;
             int wirePower = this.getSurroundingWirePower(worldIn, pos);
+            
             // Lower the strength as it moved a block
             wirePower--;
             int newPower = Math.max(blockPower, wirePower);
-
+            
+            // Akarin start - BlockRedstoneEvent
+            if (oldPower != newPower) {
+                BlockRedstoneEvent event = new BlockRedstoneEvent(worldIn.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), oldPower, newPower);
+                worldIn.getServer().getPluginManager().callEvent(event);
+                newPower = event.getNewCurrent();
+            }
+            // Akarin end
+            
             // Power lowered?
             if (newPower < oldPower) {
                 // If it's still powered by a direct source (but weaker) mark for turn on
@@ -184,7 +195,13 @@ public abstract class PandaRedstoneWire extends Block {
             // Lower the strength as it moved a block
             wirePower--;
             int newPower = Math.max(blockPower, wirePower);
-
+            
+            // Akarin start - BlockRedstoneEvent
+            BlockRedstoneEvent event = new BlockRedstoneEvent(worldIn.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), oldPower, newPower);
+            worldIn.getServer().getPluginManager().callEvent(event);
+            newPower = event.getNewCurrent();
+            // Akarin end
+            
             if (newPower > oldPower) {
                 setWireState(worldIn, pos, state, newPower);
             } else if (newPower < oldPower) {
@@ -473,7 +490,6 @@ public abstract class PandaRedstoneWire extends Block {
         }
     }
 
-    // Forge adds 2 params to canConnectTo so we need to copy method in order to access it
     private static boolean canConnectToBlock(IBlockData blockState, @Nullable EnumDirection side) {
         Block block = blockState.getBlock();
         
