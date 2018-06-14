@@ -5,6 +5,6 @@
     "target": "@env(DEFAULT)",
     "compatibilityLevel": "JAVA_8",
     "server": [
-		"optimization.PandaRedstoneWire",
+        "optimization.PandaRedstoneWire",
     ]
 }
