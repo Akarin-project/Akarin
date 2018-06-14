@@ -38,15 +38,6 @@ public abstract class MixinMinecraftServer {
         return "Akarin";
     }
     
-    /*
-     * Forcely disable snooper
-     */
-    @Overwrite
-    public void a(MojangStatisticsGenerator generator) {}
-    
-    @Overwrite
-    public void b(MojangStatisticsGenerator generator) {}
-    
     @Inject(method = "run()V", at = @At(
             value = "INVOKE",
             target = "net/minecraft/server/MinecraftServer.aw()J",
@@ -60,6 +51,18 @@ public abstract class MixinMinecraftServer {
         AkarinSlackScheduler.boot();
     }
     
+    /*
+     * Forcely disable snooper
+     */
+    @Overwrite
+    public void a(MojangStatisticsGenerator generator) {}
+    
+    @Overwrite
+    public void b(MojangStatisticsGenerator generator) {}
+    
+    /*
+     * Parallel world ticking
+     */
     @Shadow public CraftServer server;
     @Shadow @Mutable protected Queue<FutureTask<?>> j;
     @Shadow public Queue<Runnable> processQueue;

@@ -285,7 +285,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         if (this.everyoneDeeplySleeping()) {
             if (this.getGameRules().getBoolean("doDaylightCycle")) {
                 long i = this.worldData.getDayTime() + 24000L;
-
+                
                 this.worldData.setDayTime(i - i % 24000L);
             }
 
