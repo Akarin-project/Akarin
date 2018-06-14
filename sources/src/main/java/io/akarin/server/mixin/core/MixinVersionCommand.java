@@ -14,7 +14,7 @@ import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MCUtil;
 
 @Mixin(value = VersionCommand.class, remap = false)
-public class MixinVersionCommand {
+public abstract class MixinVersionCommand {
     @Shadow private static int getFromRepo(String repo, String hash) { return 0; }
     
     /**

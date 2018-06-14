@@ -17,7 +17,7 @@ import com.destroystokyo.paper.Metrics;
 import com.destroystokyo.paper.Metrics.CustomChart;
 
 @Mixin(value = Metrics.class, remap = false)
-public class MixinMetrics {
+public abstract class MixinMetrics {
     // The url to which the data is sent - bukkit/Torch (keep our old name)
     private final static String URL = "https://bStats.org/submitData/bukkit";
     

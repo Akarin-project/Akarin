@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import net.minecraft.server.WorldServer;
 
 @Mixin(value = CraftWorld.class, remap = false)
-public class MixinCraftWorld {
+public abstract class MixinCraftWorld {
     @Shadow @Final private WorldServer world;
     
     @Redirect(method = "processChunkGC()V", at = @At(

@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import net.minecraft.server.WorldServer;
 
 @Mixin(value = WorldServer.class, remap = false)
-public class MixinWorldServer {
+public abstract class MixinWorldServer {
     @Redirect(method = "doTick", at = @At(
             value = "INVOKE",
             target = "net/minecraft/server/PlayerChunkMap.flush()V"

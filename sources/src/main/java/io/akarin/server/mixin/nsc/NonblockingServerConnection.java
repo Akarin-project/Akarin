@@ -17,7 +17,6 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import com.google.common.collect.Lists;
 
-import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.LocalAddress;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.ChannelAdapter;
@@ -37,7 +36,7 @@ import net.minecraft.server.PacketPlayOutKickDisconnect;
 import net.minecraft.server.ServerConnection;
 
 @Mixin(value = ServerConnection.class, remap = false)
-public class NonblockingServerConnection {
+public abstract class NonblockingServerConnection {
     private final static Logger logger = LogManager.getLogger("NSC");
     
     /**

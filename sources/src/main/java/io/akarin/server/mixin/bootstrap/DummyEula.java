@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import net.minecraft.server.EULA;
 
 @Mixin(value = EULA.class, remap = false)
-public class DummyEula {
+public abstract class DummyEula {
     /**
      * Read then check the EULA file <i>formerly</i>
      * @param file

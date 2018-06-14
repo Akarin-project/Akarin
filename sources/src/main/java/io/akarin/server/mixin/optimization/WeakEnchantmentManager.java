@@ -40,7 +40,7 @@ import net.minecraft.server.ItemStack;
  * Fixes MC-128547(https://bugs.mojang.com/browse/MC-128547)
  */
 @Mixin(value = EnchantmentManager.class, remap = false)
-public class WeakEnchantmentManager {
+public abstract class WeakEnchantmentManager {
     @Shadow(aliases = "a") @Final private static EnchantmentManager.EnchantmentModifierProtection protection;
     @Shadow(aliases = "c") @Final private static EnchantmentManager.EnchantmentModifierThorns thorns;
     @Shadow(aliases = "d") @Final private static EnchantmentManager.EnchantmentModifierArthropods arthropods;

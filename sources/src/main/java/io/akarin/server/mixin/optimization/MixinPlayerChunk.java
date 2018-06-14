@@ -15,7 +15,7 @@ import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.PlayerChunk;
 
 @Mixin(value = PlayerChunk.class, remap = false)
-public class MixinPlayerChunk {
+public abstract class MixinPlayerChunk {
     @Shadow @Final public List<EntityPlayer> c; // PAIL: players
     
     @Inject(method = "b", at = @At(

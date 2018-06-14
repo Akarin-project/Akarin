@@ -14,7 +14,7 @@ import com.destroystokyo.paper.Metrics;
 import net.minecraft.server.MinecraftServer;
 
 @Mixin(targets = "com.destroystokyo.paper.Metrics$PaperMetrics", remap = false)
-public class MetricsBootstrap {
+public abstract class MetricsBootstrap {
     @Overwrite
     static void startMetrics() {
         // Get the config file

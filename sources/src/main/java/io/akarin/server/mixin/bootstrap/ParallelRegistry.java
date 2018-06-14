@@ -24,7 +24,7 @@ import net.minecraft.server.PotionRegistry;
 import net.minecraft.server.SoundEffect;
 
 @Mixin(value = DispenserRegistry.class, remap = false)
-public class ParallelRegistry {
+public abstract class ParallelRegistry {
     /**
      * Registry order: SoundEffect -> Block
      */

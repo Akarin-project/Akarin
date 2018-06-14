@@ -35,7 +35,7 @@ import net.minecraft.server.ChunkProviderServer;
 import net.minecraft.server.WorldServer;
 
 @Mixin(value = ChunkProviderServer.class, remap = false, priority = 1001)
-public class MixinChunkProviderServer {
+public abstract class MixinChunkProviderServer {
     @Shadow @Final public WorldServer world;
 
     @Redirect(method = "unloadChunks", at = @At(

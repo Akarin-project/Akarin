@@ -12,7 +12,7 @@ import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.Chunk;
 
 @Mixin(value = ChunkIOExecutor.class, remap = false)
-public class MixinChunkIOExecutor {
+public abstract class MixinChunkIOExecutor {
     @Shadow @Final static int BASE_THREADS;
     @Shadow @Mutable @Final static int PLAYERS_PER_THREAD;
     @Shadow @Final private static AsynchronousExecutor<?, Chunk, Runnable, RuntimeException> instance;

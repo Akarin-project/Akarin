@@ -21,7 +21,7 @@ import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
 
 @Mixin(value = WatchdogThread.class, remap = false)
-public class Watchcat extends Thread {
+public abstract class Watchcat extends Thread {
     @Shadow private static WatchdogThread instance;
     @Shadow private @Final long timeoutTime;
     @Shadow private @Final boolean restart;

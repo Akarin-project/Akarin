@@ -10,7 +10,7 @@ import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
 
 @Mixin(value = AsyncCatcher.class, remap = false)
-public class MixinAsyncCatcher {
+public abstract class MixinAsyncCatcher {
     @Shadow public static boolean enabled;
     
     @Overwrite
