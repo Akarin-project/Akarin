@@ -54,9 +54,9 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     private static final short XZ_MASK = 0xF;
     private static final short Y_SHORT_MASK = 0xFF;
     
-    private final ExecutorService lightExecutorService = getExecutorService();
+    private static final ExecutorService lightExecutorService = getExecutorService();
     
-    private ExecutorService getExecutorService() {
+    private static ExecutorService getExecutorService() {
         return AkarinGlobalConfig.asyncLightingWorkStealing ?
                 Executors.newFixedThreadPool(AkarinGlobalConfig.asyncLightingThreads, new ThreadFactoryBuilder().setNameFormat("Akarin Async Light Thread").build()) : Executors.newWorkStealingPool(AkarinGlobalConfig.asyncLightingThreads);
     }
