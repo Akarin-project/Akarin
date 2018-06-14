@@ -126,7 +126,7 @@
         <dependency>
             <groupId>io.akarin</groupId>
             <artifactId>legacylauncher</artifactId>
-            <version>1.20</version>
+            <version>1.22</version>
         </dependency>
         <dependency>
             <groupId>org.spongepowered</groupId>

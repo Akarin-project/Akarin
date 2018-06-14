@@ -1,0 +1,24 @@
+{
+    "required": true,
+    "minVersion": "0.7.8",
+    "package": "io.akarin.server.mixin",
+    "target": "@env(DEFAULT)",
+    "compatibilityLevel": "JAVA_8",
+    "server": [
+        "realtime.MixinWorld",
+        "realtime.MixinEntity",
+        "realtime.MixinEntityItem",
+        "realtime.MixinWorldServer",
+        "realtime.MixinEntityHuman",
+        "realtime.MixinEntityPlayer",
+        "realtime.MixinEntityAgeable",
+        "realtime.MixinMinecraftServer",
+        "realtime.MixinEntityInsentient",
+        "realtime.MixinPlayerConnection",
+        "realtime.MixinTileEntityFurnace",
+        "realtime.MixinEntityExperienceOrb",
+        "realtime.MixinEntityZombieVillager",
+        "realtime.MixinPlayerInteractManager",
+        "realtime.MixinTileEntityBrewingStand",
+    ]
+}

@@ -18,7 +18,7 @@ import net.minecraft.server.IpBanEntry;
 import net.minecraft.server.MinecraftServer;
 
 @Mixin(value = CommandBanIp.class, remap = false)
-public class MixinCommandBanIp {
+public abstract class MixinCommandBanIp {
     @Overwrite // PAIL: banIp
     protected void a(MinecraftServer server, ICommandListener sender, String args, @Nullable String banReason) {
         // Akarin start - modify message

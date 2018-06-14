@@ -20,7 +20,7 @@ import net.minecraft.server.ICommandListener;
 import net.minecraft.server.MinecraftServer;
 
 @Mixin(value = CommandBan.class, remap = false)
-public class MixinCommandBan {
+public abstract class MixinCommandBan {
     @Overwrite
     public void execute(MinecraftServer server, ICommandListener sender, String[] args) throws CommandException {
         if (args.length >= 1 && args[0].length() > 1) {

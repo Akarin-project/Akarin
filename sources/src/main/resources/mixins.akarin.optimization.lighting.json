@@ -1,0 +1,15 @@
+{
+    "required": true,
+    "minVersion": "0.7.8",
+    "package": "io.akarin.server.mixin",
+    "target": "@env(DEFAULT)",
+    "compatibilityLevel": "JAVA_8",
+    "server": [
+        "cps.MixinChunk",
+        
+        "lighting.MixinChunk",
+        "lighting.MixinWorld",
+        "lighting.MixinWorldServer",
+        "lighting.MixinChunkProviderServer",
+    ]
+}

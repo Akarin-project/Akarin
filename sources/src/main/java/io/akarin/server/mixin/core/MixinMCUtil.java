@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import net.minecraft.server.MCUtil;
 
 @Mixin(value = MCUtil.class, remap = false)
-public class MixinMCUtil {
+public abstract class MixinMCUtil {
     @Overwrite
     public static <T> T ensureMain(String reason, Supplier<T> run) {
         return run.get();

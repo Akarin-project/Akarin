@@ -16,7 +16,7 @@ import net.minecraft.server.WorldGenBigTree;
  * Fixes MC-128547(https://bugs.mojang.com/browse/MC-128547)
  */
 @Mixin(value = WorldGenBigTree.class, remap = false)
-public class WeakBigTree {
+public abstract class WeakBigTree {
     @Shadow(aliases = "l") private World worldReference;
     
     @Inject(method = "generate", at = @At("RETURN"))

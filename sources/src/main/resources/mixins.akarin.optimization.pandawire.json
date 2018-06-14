@@ -1,0 +1,10 @@
+{
+    "required": true,
+    "minVersion": "0.7.8",
+    "package": "io.akarin.server.mixin",
+    "target": "@env(DEFAULT)",
+    "compatibilityLevel": "JAVA_8",
+    "server": [
+		"optimization.PandaRedstoneWire",
+    ]
+}

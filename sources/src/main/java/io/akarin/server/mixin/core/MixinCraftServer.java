@@ -12,7 +12,7 @@ import me.nallar.whocalled.WhoCalled;
 import net.minecraft.server.MinecraftServer;
 
 @Mixin(value = CraftServer.class, remap = false)
-public class MixinCraftServer {
+public abstract class MixinCraftServer {
     @Shadow @Final @Mutable private String serverName;
     @Shadow @Final protected MinecraftServer console;
     private boolean needApplyServerName = true;
