@@ -2,14 +2,12 @@ package io.akarin.server.mixin.optimization;
 
 import java.util.List;
 
-import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.At.Shift;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.PlayerChunk;
@@ -18,13 +16,11 @@ import net.minecraft.server.PlayerChunk;
 public abstract class MixinPlayerChunk {
     @Shadow @Final public List<EntityPlayer> c; // PAIL: players
     
-    @Inject(method = "b", at = @At(
+    @Inject(method = "b()Z", at = @At(
             value = "INVOKE",
-            target = "net/minecraft/server/PacketPlayOutMapChunk.<init>(Lnet/minecraft/server/Chunk;I)V",
-            opcode = Opcodes.INVOKESPECIAL,
-            shift = Shift.BEFORE
+            target = "net/minecraft/server/PacketPlayOutMapChunk.<init>(Lnet/minecraft/server/Chunk;I)V"
     ))
-    private void beforeCreateChunkPacket(CallbackInfo ci) {
-        if (c.isEmpty()) ci.cancel(); // Akarin - Fixes MC-120780
+    private void beforeCreateChunkPacket(CallbackInfoReturnable<Boolean> cir) {
+        if (c.isEmpty()) cir.setReturnValue(true); // Akarin - Fixes MC-120780
     }
 }

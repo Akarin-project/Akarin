@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
+import io.akarin.api.internal.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
 import me.nallar.whocalled.WhoCalled;
 import net.minecraft.server.MinecraftServer;
@@ -22,7 +23,7 @@ public abstract class MixinCraftServer {
         // We cannot apply the name modification in <init> method,
         // cause the initializer will be added to the tail
         if (needApplyServerName) {
-            serverName = "Akarin";
+            serverName = AkarinGlobalConfig.serverBrandName.equals(Akari.EMPTY_STRING) ? "Akarin" : AkarinGlobalConfig.serverBrandName;
             needApplyServerName = false;
         }
         return serverName;

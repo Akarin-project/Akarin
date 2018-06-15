@@ -274,4 +274,9 @@ public class AkarinGlobalConfig {
     private static void messagePlayerQuit() {
         messagePlayerQuit = getString("messages.disconnect.player-quit-server", "§e%s left the game");
     }
+    
+    public static String serverBrandName;
+    private static void serverBrandName() {
+        serverBrandName = getString("alternative.modified-server-brand-name", "");
+    }
 }
