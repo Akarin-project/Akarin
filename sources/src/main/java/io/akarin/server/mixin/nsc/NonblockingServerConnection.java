@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spigotmc.SpigotConfig;
@@ -20,6 +21,7 @@ import com.google.common.collect.Lists;
 import io.akarin.api.internal.LocalAddress;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.ChannelAdapter;
+import io.akarin.server.core.NetworkCloseHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -27,7 +29,6 @@ import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.server.ChatComponentText;
 import net.minecraft.server.MinecraftServer;
@@ -110,15 +111,10 @@ public abstract class NonblockingServerConnection {
         try {
             manager.a(); // PAIL: NetworkManager::processReceivedPackets
         } catch (Exception ex) {
-            logger.warn("Failed to handle packet for {}", new Object[] { manager.getSocketAddress(), ex });
+            logger.warn("Failed to handle packet for {}", manager.getSocketAddress(), ex);
             final ChatComponentText kick = new ChatComponentText("Internal server error");
             
-            manager.sendPacket(new PacketPlayOutKickDisconnect(kick), new GenericFutureListener<Future<? super Void>>() {
-                @Override
-                public void operationComplete(Future<? super Void> future) throws Exception {
-                    manager.close(kick);
-                }
-            }, new GenericFutureListener[0]);
+            manager.sendPacket(new PacketPlayOutKickDisconnect(kick), new NetworkCloseHandler(manager, kick), new GenericFutureListener[0]);
             manager.stopReading();
         }
     }
