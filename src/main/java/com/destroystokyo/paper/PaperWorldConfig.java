@@ -433,4 +433,9 @@ public class PaperWorldConfig {
             log("Villages can load chunks - Warning this can cause intense TPS loss. Strongly consider disabling this.");
         }
     }
+
+    public int shieldBlockingDelay = 5;
+    private void shieldBlockingDelay() {
+        shieldBlockingDelay = getInt("game-mechanics.shield-blocking-delay", 5);
+    }
 }
