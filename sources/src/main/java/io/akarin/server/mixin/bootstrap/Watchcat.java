@@ -77,7 +77,6 @@ public abstract class Watchcat extends Thread {
                 
                 if (AkarinGlobalConfig.noResponseDoGC) {
                     log.log(Level.SEVERE, "Attempting to garbage collect, may takes a few seconds");
-                    System.runFinalization();
                     System.gc();
                 }
                 if (restart) RestartCommand.restart();
