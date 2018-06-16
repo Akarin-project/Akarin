@@ -154,7 +154,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
 
             file.renameTo(file1);
         } catch (Exception exception) {
-            WorldNBTStorage.b.warn("Failed to save player data for {}", entityhuman.getDisplayName().getString());
+            WorldNBTStorage.b.error("Failed to save player data for {}", entityhuman.getName(), exception); // Paper
         }
 
     }
