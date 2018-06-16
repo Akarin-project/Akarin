@@ -78,6 +78,10 @@ public class RecipeBookServer extends RecipeBook {
         while (iterator.hasNext()) {
             MinecraftKey minecraftkey = (MinecraftKey) iterator.next();
 
+            // Paper start - ignore missing recipes
+            IRecipe recipe = this.h.a(minecraftkey);
+            if (recipe == null) continue;
+            // Paper end
             nbttaglist.add((NBTBase) (new NBTTagString(minecraftkey.toString())));
         }
 
@@ -88,6 +92,10 @@ public class RecipeBookServer extends RecipeBook {
         while (iterator1.hasNext()) {
             MinecraftKey minecraftkey1 = (MinecraftKey) iterator1.next();
 
+            // Paper start - ignore missing recipes
+            IRecipe recipe = this.h.a(minecraftkey1);
+            if (recipe == null) continue;
+            // Paper end
             nbttaglist1.add((NBTBase) (new NBTTagString(minecraftkey1.toString())));
         }
 
