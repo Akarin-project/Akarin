@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import co.aikar.timings.MinecraftTimings;
 import io.akarin.api.internal.Akari;
+import io.akarin.api.internal.mixin.IMixinLockProvider;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.AkarinSlackScheduler;
 import net.minecraft.server.CrashReport;
@@ -144,10 +145,9 @@ public abstract class MixinMinecraftServer {
         Akari.mayEnableAsyncCathcer = false;
         Akari.STAGE_TICK.submit(() -> {
             // Never tick one world concurrently!
-            // TODO better treat world index
             for (int i = 1; i <= worlds.size(); ++i) {
                 WorldServer world = worlds.get(i < worlds.size() ? i : 0);
-                synchronized (world) {
+                synchronized (((IMixinLockProvider) world).lock()) {
                     tickEntities(world);
                 }
             }
@@ -155,7 +155,7 @@ public abstract class MixinMinecraftServer {
         
         for (int i = 0; i < worlds.size(); ++i) {
             WorldServer world = worlds.get(i);
-            synchronized (world) {
+            synchronized (((IMixinLockProvider) world).lock()) {
                 tickWorld(world);
             }
         }
