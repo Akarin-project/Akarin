@@ -109,7 +109,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
     private long ab = aw();
 
     // CraftBukkit start
-    public List<WorldServer> worlds = new ArrayList<WorldServer>();
+    public List<WorldServer> worlds = Lists.newCopyOnWriteArrayList(); // new ArrayList<WorldServer>(); // Akarin
     public org.bukkit.craftbukkit.CraftServer server;
     public OptionSet options;
     public org.bukkit.command.ConsoleCommandSender console;
@@ -186,8 +186,10 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
             this.getConvertable().convert(s, new IProgressUpdate() {
                 private long b = System.currentTimeMillis();
 
+                @Override
                 public void a(String s) {}
 
+                @Override
                 public void a(int i) {
                     if (System.currentTimeMillis() - this.b >= 1000L) {
                         this.b = System.currentTimeMillis();
@@ -196,6 +198,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
 
                 }
 
+                @Override
                 public void c(String s) {}
             });
         }
@@ -611,6 +614,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
     }
     // Paper End
 
+    @Override
     public void run() {
         try {
             if (this.init()) {
@@ -772,7 +776,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
             int j = MathHelper.nextInt(this.r, 0, this.H() - agameprofile.length);
 
             for (int k = 0; k < agameprofile.length; ++k) {
-                agameprofile[k] = ((EntityPlayer) this.v.v().get(j + k)).getProfile();
+                agameprofile[k] = this.v.v().get(j + k).getProfile();
             }
 
             Collections.shuffle(Arrays.asList(agameprofile));
@@ -863,7 +867,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
         // Send time updates to everyone, it will get the right time from the world the player is in.
         if (this.ticks % 20 == 0) {
             for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
-                EntityPlayer entityplayer = (EntityPlayer) this.getPlayerList().players.get(i);
+                EntityPlayer entityplayer = this.getPlayerList().players.get(i);
                 entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
             }
         }
@@ -952,7 +956,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
 
         MinecraftTimings.tickablesTimer.startTiming(); // Spigot
         for (i = 0; i < this.o.size(); ++i) {
-            ((ITickable) this.o.get(i)).e();
+            this.o.get(i).e();
         }
         MinecraftTimings.tickablesTimer.stopTiming(); // Spigot
 
@@ -1158,6 +1162,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
                 return MinecraftServer.this.methodProfiler.a ? MinecraftServer.this.methodProfiler.c() : "N/A (disabled)";
             }
 
+            @Override
             public Object call() throws Exception {
                 return this.a();
             }
@@ -1168,6 +1173,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
                     return MinecraftServer.this.v.getPlayerCount() + " / " + MinecraftServer.this.v.getMaxPlayers() + "; " + MinecraftServer.this.v.v();
                 }
 
+                @Override
                 public Object call() throws Exception {
                     return this.a();
                 }
@@ -1230,15 +1236,18 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
         return true; // CraftBukkit
     }
 
+    @Override
     public String getName() {
         return "Server";
     }
 
+    @Override
     public void sendMessage(IChatBaseComponent ichatbasecomponent) {
         // Paper - Log message with colors
         MinecraftServer.LOGGER.info(org.bukkit.craftbukkit.util.CraftChatMessage.fromComponent(ichatbasecomponent, net.minecraft.server.EnumChatFormat.WHITE));
     }
 
+    @Override
     public boolean a(int i, String s) {
         return true;
     }
@@ -1341,6 +1350,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
         this.P = s1;
     }
 
+    @Override
     public void a(MojangStatisticsGenerator mojangstatisticsgenerator) {
         mojangstatisticsgenerator.a("whitelist_enabled", Boolean.valueOf(false));
         mojangstatisticsgenerator.a("whitelist_count", Integer.valueOf(0));
@@ -1380,6 +1390,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
         mojangstatisticsgenerator.a("worlds", Integer.valueOf(i));
     }
 
+    @Override
     public void b(MojangStatisticsGenerator mojangstatisticsgenerator) {
         mojangstatisticsgenerator.b("singleplayer", Boolean.valueOf(this.R()));
         mojangstatisticsgenerator.b("server_brand", this.getServerModName());
@@ -1387,6 +1398,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
         mojangstatisticsgenerator.b("dedicated", Boolean.valueOf(this.aa()));
     }
 
+    @Override
     public boolean getSnooperEnabled() {
         return true;
     }
@@ -1505,6 +1517,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
         this.T = true;
     }
 
+    @Override
     public World getWorld() {
         return this.worlds.get(0); // CraftBukkit
     }
@@ -1584,10 +1597,12 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
         return null;
     }
 
+    @Override
     public boolean getSendCommandFeedback() {
         return worlds.get(0).getGameRules().getBoolean("sendCommandFeedback");
     }
 
+    @Override
     public MinecraftServer C_() {
         return this;
     }
@@ -1615,11 +1630,13 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
         }
     }
 
+    @Override
     public ListenableFuture<Object> postToMainThread(Runnable runnable) {
         Validate.notNull(runnable);
         return this.a(Executors.callable(runnable));
     }
 
+    @Override
     public boolean isMainThread() {
         return Thread.currentThread() == this.serverThread;
     }
