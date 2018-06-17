@@ -193,10 +193,6 @@ public abstract class MixinMinecraftServer {
         this.an().c();
         MinecraftTimings.connectionTimer.stopTiming();
         
-        MinecraftTimings.playerListTimer.startTiming();
-        this.v.tick();
-        MinecraftTimings.playerListTimer.stopTiming();
-        
         MinecraftTimings.commandFunctionsTimer.startTiming();
         this.aL().e();
         MinecraftTimings.commandFunctionsTimer.stopTiming();

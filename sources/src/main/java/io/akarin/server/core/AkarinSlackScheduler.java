@@ -1,10 +1,14 @@
 package io.akarin.server.core;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+
 import io.akarin.api.internal.Akari;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.EnumDifficulty;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PacketPlayOutKeepAlive;
+import net.minecraft.server.PacketPlayOutPlayerInfo;
 import net.minecraft.server.PacketPlayOutUpdateTime;
 import net.minecraft.server.PlayerConnection;
 import net.minecraft.server.WorldServer;
@@ -26,7 +30,11 @@ public class AkarinSlackScheduler extends Thread {
         private static final AkarinSlackScheduler instance = new AkarinSlackScheduler();
     }
     
+    /*
+     * Timers
+     */
     private long updateTime;
+    private long resendPlayersInfo;
 
     @Override
     public void run() {
@@ -34,7 +42,7 @@ public class AkarinSlackScheduler extends Thread {
         
         while (server.isRunning()) {
             // Send time updates to everyone, it will get the right time from the world the player is in.
-            if (++updateTime >= AkarinGlobalConfig.timeUpdateInterval * 10) {
+            if (++updateTime >= AkarinGlobalConfig.timeUpdateInterval) {
                 for (EntityPlayer player : server.getPlayerList().players) {
                     player.playerConnection.sendPacket(new PacketPlayOutUpdateTime(player.world.getTime(), player.getPlayerTime(), player.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
                 }
@@ -49,14 +57,14 @@ public class AkarinSlackScheduler extends Thread {
                 long elapsedTime = currentTime - conn.getLastPing();
                 if (conn.isPendingPing()) {
                     // We're pending a ping from the client
-                    if (!conn.processedDisconnect && elapsedTime >= AkarinGlobalConfig.keepAliveTimeout * 1000L) { // check keepalive limit, don't fire if already disconnected
+                    if (!conn.processedDisconnect && elapsedTime >= AkarinGlobalConfig.keepAliveTimeout) { // check keepalive limit, don't fire if already disconnected
                         Akari.callbackQueue.add(() -> {
                             Akari.logger.warn("{} was kicked due to keepalive timeout!", conn.player.getName()); // more info
                             conn.disconnect("disconnect.timeout");
                         });
                     }
                 } else {
-                    if (elapsedTime >= AkarinGlobalConfig.keepAliveSendInterval * 1000L) { // 15 seconds default
+                    if (elapsedTime >= AkarinGlobalConfig.keepAliveSendInterval) { // 15 seconds default
                         conn.setPendingPing(true);
                         conn.setLastPing(currentTime);
                         conn.setKeepAliveID(currentTime);
@@ -69,6 +77,18 @@ public class AkarinSlackScheduler extends Thread {
                 if (world.getWorldData().isHardcore() && world.getDifficulty() != EnumDifficulty.HARD) {
                     world.getWorldData().setDifficulty(EnumDifficulty.HARD);
                 }
+            }
+            
+            if (++resendPlayersInfo > AkarinGlobalConfig.playersInfoUpdateInterval) {
+                for (EntityPlayer target : server.getPlayerList().players) {
+                    target.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_LATENCY, Iterables.filter(server.getPlayerList().players, new Predicate<EntityPlayer>() {
+                        @Override
+                        public boolean apply(EntityPlayer input) {
+                            return target.getBukkitEntity().canSee(input.getBukkitEntity());
+                        }
+                    })));
+                }
+                resendPlayersInfo = 0;
             }
             
             try {
