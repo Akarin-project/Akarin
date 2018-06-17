@@ -5,7 +5,7 @@
 
 Introduction
 ---
-> Akarin is a powerful server software form the 'new dimension', formerly known as [Torch](https://github.com/Akarin-project/Torch).
+> Akarin is a powerful server software form the 'new dimension', formerly known as Torch.
 
 As a [Paper](https://github.com/PaperMC/Paper) fork, it supports almost all plugins that [Spigot](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse) can use.
 
