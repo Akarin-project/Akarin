@@ -284,4 +284,9 @@ public class AkarinGlobalConfig {
     private static void disableEndPortalCreate() {
         disableEndPortalCreate = getBoolean("alternative.disable-end-portal-create", false);
     }
+    
+    public static int primaryThreadPriority;
+    private static void primaryThreadPriority() {
+        primaryThreadPriority = getInt("core.primary-thread-priority", 7);
+    }
 }

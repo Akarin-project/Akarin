@@ -6,7 +6,6 @@ import java.util.concurrent.FutureTask;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.spongepowered.asm.lib.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -14,7 +13,6 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import co.aikar.timings.MinecraftTimings;
@@ -22,8 +20,6 @@ import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.mixin.IMixinLockProvider;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.AkarinSlackScheduler;
-import net.minecraft.server.Block;
-import net.minecraft.server.Blocks;
 import net.minecraft.server.CrashReport;
 import net.minecraft.server.CustomFunctionData;
 import net.minecraft.server.ITickable;
@@ -38,6 +34,8 @@ import net.minecraft.server.WorldServer;
 
 @Mixin(value = MinecraftServer.class, remap = false)
 public abstract class MixinMinecraftServer {
+    @Shadow @Final public Thread primaryThread;
+    
     @Overwrite
     public String getServerModName() {
         return "Akarin";
@@ -49,11 +47,15 @@ public abstract class MixinMinecraftServer {
             shift = At.Shift.BEFORE
     ))
     private void prerun(CallbackInfo info) {
+        primaryThread.setPriority(AkarinGlobalConfig.primaryThreadPriority < Thread.NORM_PRIORITY ? Thread.NORM_PRIORITY :
+            (AkarinGlobalConfig.primaryThreadPriority > Thread.MAX_PRIORITY ? 10 : AkarinGlobalConfig.primaryThreadPriority));
+        
         for (int i = 0; i < worlds.size(); ++i) {
             WorldServer world = worlds.get(i);
             TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
         }
         AkarinSlackScheduler.boot();
+        
     }
     
     /*
