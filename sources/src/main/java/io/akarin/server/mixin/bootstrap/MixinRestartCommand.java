@@ -11,7 +11,7 @@ import io.akarin.server.core.AkarinGlobalConfig;
 @Mixin(value = RestartCommand.class, remap = false)
 public abstract class MixinRestartCommand {
     @Inject(method = "restart()V", at = @At("HEAD"))
-    public static void beforeRestart() {
+    private static void beforeRestart() {
         if (AkarinGlobalConfig.noResponseDoGC) {
             Akari.logger.warn("Attempting to garbage collect, may takes a few seconds");
             System.runFinalization();
