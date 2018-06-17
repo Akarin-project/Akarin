@@ -279,4 +279,9 @@ public class AkarinGlobalConfig {
     private static void serverBrandName() {
         serverBrandName = getString("alternative.modified-server-brand-name", "");
     }
+    
+    public static boolean disableEndPortalCreate;
+    private static void disableEndPortalCreate() {
+        disableEndPortalCreate = getBoolean("alternative.disable-end-portal-create", false);
+    }
 }

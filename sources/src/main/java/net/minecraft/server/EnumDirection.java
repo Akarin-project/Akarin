@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 /**
  * <b>Akarin Changes Note</b><br>
  * <br>
- * 1) Add public obfhelper<br>
+ * 1) Add OBFHELPER<br>
  * @author cakoyo
  */
 public enum EnumDirection implements INamable {
