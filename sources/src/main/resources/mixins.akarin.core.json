@@ -11,6 +11,7 @@
         "bootstrap.MixinMetrics",
         "bootstrap.ParallelRegistry",
         "bootstrap.MetricsBootstrap",
+        "bootstrap.MixinRestartCommand",
         
         "core.MixinMCUtil",
         "core.MixinCommandBan",
