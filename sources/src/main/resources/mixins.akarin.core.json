@@ -33,7 +33,6 @@
         "nsc.NonblockingServerConnection",
         
         "optimization.WeakBigTree",
-        "optimization.MixinPlayerChunk",
         "optimization.WeakEnchantmentManager",
         "optimization.MixinEntityHorseAbstract",
         "optimization.MixinEntityTameableAnimal",
