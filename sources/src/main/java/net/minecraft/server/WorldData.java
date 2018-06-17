@@ -47,7 +47,7 @@ public class WorldData {
     private boolean z;
     private boolean A;
     private boolean B;
-    private EnumDifficulty C;
+    private volatile EnumDifficulty C; // Akarin - volatile
     private boolean D;
     private double E;
     private double F;

@@ -2,10 +2,12 @@ package io.akarin.server.core;
 
 import io.akarin.api.internal.Akari;
 import net.minecraft.server.EntityPlayer;
+import net.minecraft.server.EnumDifficulty;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PacketPlayOutKeepAlive;
 import net.minecraft.server.PacketPlayOutUpdateTime;
 import net.minecraft.server.PlayerConnection;
+import net.minecraft.server.WorldServer;
 
 public class AkarinSlackScheduler extends Thread {
     public static AkarinSlackScheduler get() {
@@ -60,6 +62,12 @@ public class AkarinSlackScheduler extends Thread {
                         conn.setKeepAliveID(currentTime);
                         conn.sendPacket(new PacketPlayOutKeepAlive(conn.getKeepAliveID()));
                     }
+                }
+            }
+            
+            for (WorldServer world : server.worlds) {
+                if (world.getWorldData().isHardcore() && world.getDifficulty() != EnumDifficulty.HARD) {
+                    world.getWorldData().setDifficulty(EnumDifficulty.HARD);
                 }
             }
             

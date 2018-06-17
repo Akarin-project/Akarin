@@ -277,9 +277,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     @Override
     public void doTick() {
         super.doTick();
-        if (this.getWorldData().isHardcore() && this.getDifficulty() != EnumDifficulty.HARD) {
+        // Akarin start - goes to slack service
+        /* if (this.getWorldData().isHardcore() && this.getDifficulty() != EnumDifficulty.HARD) {
             this.getWorldData().setDifficulty(EnumDifficulty.HARD);
-        }
+        } */ // Akarin end
 
         this.worldProvider.k().b();
         if (this.everyoneDeeplySleeping()) {
