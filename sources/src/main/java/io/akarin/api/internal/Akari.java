@@ -55,8 +55,12 @@ public abstract class Akari {
     public static final ExecutorCompletionService<?> STAGE_TICK = new ExecutorCompletionService<>(Executors.newSingleThreadExecutor(new AssignableFactory()));
     
     public static boolean isPrimaryThread() {
+        return isPrimaryThread(true);
+    }
+    
+    public static boolean isPrimaryThread(boolean assign) {
         Thread current = Thread.currentThread();
-        return current == MinecraftServer.getServer().primaryThread || current instanceof AssignableThread;
+        return current == MinecraftServer.getServer().primaryThread || (assign ? current instanceof AssignableThread : false);
     }
     
     public static final String EMPTY_STRING = "";
