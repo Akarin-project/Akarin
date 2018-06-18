@@ -36,12 +36,12 @@ public abstract class MixinTimingHandler {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Inject(method = "startTiming", at = @At("HEAD"), cancellable = true)
     public void onStartTiming(CallbackInfoReturnable ci) {
-        if (Akari.silentTiming || !Akari.isPrimaryThread()) ci.setReturnValue(this); // Avoid modify any field
+        if (!Akari.isPrimaryThread()) ci.setReturnValue(this); // Avoid modify any field
     }
     
     @Overwrite
     public void stopTimingIfSync() {
-        if (Akari.isPrimaryThread()) { // Use non-mock method
+        if (Akari.isPrimaryThread()) {
             stopTiming(true); // Avoid twice thread check
         }
     }
@@ -52,12 +52,12 @@ public abstract class MixinTimingHandler {
     }
     
     public void stopTiming(boolean alreadySync) {
-        if (!enabled || Akari.silentTiming) return;
+        if (!enabled) return;
         if (!alreadySync && !Akari.isPrimaryThread()) {
             if (AkarinGlobalConfig.silentAsyncTimings) return;
             
             Bukkit.getLogger().log(Level.SEVERE, "stopTiming called async for " + name);
-            new Throwable().printStackTrace();
+            Thread.dumpStack();
         }
         
         // Main thread ensured

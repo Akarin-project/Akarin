@@ -20,20 +20,31 @@ import com.google.common.collect.Lists;
 
 import io.akarin.api.internal.LocalAddress;
 import io.akarin.server.core.AkarinGlobalConfig;
-import io.akarin.server.core.ChannelAdapter;
-import io.akarin.server.core.NetworkCloseHandler;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.server.ChatComponentText;
+import net.minecraft.server.EnumProtocolDirection;
+import net.minecraft.server.HandshakeListener;
+import net.minecraft.server.LegacyPingHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NetworkManager;
+import net.minecraft.server.PacketDecoder;
+import net.minecraft.server.PacketEncoder;
 import net.minecraft.server.PacketPlayOutKickDisconnect;
+import net.minecraft.server.PacketPrepender;
+import net.minecraft.server.PacketSplitter;
 import net.minecraft.server.ServerConnection;
 
 @Mixin(value = ServerConnection.class, remap = false)
@@ -76,7 +87,26 @@ public abstract class NonblockingServerConnection {
             logger.info("Using nio channel type");
         }
         
-        ServerBootstrap bootstrap = new ServerBootstrap().channel(channelClass).childHandler(ChannelAdapter.create(networkManagers)).group(loopGroup);
+        ServerBootstrap bootstrap = new ServerBootstrap().channel(channelClass).childHandler(new ChannelInitializer<Channel>() {
+            @Override
+            protected void initChannel(Channel channel) throws Exception {
+                try {
+                    channel.config().setOption(ChannelOption.TCP_NODELAY, true);
+                } catch (ChannelException ex) {
+                    ;
+                }
+                channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30))
+                                  .addLast("legacy_query", new LegacyPingHandler(MinecraftServer.getServer().getServerConnection()))
+                                  .addLast("splitter", new PacketSplitter()).addLast("decoder", new PacketDecoder(EnumProtocolDirection.SERVERBOUND))
+                                  .addLast("prepender", new PacketPrepender()).addLast("encoder", new PacketEncoder(EnumProtocolDirection.CLIENTBOUND));
+                
+                NetworkManager manager = new NetworkManager(EnumProtocolDirection.SERVERBOUND);
+                networkManagers.add(manager);
+                
+                channel.pipeline().addLast("packet_handler", manager);
+                manager.setPacketListener(new HandshakeListener(MinecraftServer.getServer(), manager));
+            }
+        }).group(loopGroup);
         synchronized (endPoints) {
             data.addAll(Lists.transform(AkarinGlobalConfig.extraAddress, s -> {
                 String[] info = s.split(":");
@@ -112,9 +142,14 @@ public abstract class NonblockingServerConnection {
             manager.a(); // PAIL: NetworkManager::processReceivedPackets
         } catch (Exception ex) {
             logger.warn("Failed to handle packet for {}", manager.getSocketAddress(), ex);
-            final ChatComponentText kick = new ChatComponentText("Internal server error");
+            final ChatComponentText message = new ChatComponentText("Internal server error");
             
-            manager.sendPacket(new PacketPlayOutKickDisconnect(kick), new NetworkCloseHandler(manager, kick), new GenericFutureListener[0]);
+            manager.sendPacket(new PacketPlayOutKickDisconnect(message), new GenericFutureListener<Future<? super Void>>() {
+                @Override
+                public void operationComplete(Future<? super Void> future) throws Exception {
+                    manager.close(message);
+                }
+            }, new GenericFutureListener[0]);
             manager.stopReading();
         }
     }

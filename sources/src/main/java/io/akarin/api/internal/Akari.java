@@ -13,6 +13,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
+import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
 
 @SuppressWarnings("restriction")
@@ -23,29 +24,39 @@ public abstract class Akari {
     public final static Logger logger = LogManager.getLogger("Akarin");
     
     /**
-     * Temporarily disable desync timings error, moreover it's worthless to trace async operation
-     */
-    public static volatile boolean silentTiming;
-    
-    /**
      * A common thread pool factory
      */
-    public static final ThreadFactory STAGE_FACTORY = new ThreadFactoryBuilder().setNameFormat("Akarin Schedule Thread").build();
+    public static final ThreadFactory STAGE_FACTORY = new ThreadFactoryBuilder().setNameFormat("Akarin Parallel Registry Thread - %1$d").build();
     
     /**
      * Main thread callback tasks
      */
     public static final Queue<Runnable> callbackQueue = Queues.newConcurrentLinkedQueue();
     
+    public static class AssignableThread extends Thread {
+        public AssignableThread(Runnable run) {
+            super(run);
+        }
+    }
+    
+    private static class AssignableFactory implements ThreadFactory {
+        @Override
+        public Thread newThread(Runnable run) {
+            Thread thread = new AssignableThread(run);
+            thread.setName("Akarin Parallel Schedule Thread");
+            thread.setPriority(AkarinGlobalConfig.primaryThreadPriority); // Fair
+            return thread;
+        }
+    }
+    
     /**
      * A common tick pool
      */
-    public static final ExecutorCompletionService<?> STAGE_TICK = new ExecutorCompletionService<>(Executors.newSingleThreadExecutor(Akari.STAGE_FACTORY));
-    
-    public static boolean mayEnableAsyncCathcer;
+    public static final ExecutorCompletionService<?> STAGE_TICK = new ExecutorCompletionService<>(Executors.newSingleThreadExecutor(new AssignableFactory()));
     
     public static boolean isPrimaryThread() {
-        return Thread.currentThread().equals(MinecraftServer.getServer().primaryThread);
+        Thread current = Thread.currentThread();
+        return current == MinecraftServer.getServer().primaryThread || current instanceof AssignableThread;
     }
     
     public static final String EMPTY_STRING = "";
@@ -69,7 +80,9 @@ public abstract class Akari {
     /*
      * Timings
      */
-    public final static Timing worldTiming = getTiming("Akarin - World");
+    public final static Timing worldTiming = getTiming("Akarin - Full World Tick");
+    
+    public final static Timing entityCallbackTiming = getTiming("Akarin - Entity Callback");
     
     public final static Timing callbackTiming = getTiming("Akarin - Callback");
     

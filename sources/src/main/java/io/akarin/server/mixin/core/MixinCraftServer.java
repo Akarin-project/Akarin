@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import io.akarin.api.internal.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
-import me.nallar.whocalled.WhoCalled;
 import net.minecraft.server.MinecraftServer;
 
 @Mixin(value = CraftServer.class, remap = false)
@@ -31,15 +30,6 @@ public abstract class MixinCraftServer {
     
     @Overwrite
     public boolean isPrimaryThread() {
-        if (AkarinGlobalConfig.enableMockPlugin && !AkarinGlobalConfig.mockPackageList.isEmpty()) {
-            // Mock forcely main thread plugins
-            String callerPackage = WhoCalled.$.getCallingClass().getPackage().getName();
-            if (callerPackage.startsWith("net.minecraft") || callerPackage.startsWith("org.bukkit") ||
-                callerPackage.startsWith("co.aikar") || callerPackage.startsWith("io.akarin")) return Thread.currentThread().equals(console.primaryThread);
-            for (String contains : AkarinGlobalConfig.mockPackageList) {
-                if (callerPackage.contains(contains)) return true;
-            }
-        }
-        return Thread.currentThread().equals(console.primaryThread);
+        return Akari.isPrimaryThread();
     }
 }

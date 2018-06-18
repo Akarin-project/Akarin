@@ -131,12 +131,7 @@
         <dependency>
             <groupId>org.spongepowered</groupId>
             <artifactId>mixin</artifactId>
-            <version>0.7.8-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>me.nallar.whocalled</groupId>
-            <artifactId>WhoCalled</artifactId>
-            <version>1.1</version>
+            <version>0.7.10-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

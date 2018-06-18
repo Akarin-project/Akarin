@@ -195,21 +195,6 @@ public class AkarinGlobalConfig {
         asyncLightingWorkStealing = getBoolean("core.async-lighting.use-work-stealing", false);
     }
     
-    public static boolean enableMockPlugin;
-    private static void enableMockPlugin() {
-        enableMockPlugin = getBoolean("core.thread-safe.enable-mock-plugins", false);
-    }
-    
-    public static List<String> mockPackageList;
-    private static void mockPluginList() {
-        mockPackageList = getList("core.thread-safe.mock-package-name-contains", Lists.newArrayList("me.konsolas.aac"));
-    }
-    
-    public static boolean enableAsyncCatcher;
-    private static void enableAsyncCatcher() {
-        enableAsyncCatcher = getBoolean("core.thread-safe.async-catcher.enable", false);
-    }
-    
     public static boolean throwOnAsyncCaught;
     private static void throwOnAsyncCaught() {
         throwOnAsyncCaught = getBoolean("core.thread-safe.async-catcher.throw-on-caught", true);

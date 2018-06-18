@@ -7,7 +7,6 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import io.akarin.api.internal.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
-import net.minecraft.server.MinecraftServer;
 
 @Mixin(value = AsyncCatcher.class, remap = false)
 public abstract class MixinAsyncCatcher {
@@ -15,7 +14,9 @@ public abstract class MixinAsyncCatcher {
     
     @Overwrite
     public static void catchOp(String reason) {
-        if (AkarinGlobalConfig.enableAsyncCatcher && Akari.mayEnableAsyncCathcer && enabled && Thread.currentThread() != MinecraftServer.getServer().primaryThread) {
+        if (enabled) {
+            if (Akari.isPrimaryThread()) return;
+            
             if (AkarinGlobalConfig.throwOnAsyncCaught) {
                 throw new IllegalStateException("Asynchronous " + reason + "!");
             } else {

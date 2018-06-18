@@ -58,6 +58,11 @@ public abstract class MixinMinecraftServer {
         
     }
     
+    @Overwrite
+    public boolean isMainThread() {
+        return Akari.isPrimaryThread();
+    }
+    
     /*
      * Forcely disable snooper
      */
@@ -147,8 +152,6 @@ public abstract class MixinMinecraftServer {
                 worlds.get(i).timings.doTick.startTiming();
             }
         }
-        Akari.silentTiming = true; // Disable timings
-        Akari.mayEnableAsyncCathcer = false;
         Akari.STAGE_TICK.submit(() -> {
             // Never tick one world concurrently!
             for (int i = 1; i <= worlds.size(); ++i) {
@@ -166,9 +169,10 @@ public abstract class MixinMinecraftServer {
             }
         }
         
+        Akari.entityCallbackTiming.startTiming();
         Akari.STAGE_TICK.take();
-        Akari.mayEnableAsyncCathcer = true;
-        Akari.silentTiming = false; // Enable timings
+        Akari.entityCallbackTiming.stopTiming();
+        
         Akari.worldTiming.stopTiming();
         if (AkarinGlobalConfig.legacyWorldTimings) {
             for (int i = 0; i < worlds.size(); ++i) {
