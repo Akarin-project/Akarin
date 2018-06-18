@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import io.akarin.api.internal.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
+import net.minecraft.server.PersistentCollection;
 
 @Mixin(value = AsyncCatcher.class, remap = false)
 public abstract class MixinAsyncCatcher {
@@ -22,6 +23,7 @@ public abstract class MixinAsyncCatcher {
             } else {
                 Akari.logger.warn("Asynchronous " + reason + "!");
                 Thread.dumpStack();
+                PersistentCollection.class.getName();
             }
         }
     }

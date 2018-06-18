@@ -36,6 +36,7 @@
         "optimization.WeakEnchantmentManager",
         "optimization.MixinEntityHorseAbstract",
         "optimization.MixinEntityTameableAnimal",
+        "optimization.MixinPersistentCollection",
         "optimization.MixinTileEntityEnchantTable"
     ]
 }
