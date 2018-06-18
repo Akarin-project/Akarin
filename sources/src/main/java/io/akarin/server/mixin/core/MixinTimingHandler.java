@@ -13,7 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import co.aikar.timings.Timing;
 import io.akarin.api.internal.Akari;
+import io.akarin.api.internal.Akari.AssignableThread;
 import io.akarin.server.core.AkarinGlobalConfig;
+import net.minecraft.server.MinecraftServer;
 
 @Mixin(targets = "co.aikar.timings.TimingHandler", remap = false)
 public abstract class MixinTimingHandler {
@@ -27,7 +29,7 @@ public abstract class MixinTimingHandler {
     
     @Overwrite
     public Timing startTimingIfSync() {
-        if (Akari.isPrimaryThread(false)) { // Use non-mock method
+        if (Akari.isPrimaryThread(false)) {
             startTiming();
         }
         return (Timing) this;
@@ -52,8 +54,9 @@ public abstract class MixinTimingHandler {
     }
     
     public void stopTiming(boolean alreadySync) {
-        if (!enabled) return;
-        if (!alreadySync && !Akari.isPrimaryThread(false)) {
+        Thread curThread = Thread.currentThread();
+        if (!enabled || curThread instanceof AssignableThread) return;
+        if (!alreadySync && curThread != MinecraftServer.getServer().primaryThread) {
             if (AkarinGlobalConfig.silentAsyncTimings) return;
             
             Bukkit.getLogger().log(Level.SEVERE, "stopTiming called async for " + name);
