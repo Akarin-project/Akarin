@@ -39,7 +39,7 @@ public abstract class Akari {
         }
     }
     
-    private static class AssignableFactory implements ThreadFactory {
+    public static class AssignableFactory implements ThreadFactory {
         @Override
         public Thread newThread(Runnable run) {
             Thread thread = new AssignableThread(run);

@@ -2,10 +2,13 @@ package io.akarin.server.mixin.core;
 
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.world.WorldLoadEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -17,9 +20,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import co.aikar.timings.MinecraftTimings;
 import io.akarin.api.internal.Akari;
+import io.akarin.api.internal.Akari.AssignableFactory;
 import io.akarin.api.internal.mixin.IMixinLockProvider;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.AkarinSlackScheduler;
+import net.minecraft.server.BlockPosition;
 import net.minecraft.server.CrashReport;
 import net.minecraft.server.CustomFunctionData;
 import net.minecraft.server.ITickable;
@@ -73,6 +78,54 @@ public abstract class MixinMinecraftServer {
     public void b(MojangStatisticsGenerator generator) {}
     
     /*
+     * Parallel spawn chunks generation
+     */
+    @Shadow public abstract boolean isRunning();
+    @Shadow(aliases = "a_") protected abstract void output(String s, int i);
+    @Shadow(aliases = "t") protected abstract void enablePluginsPostWorld();
+    
+    private void prepareChunks(WorldServer world) {
+        BlockPosition spawnPos = world.getSpawn();
+        long lastRecord = System.currentTimeMillis();
+        
+        int preparedChunks = 0;
+        short radius = world.paperConfig.keepLoadedRange;
+        for (int skipX = -radius; skipX <= radius && isRunning(); skipX += 16) {
+            for (int skipZ = -radius; skipZ <= radius && isRunning(); skipZ += 16) {
+                long now = System.currentTimeMillis();
+                
+                if (now - lastRecord > 1000L) {
+                    output("Preparing spawn area", preparedChunks * 100 / 625);
+                    lastRecord = now;
+                }
+                
+                preparedChunks++;
+                world.getChunkProviderServer().getChunkAt(spawnPos.getX() + skipX >> 4, spawnPos.getZ() + skipZ >> 4);
+            }
+        }
+    }
+    
+    @Overwrite
+    protected void l() throws InterruptedException {
+        ExecutorCompletionService<?> executor = new ExecutorCompletionService<>(Executors.newFixedThreadPool(worlds.size(), new AssignableFactory()));
+        
+        for (int index = 0; index < worlds.size(); index++) {
+            WorldServer world = this.worlds.get(index);
+            Akari.logger.info("Preparing start region for level " + index + " (Seed: " + world.getSeed() + ")");
+            if (!world.getWorld().getKeepSpawnInMemory()) continue;
+            
+            executor.submit(() -> prepareChunks(world), null);
+        }
+        
+        for (WorldServer world : this.worlds) {
+            executor.take();
+            this.server.getPluginManager().callEvent(new WorldLoadEvent(world.getWorld()));
+        }
+        
+        enablePluginsPostWorld();
+    }
+    
+    /*
      * Parallel world ticking
      */
     @Shadow public CraftServer server;
@@ -80,12 +133,12 @@ public abstract class MixinMinecraftServer {
     @Shadow public Queue<Runnable> processQueue;
     @Shadow private int ticks;
     @Shadow public List<WorldServer> worlds;
-    @Shadow private PlayerList v;
-    @Shadow @Final private List<ITickable> o;
+    @Shadow(aliases = "v") private PlayerList playerList;
+    @Shadow(aliases = "o") @Final private List<ITickable> tickables;
     
     @Shadow public abstract PlayerList getPlayerList();
-    @Shadow public abstract ServerConnection an();
-    @Shadow public abstract CustomFunctionData aL();
+    @Shadow(aliases = "an") public abstract ServerConnection serverConnection();
+    @Shadow(aliases = "aL") public abstract CustomFunctionData functionManager();
     
     private boolean tickEntities(WorldServer world) {
         try {
@@ -194,16 +247,16 @@ public abstract class MixinMinecraftServer {
         }
         
         MinecraftTimings.connectionTimer.startTiming();
-        this.an().c();
+        serverConnection().c();
         MinecraftTimings.connectionTimer.stopTiming();
         
         MinecraftTimings.commandFunctionsTimer.startTiming();
-        this.aL().e();
+        functionManager().e();
         MinecraftTimings.commandFunctionsTimer.stopTiming();
         
         MinecraftTimings.tickablesTimer.startTiming();
-        for (int i = 0; i < this.o.size(); ++i) {
-            this.o.get(i).e();
+        for (int i = 0; i < this.tickables.size(); ++i) {
+            tickables.get(i).e();
         }
         MinecraftTimings.tickablesTimer.stopTiming();
     }
@@ -213,5 +266,4 @@ public abstract class MixinMinecraftServer {
         world.manager.flush();
         world.timings.doChunkMap.stopTiming();
     }
-    
 }
