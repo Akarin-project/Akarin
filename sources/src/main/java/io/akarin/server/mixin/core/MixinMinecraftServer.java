@@ -84,7 +84,8 @@ public abstract class MixinMinecraftServer {
     @Shadow(aliases = "a_") protected abstract void output(String s, int i);
     @Shadow(aliases = "t") protected abstract void enablePluginsPostWorld();
     
-    private void prepareChunks(WorldServer world) {
+    private void prepareChunks(WorldServer world, int index) {
+        MinecraftServer.LOGGER.info("Preparing start region for level " + index + " (Seed: " + world.getSeed() + ")");
         BlockPosition spawnPos = world.getSpawn();
         long lastRecord = System.currentTimeMillis();
         
@@ -95,7 +96,7 @@ public abstract class MixinMinecraftServer {
                 long now = System.currentTimeMillis();
                 
                 if (now - lastRecord > 1000L) {
-                    output("Preparing spawn area", preparedChunks * 100 / 625);
+                    output("Preparing spawn area (level " + index + ") ", preparedChunks * 100 / 625);
                     lastRecord = now;
                 }
                 
@@ -111,10 +112,10 @@ public abstract class MixinMinecraftServer {
         
         for (int index = 0; index < worlds.size(); index++) {
             WorldServer world = this.worlds.get(index);
-            Akari.logger.info("Preparing start region for level " + index + " (Seed: " + world.getSeed() + ")");
             if (!world.getWorld().getKeepSpawnInMemory()) continue;
             
-            executor.submit(() -> prepareChunks(world), null);
+            int fIndex = index;
+            executor.submit(() -> prepareChunks(world, fIndex), null);
         }
         
         for (WorldServer world : this.worlds) {
