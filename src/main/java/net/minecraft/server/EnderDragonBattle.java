@@ -28,10 +28,10 @@ public class EnderDragonBattle {
     private int h;
     private int i;
     private int j;
-    private boolean k;
+    private boolean k; private void setDragonKilled(boolean dragonKilled) { this.k = dragonKilled; } // Paper - OBFHELPER
     private boolean l;
     private UUID m;
-    private boolean n;
+    private boolean n;  private void setScanForLegacyFight(boolean scanForLegacyFight) { this.n = scanForLegacyFight; } private boolean scanForLegacyFight() { return this.n; } // Paper - OBFHELPER
     private BlockPosition o;
     private EnumDragonRespawn p;
     private int q;
@@ -41,6 +41,10 @@ public class EnderDragonBattle {
         this.bossBattle = (BossBattleServer) (new BossBattleServer(new ChatMessage("entity.minecraft.ender_dragon", new Object[0]), BossBattle.BarColor.PINK, BossBattle.BarStyle.PROGRESS)).setPlayMusic(true).c(true);
         this.e = Lists.newArrayList();
         this.n = true;
+        // Paper start
+        setScanForLegacyFight(worldserver.paperConfig.scanForLegacyEnderDragon);
+        if (!scanForLegacyFight()) setDragonKilled(true);
+        // Paper end
         this.d = worldserver;
         if (nbttagcompound.hasKeyOfType("DragonKilled", 99)) {
             if (nbttagcompound.b("DragonUUID")) {
