@@ -34,7 +34,7 @@ import net.minecraft.server.IChunkProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.World;
 
-@Mixin(value = World.class, remap = false)
+@Mixin(value = World.class, remap = false, priority = 1001)
 public abstract class MixinWorld {
     @Shadow protected IChunkProvider chunkProvider;
     @Shadow int[] J; // PAIL: lightUpdateBlockList
