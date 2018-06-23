@@ -27,6 +27,8 @@ package io.akarin.server.mixin.lighting;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
 import javax.annotation.Nullable;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,7 +37,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.mixin.IMixinChunk;
 import io.akarin.api.internal.mixin.IMixinWorldServer;
-import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.EnumDirection;
@@ -54,11 +55,11 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     private static final short XZ_MASK = 0xF;
     private static final short Y_SHORT_MASK = 0xFF;
     
-    private static final ExecutorService lightExecutorService = getExecutorService();
+    private final static ThreadFactory SERVICE_FACTORY = new ThreadFactoryBuilder().setNameFormat("Akarin Async Lighting Thread - %1$d").build();
+    private final ExecutorService lightExecutorService = getExecutorService();
     
-    private static ExecutorService getExecutorService() {
-        return AkarinGlobalConfig.asyncLightingWorkStealing ?
-                Executors.newFixedThreadPool(AkarinGlobalConfig.asyncLightingThreads, new ThreadFactoryBuilder().setNameFormat("Akarin Async Light Thread").build()) : Executors.newWorkStealingPool(AkarinGlobalConfig.asyncLightingThreads);
+    private ExecutorService getExecutorService() {
+        return Executors.newFixedThreadPool(1, SERVICE_FACTORY);
     }
     
     @Override

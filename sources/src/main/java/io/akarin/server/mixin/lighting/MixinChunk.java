@@ -68,7 +68,7 @@ public abstract class MixinChunk implements IMixinChunk {
     private CopyOnWriteArrayList<Short> queuedBlockLightingUpdates = new CopyOnWriteArrayList<>();
     private AtomicInteger pendingLightUpdates = new AtomicInteger();
     private long lightUpdateTime;
-    private static ExecutorService lightExecutorService;
+    private ExecutorService lightExecutorService;
     
     @Shadow(aliases = "m") private boolean isGapLightingUpdated;
     @Shadow(aliases = "r") private boolean ticked;
