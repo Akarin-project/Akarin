@@ -269,4 +269,9 @@ public class AkarinGlobalConfig {
     private static void playersInfoUpdateInterval() {
         playersInfoUpdateInterval = getSeconds(getString("core.tick-rate.players-info-update-interval", "30s")) * 10;
     }
+    
+    public static long versionUpdateInterval;
+    private static void versionUpdateInterval() {
+        versionUpdateInterval = getSeconds(getString("alternative.version-update-interval", "3600s")) * 1000; // 1 hour
+    }
 }

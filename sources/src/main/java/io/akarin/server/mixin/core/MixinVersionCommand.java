@@ -70,7 +70,7 @@ public abstract class MixinVersionCommand {
         
         if (hasVersion) {
             long current = System.currentTimeMillis();
-            if (current - lastCheckMillis > 7200000 /* 2 hours */) {
+            if (current - lastCheckMillis > AkarinGlobalConfig.versionUpdateInterval) {
                 lastCheckMillis = current;
                 hasVersion = false;
             } else {
