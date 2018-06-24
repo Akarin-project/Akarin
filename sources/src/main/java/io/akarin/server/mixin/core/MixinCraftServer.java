@@ -14,8 +14,10 @@ import net.minecraft.server.MinecraftServer;
 @Mixin(value = CraftServer.class, remap = false)
 public abstract class MixinCraftServer {
     @Shadow @Final @Mutable private String serverName;
+    @Shadow @Final @Mutable private String serverVersion;
     @Shadow @Final protected MinecraftServer console;
     private boolean needApplyServerName = true;
+    private boolean needApplyServerVersion = true;
     
     @Overwrite
     public String getName() {
@@ -26,6 +28,15 @@ public abstract class MixinCraftServer {
             needApplyServerName = false;
         }
         return serverName;
+    }
+    
+    @Overwrite
+    public String getVersion() {
+        if (needApplyServerVersion) {
+            serverVersion = AkarinGlobalConfig.serverBrandName.equals(Akari.EMPTY_STRING) ? serverVersion : serverVersion.replace("Akarin", AkarinGlobalConfig.serverBrandName);
+            needApplyServerVersion = false;
+        }
+        return serverVersion + " (MC: " + console.getVersion() + ")";
     }
     
     @Overwrite

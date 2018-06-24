@@ -81,6 +81,12 @@ public abstract class Akari {
         }
     }
     
+    private static final String serverVersion = Akari.class.getPackage().getImplementationVersion();
+    
+    public static String getServerVersion() {
+        return serverVersion + " (MC: " + MinecraftServer.getServer().getVersion() + ")";
+    }
+    
     /*
      * Timings
      */

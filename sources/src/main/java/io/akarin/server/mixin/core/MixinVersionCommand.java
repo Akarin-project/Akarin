@@ -104,7 +104,7 @@ public abstract class MixinVersionCommand {
             versionWaiters.add(sender);
             sender.sendMessage("Checking version, please wait...");
             
-            String version = Bukkit.getVersion();
+            String version = Akari.getServerVersion();
             if (version == null) {
                 version = "Unique"; // Custom - > Unique
                 customVersion = true;
