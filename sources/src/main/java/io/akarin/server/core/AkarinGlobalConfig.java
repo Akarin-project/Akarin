@@ -274,4 +274,9 @@ public class AkarinGlobalConfig {
     private static void versionUpdateInterval() {
         versionUpdateInterval = getSeconds(getString("alternative.version-update-interval", "3600s")) * 1000; // 1 hour
     }
+    
+    public static boolean sendLightOnlyChunkSection;
+    private static void sendLightOnlyChunkSection() {
+        sendLightOnlyChunkSection = getBoolean("core.send-light-only-chunk-sections", true);
+    }
 }
