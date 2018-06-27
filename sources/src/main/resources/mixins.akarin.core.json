@@ -20,6 +20,7 @@
         "core.MixinCraftServer",
         "core.MixinWorldServer",
         "core.MixinCommandBanIp",
+        "core.MixinChunkSection",
         "core.MixinAsyncCatcher",
         "core.MixinTimingHandler",
         "core.MonsterEggGuardian",
