@@ -42,6 +42,7 @@ public class AkarinSlackScheduler extends Thread {
         
         while (server.isRunning()) {
             // Send time updates to everyone, it will get the right time from the world the player is in.
+            // Time update, from MinecraftServer#D
             if (++updateTime >= AkarinGlobalConfig.timeUpdateInterval) {
                 for (EntityPlayer player : server.getPlayerList().players) {
                     player.playerConnection.sendPacket(new PacketPlayOutUpdateTime(player.world.getTime(), player.getPlayerTime(), player.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
@@ -49,6 +50,7 @@ public class AkarinSlackScheduler extends Thread {
                 updateTime = 0;
             }
             
+            // Keep alive, from PlayerConnection#e
             for (EntityPlayer player : server.getPlayerList().players) {
                 PlayerConnection conn = player.playerConnection;
                 // Paper - give clients a longer time to respond to pings as per pre 1.12.2 timings
@@ -73,12 +75,14 @@ public class AkarinSlackScheduler extends Thread {
                 }
             }
             
+            // Force hardcore difficulty, from WorldServer#doTick
             for (WorldServer world : server.worlds) {
                 if (world.getWorldData().isHardcore() && world.getDifficulty() != EnumDifficulty.HARD) {
                     world.getWorldData().setDifficulty(EnumDifficulty.HARD);
                 }
             }
             
+            // Update player info, from PlayerList#tick
             if (++resendPlayersInfo > AkarinGlobalConfig.playersInfoUpdateInterval) {
                 for (EntityPlayer target : server.getPlayerList().players) {
                     target.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_LATENCY, Iterables.filter(server.getPlayerList().players, new Predicate<EntityPlayer>() {
