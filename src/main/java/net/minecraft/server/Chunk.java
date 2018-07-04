@@ -67,15 +67,19 @@ public class Chunk implements IChunkAccess {
     private int neighbors = 0x1 << 12;
     public long chunkKey;
     // Paper start
+    public final co.aikar.util.Counter<String> entityCounts = new co.aikar.util.Counter<>();
+    public final co.aikar.util.Counter<String> tileEntityCounts = new co.aikar.util.Counter<>();
     private class TileEntityHashMap extends java.util.HashMap<BlockPosition, TileEntity> {
         @Override
         public TileEntity put(BlockPosition key, TileEntity value) {
             TileEntity replaced = super.put(key, value);
             if (replaced != null) {
                 replaced.setCurrentChunk(null);
+                tileEntityCounts.decrement(replaced.getMinecraftKeyString());
             }
             if (value != null) {
                 value.setCurrentChunk(Chunk.this);
+                tileEntityCounts.increment(value.getMinecraftKeyString());
             }
             return replaced;
         }
@@ -85,6 +89,7 @@ public class Chunk implements IChunkAccess {
             TileEntity removed = super.remove(key);
             if (removed != null) {
                 removed.setCurrentChunk(null);
+                tileEntityCounts.decrement(removed.getMinecraftKeyString());
             }
             return removed;
         }
@@ -682,6 +687,7 @@ public class Chunk implements IChunkAccess {
         this.entitySlices[k].add(entity);
         // Paper start
         entity.setCurrentChunk(this);
+        entityCounts.increment(entity.getMinecraftKeyString());
         // Paper end
     }
 
@@ -706,6 +712,7 @@ public class Chunk implements IChunkAccess {
             return;
         }
         entity.setCurrentChunk(null);
+        entityCounts.decrement(entity.getMinecraftKeyString());
         // Paper end
     }
 
