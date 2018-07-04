@@ -1192,12 +1192,15 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         int j;
         // Paper start - Set based removal lists
         for (Entity e : this.g) {
+            /*
             j = e.getChunkZ();
             int k = e.getChunkX();
 
             if (e.inChunk && this.isChunkLoaded(k, j, true)) {
                 this.getChunkAt(k, j).b(e);
-            }
+            }*/
+            Chunk chunk = e.inChunk ? e.getCurrentChunk() : null;
+            if (chunk != null) chunk.removeEntity(e);
         }
 
         for (Entity e : this.g) {
@@ -1258,12 +1261,17 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             this.methodProfiler.exit();
             this.methodProfiler.enter("remove");
             if (entity.dead) {
+                // Paper start
+                /*
                 j = entity.chunkX;
                 int l = entity.chunkZ;
 
                 if (entity.inChunk && this.isChunkLoaded(j, l, true)) {
                     this.getChunkAt(j, l).b(entity);
-                }
+                }*/
+                Chunk chunk = entity.inChunk ? entity.getCurrentChunk() : null;
+                if (chunk != null) chunk.removeEntity(entity);
+                // Paper end
 
                 guardEntityList = false; // Spigot
                 this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
@@ -1308,7 +1316,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 BlockPosition blockposition = tileentity.getPosition();
 
                 // Paper start - Skip ticking in chunks scheduled for unload
-                net.minecraft.server.Chunk chunk = this.getChunkIfLoaded(blockposition);
+                net.minecraft.server.Chunk chunk = tileentity.getCurrentChunk();
                 boolean shouldTick = chunk != null;
                 if(this.paperConfig.skipEntityTickingInChunksScheduledForUnload)
                     shouldTick = shouldTick && chunk.scheduledForUnload == null;
@@ -1344,8 +1352,11 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 tilesThisCycle--;
                 this.tileEntityListTick.remove(tileTickPosition--);
                 //this.tileEntityList.remove(tileentity); // Paper - remove unused list
-                if (this.isLoaded(tileentity.getPosition())) {
-                    this.getChunkAtWorldCoords(tileentity.getPosition()).d(tileentity.getPosition());
+                // Paper start
+                net.minecraft.server.Chunk chunk = tileentity.getCurrentChunk();
+                if (chunk != null) {
+                    chunk.removeTileEntity(tileentity.getPosition());
+                    // Paper end
                 }
             }
         }

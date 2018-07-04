@@ -723,6 +723,7 @@ public class Chunk implements IChunkAccess {
         ((HeightMap) this.heightMap.get(heightmap_type)).a(along);
     }
 
+    public void removeEntity(Entity entity) { b(entity); } // Paper - OBFHELPER
     public void b(Entity entity) {
         this.a(entity, entity.chunkY);
     }
