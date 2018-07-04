@@ -36,7 +36,7 @@ public class Chunk implements IChunkAccess {
     private final BiomeBase[] f;
     private final boolean[] g;
     private final Map<BlockPosition, NBTTagCompound> h;
-    private boolean i;
+    private boolean i;public boolean isLoaded() { return i; } // Paper - OBFHELPER
     public final World world;
     public final Map<HeightMap.Type, HeightMap> heightMap;
     public final int locX;
@@ -66,7 +66,30 @@ public class Chunk implements IChunkAccess {
     // CraftBukkit start - Neighbor loaded cache for chunk lighting and entity ticking
     private int neighbors = 0x1 << 12;
     public long chunkKey;
+    // Paper start
+    private class TileEntityHashMap extends java.util.HashMap<BlockPosition, TileEntity> {
+        @Override
+        public TileEntity put(BlockPosition key, TileEntity value) {
+            TileEntity replaced = super.put(key, value);
+            if (replaced != null) {
+                replaced.setCurrentChunk(null);
+            }
+            if (value != null) {
+                value.setCurrentChunk(Chunk.this);
+            }
+            return replaced;
+        }
 
+        @Override
+        public TileEntity remove(Object key) {
+            TileEntity removed = super.remove(key);
+            if (removed != null) {
+                removed.setCurrentChunk(null);
+            }
+            return removed;
+        }
+    }
+    // Paper end
     public boolean areNeighborsLoaded(final int radius) {
         switch (radius) {
             case 2:
@@ -97,7 +120,7 @@ public class Chunk implements IChunkAccess {
         this.g = new boolean[256];
         this.h = Maps.newHashMap();
         this.heightMap = Maps.newEnumMap(HeightMap.Type.class);
-        this.tileEntities = Maps.newHashMap();
+        this.tileEntities = new TileEntityHashMap(); // Paper
         this.p = Maps.newHashMap();
         this.q = Maps.newHashMap();
         this.r = new ShortList[16];
@@ -657,6 +680,9 @@ public class Chunk implements IChunkAccess {
         entity.chunkY = k;
         entity.chunkZ = this.locZ;
         this.entitySlices[k].add(entity);
+        // Paper start
+        entity.setCurrentChunk(this);
+        // Paper end
     }
 
     public void a(HeightMap.Type heightmap_type, long[] along) {
@@ -675,8 +701,12 @@ public class Chunk implements IChunkAccess {
         if (i >= this.entitySlices.length) {
             i = this.entitySlices.length - 1;
         }
-
-        this.entitySlices[i].remove(entity);
+        // Paper start
+        if (!this.entitySlices[i].remove(entity)) {
+            return;
+        }
+        entity.setCurrentChunk(null);
+        // Paper end
     }
 
     public boolean c(BlockPosition blockposition) {
@@ -885,6 +915,7 @@ public class Chunk implements IChunkAccess {
                     }
                 }
                 // Spigot End
+                entity.setCurrentChunk(null); // Paper
 
                 // Do not pass along players, as doing so can get them stuck outside of time.
                 // (which for example disables inventory icon updates and prevents block breaking)

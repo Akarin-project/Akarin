@@ -132,7 +132,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     private static final DataWatcherObject<Boolean> aF = DataWatcher.a(Entity.class, DataWatcherRegistry.i);
     private static final DataWatcherObject<Boolean> aG = DataWatcher.a(Entity.class, DataWatcherRegistry.i);
     private static final DataWatcherObject<Boolean> aH = DataWatcher.a(Entity.class, DataWatcherRegistry.i);
-    public boolean inChunk;
+    public boolean inChunk; public boolean isAddedToChunk() { return inChunk; } // Paper - OBFHELPER
     public int chunkX; public int getChunkX() { return chunkX; } // Paper - OBFHELPER
     public int chunkY; public int getChunkY() { return chunkY; } // Paper - OBFHELPER
     public int chunkZ; public int getChunkZ() { return chunkZ; } // Paper - OBFHELPER
@@ -1776,6 +1776,39 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     }
 
     // Paper start
+    private java.lang.ref.WeakReference<Chunk> currentChunk = null;
+
+    public void setCurrentChunk(Chunk chunk) {
+        this.currentChunk = chunk != null ? new java.lang.ref.WeakReference<>(chunk) : null;
+    }
+    /**
+     * Returns the entities current registered chunk. If the entity is not added to a chunk yet, it will return null
+     */
+    public Chunk getCurrentChunk() {
+        final Chunk chunk = currentChunk != null ? currentChunk.get() : null;
+        return chunk != null && chunk.isLoaded() ? chunk : (isAddedToChunk() ? world.getChunkIfLoaded(getChunkX(), getChunkZ()) : null);
+    }
+    /**
+     * Returns the chunk at the location, using the entities local cache if avail
+     * Will only return null if the location specified is not loaded
+     */
+    public Chunk getCurrentChunkAt(int x, int z) {
+        if (getChunkX() == x && getChunkZ() == z) {
+            Chunk chunk = getCurrentChunk();
+            if (chunk != null) {
+                return chunk;
+            }
+        }
+        return world.getChunkIfLoaded(x, z);
+    }
+    /**
+     * Returns the chunk at the entities current location, using the entities local cache if avail
+     * Will only return null if the location specified is not loaded
+     */
+    public Chunk getChunkAtLocation() {
+        return getCurrentChunkAt((int)Math.floor(locX) >> 4, (int)Math.floor(locZ) >> 4);
+    }
+
     private MinecraftKey entityKey;
     private String entityKeyString;
 
