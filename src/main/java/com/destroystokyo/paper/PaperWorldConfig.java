@@ -443,4 +443,15 @@ public class PaperWorldConfig {
     private void scanForLegacyEnderDragon() {
         scanForLegacyEnderDragon = getBoolean("game-mechanics.scan-for-legacy-ender-dragon", true);
     }
+
+    public int bedSearchRadius = 1;
+    private void bedSearchRadius() {
+        bedSearchRadius = getInt("bed-search-radius", 1);
+        if (bedSearchRadius < 1) {
+            bedSearchRadius = 1;
+        }
+        if (bedSearchRadius > 1) {
+            log("Bed Search Radius: " + bedSearchRadius);
+        }
+    }
 }

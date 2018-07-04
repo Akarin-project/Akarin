@@ -187,6 +187,52 @@ public class BlockBed extends BlockFacingHorizontal implements ITileEntity {
     @Nullable
     public static BlockPosition a(IBlockAccess iblockaccess, BlockPosition blockposition, int i) {
         EnumDirection enumdirection = (EnumDirection) iblockaccess.getType(blockposition).get(BlockBed.FACING);
+        // Paper - replace whole method
+        World world = (World) iblockaccess;
+        int radius = world.paperConfig.bedSearchRadius;
+        for (int r = 1; r <= radius; r++) {
+            int x = -r;
+            int z = r;
+
+            // Iterates the edge of half of the box; then negates for other half.
+            while (x <= r && z > -r) {
+                for (int y = -1; y <= 1; y++) {
+                    BlockPosition pos = blockposition.add(x, y, z);
+                    if (isSafeRespawn(world, pos)) {
+                        if (i-- <= 0) {
+                            return pos;
+                        }
+                    }
+                    pos = blockposition.add(-x, y, -z);
+                    if (isSafeRespawn(world, pos)) {
+                        if (i-- <= 0) {
+                            return pos;
+                        }
+                    }
+
+                    pos = blockposition.add(enumdirection.getAdjacentX() + x, y, enumdirection.getAdjacentZ() + z);
+                    if (isSafeRespawn(world, pos)) {
+                        if (i-- <= 0) {
+                            return pos;
+                        }
+                    }
+
+                    pos = blockposition.add(enumdirection.getAdjacentX() - x, y, enumdirection.getAdjacentZ() - z);
+                    if (isSafeRespawn(world, pos)) {
+                        if (i-- <= 0) {
+                            return pos;
+                        }
+                    }
+                }
+                if (x < r) {
+                    x++;
+                } else {
+                    z--;
+                }
+            }
+        }
+
+        return null; /* // Paper comment out
         int j = blockposition.getX();
         int k = blockposition.getY();
         int l = blockposition.getZ();
@@ -212,9 +258,12 @@ public class BlockBed extends BlockFacingHorizontal implements ITileEntity {
             }
         }
 
-        return null;
+        return null;*/ // Paper
     }
 
+    protected static boolean isSafeRespawn(IBlockAccess iblockaccess, BlockPosition blockposition) { // Paper - OBFHELPER + behavior improvement
+        return a(iblockaccess, blockposition) && iblockaccess.getType(blockposition.down()).getMaterial().isBuildable(); // Paper - ensure solid block
+    }
     protected static boolean a(IBlockAccess iblockaccess, BlockPosition blockposition) {
         return iblockaccess.getType(blockposition.down()).q() && !iblockaccess.getType(blockposition).getMaterial().isBuildable() && !iblockaccess.getType(blockposition.up()).getMaterial().isBuildable();
     }
