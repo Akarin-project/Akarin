@@ -44,7 +44,7 @@ import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.plugin.PluginManager;
 // CraftBukkit end
 
-public abstract class Entity implements INamableTileEntity, ICommandListener {
+public abstract class Entity implements INamableTileEntity, ICommandListener, KeyedObject { // Paper
 
     // CraftBukkit start
     private static final int CURRENT_LEVEL = 2;
@@ -72,7 +72,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
     private static final AxisAlignedBB b = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     private static double c = 1.0D;
     private static int entityCount;
-    private final EntityTypes<?> g;
+    private final EntityTypes<?> g; public EntityTypes<?> getEntityType() { return g; } // Paper - OBFHELPER
     private int id;
     public boolean j;
     public final List<Entity> passengers;
@@ -1775,12 +1775,29 @@ public abstract class Entity implements INamableTileEntity, ICommandListener {
         return true;
     }
 
+    // Paper start
+    private MinecraftKey entityKey;
+    private String entityKeyString;
+
+    @Override
+    public MinecraftKey getMinecraftKey() {
+        if (entityKey == null) {
+            this.entityKey = EntityTypes.getName(this.getEntityType());
+            this.entityKeyString = this.entityKey != null ? this.entityKey.toString() : null;
+        }
+        return entityKey;
+    }
+
+    @Override
+    public String getMinecraftKeyString() {
+        getMinecraftKey(); // Try to load if it doesn't exists. see: https://github.com/PaperMC/Paper/issues/1280
+        return entityKeyString;
+    }
     @Nullable
     public final String getSaveID() {
-        EntityTypes<?> entitytypes = this.P();
-        MinecraftKey minecraftkey = EntityTypes.getName(entitytypes);
-
-        return entitytypes.a() && minecraftkey != null ? minecraftkey.toString() : null;
+        EntityTypes type = this.getEntityType();
+        return type != null && type.isPersistable() ? getMinecraftKeyString() : null;
+        // Paper end
     }
 
     protected abstract void a(NBTTagCompound nbttagcompound);

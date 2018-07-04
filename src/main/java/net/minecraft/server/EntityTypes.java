@@ -240,6 +240,7 @@ public class EntityTypes<T extends Entity> {
         }
     }
 
+    public boolean isPersistable() { return a(); } // Paper - OBFHELPER
     public boolean a() {
         return this.aU;
     }

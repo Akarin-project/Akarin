@@ -7,11 +7,11 @@ import org.apache.logging.log4j.Logger;
 import org.spigotmc.CustomTimingsHandler; // Spigot
 import org.bukkit.inventory.InventoryHolder; // CraftBukkit
 
-public abstract class TileEntity {
+public abstract class TileEntity implements KeyedObject { // Paper
 
     public CustomTimingsHandler tickTimer = org.bukkit.craftbukkit.SpigotTimings.getTileEntityTimings(this); // Spigot
     private static final Logger a = LogManager.getLogger();
-    private final TileEntityTypes<?> e;
+    private final TileEntityTypes<?> e; public TileEntityTypes getTileEntityType() { return e; } // Paper - OBFHELPER
     protected World world;
     protected BlockPosition position;
     protected boolean d;
@@ -22,6 +22,26 @@ public abstract class TileEntity {
         this.position = BlockPosition.ZERO;
         this.e = tileentitytypes;
     }
+
+    // Paper start
+    private String tileEntityKeyString = null;
+    private MinecraftKey tileEntityKey = null;
+
+    @Override
+    public MinecraftKey getMinecraftKey() {
+        if (tileEntityKey == null) {
+            tileEntityKey = TileEntityTypes.a(this.getTileEntityType());
+            tileEntityKeyString = tileEntityKey != null ? tileEntityKey.toString() : null;
+        }
+        return tileEntityKey;
+    }
+
+    @Override
+    public String getMinecraftKeyString() {
+        getMinecraftKey(); // Try to load if it doesn't exists.
+        return tileEntityKeyString;
+    }
+    // Paper end
 
     @Nullable
     public World getWorld() {
