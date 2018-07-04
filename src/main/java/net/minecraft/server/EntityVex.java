@@ -86,6 +86,7 @@ public class EntityVex extends EntityMonster {
 
     }
 
+    public EntityInsentient getOwner() { return l(); } // Paper - OBFHELPER
     public EntityInsentient l() {
         return this.b;
     }
