@@ -439,7 +439,7 @@ public abstract class PlayerList {
         entityplayer.b(StatisticList.f);
 
         // CraftBukkit start - Quitting must be before we do final save of data, in case plugins need to modify it
-        org.bukkit.craftbukkit.event.CraftEventFactory.handleInventoryCloseEvent(entityplayer);
+        org.bukkit.craftbukkit.event.CraftEventFactory.handleInventoryCloseEvent(entityplayer, org.bukkit.event.inventory.InventoryCloseEvent.Reason.DISCONNECT); // Paper
 
         PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(cserver.getPlayer(entityplayer), LocaleI18n.a(AkarinGlobalConfig.messagePlayerQuit, entityplayer.getName())); // Akarin - use I18n to replace name
         cserver.getPluginManager().callEvent(playerQuitEvent);

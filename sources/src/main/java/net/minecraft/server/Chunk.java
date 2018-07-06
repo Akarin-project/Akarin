@@ -5,6 +5,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class Chunk {
     private final byte[] g;
     private final int[] h;
     private final boolean[] i;
-    private boolean j;
+    private boolean j; public boolean isLoaded() { return j; } // Paper - OBFHELPER
     public final World world;
     public final int[] heightMap;
     public Long scheduledForUnload; // Paper - delay chunk unloads
@@ -42,7 +43,36 @@ public class Chunk {
     private boolean m;
     public final Map<BlockPosition, TileEntity> tileEntities;
     public final List<Entity>[] entitySlices; // Spigot
-    final PaperLightingQueue.LightingQueue lightingQueue = new PaperLightingQueue.LightingQueue(this); // Paper
+    // Paper start
+    public final co.aikar.util.Counter<String> entityCounts = new co.aikar.util.Counter<>();
+    public final co.aikar.util.Counter<String> tileEntityCounts = new co.aikar.util.Counter<>();
+    private class TileEntityHashMap extends java.util.HashMap<BlockPosition, TileEntity> {
+        @Override
+        public TileEntity put(BlockPosition key, TileEntity value) {
+            TileEntity replaced = super.put(key, value);
+            if (replaced != null) {
+                replaced.setCurrentChunk(null);
+                tileEntityCounts.decrement(replaced.tileEntityKeyString);
+            }
+            if (value != null) {
+                value.setCurrentChunk(Chunk.this);
+                tileEntityCounts.increment(value.tileEntityKeyString);
+            }
+            return replaced;
+        }
+
+        @Override
+        public TileEntity remove(Object key) {
+            TileEntity removed = super.remove(key);
+            if (removed != null) {
+                removed.setCurrentChunk(null);
+                tileEntityCounts.decrement(removed.tileEntityKeyString);
+            }
+            return removed;
+        }
+    }
+    final PaperLightingQueue.LightingQueue lightingQueue = new PaperLightingQueue.LightingQueue(this);
+    // Paper end
     private volatile boolean done; // Akarin - volatile
     private volatile boolean lit; // Akarin - volatile
     private volatile boolean r; private boolean isTicked() { return r; }; // Paper - OBFHELPER // Akarin - volatile
@@ -97,10 +127,10 @@ public class Chunk {
         this.g = new byte[256];
         this.h = new int[256];
         this.i = new boolean[256];
-        this.tileEntities = Maps.newHashMap();
+        this.tileEntities = new TileEntityHashMap(); // Paper
         this.x = 4096;
         this.y = Queues.newConcurrentLinkedQueue();
-        this.entitySlices = (new List[16]); // Spigot
+        this.entitySlices = (List[]) (new List[16]); // Spigot
         this.world = world;
         this.locX = i;
         this.locZ = j;
@@ -466,7 +496,6 @@ public class Chunk {
                         return CrashReportSystemDetails.a(i, j, k);
                     }
 
-                    @Override
                     public Object call() throws Exception {
                         return this.a();
                     }
@@ -675,9 +704,14 @@ public class Chunk {
                 this.entityCount.adjustOrPutValue( creatureType.a(), 1, 1 );
             }
         }
+        // Paper start
+        entity.setCurrentChunk(this);
+        entityCounts.increment(entity.entityKeyString);
+        // Paper end
         // Spigot end
     }
 
+    public void removeEntity(Entity entity) { b(entity); } // Paper - OBFHELPER
     public void b(Entity entity) {
         this.a(entity, entity.ac);
     }
@@ -714,6 +748,10 @@ public class Chunk {
                 this.entityCount.adjustValue( creatureType.a(), -1 );
             }
         }
+        // Paper start
+        entity.setCurrentChunk(null);
+        entityCounts.decrement(entity.entityKeyString);
+        // Paper end
         // Spigot end
     }
 
@@ -742,7 +780,7 @@ public class Chunk {
             tileentity = world.capturedTileEntities.get(blockposition);
         }
         if (tileentity == null) {
-            tileentity = this.tileEntities.get(blockposition);
+            tileentity = (TileEntity) this.tileEntities.get(blockposition);
         }
         // CraftBukkit end
 
@@ -774,7 +812,7 @@ public class Chunk {
         tileentity.setPosition(blockposition);
         if (this.getBlockData(blockposition).getBlock() instanceof ITileEntity) {
             if (this.tileEntities.containsKey(blockposition)) {
-                this.tileEntities.get(blockposition).z();
+                ((TileEntity) this.tileEntities.get(blockposition)).z();
             }
 
             tileentity.A();
@@ -796,6 +834,7 @@ public class Chunk {
 
             if (this.world.paperConfig.removeCorruptTEs) {
                 this.removeTileEntity(tileentity.getPosition());
+                this.markDirty();
                 org.bukkit.Bukkit.getLogger().info("Removing corrupt tile entity");
             }
             // Paper end
@@ -806,7 +845,7 @@ public class Chunk {
     public void removeTileEntity(BlockPosition blockposition) { this.d(blockposition); } // Paper - OBFHELPER
     public void d(BlockPosition blockposition) {
         if (this.j) {
-            TileEntity tileentity = this.tileEntities.remove(blockposition);
+            TileEntity tileentity = (TileEntity) this.tileEntities.remove(blockposition);
 
             if (tileentity != null) {
                 tileentity.z();
@@ -824,7 +863,7 @@ public class Chunk {
         for (int j = 0; j < i; ++j) {
             List entityslice = aentityslice[j]; // Spigot
 
-            this.world.a(entityslice);
+            this.world.a((Collection) entityslice);
         }
 
     }
@@ -838,11 +877,11 @@ public class Chunk {
             // Spigot Start
             if ( tileentity instanceof IInventory )
             {
-                for ( org.bukkit.entity.HumanEntity h : Lists.<org.bukkit.entity.HumanEntity>newArrayList(( (IInventory) tileentity ).getViewers() ) )
+                for ( org.bukkit.entity.HumanEntity h : Lists.<org.bukkit.entity.HumanEntity>newArrayList((List<org.bukkit.entity.HumanEntity>) ( (IInventory) tileentity ).getViewers() ) )
                 {
                     if ( h instanceof org.bukkit.craftbukkit.entity.CraftHumanEntity )
                     {
-                       ( (org.bukkit.craftbukkit.entity.CraftHumanEntity) h).getHandle().closeInventory();
+                       ( (org.bukkit.craftbukkit.entity.CraftHumanEntity) h).getHandle().closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason.UNLOADED); // Paper
                     }
                 }
             }
@@ -863,11 +902,11 @@ public class Chunk {
                 // Spigot Start
                 if ( entity instanceof IInventory )
                 {
-                    for ( org.bukkit.entity.HumanEntity h : Lists.<org.bukkit.entity.HumanEntity>newArrayList( ( (IInventory) entity ).getViewers() ) )
+                    for ( org.bukkit.entity.HumanEntity h : Lists.<org.bukkit.entity.HumanEntity>newArrayList( (List<org.bukkit.entity.HumanEntity>) ( (IInventory) entity ).getViewers() ) )
                     {
                         if ( h instanceof org.bukkit.craftbukkit.entity.CraftHumanEntity )
                         {
-                           ( (org.bukkit.craftbukkit.entity.CraftHumanEntity) h).getHandle().closeInventory();
+                           ( (org.bukkit.craftbukkit.entity.CraftHumanEntity) h).getHandle().closeInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason.UNLOADED); // Paper
                         }
                     }
                 }
@@ -982,7 +1021,7 @@ public class Chunk {
     }
 
     public Random a(long i) {
-        return new Random(this.world.getSeed() + this.locX * this.locX * 4987142 + this.locX * 5947611 + this.locZ * this.locZ * 4392871L + this.locZ * 389711 ^ i);
+        return new Random(this.world.getSeed() + (long) (this.locX * this.locX * 4987142) + (long) (this.locX * 5947611) + (long) (this.locZ * this.locZ) * 4392871L + (long) (this.locZ * 389711) ^ i);
     }
 
     public boolean isEmpty() {
@@ -1062,7 +1101,7 @@ public class Chunk {
             random.setSeed(world.getSeed());
             long xRand = random.nextLong() / 2L * 2L + 1L;
             long zRand = random.nextLong() / 2L * 2L + 1L;
-            random.setSeed(locX * xRand + locZ * zRand ^ world.getSeed());
+            random.setSeed((long) locX * xRand + (long) locZ * zRand ^ world.getSeed());
 
             org.bukkit.World world = this.world.getWorld();
             if (world != null) {
@@ -1123,7 +1162,7 @@ public class Chunk {
         }
 
         while (!this.y.isEmpty()) {
-            BlockPosition blockposition = this.y.poll();
+            BlockPosition blockposition = (BlockPosition) this.y.poll();
 
             if (this.a(blockposition, Chunk.EnumTileEntityState.CHECK) == null && this.getBlockData(blockposition).getBlock().isTileEntity()) {
                 TileEntity tileentity = this.g(blockposition);
@@ -1341,7 +1380,7 @@ public class Chunk {
 
         for (l = k + 16 - 1; l > this.world.getSeaLevel() || l > 0 && !flag1; --l) {
             blockposition_mutableblockposition.c(blockposition_mutableblockposition.getX(), l, blockposition_mutableblockposition.getZ());
-            int i1 = this.b(blockposition_mutableblockposition);
+            int i1 = this.b((BlockPosition) blockposition_mutableblockposition);
 
             if (i1 == 255 && blockposition_mutableblockposition.getY() < this.world.getSeaLevel()) {
                 flag1 = true;

@@ -413,7 +413,7 @@ public abstract class PandaRedstoneWire extends Block {
      */
     private void addAllSurroundingBlocks(BlockPosition pos, Set<BlockPosition> set) {
         for (BaseBlockPosition vect : surroundingBlocksOffset) {
-            set.add(pos.add(vect));
+            set.add(pos.a(vect)); // PAIL: add
         }
     }
 
@@ -446,7 +446,7 @@ public abstract class PandaRedstoneWire extends Block {
     public void onPlace(World world, BlockPosition pos, IBlockData state) {
         this.updateSurroundingRedstone(world, pos);
         for (BaseBlockPosition vec : surroundingBlocksOffset) {
-            world.applyPhysics(pos.add(vec), this, false);
+            world.applyPhysics(pos.a(vec), this, false); // PAIL: add
         }
     }
     
@@ -463,7 +463,7 @@ public abstract class PandaRedstoneWire extends Block {
         super.remove(world, pos, state);
         this.updateSurroundingRedstone(world, pos);
         for (BaseBlockPosition vec : surroundingBlocksOffset) {
-            world.applyPhysics(pos.add(vec), this, false);
+            world.applyPhysics(pos.a(vec), this, false); // PAIL: add
         }
     }
 

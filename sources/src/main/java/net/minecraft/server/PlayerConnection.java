@@ -146,7 +146,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     private final static HashSet<Integer> invalidItems = new HashSet<Integer>(java.util.Arrays.asList(8, 9, 10, 11, 26, 34, 36, 43, 51, 55, 59, 62, 63, 64, 68, 71, 74, 75, 83, 90, 92, 93, 94, 104, 105, 115, 117, 118, 119, 125, 127, 132, 140, 141, 142, 144)); // TODO: Check after every update.
     // CraftBukkit end
 
-    @Override
     public void e() {
         this.syncPosition();
         this.player.playerTick();
@@ -189,7 +188,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
 
         this.minecraftServer.methodProfiler.a("keepAlive");
-        /* // Akarin start
+        /* // Akarin
         // Paper Start - give clients a longer time to respond to pings as per pre 1.12.2 timings
         // This should effectively place the keepalive handling back to "as it was" before 1.12.2
         long currentTime = this.getCurrentMillis();
@@ -209,7 +208,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             }
         }
         // Paper end
-        */ // Akarin end
+        */ // Akarin
 
         this.minecraftServer.methodProfiler.b();
         // CraftBukkit start
@@ -225,7 +224,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             --this.j;
         }
 
-        if (this.player.J() > 0L && this.minecraftServer.getIdleTimeout() > 0 && MinecraftServer.aw() - this.player.J() > this.minecraftServer.getIdleTimeout() * 1000 * 60) {
+        if (this.player.J() > 0L && this.minecraftServer.getIdleTimeout() > 0 && MinecraftServer.aw() - this.player.J() > (long) (this.minecraftServer.getIdleTimeout() * 1000 * 60)) {
             this.player.resetIdleTimer(); // CraftBukkit - SPIGOT-854
             this.disconnect(new ChatMessage("multiplayer.disconnect.idling", new Object[0]));
         }
@@ -275,7 +274,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         final ChatComponentText chatcomponenttext = new ChatComponentText(s);
 
         this.networkManager.sendPacket(new PacketPlayOutKickDisconnect(chatcomponenttext), new GenericFutureListener() {
-            @Override
             public void operationComplete(Future future) throws Exception { // CraftBukkit - decompile error
                 PlayerConnection.this.networkManager.close(chatcomponenttext);
             }
@@ -284,14 +282,12 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.networkManager.stopReading();
         // CraftBukkit - Don't wait
         this.minecraftServer.postToMainThread(new Runnable() {
-            @Override
             public void run() {
                 PlayerConnection.this.networkManager.handleDisconnection();
             }
         });
     }
 
-    @Override
     public void a(PacketPlayInSteerVehicle packetplayinsteervehicle) {
         PlayerConnectionUtils.ensureMainThread(packetplayinsteervehicle, this, this.player.x());
         this.player.a(packetplayinsteervehicle.a(), packetplayinsteervehicle.b(), packetplayinsteervehicle.c(), packetplayinsteervehicle.d());
@@ -305,7 +301,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         return !Doubles.isFinite(packetplayinvehiclemove.getX()) || !Doubles.isFinite(packetplayinvehiclemove.getY()) || !Doubles.isFinite(packetplayinvehiclemove.getZ()) || !Floats.isFinite(packetplayinvehiclemove.getPitch()) || !Floats.isFinite(packetplayinvehiclemove.getYaw());
     }
 
-    @Override
     public void a(PacketPlayInVehicleMove packetplayinvehiclemove) {
         PlayerConnectionUtils.ensureMainThread(packetplayinvehiclemove, this, this.player.x());
         if (b(packetplayinvehiclemove)) {
@@ -355,7 +350,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 }
                 speed *= 2f; // TODO: Get the speed of the vehicle instead of the player
 
-                if (d10 - d9 > Math.max(100.0D, Math.pow(org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * i * speed, 2)) && (!this.minecraftServer.R() || !this.minecraftServer.Q().equals(entity.getName()))) { // Spigot
+                if (d10 - d9 > Math.max(100.0D, Math.pow((double) (org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed), 2)) && (!this.minecraftServer.R() || !this.minecraftServer.Q().equals(entity.getName()))) { // Spigot
                 // CraftBukkit end
                     PlayerConnection.LOGGER.warn("{} (vehicle of {}) moved too quickly! {},{},{}", entity.getName(), this.player.getName(), Double.valueOf(d6), Double.valueOf(d7), Double.valueOf(d8));
                     this.networkManager.sendPacket(new PacketPlayOutVehicleMove(entity));
@@ -473,7 +468,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
     }
 
-    @Override
     public void a(PacketPlayInTeleportAccept packetplayinteleportaccept) {
         PlayerConnectionUtils.ensureMainThread(packetplayinteleportaccept, this, this.player.x());
         if (packetplayinteleportaccept.a() == this.teleportAwait && this.teleportPos != null) { // CraftBukkit
@@ -490,7 +484,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInRecipeDisplayed packetplayinrecipedisplayed) {
         PlayerConnectionUtils.ensureMainThread(packetplayinrecipedisplayed, this, this.player.x());
         if (packetplayinrecipedisplayed.a() == PacketPlayInRecipeDisplayed.Status.SHOWN) {
@@ -502,7 +495,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInAdvancements packetplayinadvancements) {
         PlayerConnectionUtils.ensureMainThread(packetplayinadvancements, this, this.player.x());
         if (packetplayinadvancements.b() == PacketPlayInAdvancements.Status.OPENED_TAB) {
@@ -516,7 +508,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInFlying packetplayinflying) {
         PlayerConnectionUtils.ensureMainThread(packetplayinflying, this, this.player.x());
         if (b(packetplayinflying)) {
@@ -598,7 +589,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                             if (!this.player.L() && (!this.player.x().getGameRules().getBoolean("disableElytraMovementCheck") || !this.player.cP())) {
                                 float f2 = this.player.cP() ? 300.0F : 100.0F;
 
-                                if (d11 - d10 > Math.max(f2, Math.pow(org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * i * speed, 2)) && (!this.minecraftServer.R() || !this.minecraftServer.Q().equals(this.player.getName()))) { // Spigot
+                                if (d11 - d10 > Math.max(f2, Math.pow((double) (org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed), 2)) && (!this.minecraftServer.R() || !this.minecraftServer.Q().equals(this.player.getName()))) { // Spigot
                                 // CraftBukkit end
                                     PlayerConnection.LOGGER.warn("{} moved too quickly! {},{},{}", this.player.getName(), Double.valueOf(d7), Double.valueOf(d8), Double.valueOf(d9));
                                     this.a(this.player.locX, this.player.locY, this.player.locZ, this.player.yaw, this.player.pitch);
@@ -855,7 +846,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.player.playerConnection.sendPacket(new PacketPlayOutPosition(d0, d1, d2, f, f1, set, this.teleportAwait));
     }
 
-    @Override
     public void a(PacketPlayInBlockDig packetplayinblockdig) {
         PlayerConnectionUtils.ensureMainThread(packetplayinblockdig, this, this.player.x());
         if (this.player.isFrozen()) return; // CraftBukkit
@@ -918,9 +908,9 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         case START_DESTROY_BLOCK:
         case ABORT_DESTROY_BLOCK:
         case STOP_DESTROY_BLOCK:
-            double d0 = this.player.locX - (blockposition.getX() + 0.5D);
-            double d1 = this.player.locY - (blockposition.getY() + 0.5D) + 1.5D;
-            double d2 = this.player.locZ - (blockposition.getZ() + 0.5D);
+            double d0 = this.player.locX - ((double) blockposition.getX() + 0.5D);
+            double d1 = this.player.locY - ((double) blockposition.getY() + 0.5D) + 1.5D;
+            double d2 = this.player.locZ - ((double) blockposition.getZ() + 0.5D);
             double d3 = d0 * d0 + d1 * d1 + d2 * d2;
 
             if (d3 > 36.0D) {
@@ -984,7 +974,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     }
     // Spigot end
 
-    @Override
     public void a(PacketPlayInUseItem packetplayinuseitem) {
         PlayerConnectionUtils.ensureMainThread(packetplayinuseitem, this, this.player.x());
         if (this.player.isFrozen()) return; // CraftBukkit
@@ -1001,7 +990,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
             chatmessage.getChatModifier().setColor(EnumChatFormat.RED);
             this.player.playerConnection.sendPacket(new PacketPlayOutChat(chatmessage, ChatMessageType.GAME_INFO));
-        } else if (this.teleportPos == null && this.player.d(blockposition.getX() + 0.5D, blockposition.getY() + 0.5D, blockposition.getZ() + 0.5D) < 64.0D && !this.minecraftServer.a(worldserver, blockposition, this.player) && worldserver.getWorldBorder().a(blockposition)) {
+        } else if (this.teleportPos == null && this.player.d((double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D) < 64.0D && !this.minecraftServer.a(worldserver, blockposition, this.player) && worldserver.getWorldBorder().a(blockposition)) {
             // CraftBukkit start - Check if we can actually do something over this large a distance
             Location eyeLoc = this.getPlayer().getEyeLocation();
             double reachDistance = NumberConversions.square(eyeLoc.getX() - blockposition.getX()) + NumberConversions.square(eyeLoc.getY() - blockposition.getY()) + NumberConversions.square(eyeLoc.getZ() - blockposition.getZ());
@@ -1016,7 +1005,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(worldserver, blockposition.shift(enumdirection)));
     }
 
-    @Override
     public void a(PacketPlayInBlockPlace packetplayinblockplace) {
         PlayerConnectionUtils.ensureMainThread(packetplayinblockplace, this, this.player.x());
         if (this.player.isFrozen()) return; // CraftBukkit
@@ -1032,7 +1020,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             float f1 = this.player.pitch;
             float f2 = this.player.yaw;
             double d0 = this.player.locX;
-            double d1 = this.player.locY + this.player.getHeadHeight();
+            double d1 = this.player.locY + (double) this.player.getHeadHeight();
             double d2 = this.player.locZ;
             Vec3D vec3d = new Vec3D(d0, d1, d2);
 
@@ -1043,7 +1031,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             float f7 = f4 * f5;
             float f8 = f3 * f5;
             double d3 = player.playerInteractManager.getGameMode()== EnumGamemode.CREATIVE ? 5.0D : 4.5D;
-            Vec3D vec3d1 = vec3d.add(f7 * d3, f6 * d3, f8 * d3);
+            Vec3D vec3d1 = vec3d.add((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
             MovingObjectPosition movingobjectposition = this.player.world.rayTrace(vec3d, vec3d1, false);
 
             boolean cancelled;
@@ -1069,7 +1057,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
     }
 
-    @Override
     public void a(PacketPlayInSpectate packetplayinspectate) {
         PlayerConnectionUtils.ensureMainThread(packetplayinspectate, this, this.player.x());
         if (this.player.isSpectator()) {
@@ -1127,7 +1114,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     }
 
     // CraftBukkit start
-    @Override
     public void a(PacketPlayInResourcePackStatus packetplayinresourcepackstatus) {
         PlayerConnectionUtils.ensureMainThread(packetplayinresourcepackstatus, this, this.player.x());
         // Paper start
@@ -1139,7 +1125,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     }
     // CraftBukkit end
 
-    @Override
     public void a(PacketPlayInBoatMove packetplayinboatmove) {
         PlayerConnectionUtils.ensureMainThread(packetplayinboatmove, this, this.player.x());
         Entity entity = this.player.bJ();
@@ -1150,7 +1135,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(IChatBaseComponent ichatbasecomponent) {
         // CraftBukkit start - Rarely it would send a disconnect line twice
         if (this.processedDisconnect) {
@@ -1216,7 +1200,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                     return packet.getClass().getCanonicalName();
                 }
 
-                @Override
                 public Object call() throws Exception {
                     return this.a();
                 }
@@ -1225,7 +1208,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
     }
 
-    @Override
     public void a(PacketPlayInHeldItemSlot packetplayinhelditemslot) {
         PlayerConnectionUtils.ensureMainThread(packetplayinhelditemslot, this, this.player.x());
         if (this.player.isFrozen()) return; // CraftBukkit
@@ -1246,7 +1228,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
     }
 
-    @Override
     public void a(PacketPlayInChat packetplayinchat) {
         // CraftBukkit start - async chat
         // SPIGOT-3638
@@ -1387,6 +1368,8 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             // Paper Start
             if (!org.spigotmc.AsyncCatcher.shuttingDown && !Akari.isPrimaryThread()) { // Akarin
                 final String fCommandLine = s;
+                Akari.callbackQueue.add(() -> chat(fCommandLine,  false)); // Akarin
+                /* // Akarin
                 MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Command Dispatched Async: " + fCommandLine);
                 MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Please notify author of plugin causing this execution to fix this bug! see: http://bit.ly/1oSiM6C", new Throwable());
                 Waitable wait = new Waitable() {
@@ -1405,6 +1388,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 } catch (Exception e) {
                     throw new RuntimeException("Exception processing chat command", e.getCause());
                 }
+                */ // Akarin
             }
             // Paper End
             this.handleCommand(s);
@@ -1513,7 +1497,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         // CraftBukkit end
     }
 
-    @Override
     public void a(PacketPlayInArmAnimation packetplayinarmanimation) {
         PlayerConnectionUtils.ensureMainThread(packetplayinarmanimation, this, this.player.x());
         if (this.player.isFrozen()) return; // CraftBukkit
@@ -1522,7 +1505,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         float f1 = this.player.pitch;
         float f2 = this.player.yaw;
         double d0 = this.player.locX;
-        double d1 = this.player.locY + this.player.getHeadHeight();
+        double d1 = this.player.locY + (double) this.player.getHeadHeight();
         double d2 = this.player.locZ;
         Vec3D vec3d = new Vec3D(d0, d1, d2);
 
@@ -1533,7 +1516,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         float f7 = f4 * f5;
         float f8 = f3 * f5;
         double d3 = player.playerInteractManager.getGameMode()== EnumGamemode.CREATIVE ? 5.0D : 4.5D;
-        Vec3D vec3d1 = vec3d.add(f7 * d3, f6 * d3, f8 * d3);
+        Vec3D vec3d1 = vec3d.add((double) f7 * d3, (double) f6 * d3, (double) f8 * d3);
         MovingObjectPosition movingobjectposition = this.player.world.rayTrace(vec3d, vec3d1, false);
 
         if (movingobjectposition == null || movingobjectposition.type != MovingObjectPosition.EnumMovingObjectType.BLOCK) {
@@ -1549,7 +1532,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.player.a(packetplayinarmanimation.a());
     }
 
-    @Override
     public void a(PacketPlayInEntityAction packetplayinentityaction) {
         PlayerConnectionUtils.ensureMainThread(packetplayinentityaction, this, this.player.x());
         // CraftBukkit start
@@ -1651,12 +1633,11 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInUseEntity packetplayinuseentity) {
         PlayerConnectionUtils.ensureMainThread(packetplayinuseentity, this, this.player.x());
         if (this.player.isFrozen()) return; // CraftBukkit
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
-        Entity entity = packetplayinuseentity.a(worldserver);
+        Entity entity = packetplayinuseentity.a((World) worldserver);
         // Spigot Start
         if ( entity == player && !player.isSpectator() )
         {
@@ -1686,10 +1667,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                     Item origItem = this.player.inventory.getItemInHand() == null ? null : this.player.inventory.getItemInHand().getItem();
                     PlayerInteractEntityEvent event;
                     if (packetplayinuseentity.a() == PacketPlayInUseEntity.EnumEntityUseAction.INTERACT) {
-                        event = new PlayerInteractEntityEvent(this.getPlayer(), entity.getBukkitEntity(), (packetplayinuseentity.b() == EnumHand.OFF_HAND) ? EquipmentSlot.OFF_HAND : EquipmentSlot.HAND);
+                        event = new PlayerInteractEntityEvent((Player) this.getPlayer(), entity.getBukkitEntity(), (packetplayinuseentity.b() == EnumHand.OFF_HAND) ? EquipmentSlot.OFF_HAND : EquipmentSlot.HAND);
                     } else {
                         Vec3D target = packetplayinuseentity.c();
-                        event = new PlayerInteractAtEntityEvent(this.getPlayer(), entity.getBukkitEntity(), new org.bukkit.util.Vector(target.x, target.y, target.z), (packetplayinuseentity.b() == EnumHand.OFF_HAND) ? EquipmentSlot.OFF_HAND : EquipmentSlot.HAND);
+                        event = new PlayerInteractAtEntityEvent((Player) this.getPlayer(), entity.getBukkitEntity(), new org.bukkit.util.Vector(target.x, target.y, target.z), (packetplayinuseentity.b() == EnumHand.OFF_HAND) ? EquipmentSlot.OFF_HAND : EquipmentSlot.HAND);
                     }
                     this.server.getPluginManager().callEvent(event);
 
@@ -1755,7 +1736,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInClientCommand packetplayinclientcommand) {
         PlayerConnectionUtils.ensureMainThread(packetplayinclientcommand, this, this.player.x());
         this.player.resetIdleTimer();
@@ -1787,17 +1767,15 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInCloseWindow packetplayinclosewindow) {
         PlayerConnectionUtils.ensureMainThread(packetplayinclosewindow, this, this.player.x());
 
         if (this.player.isFrozen()) return; // CraftBukkit
-        CraftEventFactory.handleInventoryCloseEvent(this.player); // CraftBukkit
+        CraftEventFactory.handleInventoryCloseEvent(this.player, org.bukkit.event.inventory.InventoryCloseEvent.Reason.PLAYER); // CraftBukkit // Paper
 
         this.player.r();
     }
 
-    @Override
     public void a(PacketPlayInWindowClick packetplayinwindowclick) {
         PlayerConnectionUtils.ensureMainThread(packetplayinwindowclick, this, this.player.x());
         if (this.player.isFrozen()) return; // CraftBukkit
@@ -1808,7 +1786,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 NonNullList nonnulllist = NonNullList.a();
 
                 for (int i = 0; i < this.player.activeContainer.slots.size(); ++i) {
-                    nonnulllist.add(this.player.activeContainer.slots.get(i).getItem());
+                    nonnulllist.add(((Slot) this.player.activeContainer.slots.get(i)).getItem());
                 }
 
                 this.player.a(this.player.activeContainer, nonnulllist);
@@ -2094,7 +2072,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                     NonNullList nonnulllist1 = NonNullList.a();
 
                     for (int j = 0; j < this.player.activeContainer.slots.size(); ++j) {
-                        ItemStack itemstack1 = this.player.activeContainer.slots.get(j).getItem();
+                        ItemStack itemstack1 = ((Slot) this.player.activeContainer.slots.get(j)).getItem();
                         ItemStack itemstack2 = itemstack1.isEmpty() ? ItemStack.a : itemstack1;
 
                         nonnulllist1.add(itemstack2);
@@ -2107,7 +2085,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInAutoRecipe packetplayinautorecipe) {
         PlayerConnectionUtils.ensureMainThread(packetplayinautorecipe, this, this.player.x());
         this.player.resetIdleTimer();
@@ -2116,7 +2093,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
     }
 
-    @Override
     public void a(PacketPlayInEnchantItem packetplayinenchantitem) {
         PlayerConnectionUtils.ensureMainThread(packetplayinenchantitem, this, this.player.x());
         if (this.player.isFrozen()) return; // CraftBukkit
@@ -2128,7 +2104,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInSetCreativeSlot packetplayinsetcreativeslot) {
         PlayerConnectionUtils.ensureMainThread(packetplayinsetcreativeslot, this, this.player.x());
         if (this.player.playerInteractManager.isCreative()) {
@@ -2148,7 +2123,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                         nbttagcompound1.remove("x");
                         nbttagcompound1.remove("y");
                         nbttagcompound1.remove("z");
-                        itemstack.a("BlockEntityTag", nbttagcompound1);
+                        itemstack.a("BlockEntityTag", (NBTBase) nbttagcompound1);
                     }
                 }
             }
@@ -2214,11 +2189,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInTransaction packetplayintransaction) {
         PlayerConnectionUtils.ensureMainThread(packetplayintransaction, this, this.player.x());
         if (this.player.isFrozen()) return; // CraftBukkit
-        Short oshort = this.k.get(this.player.activeContainer.windowId);
+        Short oshort = (Short) this.k.get(this.player.activeContainer.windowId);
 
         if (oshort != null && packetplayintransaction.b() == oshort.shortValue() && this.player.activeContainer.windowId == packetplayintransaction.a() && !this.player.activeContainer.c(this.player) && !this.player.isSpectator()) {
             this.player.activeContainer.a(this.player, true);
@@ -2226,7 +2200,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInUpdateSign packetplayinupdatesign) {
         PlayerConnectionUtils.ensureMainThread(packetplayinupdatesign, this, this.player.x());
         if (this.player.isFrozen()) return; // CraftBukkit
@@ -2262,7 +2235,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             for (int i = 0; i < astring.length; ++i) {
                 lines[i] = SharedConstants.a(astring[i]); //Paper - Replaced with anvil color stripping method to stop exploits that allow colored signs to be created.
             }
-            SignChangeEvent event = new SignChangeEvent(player.getWorld().getBlockAt(x, y, z), this.server.getPlayer(this.player), lines);
+            SignChangeEvent event = new SignChangeEvent((org.bukkit.craftbukkit.block.CraftBlock) player.getWorld().getBlockAt(x, y, z), this.server.getPlayer(this.player), lines);
             this.server.getPluginManager().callEvent(event);
 
             if (!event.isCancelled()) {
@@ -2277,7 +2250,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    @Override
     public void a(PacketPlayInKeepAlive packetplayinkeepalive) {
         //PlayerConnectionUtils.ensureMainThread(packetplayinkeepalive, this, this.player.x()); // CraftBukkit // Paper - This shouldn't be on the main thread
         if (this.g && packetplayinkeepalive.a() == this.h) {
@@ -2302,7 +2274,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         return System.nanoTime() / 1000000L;
     }
 
-    @Override
     public void a(PacketPlayInAbilities packetplayinabilities) {
         PlayerConnectionUtils.ensureMainThread(packetplayinabilities, this, this.player.x());
         // CraftBukkit start
@@ -2319,7 +2290,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     }
 
     // Paper start - async tab completion
-    @Override
     public void a(PacketPlayInTabComplete packet) {
         // CraftBukkit start
         if (chatSpamField.addAndGet(this, 10) > 500 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
@@ -2366,13 +2336,11 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         // Paper end
     }
 
-    @Override
     public void a(PacketPlayInSettings packetplayinsettings) {
         PlayerConnectionUtils.ensureMainThread(packetplayinsettings, this, this.player.x());
         this.player.a(packetplayinsettings);
     }
 
-    @Override
     public void a(PacketPlayInCustomPayload packetplayincustompayload) {
         PlayerConnectionUtils.ensureMainThread(packetplayincustompayload, this, this.player.x());
         String s = packetplayincustompayload.a();
@@ -2407,7 +2375,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
                 if (itemstack.getItem() == Items.WRITABLE_BOOK && itemstack.getItem() == itemstack1.getItem()) {
                     itemstack1 = new ItemStack(Items.WRITABLE_BOOK); // CraftBukkit
-                    itemstack1.a("pages", itemstack.getTag().getList("pages", 8));
+                    itemstack1.a("pages", (NBTBase) itemstack.getTag().getList("pages", 8));
                     CraftEventFactory.handleEditBookEvent(player, itemstack1); // CraftBukkit
                 }
             } catch (Exception exception) {
@@ -2444,19 +2412,19 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                     if (itemstack.getItem() == Items.WRITABLE_BOOK && itemstack1.getItem() == Items.WRITABLE_BOOK) {
                         ItemStack itemstack2 = new ItemStack(Items.WRITTEN_BOOK);
 
-                        itemstack2.a("author", (new NBTTagString(this.player.getName())));
-                        itemstack2.a("title", (new NBTTagString(itemstack.getTag().getString("title"))));
+                        itemstack2.a("author", (NBTBase) (new NBTTagString(this.player.getName())));
+                        itemstack2.a("title", (NBTBase) (new NBTTagString(itemstack.getTag().getString("title"))));
                         NBTTagList nbttaglist = itemstack.getTag().getList("pages", 8);
 
                         for (int i = 0; i < nbttaglist.size(); ++i) {
                             s1 = nbttaglist.getString(i);
                             ChatComponentText chatcomponenttext = new ChatComponentText(s1);
 
-                            s1 = IChatBaseComponent.ChatSerializer.a(chatcomponenttext);
+                            s1 = IChatBaseComponent.ChatSerializer.a((IChatBaseComponent) chatcomponenttext);
                             nbttaglist.a(i, new NBTTagString(s1));
                         }
 
-                        itemstack2.a("pages", nbttaglist);
+                        itemstack2.a("pages", (NBTBase) nbttaglist);
                         CraftEventFactory.handleEditBookEvent(player, itemstack2); // CraftBukkit
                     }
                 } catch (Exception exception1) {
@@ -2554,7 +2522,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                         boolean flag3 = packetdataserializer.readBoolean();
 
                         if (commandblocklistenerabstract1 != null) {
-                            EnumDirection enumdirection = this.player.world.getType(blockposition).get(BlockCommand.a);
+                            EnumDirection enumdirection = (EnumDirection) this.player.world.getType(blockposition).get(BlockCommand.a);
                             IBlockData iblockdata;
 
                             switch (tileentitycommand_type) {
@@ -2674,23 +2642,23 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
                                 if (b1 == 2) {
                                     if (tileentitystructure.q()) {
-                                        this.player.a((new ChatMessage("structure_block.save_success", new Object[] { s7})), false);
+                                        this.player.a((IChatBaseComponent) (new ChatMessage("structure_block.save_success", new Object[] { s7})), false);
                                     } else {
-                                        this.player.a((new ChatMessage("structure_block.save_failure", new Object[] { s7})), false);
+                                        this.player.a((IChatBaseComponent) (new ChatMessage("structure_block.save_failure", new Object[] { s7})), false);
                                     }
                                 } else if (b1 == 3) {
                                     if (!tileentitystructure.E()) {
-                                        this.player.a((new ChatMessage("structure_block.load_not_found", new Object[] { s7})), false);
+                                        this.player.a((IChatBaseComponent) (new ChatMessage("structure_block.load_not_found", new Object[] { s7})), false);
                                     } else if (tileentitystructure.r()) {
-                                        this.player.a((new ChatMessage("structure_block.load_success", new Object[] { s7})), false);
+                                        this.player.a((IChatBaseComponent) (new ChatMessage("structure_block.load_success", new Object[] { s7})), false);
                                     } else {
-                                        this.player.a((new ChatMessage("structure_block.load_prepare", new Object[] { s7})), false);
+                                        this.player.a((IChatBaseComponent) (new ChatMessage("structure_block.load_prepare", new Object[] { s7})), false);
                                     }
                                 } else if (b1 == 4) {
                                     if (tileentitystructure.p()) {
-                                        this.player.a((new ChatMessage("structure_block.size_success", new Object[] { s7})), false);
+                                        this.player.a((IChatBaseComponent) (new ChatMessage("structure_block.size_success", new Object[] { s7})), false);
                                     } else {
-                                        this.player.a((new ChatMessage("structure_block.size_failure", new Object[0])), false);
+                                        this.player.a((IChatBaseComponent) (new ChatMessage("structure_block.size_failure", new Object[0])), false);
                                     }
                                 }
 
