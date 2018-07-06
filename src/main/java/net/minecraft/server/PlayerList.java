@@ -1201,8 +1201,25 @@ public abstract class PlayerList {
     }
 
     public void sendPacketNearby(@Nullable EntityHuman entityhuman, double d0, double d1, double d2, double d3, DimensionManager dimensionmanager, Packet<?> packet) {
-        for (int i = 0; i < this.players.size(); ++i) {
-            EntityPlayer entityplayer = (EntityPlayer) this.players.get(i);
+        // Paper start - Use world list instead of server list where preferable
+        sendPacketNearby(entityhuman, d0, d1, d2, d3, dimensionmanager, null, packet); // Retained for compatibility
+    }
+
+    public void sendPacketNearby(@Nullable EntityHuman entityhuman, double d0, double d1, double d2, double d3, WorldServer world, Packet<?> packet) {
+        sendPacketNearby(entityhuman, d0, d1, d2, d3, world.dimension, world, packet);
+    }
+
+    public void sendPacketNearby(@Nullable EntityHuman entityhuman, double d0, double d1, double d2, double d3, DimensionManager dimensionmanager, @Nullable WorldServer world, Packet<?> packet) {
+        if (world == null && entityhuman != null && entityhuman.world instanceof WorldServer) {
+            world = (WorldServer) entityhuman.world;
+        }
+
+        List<? extends EntityHuman> players1 = world == null ? players : world.players;
+        for (int j = 0; j < players1.size(); ++j) {
+            EntityHuman entity = players1.get(j);
+            if (!(entity instanceof EntityPlayer)) continue;
+            EntityPlayer entityplayer = (EntityPlayer) entity;
+            // Paper end
 
             // CraftBukkit start - Test if player receiving packet can see the source of the packet
             if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSee(((EntityPlayer) entityhuman).getBukkitEntity())) {
@@ -1210,7 +1227,7 @@ public abstract class PlayerList {
             }
             // CraftBukkit end
 
-            if (entityplayer != entityhuman && entityplayer.dimension == dimensionmanager) {
+            if (entityplayer != entityhuman && (world != null || entityplayer.dimension == dimensionmanager)) { // Paper
                 double d4 = d0 - entityplayer.locX;
                 double d5 = d1 - entityplayer.locY;
                 double d6 = d2 - entityplayer.locZ;
