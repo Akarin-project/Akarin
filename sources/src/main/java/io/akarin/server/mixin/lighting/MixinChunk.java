@@ -245,7 +245,7 @@ public abstract class MixinChunk implements IMixinChunk {
             return;
         }
         
-        if (Akari.isPrimaryThread()) {
+        if (Akari.isPrimaryThread(false)) {
             try {
                 lightExecutorService.execute(() -> {
                     this.checkLightAsync(neighborChunks);

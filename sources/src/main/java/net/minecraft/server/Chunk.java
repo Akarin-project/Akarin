@@ -71,7 +71,7 @@ public class Chunk {
             return removed;
         }
     }
-    final PaperLightingQueue.LightingQueue lightingQueue = new PaperLightingQueue.LightingQueue(this);
+    public final PaperLightingQueue.LightingQueue lightingQueue = new PaperLightingQueue.LightingQueue(this); // Akarin - public
     // Paper end
     private volatile boolean done; // Akarin - volatile
     private volatile boolean lit; // Akarin - volatile

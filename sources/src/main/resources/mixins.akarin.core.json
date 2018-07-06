@@ -13,6 +13,7 @@
         "bootstrap.MetricsBootstrap",
         "bootstrap.MixinRestartCommand",
         
+        "core.MixinWorld",
         "core.MixinMCUtil",
         "core.MixinPlayerList",
         "core.MixinCommandBan",

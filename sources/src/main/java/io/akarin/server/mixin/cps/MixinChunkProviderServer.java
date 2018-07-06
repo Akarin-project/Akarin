@@ -10,7 +10,9 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.ChunkProviderServer;
 import net.minecraft.server.IChunkLoader;
@@ -21,13 +23,10 @@ public abstract class MixinChunkProviderServer {
     @Shadow @Final public WorldServer world;
     @Shadow public Long2ObjectOpenHashMap<Chunk> chunks;
     
-    public int pendingUnloadChunks; // For keeping unload target-size feature
-    
     public void unload(Chunk chunk) {
         if (this.world.worldProvider.c(chunk.locX, chunk.locZ)) {
             // Akarin - avoid using the queue and simply check the unloaded flag during unloads
             // this.unloadQueue.add(Long.valueOf(ChunkCoordIntPair.a(chunk.locX, chunk.locZ)));
-            pendingUnloadChunks++;
             chunk.setShouldUnload(true);
         }
     }
@@ -42,46 +41,41 @@ public abstract class MixinChunkProviderServer {
             long now = System.currentTimeMillis();
             long unloadAfter = world.paperConfig.delayChunkUnloadsBy;
             SlackActivityAccountant activityAccountant = world.getMinecraftServer().slackActivityAccountant;
-            Iterator<Chunk> it = chunks.values().iterator();
+            activityAccountant.startActivity(0.5);
+            ObjectIterator<Entry<Chunk>> it = chunks.long2ObjectEntrySet().fastIterator();
+            int remainingChunks = chunks.size();
+            int targetSize = Math.min(remainingChunks - 100,  (int) (remainingChunks * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
             
             while (it.hasNext()) {
-                activityAccountant.startActivity(0.5);
+                Entry<Chunk> entry = it.next();
+                Chunk chunk = entry.getValue();
+                if (chunk == null) continue;
                 
-                Chunk chunk = it.next();
-                if (unloadAfter > 0) {
-                    if (chunk.scheduledForUnload != null && now - chunk.scheduledForUnload > unloadAfter) {
-                        chunk.scheduledForUnload = null;
-                        unload(chunk);
+                if (chunk.isUnloading()) {
+                    if (chunk.scheduledForUnload != null) {
+                        if (now - chunk.scheduledForUnload > unloadAfter) {
+                            chunk.scheduledForUnload = null;
+                        } else continue;
                     }
-                }
-                int targetSize = Math.min(pendingUnloadChunks - 100,  (int) (pendingUnloadChunks * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
-                
-                if (chunk != null && chunk.isUnloading()) {
-                    // If a plugin cancelled it, we shouldn't trying unload it for a while
-                    chunk.setShouldUnload(false); // Paper
                     
-                    if (!unloadChunk(chunk, true)) continue; // Event cancelled
-                    it.remove();
+                    if (!unloadChunk(chunk, true)) { // Event cancelled
+                        // If a plugin cancelled it, we shouldn't trying unload it for a while
+                        chunk.setShouldUnload(false);
+                        continue;
+                    }
                     
-                    if (--pendingUnloadChunks <= targetSize && activityAccountant.activityTimeIsExhausted()) break;
+                    it.remove(); // Life is strange
+                    if (--remainingChunks <= targetSize || activityAccountant.activityTimeIsExhausted()) break; // more slack since the target size not work as intended
                 }
-                activityAccountant.endActivity();
             }
+            activityAccountant.endActivity();
             this.chunkLoader.b(); // PAIL: chunkTick
         }
         return false;
     }
     
-    @Redirect(method = "unloadChunk", at = @At(
-            value = "INVOKE",
-            target = "it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.remove(J)Ljava/lang/Object;"
-    ))
-    private Object remove(Long2ObjectOpenHashMap<Chunk> chunks, long chunkHash) {
-        return null;
-    }
-    
     @Overwrite
     public String getName() {
-        return "ServerChunkCache: " + chunks.size(); // Akarin - remove unload queue
+        return "ServerChunkCache: " + chunks.size();
     }
 }
