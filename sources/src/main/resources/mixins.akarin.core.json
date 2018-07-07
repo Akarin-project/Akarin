@@ -30,9 +30,6 @@
         "core.MixinChunkIOExecutor",
         "core.MixinPlayerConnectionUtils",
         
-        "cps.MixinCraftWorld",
-        "cps.MixinChunkProviderServer",
-        
         "nsc.OptimisticNetworkManager",
         "nsc.NonblockingServerConnection",
         
