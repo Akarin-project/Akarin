@@ -1,7 +1,5 @@
 package io.akarin.server.mixin.cps;
 
-import java.util.Iterator;
-
 import org.spigotmc.SlackActivityAccountant;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -64,7 +62,7 @@ public abstract class MixinChunkProviderServer {
                         continue;
                     }
                     
-                    it.remove(); // Life is strange
+                    it.remove();
                     if (--remainingChunks <= targetSize || activityAccountant.activityTimeIsExhausted()) break; // more slack since the target size not work as intended
                 }
             }
@@ -72,6 +70,14 @@ public abstract class MixinChunkProviderServer {
             this.chunkLoader.b(); // PAIL: chunkTick
         }
         return false;
+    }
+    
+    @Redirect(method = "unloadChunk", at = @At(
+            value = "INVOKE",
+            target = "it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.remove(J)Ljava/lang/Object;"
+    ))
+    private Object remove(Long2ObjectOpenHashMap<Chunk> chunks, long chunkHash) {
+        return null;
     }
     
     @Overwrite

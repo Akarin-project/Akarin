@@ -119,7 +119,7 @@ public abstract class MixinMinecraftServer {
         }
         
         for (WorldServer world : this.worlds) {
-            executor.take();
+            if (world.getWorld().getKeepSpawnInMemory()) executor.take();
             this.server.getPluginManager().callEvent(new WorldLoadEvent(world.getWorld()));
         }
         
