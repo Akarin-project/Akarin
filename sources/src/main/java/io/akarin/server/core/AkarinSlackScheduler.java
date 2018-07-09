@@ -20,7 +20,6 @@ public class AkarinSlackScheduler extends Thread {
     
     public static void boot() {
         Singleton.instance.setName("Akarin Slack Scheduler Thread");
-        Singleton.instance.setPriority(MIN_PRIORITY);
         Singleton.instance.setDaemon(true);
         Singleton.instance.start();
         Akari.logger.info("Slack scheduler service started");
