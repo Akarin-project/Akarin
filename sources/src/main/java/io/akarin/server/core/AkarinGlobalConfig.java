@@ -279,4 +279,9 @@ public class AkarinGlobalConfig {
     private static void sendLightOnlyChunkSection() {
         sendLightOnlyChunkSection = getBoolean("core.send-light-only-chunk-sections", true);
     }
+    
+    public static boolean forceHardcoreDifficulty;
+    private static void forceHardcoreDifficulty() {
+        forceHardcoreDifficulty = getBoolean("alternative.force-difficulty-on-hardcore", true);
+    }
 }
