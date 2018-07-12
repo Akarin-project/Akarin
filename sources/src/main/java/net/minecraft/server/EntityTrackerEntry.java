@@ -44,7 +44,7 @@ public class EntityTrackerEntry {
     // Paper start
     // Replace trackedPlayers Set with a Map. The value is true until the player receives
     // their first update (which is forced to have absolute coordinates), false afterward.
-    public java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = new java.util.HashMap<EntityPlayer, Boolean>();
+    public java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = new java.util.concurrent.ConcurrentHashMap<EntityPlayer, Boolean>(); // Akarin - make concurrent
     public Set<EntityPlayer> trackedPlayers = trackedPlayerMap.keySet();
     // Paper end
 
