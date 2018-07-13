@@ -33,7 +33,7 @@
  * at http://creativecommons.org/publicdomain/zero/1.0/
  */
 
-package io.akarin.api.internal.collections;
+package io.akarin.api.internal.utils;
 
 import java.util.AbstractQueue;
 import java.util.ArrayList;
