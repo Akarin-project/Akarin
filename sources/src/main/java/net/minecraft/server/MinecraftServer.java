@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
@@ -23,11 +22,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
@@ -35,7 +32,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import org.apache.commons.lang3.Validate;
@@ -43,9 +39,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 // CraftBukkit start
 import joptsimple.OptionSet;
-import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.Main;
 // CraftBukkit end
 import org.spigotmc.SlackActivityAccountant; // Spigot
 import co.aikar.timings.MinecraftTimings; // Paper

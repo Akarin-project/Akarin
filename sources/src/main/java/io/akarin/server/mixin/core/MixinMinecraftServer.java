@@ -28,7 +28,6 @@ import net.minecraft.server.BlockPosition;
 import net.minecraft.server.CrashReport;
 import net.minecraft.server.CustomFunctionData;
 import net.minecraft.server.ITickable;
-import net.minecraft.server.MCUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.MojangStatisticsGenerator;
 import net.minecraft.server.PlayerList;
