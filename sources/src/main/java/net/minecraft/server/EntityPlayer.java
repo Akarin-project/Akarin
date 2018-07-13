@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
+
+import io.akarin.api.internal.Akari;
 import io.netty.buffer.Unpooled;
 import java.util.ArrayDeque; // Paper
 import java.util.ArrayList;

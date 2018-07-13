@@ -17,6 +17,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
 import io.akarin.server.core.AkarinGlobalConfig;
+import net.minecraft.server.Entity;
+import net.minecraft.server.EntityTracker;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Packet;
 import net.minecraft.server.PlayerConnection;
@@ -50,6 +52,9 @@ public abstract class Akari {
     public static class AssignableThread extends Thread {
         public AssignableThread(Runnable run) {
             super(run);
+        }
+        public AssignableThread() {
+            super();
         }
     }
     

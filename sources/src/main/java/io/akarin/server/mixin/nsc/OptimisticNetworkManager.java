@@ -32,6 +32,12 @@ public abstract class OptimisticNetworkManager {
     
     @Overwrite // PAIL: trySendQueue
     private boolean m() {
+        // Akarin start - process slack packets
+        while (!Akari.slackPackets.isEmpty()) {
+            // Plugins that hook into those packets will notify their listeners later, so keep sync
+            dispatchPacket(Akari.slackPackets.poll(), null);
+        }
+        // Akarin end
         if (this.channel != null && this.channel.isOpen()) {
             if (this.packets.isEmpty()) { // return if the packet queue is empty so that the write lock by Anti-Xray doesn't affect the vanilla performance at all
                 return true;
@@ -55,12 +61,6 @@ public abstract class OptimisticNetworkManager {
             } finally {
                 this.queueLock.readLock().unlock();
             }
-            // Akarin start - process slack packets
-            while (!Akari.slackPackets.isEmpty()) {
-                // Plugins that hook into those packets will notify their listeners later, so keep sync
-                dispatchPacket(Akari.slackPackets.poll(), null);
-            }
-            // Akarin end
             
         }
         return true; // Return true if all packets were dispatched

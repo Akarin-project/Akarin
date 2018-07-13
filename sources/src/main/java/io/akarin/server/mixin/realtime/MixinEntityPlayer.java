@@ -34,7 +34,7 @@ import net.minecraft.server.Entity;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.World;
 
-@Mixin(value = EntityPlayer.class, remap = false)
+@Mixin(value = EntityPlayer.class, remap = false, priority = 1001)
 public abstract class MixinEntityPlayer extends Entity {
     private static final String ENTITY_PLAYER_MP_PORTAL_COOLDOWN_FIELD = "Lnet/minecraft/entity/player/EntityPlayer;portalCooldown:I";
     

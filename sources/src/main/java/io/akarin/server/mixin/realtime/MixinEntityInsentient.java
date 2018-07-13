@@ -42,7 +42,7 @@ public abstract class MixinEntityInsentient extends EntityLiving {
         super(world);
     }
     
-    @Redirect(method = "doTick", at = @At(value = "FIELD", target = ENTITY_LIVING_AGE_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
+    @Redirect(method = "doTick()V", at = @At(value = "FIELD", target = ENTITY_LIVING_AGE_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupEntityDespawnAge(EntityInsentient self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) self.getWorld()).getRealTimeTicks();
         this.ticksFarFromPlayer += ticks;

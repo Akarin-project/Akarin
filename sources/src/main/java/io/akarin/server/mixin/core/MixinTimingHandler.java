@@ -35,7 +35,7 @@ public abstract class MixinTimingHandler {
         return (Timing) this;
     }
     
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Inject(method = "startTiming", at = @At("HEAD"), cancellable = true)
     public void onStartTiming(CallbackInfoReturnable ci) {
         if (!Akari.isPrimaryThread(false)) ci.setReturnValue(this); // Avoid modify any field

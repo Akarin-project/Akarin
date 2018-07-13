@@ -9,7 +9,7 @@ import net.minecraft.server.WorldServer;
 
 @Mixin(value = WorldServer.class, remap = false)
 public abstract class MixinWorldServer implements IMixinLockProvider {
-    @Redirect(method = "doTick", at = @At(
+    @Redirect(method = "doTick()V", at = @At(
             value = "INVOKE",
             target = "net/minecraft/server/PlayerChunkMap.flush()V"
     ))
