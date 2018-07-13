@@ -15,6 +15,7 @@
         
         "core.MixinWorld",
         "core.MixinMCUtil",
+        "core.MixinWorldData",
         "core.MixinPlayerList",
         "core.MixinCommandBan",
         "core.MixinCommandKick",

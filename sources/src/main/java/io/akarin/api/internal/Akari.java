@@ -6,6 +6,9 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+
+import javax.annotation.Nonnull;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.collect.Queues;
@@ -15,6 +18,8 @@ import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.Packet;
+import net.minecraft.server.PlayerConnection;
 
 @SuppressWarnings("restriction")
 public abstract class Akari {
@@ -32,6 +37,15 @@ public abstract class Akari {
      * Main thread callback tasks
      */
     public static final Queue<Runnable> callbackQueue = Queues.newConcurrentLinkedQueue();
+    
+    /**
+     * Lock-free packet queue for slack service
+     */
+    public static final Queue<Packet<?>> slackPackets = Queues.newConcurrentLinkedQueue();
+    
+    public static void sendPacket(PlayerConnection conn, @Nonnull Packet<?> packet) {
+        if (!conn.processedDisconnect) slackPackets.add(packet);
+    }
     
     public static class AssignableThread extends Thread {
         public AssignableThread(Runnable run) {

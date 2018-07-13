@@ -165,7 +165,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
             this.j.writeLock().lock();
 
             try {
-                this.i.add(new NetworkManager.QueuedPacket(packet, new GenericFutureListener[0]));
+                this.i.add(new NetworkManager.QueuedPacket(packet)); // Akarin - remove fake listener creation
             } finally {
                 this.j.writeLock().unlock();
             }
