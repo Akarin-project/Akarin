@@ -59,6 +59,9 @@ public abstract class MixinVersionCommand {
         // This should be lying in 'obtainVersion' method, but bump for faster returning
         if (customVersion) return;
         
+        synchronized (versionWaiters) {
+            versionWaiters.add(sender);
+        }
         if (versionObtaining) return;
         // The volatile guarantees the safety between different threads.
         // Remembers that we are still on main thread now,
@@ -100,8 +103,6 @@ public abstract class MixinVersionCommand {
         // We post all things because a custom version is rare (expiring is not rare),
         // and we'd better post this task as early as we can, since it's a will (horrible destiny).
         MCUtil.scheduleAsyncTask(() -> {
-            // This should be lying in 'sendVersion' method, but comes here for relax main thread
-            versionWaiters.add(sender);
             sender.sendMessage("Checking version, please wait...");
             
             String version = Akari.getServerVersion();
@@ -140,9 +141,11 @@ public abstract class MixinVersionCommand {
         versionMessage = message;
         hasVersion = true;
         
-        for (CommandSender sender : versionWaiters) {
-            sender.sendMessage(versionMessage);
+        synchronized (versionWaiters) {
+            for (CommandSender sender : versionWaiters) {
+                sender.sendMessage(versionMessage);
+            }
+            versionWaiters.clear();
         }
-        versionWaiters.clear();
     }
 }
