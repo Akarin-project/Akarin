@@ -914,7 +914,8 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             double d3 = d0 * d0 + d1 * d1 + d2 * d2;
 
             if (d3 > 36.0D) {
-                this.sendPacket(new PacketPlayOutBlockChange(worldserver, blockposition)); // Paper - Fix block break desync
+                if (worldserver.isChunkLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4, true)) // Paper - Fix block break desync - Don't send for unloaded chunks
+                    this.sendPacket(new PacketPlayOutBlockChange(worldserver, blockposition)); // Paper - Fix block break desync
                 return;
             } else if (blockposition.getY() >= this.minecraftServer.getMaxBuildHeight()) {
                 return;
