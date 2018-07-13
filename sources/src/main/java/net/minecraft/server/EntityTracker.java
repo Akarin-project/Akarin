@@ -22,7 +22,7 @@ public class EntityTracker {
 
     private static final Logger a = LogManager.getLogger();
     private final WorldServer world;
-    private final Set<EntityTrackerEntry> c = Sets.newConcurrentHashSet(); // Akarin - make concurrent
+    private final Set<EntityTrackerEntry> c = Sets.newHashSet();
     private final ReentrantLock entriesLock = new ReentrantLock(); // Akarin - add lock
     public final IntHashMap<EntityTrackerEntry> trackedEntities = new IntHashMap();
     private int e;
