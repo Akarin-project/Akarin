@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.collections.CheckedConcurrentLinkedQueue;
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.Future;
@@ -32,12 +31,6 @@ public abstract class OptimisticNetworkManager {
     
     @Overwrite // PAIL: trySendQueue
     private boolean m() {
-        // Akarin start - process slack packets
-        while (!Akari.slackPackets.isEmpty()) {
-            // Plugins that hook into those packets will notify their listeners later, so keep sync
-            dispatchPacket(Akari.slackPackets.poll(), null);
-        }
-        // Akarin end
         if (this.channel != null && this.channel.isOpen()) {
             if (this.packets.isEmpty()) { // return if the packet queue is empty so that the write lock by Anti-Xray doesn't affect the vanilla performance at all
                 return true;

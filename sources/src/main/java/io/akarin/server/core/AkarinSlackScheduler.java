@@ -4,7 +4,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 import io.akarin.api.internal.Akari;
-import io.akarin.api.internal.mixin.IMixinWorldData;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.EnumDifficulty;
 import net.minecraft.server.MinecraftServer;
@@ -46,7 +45,7 @@ public class AkarinSlackScheduler extends Thread {
             if (++updateTime >= AkarinGlobalConfig.timeUpdateInterval) {
                 for (EntityPlayer player : server.getPlayerList().players) {
                     // Add support for per player time
-                    Akari.sendPacket(player.playerConnection, new PacketPlayOutUpdateTime(player.world.getTime(), player.getPlayerTime(), player.world.getGameRules().getBoolean("doDaylightCycle")));
+                    player.playerConnection.sendPacket(new PacketPlayOutUpdateTime(player.world.getTime(), player.getPlayerTime(), player.world.getGameRules().getBoolean("doDaylightCycle")));
                 }
                 updateTime = 0;
             }
@@ -71,7 +70,7 @@ public class AkarinSlackScheduler extends Thread {
                         conn.setPendingPing(true);
                         conn.setLastPing(currentTime);
                         conn.setKeepAliveID(currentTime);
-                        Akari.sendPacket(conn, new PacketPlayOutKeepAlive(conn.getKeepAliveID())); // 15s lagg you should stop your server
+                        conn.sendPacket(new PacketPlayOutKeepAlive(conn.getKeepAliveID())); // 15s lagg you should stop your server
                     }
                 }
             }
@@ -80,14 +79,14 @@ public class AkarinSlackScheduler extends Thread {
             if (AkarinGlobalConfig.forceHardcoreDifficulty)
             for (WorldServer world : server.worlds) {
                 if (world.getWorldData().isHardcore() && world.getDifficulty() != EnumDifficulty.HARD) {
-                    ((IMixinWorldData) world.getWorldData()).setDifficultyAsync(EnumDifficulty.HARD);
+                    world.getWorldData().setDifficulty(EnumDifficulty.HARD);
                 }
             }
             
             // Update player info, from PlayerList#tick
             if (++resendPlayersInfo > AkarinGlobalConfig.playersInfoUpdateInterval) {
                 for (EntityPlayer player : server.getPlayerList().players) {
-                    Akari.sendPacket(player.playerConnection, new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_LATENCY, Iterables.filter(server.getPlayerList().players, new Predicate<EntityPlayer>() {
+                    player.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_LATENCY, Iterables.filter(server.getPlayerList().players, new Predicate<EntityPlayer>() {
                         @Override
                         public boolean apply(EntityPlayer each) {
                             return player.getBukkitEntity().canSee(each.getBukkitEntity());
