@@ -14,8 +14,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * <b>Akarin Changes Note</b><br>
  * <br>
- * 1) Make entries-set concurrent<br>
- * 2) Add lock for entries-set operations<br>
+ * 1) Add lock for entries-set operations<br>
  * @author cakoyo
  */
 public class EntityTracker {
@@ -23,7 +22,7 @@ public class EntityTracker {
     private static final Logger a = LogManager.getLogger();
     private final WorldServer world;
     private final Set<EntityTrackerEntry> c = Sets.newHashSet();
-    private final ReentrantLock entriesLock = new ReentrantLock(); // Akarin - add lock
+    public final ReentrantLock entriesLock = new ReentrantLock(); // Akarin - add lock
     public final IntHashMap<EntityTrackerEntry> trackedEntities = new IntHashMap();
     private int e;
 

@@ -1161,7 +1161,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
         if (entry != null && !entry.trackedPlayers.contains(getHandle())) {
+            tracker.entriesLock.lock(); // Akarin
             entry.updatePlayer(getHandle());
+            tracker.entriesLock.unlock(); // Akarin
         }
     }
     // Paper start
