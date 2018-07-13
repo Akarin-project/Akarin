@@ -71,7 +71,7 @@ public class AkarinSlackScheduler extends Thread {
                         conn.setPendingPing(true);
                         conn.setLastPing(currentTime);
                         conn.setKeepAliveID(currentTime);
-                        Akari.sendPacket(conn, new PacketPlayOutKeepAlive(conn.getKeepAliveID()));
+                        Akari.sendPacket(conn, new PacketPlayOutKeepAlive(conn.getKeepAliveID())); // 15s lagg you should stop your server
                     }
                 }
             }
