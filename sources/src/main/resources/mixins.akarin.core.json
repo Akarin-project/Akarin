@@ -21,6 +21,7 @@
         "core.MixinCommandKick",
         "core.MixinCraftServer",
         "core.MixinWorldServer",
+        "core.MixinWorldManager",
         "core.MixinCommandBanIp",
         "core.MixinChunkSection",
         "core.MixinAsyncCatcher",

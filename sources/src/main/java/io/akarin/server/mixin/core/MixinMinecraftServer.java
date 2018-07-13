@@ -60,7 +60,6 @@ public abstract class MixinMinecraftServer {
             TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
         }
         AkarinSlackScheduler.boot();
-        
     }
     
     @Overwrite
