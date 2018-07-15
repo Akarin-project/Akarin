@@ -20,6 +20,10 @@ public abstract class MixinEntity {
     
     @Overwrite // PAIL: isInLava
     public boolean au() {
+        /*
+         * This is originally comes from Migot (https://github.com/Poweruser/Migot/commit/cafbf1707107d2a3aa6232879f305975bb1f0285)
+         * Thanks @Poweruser
+         */
         int currentTick = MinecraftServer.currentTick;
         if (this.lastLavaCheck != currentTick) {
             this.lastLavaCheck = currentTick;
