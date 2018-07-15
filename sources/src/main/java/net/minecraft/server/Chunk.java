@@ -2,6 +2,7 @@ package net.minecraft.server;
 
 import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import java.util.Arrays;
 import java.util.Collection;
@@ -681,7 +682,9 @@ public class Chunk {
         entity.ac = k;
         entity.ad = this.locZ;
         this.entitySlices[k].add(entity);
-        // Paper start - update count
+        // Paper start
+        entity.setCurrentChunk(this);
+        entityCounts.increment(entity.entityKeyString);
         if (entity instanceof EntityItem) {
             itemCounts[k]++;
         } else if (entity instanceof IInventory) {
@@ -703,10 +706,6 @@ public class Chunk {
                 this.entityCount.adjustOrPutValue( creatureType.a(), 1, 1 );
             }
         }
-        // Paper start
-        entity.setCurrentChunk(this);
-        entityCounts.increment(entity.entityKeyString);
-        // Paper end
         // Spigot end
     }
 
@@ -724,8 +723,10 @@ public class Chunk {
             i = this.entitySlices.length - 1;
         }
 
-        if (!this.entitySlices[i].remove(entity)) { return; } // Paper
-        // Paper start - update counts
+        // Paper start
+        if (!this.entitySlices[i].remove(entity)) { return; }
+        entity.setCurrentChunk(null);
+        entityCounts.decrement(entity.entityKeyString);
         if (entity instanceof EntityItem) {
             itemCounts[i]--;
         } else if (entity instanceof IInventory) {
@@ -747,10 +748,6 @@ public class Chunk {
                 this.entityCount.adjustValue( creatureType.a(), -1 );
             }
         }
-        // Paper start
-        entity.setCurrentChunk(null);
-        entityCounts.decrement(entity.entityKeyString);
-        // Paper end
         // Spigot end
     }
 
