@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 // CraftBukkit end
+import com.destroystokyo.paper.event.block.TNTPrimeEvent; // Paper - TNTPrimeEvent
 
 // PAIL: Fixme
 public class EntityEnderDragon extends EntityInsentient implements IComplex, IMonster {
@@ -474,6 +475,11 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
                     BlockPosition pos = new BlockPosition(blockX, blockY, blockZ);
                     nmsBlock.dropNaturally(world.getType(pos), world, pos, event.getYield(), 0);
                 }
+                // Paper start - TNTPrimeEvent
+                org.bukkit.block.Block tntBlock = world.getWorld().getBlockAt(blockX, blockY, blockZ);
+                if(!new TNTPrimeEvent(tntBlock, TNTPrimeEvent.PrimeReason.EXPLOSION, explosionSource.getSource().bukkitEntity).callEvent())
+                    continue;
+                // Paper end
                 nmsBlock.wasExploded(world, new BlockPosition(blockX, blockY, blockZ), explosionSource);
 
                 this.world.setAir(new BlockPosition(blockX, blockY, blockZ));
