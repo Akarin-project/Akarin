@@ -33,7 +33,7 @@ import io.akarin.api.internal.mixin.IMixinRealTimeTicking;
 import net.minecraft.server.Entity;
 import net.minecraft.server.World;
 
-@Mixin(value = Entity.class, remap = false)
+@Mixin(value = Entity.class, remap = false, priority = 1001)
 public abstract class MixinEntity {
     private static final String ENTITY_RIDABLE_COOLDOWN_FIELD = "Lnet/minecraft/entity/Entity;j:I"; // PUTFIELD: rideCooldown
     private static final String ENTITY_PORTAL_COUNTER_FIELD = "Lnet/minecraft/entity/Entity;al:I"; // PUTFIELD: portalCounter

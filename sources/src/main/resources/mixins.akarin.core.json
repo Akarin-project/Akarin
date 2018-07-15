@@ -34,6 +34,7 @@
         "nsc.OptimisticNetworkManager",
         "nsc.NonblockingServerConnection",
         
+        "optimization.MixinEntity",
         "optimization.WeakBigTree",
         "optimization.WeakEnchantmentManager",
         "optimization.MixinEntityHorseAbstract",
