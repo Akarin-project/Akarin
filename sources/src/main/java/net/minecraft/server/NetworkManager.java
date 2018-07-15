@@ -32,11 +32,11 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Add volatile to fields<br>
- * 2) Expose private members<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Add volatile to fields (nsc)
+ * 2) Expose private members (nsc)
+ * 3) Changes lock type to updatable lock (compatibility)
+ * 4) Removes unneed array creation (performance)
  */
 public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 

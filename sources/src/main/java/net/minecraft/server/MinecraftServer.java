@@ -43,6 +43,10 @@ import joptsimple.OptionSet;
 import org.spigotmc.SlackActivityAccountant; // Spigot
 import co.aikar.timings.MinecraftTimings; // Paper
 
+/**
+ * Akarin Changes Note
+ * 1) Make worlds list thread-safe (slack service)
+ */
 public abstract class MinecraftServer implements ICommandListener, Runnable, IAsyncTaskHandler, IMojangStatistics {
 
     private static MinecraftServer SERVER; // Paper

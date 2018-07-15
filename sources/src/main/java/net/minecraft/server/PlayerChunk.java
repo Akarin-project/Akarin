@@ -14,10 +14,8 @@ import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 // CraftBukkit end
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Check player list empty<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Check whether players empty (performance, MC-120780)
  */
 public class PlayerChunk {
 

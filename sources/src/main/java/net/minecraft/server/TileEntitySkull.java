@@ -24,6 +24,10 @@ import com.mojang.authlib.ProfileLookupCallback;
 import java.util.concurrent.Callable;
 // Spigot end
 
+/**
+ * Akarin Changes Note
+ * 1) Guava -> Caffeine (performance)
+ */
 public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Paper - remove tickable
 
     private int a;

@@ -32,10 +32,9 @@ import org.bukkit.inventory.MainHand;
 // CraftBukkit end
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Add volatile to fields<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Add volatile to fields (time update)
+ * 2) Add lock to player track (safety issue)
  */
 public class EntityPlayer extends EntityHuman implements ICrafting {
 

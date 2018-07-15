@@ -13,6 +13,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerVelocityEvent;
 // CraftBukkit end
 
+/**
+ * Akarin Changes Note
+ * 1) Make trackedPlayerMap thread-safe (safety issue)
+ */
 public class EntityTrackerEntry {
 
     private static final Logger c = LogManager.getLogger();

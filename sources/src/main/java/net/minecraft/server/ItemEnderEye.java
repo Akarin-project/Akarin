@@ -3,10 +3,8 @@ package net.minecraft.server;
 import io.akarin.server.core.AkarinGlobalConfig;
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Add end portal disable feature<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Add end portal disable feature (feature)
  */
 public class ItemEnderEye extends Item {
 

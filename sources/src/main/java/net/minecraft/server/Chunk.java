@@ -20,11 +20,9 @@ import org.bukkit.Server; // CraftBukkit
 import org.bukkit.craftbukkit.util.CraftMagicNumbers; // Paper
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Add volatile to fields<br>
- * 2) Add OBFHELPER<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Add volatile to fields (async lighting)
+ * 2) Expose private methods (async lighting)
  */
 public class Chunk {
 
@@ -1340,8 +1338,7 @@ public class Chunk {
         this.h(false);
     }
 
-    public void checkLightSide(EnumDirection direction) { a(direction); } // Akarin - OBFHELPER
-    private void a(EnumDirection enumdirection) {
+    public void a(EnumDirection enumdirection) { // Akarin - private -> public
         if (this.done) {
             int i;
 

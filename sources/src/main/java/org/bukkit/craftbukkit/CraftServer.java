@@ -138,7 +138,10 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import javax.annotation.Nullable; // Paper
 import javax.annotation.Nonnull; // Paper
 
-
+/**
+ * Akarin Changes Note
+ * 1) Guava -> Caffeine (performance)
+ */
 public final class CraftServer implements Server {
     private final String serverName = "Paper";
     private final String serverVersion;

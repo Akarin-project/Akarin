@@ -62,12 +62,11 @@ import co.aikar.timings.MinecraftTimings; // Paper
 // CraftBukkit end
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Add volatile to fields<br>
- * 2) Expose private members<br>
- * 3) Migrated keep alive packet handling to service thread<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Add volatile to fields (slack service)
+ * 2) Expose private members (slack service)
+ * 3) Removed keep-alive codes (slack service)
+ * 4) Accessible keep-alive limit (feature, compatibility)
  */
 public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 

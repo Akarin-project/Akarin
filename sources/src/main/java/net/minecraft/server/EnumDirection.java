@@ -10,10 +10,8 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Add OBFHELPER<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Add OBFHELPER (panda redstone)
  */
 public enum EnumDirection implements INamable {
 

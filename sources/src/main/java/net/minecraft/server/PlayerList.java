@@ -48,10 +48,8 @@ import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 // CraftBukkit end
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Modify disconnect and connect messages<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Changes (dis)connect messages (feature)
  */
 public abstract class PlayerList {
 

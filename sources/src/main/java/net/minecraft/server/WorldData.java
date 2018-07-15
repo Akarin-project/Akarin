@@ -12,10 +12,8 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 // CraftBukkit end
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Add volatile to fields<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Add volatile to fields (slack service)
  */
 public class WorldData {
 

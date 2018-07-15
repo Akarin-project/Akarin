@@ -11,10 +11,8 @@ import java.util.Random;
 import java.util.Map.Entry;
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Expose private members<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Expose private members (cause mixin errors)
  */
 public class EnchantmentManager {
 

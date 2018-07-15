@@ -27,10 +27,9 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 // CraftBukkit end
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Expose private members<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Expose private members (core, safety issue)
+ * 2) Removed hardcore difficulty codes (slack service, feature)
  */
 public class WorldServer extends World implements IAsyncTaskHandler {
 

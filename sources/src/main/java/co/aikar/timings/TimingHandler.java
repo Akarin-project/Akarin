@@ -30,10 +30,8 @@ import org.bukkit.Bukkit;
 import java.util.logging.Level;
 
 /**
- * <b>Akarin Changes Note</b><br>
- * <br>
- * 1) Add volatile to fields<br>
- * @author cakoyo
+ * Akarin Changes Note
+ * 1) Add volatile to fields (safety issue)
  */
 class TimingHandler implements Timing {
 
