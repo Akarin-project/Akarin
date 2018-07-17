@@ -15,7 +15,6 @@
         
         "core.MixinWorld",
         "core.MixinMCUtil",
-        "core.MixinPlayerList",
         "core.MixinCommandBan",
         "core.MixinCommandKick",
         "core.MixinCraftServer",
