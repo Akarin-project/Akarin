@@ -207,7 +207,7 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
                     Callable<GameProfile> callable = new Callable<GameProfile>() {
                         @Override
                         public GameProfile call() {
-                            final GameProfile profile = skinCache.getIfPresent(gameprofile.getName().toLowerCase(java.util.Locale.ROOT)); // Akarin - caffeine
+                            final GameProfile profile = skinCache.get(gameprofile.getName().toLowerCase(java.util.Locale.ROOT)); // Akarin - caffeine
                             MinecraftServer.getServer().processQueue.add(new Runnable() {
                                 @Override
                                 public void run() {
