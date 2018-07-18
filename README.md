@@ -31,7 +31,7 @@ Get Akarin
 
 ### Build
 #### Requirements
-* Java (JDK) 8 & above
+* Java (JDK) 8 or above
 * Maven
 
 #### Compile
