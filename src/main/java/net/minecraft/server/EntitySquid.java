@@ -22,7 +22,7 @@ public class EntitySquid extends EntityWaterAnimal {
     public EntitySquid(World world) {
         super(EntityTypes.SQUID, world);
         this.setSize(0.8F, 0.8F);
-        this.random.setSeed((long) (1 + this.getId()));
+        //this.random.setSeed((long) (1 + this.getId())); // Paper
         this.bI = 1.0F / (this.random.nextFloat() + 1.0F) * 0.2F;
     }
 
