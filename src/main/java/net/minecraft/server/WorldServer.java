@@ -963,7 +963,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     this.g.remove(entity1);
                 } else {
                     if (!(entity instanceof EntityHuman)) {
-                        // WorldServer.a.warn("Keeping entity {} that already exists with UUID {}", EntityTypes.getName(entity1.P()), uuid.toString()); // CraftBukkit
+                        WorldServer.a.error("Keeping entity {} that already exists with UUID {} - " + entity1, EntityTypes.getName(entity1.P()), uuid.toString()); // CraftBukkit // Paper
+                        WorldServer.a.error("Deleting duplicate entity {}", entity); // Paper
                         return false;
                     }
 
