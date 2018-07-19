@@ -1180,7 +1180,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     private boolean j(Entity entity) {
         if (entity.dead) {
-            // WorldServer.a.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.a(entity)); // CraftBukkit
+            WorldServer.a.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.a(entity)); // CraftBukkit // Paper
             return false;
         } else {
             UUID uuid = entity.getUniqueID();
@@ -1192,7 +1192,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     this.f.remove(entity1);
                 } else {
                     if (!(entity instanceof EntityHuman)) {
-                        // WorldServer.a.warn("Keeping entity {} that already exists with UUID {}", EntityTypes.a(entity1), uuid.toString()); // CraftBukkit
+                        WorldServer.a.error("Keeping entity {} that already exists with UUID {} - " + entity1, EntityTypes.a(entity1), uuid.toString()); // CraftBukkit // Paper
+                        WorldServer.a.error("Deleting duplicate entity {}", entity); // Paper
                         return false;
                     }
 
