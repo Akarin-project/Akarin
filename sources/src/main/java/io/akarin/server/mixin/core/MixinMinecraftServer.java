@@ -215,8 +215,6 @@ public abstract class MixinMinecraftServer {
             WorldServer world = worlds.get(i);
             synchronized (((IMixinLockProvider) world).lock()) {
                 tickWorld(world);
-                
-                world.getTracker().updatePlayers();
                 world.explosionDensityCache.clear(); // Paper - Optimize explosions
             }
         }
@@ -265,5 +263,7 @@ public abstract class MixinMinecraftServer {
         world.timings.doChunkMap.startTiming();
         world.manager.flush();
         world.timings.doChunkMap.stopTiming();
+        
+        world.getTracker().updatePlayers();
     }
 }
