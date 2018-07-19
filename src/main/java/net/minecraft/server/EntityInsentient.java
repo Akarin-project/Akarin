@@ -634,6 +634,8 @@ public abstract class EntityInsentient extends EntityLiving {
         if (this.persistent) {
             this.ticksFarFromPlayer = 0;
         } else {
+            Chunk currentChunk = getChunkAtLocation(); // Paper
+            if (currentChunk != null && currentChunk.scheduledForUnload != null) return; // Paper
             EntityHuman entityhuman = this.world.findNearbyPlayer(this, -1.0D);
 
             if (entityhuman != null && entityhuman.affectsSpawning) { // Paper - Affects Spawning API
