@@ -47,7 +47,7 @@ import net.minecraft.server.MathHelper;
 import net.minecraft.server.WorldServer;
 import net.minecraft.server.BlockPosition.PooledBlockPosition;
 
-@Mixin(value = WorldServer.class, remap = false)
+@Mixin(value = WorldServer.class, remap = false, priority = 1002)
 public abstract class MixinWorldServer extends MixinWorld implements IMixinWorldServer {
     
     private static final int NUM_XZ_BITS = 4;

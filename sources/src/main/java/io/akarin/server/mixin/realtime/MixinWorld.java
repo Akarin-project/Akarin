@@ -32,7 +32,7 @@ import io.akarin.api.internal.mixin.IMixinRealTimeTicking;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.World;
 
-@Mixin(value = World.class, remap = false, priority = 1002)
+@Mixin(value = World.class, remap = false, priority = 1001)
 public abstract class MixinWorld implements IMixinRealTimeTicking {
     @Shadow @Nullable public abstract MinecraftServer getMinecraftServer();
 
