@@ -51,6 +51,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     // CraftBukkit start
     public final DimensionManager dimension;
+    private static Throwable getAddToWorldStackTrace(Entity entity) {
+        return new Throwable(entity + " Added to world at " + new java.util.Date());
+    }
 
     // Add env and gen to constructor
     public WorldServer(MinecraftServer minecraftserver, IDataManager idatamanager, PersistentCollection persistentcollection, WorldData worlddata, DimensionManager dimensionmanager, MethodProfiler methodprofiler, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {
@@ -951,7 +954,12 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     private boolean j(Entity entity) {
         if (entity.dead) {
-            // WorldServer.a.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.getName(entity.P())); // CraftBukkit
+            // Paper start
+            if (DEBUG_ENTITIES) {
+                new Throwable("Tried to add entity " + entity + " but it was marked as removed already").printStackTrace(); // CraftBukkit
+                getAddToWorldStackTrace(entity).printStackTrace();
+            }
+            // Paper end
             return false;
         } else {
             UUID uuid = entity.getUniqueID();
@@ -963,8 +971,15 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     this.g.remove(entity1);
                 } else {
                     if (!(entity instanceof EntityHuman)) {
-                        WorldServer.a.error("Keeping entity {} that already exists with UUID {} - " + entity1, EntityTypes.getName(entity1.P()), uuid.toString()); // CraftBukkit // Paper
-                        WorldServer.a.error("Deleting duplicate entity {}", entity); // Paper
+                        if (DEBUG_ENTITIES) {
+                            WorldServer.a.error("Keeping entity {} that already exists with UUID {}", entity1, uuid.toString()); // CraftBukkit // Paper
+                            WorldServer.a.error("Deleting duplicate entity {}", entity); // Paper
+
+                            if (entity1.addedToWorldStack != null) {
+                                entity1.addedToWorldStack.printStackTrace();
+                            }
+                            getAddToWorldStackTrace(entity).printStackTrace();
+                        }
                         return false;
                     }
 
@@ -981,7 +996,25 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     protected void b(Entity entity) {
         super.b(entity);
         this.entitiesById.a(entity.getId(), entity);
-        this.entitiesByUUID.put(entity.getUniqueID(), entity);
+        // Paper start
+        if (DEBUG_ENTITIES) {
+            entity.addedToWorldStack = getAddToWorldStackTrace(entity);
+        }
+
+        Entity old = this.entitiesByUUID.put(entity.getUniqueID(), entity);
+        if (old != null && old.getId() != entity.getId() && old.valid) {
+            Logger logger = LogManager.getLogger();
+            logger.error("Overwrote an existing entity " + old + " with " + entity);
+            if (DEBUG_ENTITIES) {
+                if (old.addedToWorldStack != null) {
+                    old.addedToWorldStack.printStackTrace();
+                } else {
+                    logger.error("Oddly, the old entity was not added to the world in the normal way. Plugins?");
+                }
+                entity.addedToWorldStack.printStackTrace();
+            }
+        }
+        // Paper end
         Entity[] aentity = entity.bi();
 
         if (aentity != null) {

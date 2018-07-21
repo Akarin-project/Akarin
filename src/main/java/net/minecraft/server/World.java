@@ -110,6 +110,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     public boolean pvpMode;
     public boolean keepSpawnInMemory = true;
     public ChunkGenerator generator;
+    public static final boolean DEBUG_ENTITIES = Boolean.getBoolean("debug.entities"); // Paper
 
     public boolean captureBlockStates = false;
     public boolean captureTreeGeneration = false;
