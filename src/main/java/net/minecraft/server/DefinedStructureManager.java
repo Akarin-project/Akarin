@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 public class DefinedStructureManager implements IResourcePackListener {
 
     private static final Logger a = LogManager.getLogger();
-    private final Map<MinecraftKey, DefinedStructure> b = Maps.newHashMap();
+    private final Map<MinecraftKey, DefinedStructure> b = Maps.newConcurrentMap(); // Paper
     private final DataFixer c;
     private final MinecraftServer d;
     private final java.nio.file.Path e;

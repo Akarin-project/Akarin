@@ -17,13 +17,14 @@ public class ChunkTaskScheduler extends Scheduler<ChunkCoordIntPair, ChunkStatus
     private final ChunkGenerator<?> d;
     private final IChunkLoader e;
     private final IAsyncTaskHandler f;
-    private final Long2ObjectMap<Scheduler<ChunkCoordIntPair, ChunkStatus, ProtoChunk>.a> progressCache = new ExpiringMap<Scheduler<ChunkCoordIntPair, ChunkStatus, ProtoChunk>.a>(8192, 5000) {
+    protected final Long2ObjectMap<Scheduler<ChunkCoordIntPair, ChunkStatus, ProtoChunk>.a> progressCache = new ExpiringMap<Scheduler<ChunkCoordIntPair, ChunkStatus, ProtoChunk>.a>(8192, 5000) { // Paper - protected
         protected boolean a(Scheduler<ChunkCoordIntPair, ChunkStatus, ProtoChunk>.a scheduler_a) {
             ProtoChunk protochunk = (ProtoChunk) scheduler_a.a();
 
             return !protochunk.ab_() /*&& !protochunk.h()*/; // Paper
         }
     };
+    private final Long2ObjectMap<java.util.concurrent.CompletableFuture<Scheduler.a>> pendingSchedulers = new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<>(); // Paper
 
     public ChunkTaskScheduler(int i, World world, ChunkGenerator<?> chunkgenerator, IChunkLoader ichunkloader, IAsyncTaskHandler iasynctaskhandler) {
         super("WorldGen", i, ChunkStatus.FINALIZED, () -> {
@@ -47,8 +48,28 @@ public class ChunkTaskScheduler extends Scheduler<ChunkCoordIntPair, ChunkStatus
     protected Scheduler<ChunkCoordIntPair, ChunkStatus, ProtoChunk>.a a(ChunkCoordIntPair chunkcoordintpair, boolean flag) {
         IChunkLoader ichunkloader = this.e;
 
-        synchronized (this.e) {
-            return flag ? (Scheduler.a) this.progressCache.computeIfAbsent(chunkcoordintpair.a(), (i) -> {
+        // Paper start - refactor a lot of this - avoid generating a chunk while holding lock on expiring map
+        java.util.concurrent.CompletableFuture<Scheduler.a> pending = null;
+        boolean created = false;
+        long key = chunkcoordintpair.a();
+        synchronized (pendingSchedulers) {
+            Scheduler.a existing = this.progressCache.get(key);
+            if (existing != null) {
+                return existing;
+            }
+            pending = this.pendingSchedulers.get(key);
+            if (pending == null) {
+                if (!flag) {
+                    return null;
+                }
+                created = true;
+                pending = new java.util.concurrent.CompletableFuture<>();
+                pendingSchedulers.put(key, pending);
+            }
+        }
+        if (created) {
+            java.util.function.Function<Long, Scheduler.a> get = (i) -> {
+                // Paper end
                 ProtoChunk protochunk;
 
                 try {
@@ -67,8 +88,18 @@ public class ChunkTaskScheduler extends Scheduler<ChunkCoordIntPair, ChunkStatus
                 } else {
                     return new Scheduler.a(chunkcoordintpair, new ProtoChunk(chunkcoordintpair, ChunkConverter.a, this.getWorld()), ChunkStatus.EMPTY); // Paper - Anti-Xray
                 }
-            }) : (Scheduler.a) this.progressCache.get(chunkcoordintpair.a());
+                // Paper start
+            };
+            Scheduler.a scheduler = get.apply(key);
+            progressCache.put(key, scheduler);
+            pending.complete(scheduler);
+            synchronized (pendingSchedulers) {
+                pendingSchedulers.remove(key);
+            }
+            return scheduler;
         }
+        return pending.join();
+        // Paper end
     }
 
     protected ProtoChunk a(ChunkCoordIntPair chunkcoordintpair, ChunkStatus chunkstatus, Map<ChunkCoordIntPair, ProtoChunk> map) {

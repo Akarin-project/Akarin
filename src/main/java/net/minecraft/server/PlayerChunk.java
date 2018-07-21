@@ -22,6 +22,52 @@ public class PlayerChunk {
     private long i;
     private boolean done;
     boolean chunkExists; // Paper
+    // Paper start
+    PaperAsyncChunkProvider.CancellableChunkRequest chunkRequest;
+    private java.util.function.Consumer<Chunk> chunkLoadedConsumer = chunk -> {
+        chunkRequest = null;
+        PlayerChunk pChunk = PlayerChunk.this;
+        pChunk.chunk = chunk;
+        markChunkUsed(); // Paper - delay chunk unloads
+    };
+    private boolean markedHigh = false;
+    void checkHighPriority(EntityPlayer player) {
+        if (done || markedHigh || chunk != null) {
+            return;
+        }
+        final double dist = getDistance(player.locX, player.locZ);
+        if (dist > 8) {
+            return;
+        }
+        if (dist >= 3 && getDistance(player, 5) > 3.5) {
+            return;
+        }
+
+        markedHigh = true;
+        playerChunkMap.getWorld().getChunkProvider().bumpPriority(location);
+        if (chunkRequest == null) {
+            requestChunkIfNeeded(PlayerChunkMap.CAN_GEN_CHUNKS.test(player));
+        }
+    }
+    private void requestChunkIfNeeded(boolean flag) {
+        if (chunkRequest == null) {
+            chunkRequest = this.playerChunkMap.getWorld().getChunkProvider().requestChunk(this.location.x, this.location.z, flag, markedHigh, chunkLoadedConsumer);
+            this.chunk = chunkRequest.getChunk(); // Paper)
+            markChunkUsed(); // Paper - delay chunk unloads
+        }
+    }
+    private double getDistance(EntityPlayer player, int inFront) {
+        final float yaw = MathHelper.normalizeYaw(player.yaw);
+        final double x = player.locX + (inFront * Math.cos(Math.toRadians(yaw)));
+        final double z = player.locZ + (inFront * Math.sin(Math.toRadians(yaw)));
+        return getDistance(x, z);
+    }
+
+    private double getDistance(double blockX, double blockZ) {
+        final double x = location.x - ((int)Math.floor(blockX) >> 4);
+        final double z = location.z - ((int)Math.floor(blockZ) >> 4);
+        return Math.sqrt((x * x) + (z * z));
+    }
 
     public PlayerChunk(PlayerChunkMap playerchunkmap, int i, int j) {
         this.playerChunkMap = playerchunkmap;
@@ -29,13 +75,17 @@ public class PlayerChunk {
         ChunkProviderServer chunkproviderserver = playerchunkmap.getWorld().getChunkProvider();
 
         chunkproviderserver.a(i, j);
-        this.chunk = chunkproviderserver.getChunkAt(i, j, true, false);
-        this.chunkExists = this.chunk != null || org.bukkit.craftbukkit.chunkio.ChunkIOExecutor.hasQueuedChunkLoad(playerChunkMap.getWorld(), i, j); // Paper
+        this.chunk = chunkproviderserver.getChunkAt(i, j, false, false); // Paper
+        this.chunkExists = this.chunk != null || chunkproviderserver.chunkGoingToExists(i, j); // Paper
         markChunkUsed(); // Paper - delay chunk unloads
     }
 
     // Paper start
     private void markChunkUsed() {
+        if (!chunkHasPlayers && chunkRequest != null) {
+            chunkRequest.cancel();
+            chunkRequest = null;
+        }
         if (chunk == null) {
             return;
         }
@@ -65,7 +115,7 @@ public class PlayerChunk {
             this.players.add(entityplayer);
             if (this.done) {
                 this.sendChunk(entityplayer);
-            }
+            } else checkHighPriority(entityplayer); // Paper
 
         }
     }
@@ -90,8 +140,9 @@ public class PlayerChunk {
         if (this.chunk != null) {
             return true;
         } else {
-            this.chunk = this.playerChunkMap.getWorld().getChunkProvider().getChunkAt(this.location.x, this.location.z, true, flag);
-            markChunkUsed(); // Paper - delay chunk unloads
+            // Paper start - async chunks
+            requestChunkIfNeeded(flag);
+            // Paper end
             return this.chunk != null;
         }
     }

@@ -14,9 +14,17 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
     }
 
     public Chunk put(long i, Chunk chunk) {
+        org.spigotmc.AsyncCatcher.catchOp("Async Chunk put"); // Paper
         chunk.world.timings.syncChunkLoadPostTimer.startTiming(); // Paper
         lastChunkByPos = chunk; // Paper
-        Chunk chunk1 = (Chunk) super.put(i, chunk);
+        // Paper start
+        Chunk chunk1;
+        synchronized (this) {
+            // synchronize so any async gets are safe
+            chunk1 = (Chunk) super.put(i, chunk);
+        }
+        if (chunk1 == null) { // Paper - we should never be overwriting chunks
+        // Paper end
         ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i);
 
         for (int j = chunkcoordintpair.x - 1; j <= chunkcoordintpair.x + 1; ++j) {
@@ -47,7 +55,11 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
                     chunk.setNeighborLoaded(x, z);
                 }
             }
+            // Paper start
+        } } else {
+            a.error("Overwrote existing chunk! (" + chunk.world.getWorld().getName() + ":" + chunk.locX+"," + chunk.locZ + ")", new IllegalStateException());
         }
+        // Paper end
         // Paper start - if this is a spare chunk (not part of any players view distance), go ahead and queue it for unload.
         if (!((WorldServer)chunk.world).getPlayerChunkMap().isChunkInUse(chunk.locX, chunk.locZ)) {
             if (chunk.world.paperConfig.delayChunkUnloadsBy > 0) {
@@ -64,11 +76,19 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
     }
 
     public Chunk put(Long olong, Chunk chunk) {
-        return this.put(olong, chunk);
+        return MCUtil.ensureMain("Chunk Put", () -> this.put(olong.longValue(), chunk)); // Paper
     }
 
     public Chunk remove(long i) {
-        Chunk chunk = (Chunk) super.remove(i);
+        // Paper start
+        org.spigotmc.AsyncCatcher.catchOp("Async Chunk remove");
+        Chunk chunk;
+        synchronized (this) {
+            // synchronize so any async gets are safe
+            chunk = super.remove(i);
+        }
+        if (chunk != null) { // Paper - don't decrement if we didn't remove anything
+        // Paper end
         ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i);
 
         for (int j = chunkcoordintpair.x - 1; j <= chunkcoordintpair.x + 1; ++j) {
@@ -84,6 +104,7 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
         }
 
         // Paper start
+        } // close if (chunk != null)
         if (lastChunkByPos != null && i == lastChunkByPos.chunkKey) {
             lastChunkByPos = null;
         }
@@ -93,15 +114,22 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
 
     @Override
     public Chunk get(long l) {
-        if (lastChunkByPos != null && l == lastChunkByPos.chunkKey) {
-            return lastChunkByPos;
+        if (MCUtil.isMainThread()) {
+            if (lastChunkByPos != null && l == lastChunkByPos.chunkKey) {
+                return lastChunkByPos;
+            }
+            final Chunk chunk = super.get(l);
+            return chunk != null ? (lastChunkByPos = chunk) : null;
+        } else {
+            synchronized (this) {
+                return super.get(l);
+            }
         }
-        return lastChunkByPos = super.get(l);
     }
     // Paper end
 
     public Chunk remove(Object object) {
-        return this.remove((Long) object);
+        return MCUtil.ensureMain("Chunk Remove", () -> this.remove(((Long) object).longValue())); // Paper
     }
 
     public void putAll(Map<? extends Long, ? extends Chunk> map) {

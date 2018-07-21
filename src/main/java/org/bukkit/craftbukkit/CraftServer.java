@@ -1021,8 +1021,12 @@ public final class CraftServer implements Server {
         if (internal.getWorld().getKeepSpawnInMemory()) {
             short short1 = internal.paperConfig.keepLoadedRange; // Paper
             long i = System.currentTimeMillis();
-            for (int j = -short1; j <= short1; j += 16) {
-                for (int k = -short1; k <= short1; k += 16) {
+            // Paper start
+            for (ChunkCoordIntPair coords : internal.getChunkProvider().getSpiralOutChunks(internal.getSpawn(), short1 >> 4)) {{
+                    int j = coords.x;
+                    int k = coords.z;
+                // Paper end
+
                     long l = System.currentTimeMillis();
 
                     if (l < i) {
@@ -1038,7 +1042,7 @@ public final class CraftServer implements Server {
                     }
 
                     BlockPosition chunkcoordinates = internal.getSpawn();
-                    internal.getChunkProvider().getChunkAt(chunkcoordinates.getX() + j >> 4, chunkcoordinates.getZ() + k >> 4, true, true);
+                    internal.getChunkProvider().getChunkAt(chunkcoordinates.getX() + j >> 4, chunkcoordinates.getZ() + k >> 4, true, true, c -> {}); // Paper
                 }
             }
         }

@@ -714,7 +714,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             gen = new org.bukkit.craftbukkit.generator.NormalChunkGenerator(this, this.getSeed());
         }
 
-        return new ChunkProviderServer(this, ichunkloader, gen, this.server);
+        return com.destroystokyo.paper.PaperConfig.asyncChunks ? new PaperAsyncChunkProvider(this, ichunkloader, gen, this.server) : new ChunkProviderServer(this, ichunkloader, gen, this.server); // Paper - async chunks
         // CraftBukkit end
     }
 

@@ -82,6 +82,7 @@ public class CraftEventFactory {
     public static final DamageSource POISON = CraftDamageSource.copyOf(DamageSource.MAGIC);
     public static org.bukkit.block.Block blockDamage; // For use in EntityDamageByBlockEvent
     public static Entity entityDamage; // For use in EntityDamageByEntityEvent
+    public static boolean isWorldGen(GeneratorAccess world) { return world instanceof net.minecraft.server.RegionLimitedWorldAccess; } // Paper
 
     // helper methods
     private static boolean canBuild(CraftWorld world, Player player, int x, int z) {
@@ -474,6 +475,7 @@ public class CraftEventFactory {
         CraftServer craftServer = (CraftServer) entity.getServer();
 
         CreatureSpawnEvent event = new CreatureSpawnEvent(entity, spawnReason);
+        if (isWorldGen(entityliving.world)) return event; // Paper - do not call during world gen
         craftServer.getPluginManager().callEvent(event);
         return event;
     }
@@ -1128,6 +1130,7 @@ public class CraftEventFactory {
         }
 
         BlockIgniteEvent event = new BlockIgniteEvent(bukkitWorld.getBlockAt(block.getX(), block.getY(), block.getZ()), cause, igniter);
+        if (isWorldGen(world)) return event; // Paper - do not call during world gen
         world.getServer().getPluginManager().callEvent(event);
         return event;
     }
@@ -1152,6 +1155,7 @@ public class CraftEventFactory {
         }
 
         BlockIgniteEvent event = new BlockIgniteEvent(bukkitWorld.getBlockAt(pos.getX(), pos.getY(), pos.getZ()), cause, bukkitIgniter);
+        if (isWorldGen(world)) return event; // Paper - do not call during world gen
         world.getServer().getPluginManager().callEvent(event);
         return event;
     }
@@ -1359,7 +1363,8 @@ public class CraftEventFactory {
     public static BlockPhysicsEvent callBlockPhysicsEvent(GeneratorAccess world, BlockPosition blockposition) {
         org.bukkit.block.Block block = CraftBlock.at(world, blockposition);
         BlockPhysicsEvent event = new BlockPhysicsEvent(block, block.getBlockData());
-        world.getMinecraftWorld().getMinecraftServer().server.getPluginManager().callEvent(event);
+        if (isWorldGen(world)) return event; // Paper - do not call during world gen
+        Bukkit.getPluginManager().callEvent(event); // Paper
         return event;
     }
 
@@ -1395,6 +1400,7 @@ public class CraftEventFactory {
         }
 
         EntityPotionEffectEvent event = new EntityPotionEffectEvent((LivingEntity) entity.getBukkitEntity(), bukkitOldEffect, bukkitNewEffect, cause, action, willOverride);
+        if (isWorldGen(entity.world)) return event; // Paper - do not call during world gen
         Bukkit.getPluginManager().callEvent(event);
 
         return event;
@@ -1413,6 +1419,7 @@ public class CraftEventFactory {
         blockState.setData(block);
 
         BlockFormEvent event = (entity == null) ? new BlockFormEvent(blockState.getBlock(), blockState) : new EntityBlockFormEvent(entity.getBukkitEntity(), blockState.getBlock(), blockState);
+        if (isWorldGen(world)) return true; // Paper - do not call during world gen
         world.getServer().getPluginManager().callEvent(event);
 
         if (!event.isCancelled()) {

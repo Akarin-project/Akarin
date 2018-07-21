@@ -41,7 +41,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.generator.ChunkGenerator;
 // CraftBukkit end
 
-public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAccess, AutoCloseable {
+public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAccess, AutoCloseable, Cloneable { // Paper
 
     protected static final Logger e = LogManager.getLogger();
     private static final EnumDirection[] a = EnumDirection.values();
@@ -104,6 +104,24 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     protected PersistentVillage villages;
     public final MethodProfiler methodProfiler;
     public final boolean isClientSide;
+    // Paper start - yes this is hacky as shit
+    RegionLimitedWorldAccess regionLimited;
+    World originalWorld;
+    public World regionLimited(RegionLimitedWorldAccess limitedWorldAccess) {
+        try {
+            World clone = (World) super.clone();
+            clone.regionLimited = limitedWorldAccess;
+            clone.originalWorld = this;
+            return clone;
+        } catch (CloneNotSupportedException e1) {
+        }
+        return null;
+    }
+    ChunkCoordIntPair[] strongholdCoords;
+    final java.util.concurrent.atomic.AtomicBoolean
+        strongholdInit = new java.util.concurrent.atomic.AtomicBoolean
+        (false);
+    // Paper end
     public boolean allowMonsters;
     public boolean allowAnimals;
     private boolean J;
@@ -744,16 +762,41 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
     }
 
-    public IBlockData getType(BlockPosition blockposition) {
-        // CraftBukkit start - tree generation
+    // Paper - async variant
+    public java.util.concurrent.CompletableFuture<IBlockData> getTypeAsync(BlockPosition blockposition) {
+        int x = blockposition.getX();
+        int z = blockposition.getZ();
         if (captureTreeGeneration) {
             Iterator<CraftBlockState> it = capturedBlockStates.iterator();
             while (it.hasNext()) {
                 CraftBlockState previous = it.next();
-                if (previous.getPosition().equals(blockposition)) {
-                    return previous.getHandle();
+                if (previous.getX() == x && previous.getY() == blockposition.getY() && previous.getZ() == z) {
+                    return java.util.concurrent.CompletableFuture.completedFuture(previous.getHandle());
                 }
             }
+        }
+        if (blockposition.isInvalidYLocation()) {
+            return java.util.concurrent.CompletableFuture.completedFuture(Blocks.VOID_AIR.getBlockData());
+        } else {
+            java.util.concurrent.CompletableFuture<IBlockData> future = new java.util.concurrent.CompletableFuture<>();
+            ((ChunkProviderServer) chunkProvider).getChunkAt(x << 4, z << 4, true, true, (chunk) -> {
+                future.complete(chunk.getType(blockposition));
+            });
+            return future;
+        }
+    }
+    // Paper end
+
+    public IBlockData getType(BlockPosition blockposition) {
+        // CraftBukkit start - tree generation
+        if (captureTreeGeneration) { // If any of this logic updates, update async variant above
+            Iterator<CraftBlockState> it = capturedBlockStates.iterator();
+            while (it.hasNext()) { // If any of this logic updates, update async variant above
+                CraftBlockState previous = it.next();
+                if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
+                    return previous.getHandle(); // If any of this logic updates, update async variant above
+                }
+            } // If any of this logic updates, update async variant above
         }
         // CraftBukkit end
         if (blockposition.isInvalidYLocation()) { // Paper
@@ -1023,6 +1066,11 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public boolean addEntity(Entity entity, SpawnReason spawnReason) { // Changed signature, added SpawnReason
+        // Paper start
+        if (regionLimited != null) {
+            return regionLimited.addEntity(entity, spawnReason);
+        }
+        // Paper end
         org.spigotmc.AsyncCatcher.catchOp( "entity add"); // Spigot
         if (entity.valid) { MinecraftServer.LOGGER.error("Attempted Double World add on " + entity, new Throwable()); return true; } // Paper
         if (!CraftEventFactory.doEntityAddEventCalling(this, entity, spawnReason)) {

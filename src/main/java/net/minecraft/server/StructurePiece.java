@@ -16,7 +16,7 @@ public abstract class StructurePiece {
     private EnumBlockMirror b;
     private EnumBlockRotation c;
     protected int o;
-    private static final Set<Block> d = ImmutableSet.builder().add(Blocks.NETHER_BRICK_FENCE).add(Blocks.TORCH).add(Blocks.WALL_TORCH).add(Blocks.OAK_FENCE).add(Blocks.SPRUCE_FENCE).add(Blocks.DARK_OAK_FENCE).add(Blocks.ACACIA_FENCE).add(Blocks.BIRCH_FENCE).add(Blocks.JUNGLE_FENCE).add(Blocks.LADDER).add(Blocks.IRON_BARS).build();
+    private static final Set<Block> d = ImmutableSet.<Block>builder().add(Blocks.NETHER_BRICK_FENCE).add(Blocks.TORCH).add(Blocks.WALL_TORCH).add(Blocks.OAK_FENCE).add(Blocks.SPRUCE_FENCE).add(Blocks.DARK_OAK_FENCE).add(Blocks.ACACIA_FENCE).add(Blocks.BIRCH_FENCE).add(Blocks.JUNGLE_FENCE).add(Blocks.LADDER).add(Blocks.IRON_BARS).build(); // Paper - decompile error
 
     public StructurePiece() {}
 
@@ -66,9 +66,11 @@ public abstract class StructurePiece {
     }
 
     public static StructurePiece a(List<StructurePiece> list, StructureBoundingBox structureboundingbox) {
+        StructurePiece structurepiece; // Paper
+        synchronized (list) { // Paper - synchronize main structure list
         Iterator iterator = list.iterator();
 
-        StructurePiece structurepiece;
+        //StructurePiece structurepiece; // Paper - move up
 
         do {
             if (!iterator.hasNext()) {
@@ -77,7 +79,7 @@ public abstract class StructurePiece {
 
             structurepiece = (StructurePiece) iterator.next();
         } while (structurepiece.d() == null || !structurepiece.d().a(structureboundingbox));
-
+        } // Paper
         return structurepiece;
     }
 

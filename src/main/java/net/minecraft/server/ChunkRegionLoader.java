@@ -119,7 +119,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     // CraftBukkit start
     private boolean check(ChunkProviderServer cps, int x, int z) throws IOException {
         if (cps != null) {
-            com.google.common.base.Preconditions.checkState(org.bukkit.Bukkit.isPrimaryThread(), "primary thread");
+            //com.google.common.base.Preconditions.checkState(org.bukkit.Bukkit.isPrimaryThread(), "primary thread"); // Paper - this is safe
             if (cps.isLoaded(x, z)) {
                 return true;
             }
@@ -385,11 +385,12 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                     }
                 };
             } else {
+                /* // Paper start - we will never invoke this in an unsafe way
                 NBTTagCompound nbttagcompound2 = this.a(world, chunkcoordintpair.x, chunkcoordintpair.z);
 
                 if (nbttagcompound2 != null && this.a(nbttagcompound2) == ChunkStatus.Type.LEVELCHUNK) {
                     return;
-                }
+                }*/ // Paper end
 
                 completion = new Supplier<NBTTagCompound>() {
                     public NBTTagCompound get() {

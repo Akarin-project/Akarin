@@ -10,23 +10,28 @@ import javax.annotation.Nullable;
 
 public class WorldGenStronghold extends StructureGenerator<WorldGenFeatureStrongholdConfiguration> {
 
-    private boolean b;
-    private ChunkCoordIntPair[] c;
-    private long d;
+    // Paper start - no shared state
+    //private boolean b;
+    //private ChunkCoordIntPair[] c;
+    //private long d;
+    // Paper end
 
     public WorldGenStronghold() {}
 
     protected boolean a(ChunkGenerator<?> chunkgenerator, Random random, int i, int j) {
-        if (this.d != chunkgenerator.getSeed()) {
+        // Paper start
+        /*if (this.d != chunkgenerator.getSeed()) {
             this.c();
-        }
+        }*/
 
-        if (!this.b) {
+        synchronized (chunkgenerator.getWorld().strongholdInit) {
+        if (chunkgenerator.getWorld().strongholdInit.compareAndSet(false, true)) { // Paper
             this.a(chunkgenerator);
-            this.b = true;
-        }
+            //this.b = true;
+        }} // Paper
+        // Paper end
 
-        ChunkCoordIntPair[] achunkcoordintpair = this.c;
+        ChunkCoordIntPair[] achunkcoordintpair = chunkgenerator.getWorld().strongholdCoords; // Paper
         int k = achunkcoordintpair.length;
 
         for (int l = 0; l < k; ++l) {
@@ -41,8 +46,8 @@ public class WorldGenStronghold extends StructureGenerator<WorldGenFeatureStrong
     }
 
     private void c() {
-        this.b = false;
-        this.c = null;
+        //this.b = false; // Paper
+        //this.c = null; // Paper
     }
 
     protected boolean a(GeneratorAccess generatoraccess) {
@@ -76,23 +81,30 @@ public class WorldGenStronghold extends StructureGenerator<WorldGenFeatureStrong
         if (!chunkgenerator.getWorldChunkManager().a(this)) {
             return null;
         } else {
-            if (this.d != world.getSeed()) {
-                this.c();
-            }
+            // Paper start
+        /*if (this.d != chunkgenerator.getSeed()) {
+            this.c();
+        }*/
 
-            if (!this.b) {
-                this.a(chunkgenerator);
-                this.b = true;
-            }
+            synchronized (chunkgenerator.getWorld().strongholdInit) {
+                if (chunkgenerator.getWorld().strongholdInit.compareAndSet(false, true)) { // Paper
+                    this.a(chunkgenerator);
+                    //this.b = true;
+                }} // Paper
+            // Paper end
 
             BlockPosition blockposition1 = null;
             BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition(0, 0, 0);
             double d0 = Double.MAX_VALUE;
+            // Paper start
+            /*
             ChunkCoordIntPair[] achunkcoordintpair = this.c;
             int j = achunkcoordintpair.length;
 
             for (int k = 0; k < j; ++k) {
-                ChunkCoordIntPair chunkcoordintpair = achunkcoordintpair[k];
+            */
+            for (ChunkCoordIntPair chunkcoordintpair : world.strongholdCoords) {
+                // Paper end
 
                 blockposition_mutableblockposition.c((chunkcoordintpair.x << 4) + 8, 32, (chunkcoordintpair.z << 4) + 8);
                 double d1 = blockposition_mutableblockposition.n(blockposition);
@@ -111,7 +123,7 @@ public class WorldGenStronghold extends StructureGenerator<WorldGenFeatureStrong
     }
 
     private void a(ChunkGenerator<?> chunkgenerator) {
-        this.d = chunkgenerator.getSeed();
+        //this.d = chunkgenerator.getSeed(); // Paper
         List<BiomeBase> list = Lists.newArrayList();
         Iterator iterator = IRegistry.BIOME.iterator();
 
@@ -127,7 +139,7 @@ public class WorldGenStronghold extends StructureGenerator<WorldGenFeatureStrong
         int j = chunkgenerator.getSettings().f();
         int k = chunkgenerator.getSettings().g();
 
-        this.c = new ChunkCoordIntPair[j];
+        ChunkCoordIntPair[] strongholdCoords = chunkgenerator.getWorld().strongholdCoords = new ChunkCoordIntPair[j]; // Paper
         int l = 0;
         Long2ObjectMap<StructureStart> long2objectmap = chunkgenerator.getStructureStartCache(this);
 
@@ -137,8 +149,8 @@ public class WorldGenStronghold extends StructureGenerator<WorldGenFeatureStrong
             while (objectiterator.hasNext()) {
                 StructureStart structurestart = (StructureStart) objectiterator.next();
 
-                if (l < this.c.length) {
-                    this.c[l++] = new ChunkCoordIntPair(structurestart.e(), structurestart.f());
+                if (l < strongholdCoords.length) { // Paper
+                    strongholdCoords[l++] = new ChunkCoordIntPair(structurestart.e(), structurestart.f()); // Paper
                 }
             }
         }
@@ -149,11 +161,11 @@ public class WorldGenStronghold extends StructureGenerator<WorldGenFeatureStrong
         double d0 = random.nextDouble() * 3.141592653589793D * 2.0D;
         int i1 = long2objectmap.size();
 
-        if (i1 < this.c.length) {
+        if (i1 < strongholdCoords.length) { // Paper
             int j1 = 0;
             int k1 = 0;
 
-            for (int l1 = 0; l1 < this.c.length; ++l1) {
+            for (int l1 = 0; l1 < strongholdCoords.length; ++l1) { // Paper
                 double d1 = (double) (4 * i + i * k1 * 6) + (random.nextDouble() - 0.5D) * (double) i * 2.5D;
                 int i2 = (int) Math.round(Math.cos(d0) * d1);
                 int j2 = (int) Math.round(Math.sin(d0) * d1);
@@ -165,7 +177,7 @@ public class WorldGenStronghold extends StructureGenerator<WorldGenFeatureStrong
                 }
 
                 if (l1 >= i1) {
-                    this.c[l1] = new ChunkCoordIntPair(i2, j2);
+                    strongholdCoords[l1] = new ChunkCoordIntPair(i2, j2); // Paper
                 }
 
                 d0 += 6.283185307179586D / (double) k;
@@ -174,7 +186,7 @@ public class WorldGenStronghold extends StructureGenerator<WorldGenFeatureStrong
                     ++k1;
                     j1 = 0;
                     k += 2 * k / (k1 + 1);
-                    k = Math.min(k, this.c.length - l1);
+                    k = Math.min(k, strongholdCoords.length - l1); // Paper
                     d0 += random.nextDouble() * 3.141592653589793D * 2.0D;
                 }
             }

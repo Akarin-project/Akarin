@@ -10,6 +10,7 @@ public class SchedulerBatch<K, T extends SchedulerTask<K, T>, R> {
     private final Scheduler<K, T, R> b;
     private boolean c;
     private int d = 1000;
+    private final java.util.concurrent.locks.ReentrantLock lock = new java.util.concurrent.locks.ReentrantLock(true); // Paper
 
     public SchedulerBatch(Scheduler<K, T, R> scheduler) {
         this.b = scheduler;
@@ -19,8 +20,10 @@ public class SchedulerBatch<K, T extends SchedulerTask<K, T>, R> {
         this.b.b();
     }
 
+    public void startBatch() { b(); } // Paper - OBFHELPER
     public void b() {
-        if (this.c) {
+        lock.lock(); // Paper
+        if (false && this.c) { // Paper
             throw new RuntimeException("Batch already started.");
         } else {
             this.d = 1000;
@@ -28,6 +31,7 @@ public class SchedulerBatch<K, T extends SchedulerTask<K, T>, R> {
         }
     }
 
+    public CompletableFuture<R> add(K k0) { return a(k0); } // Paper - OBFHELPER
     public CompletableFuture<R> a(K k0) {
         if (!this.c) {
             throw new RuntimeException("Batch not properly started. Please use startBatch to create a new batch.");
@@ -44,8 +48,14 @@ public class SchedulerBatch<K, T extends SchedulerTask<K, T>, R> {
         }
     }
 
+    public CompletableFuture<R> executeBatch() { return c(); } // Paper - OBFHELPER
     public CompletableFuture<R> c() {
-        if (!this.c) {
+        // Paper start
+        if (!lock.isHeldByCurrentThread()) {
+            throw new IllegalStateException("Current thread does not hold the write lock");
+        }
+        try {// Paper end
+        if (false && !this.c) { // Paper
             throw new RuntimeException("Batch not properly started. Please use startBatch to create a new batch.");
         } else {
             if (this.d != 1000) {
@@ -55,5 +65,6 @@ public class SchedulerBatch<K, T extends SchedulerTask<K, T>, R> {
             this.c = false;
             return this.b.c();
         }
+        } finally { lock.unlock(); } // Paper
     }
 }

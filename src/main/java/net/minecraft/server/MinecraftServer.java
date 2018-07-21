@@ -499,6 +499,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
         // CraftBukkit start - fire WorldLoadEvent and handle whether or not to keep the spawn in memory
         Stopwatch stopwatch = Stopwatch.createStarted();
+        boolean waitForChunks = Boolean.getBoolean("paper.waitforchunks"); // Paper
         for (WorldServer worldserver : this.getWorlds()) {
             MinecraftServer.LOGGER.info("Preparing start region for level " + worldserver.dimension + " (Seed: " + worldserver.getSeed() + ")");
             if (!worldserver.getWorld().getKeepSpawnInMemory()) {
@@ -506,29 +507,24 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             }
 
             BlockPosition blockposition = worldserver.getSpawn();
-            List<ChunkCoordIntPair> list = Lists.newArrayList();
+            List<ChunkCoordIntPair> list = worldserver.getChunkProvider().getSpiralOutChunks(blockposition,  worldserver.paperConfig.keepLoadedRange >> 4); // Paper
             Set<ChunkCoordIntPair> set = Sets.newConcurrentHashSet();
 
-            // Paper start
-            short radius = worldserver.paperConfig.keepLoadedRange;
-            for (int i = -radius; i <= radius && this.isRunning(); i += 16) {
-                for (int j = -radius; j <= radius && this.isRunning(); j += 16) {
-                    // Paper end
-                    list.add(new ChunkCoordIntPair(blockposition.getX() + i >> 4, blockposition.getZ() + j >> 4));
-                }
-            } // Paper
+            // Paper - remove arraylist creation, call spiral above
             if (this.isRunning()) { // Paper
                 int expected = list.size(); // Paper
 
-
-                CompletableFuture completablefuture = worldserver.getChunkProvider().a((Iterable) list, (chunk) -> {
+                CompletableFuture completablefuture = worldserver.getChunkProvider().loadAllChunks(list, (chunk) -> { // Paper
                     set.add(chunk.getPos());
-                    if (set.size() < expected && set.size() % 25 == 0) this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / expected); // Paper
+                    if (waitForChunks && (set.size() == expected || (set.size() < expected && set.size() % (set.size() / 10) == 0))) {
+                        this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / expected); // Paper
+                    }
                 });
 
-                while (!completablefuture.isDone()) {
+                while (waitForChunks && !completablefuture.isDone() && isRunning()) { // Paper
                     try {
-                        completablefuture.get(1L, TimeUnit.SECONDS);
+                        PaperAsyncChunkProvider.processMainThreadQueue(this); // Paper
+                        completablefuture.get(50L, TimeUnit.MILLISECONDS); // Paper
                     } catch (InterruptedException interruptedexception) {
                         throw new RuntimeException(interruptedexception);
                     } catch (ExecutionException executionexception) {
@@ -538,11 +534,11 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
                         throw new RuntimeException(executionexception.getCause());
                     } catch (TimeoutException timeoutexception) {
-                        this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / expected); // Paper
+                        //this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / expected); // Paper
                     }
                 }
 
-                this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / expected); // Paper
+                if (waitForChunks) this.a(new ChatMessage("menu.preparingSpawn", new Object[0]), set.size() * 100 / expected); // Paper
             }
         }
 
@@ -646,6 +642,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             if (hasStopped) return;
             hasStopped = true;
         }
+        PaperAsyncChunkProvider.stop(this); // Paper
         // CraftBukkit end
         MinecraftServer.LOGGER.info("Stopping server");
         MinecraftTimings.stopServer(); // Paper
@@ -1013,6 +1010,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         while ((futuretask = (FutureTask) this.f.poll()) != null) {
             SystemUtils.a(futuretask, MinecraftServer.LOGGER);
         }
+        PaperAsyncChunkProvider.processMainThreadQueue(this); // Paper
         MinecraftTimings.minecraftSchedulerTimer.stopTiming(); // Paper
 
         this.methodProfiler.exitEnter("commandFunctions");
@@ -1049,6 +1047,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         // CraftBukkit - dropTickTime
         for (Iterator iterator = this.getWorlds().iterator(); iterator.hasNext();) {
              WorldServer worldserver = (WorldServer) iterator.next();
+            PaperAsyncChunkProvider.processMainThreadQueue(worldserver); // Paper
             worldserver.hasPhysicsEvent =  org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
             TileEntityHopper.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper
             i = SystemUtils.getMonotonicNanos();

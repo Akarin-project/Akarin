@@ -33,12 +33,12 @@ public class ChunkProviderServer implements IChunkProvider {
     private long lastProcessedSaves = 0L; // Paper
     private long lastSaveStatPrinted = System.currentTimeMillis();
     // Paper end
-    public final Long2ObjectMap<Chunk> chunks = Long2ObjectMaps.synchronize(new ChunkMap(8192));
+    public final Long2ObjectMap<Chunk> chunks = new ChunkMap(8192); // Paper - remove synchronize - we keep everything on main for manip
     private Chunk lastChunk;
     private final ChunkTaskScheduler chunkScheduler;
-    private final SchedulerBatch<ChunkCoordIntPair, ChunkStatus, ProtoChunk> batchScheduler;
+    final SchedulerBatch<ChunkCoordIntPair, ChunkStatus, ProtoChunk> batchScheduler; // Paper
     public final WorldServer world;
-    private final IAsyncTaskHandler asyncTaskHandler;
+    final IAsyncTaskHandler asyncTaskHandler; // Paper
 
     public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, ChunkGenerator<?> chunkgenerator, IAsyncTaskHandler iasynctaskhandler) {
         this.world = worldserver;
@@ -75,10 +75,77 @@ public class ChunkProviderServer implements IChunkProvider {
         this.unloadQueue.remove(ChunkCoordIntPair.a(i, j));
     }
 
+    // Paper start - defaults if Async Chunks is not enabled
+    boolean chunkGoingToExists(int x, int z) {
+        final long k = ChunkCoordIntPair.asLong(x, z);
+        return chunkScheduler.progressCache.containsKey(k);
+    }
+    public void bumpPriority(ChunkCoordIntPair coords) {
+        // do nothing, override in async
+    }
+
+    public List<ChunkCoordIntPair> getSpiralOutChunks(BlockPosition blockposition, int radius) {
+        List<ChunkCoordIntPair> list = com.google.common.collect.Lists.newArrayList();
+
+        list.add(new ChunkCoordIntPair(blockposition.getX() >> 4, blockposition.getZ() >> 4));
+        for (int r = 1; r <= radius; r++) {
+            int x = -r;
+            int z = r;
+
+            // Iterates the edge of half of the box; then negates for other half.
+            while (x <= r && z > -r) {
+                list.add(new ChunkCoordIntPair((blockposition.getX() + (x << 4)) >> 4, (blockposition.getZ() + (z << 4)) >> 4));
+                list.add(new ChunkCoordIntPair((blockposition.getX() - (x << 4)) >> 4, (blockposition.getZ() - (z << 4)) >> 4));
+
+                if (x < r) {
+                    x++;
+                } else {
+                    z--;
+                }
+            }
+        }
+        return list;
+    }
+
+    public Chunk getChunkAt(int x, int z, boolean load, boolean gen, Consumer<Chunk> consumer) {
+        return getChunkAt(x, z, load, gen, false, consumer);
+    }
+    public Chunk getChunkAt(int x, int z, boolean load, boolean gen, boolean priority, Consumer<Chunk> consumer) {
+        Chunk chunk = getChunkAt(x, z, load, gen);
+        if (consumer != null) {
+            consumer.accept(chunk);
+        }
+        return chunk;
+    }
+
+    PaperAsyncChunkProvider.CancellableChunkRequest requestChunk(int x, int z, boolean gen, boolean priority, Consumer<Chunk> consumer) {
+        Chunk chunk = getChunkAt(x, z, gen, priority, consumer);
+        return new PaperAsyncChunkProvider.CancellableChunkRequest() {
+            @Override
+            public void cancel() {
+
+            }
+
+            @Override
+            public Chunk getChunk() {
+                return chunk;
+            }
+        };
+    }
+    // Paper end
+
     @Nullable
     public Chunk getChunkAt(int i, int j, boolean flag, boolean flag1) {
         IChunkLoader ichunkloader = this.chunkLoader;
         Chunk chunk;
+        // Paper start - do already loaded checks before synchronize
+        long k = ChunkCoordIntPair.a(i, j);
+        chunk = (Chunk) this.chunks.get(k);
+        if (chunk != null) {
+            //this.lastChunk = chunk; // Paper remove vanilla lastChunk
+            return chunk;
+        }
+        // Paper end
 
         synchronized (this.chunkLoader) {
             // Paper start - remove vanilla lastChunk, we do it more accurately
@@ -86,13 +153,15 @@ public class ChunkProviderServer implements IChunkProvider {
                 return this.lastChunk;
             }*/ // Paper end
 
-            long k = ChunkCoordIntPair.a(i, j);
+            // Paper start - move up
+            //long k = ChunkCoordIntPair.a(i, j);
 
-            chunk = (Chunk) this.chunks.get(k);
+            /*chunk = (Chunk) this.chunks.get(k);
             if (chunk != null) {
                 //this.lastChunk = chunk; // Paper remove vanilla lastChunk
                 return chunk;
-            }
+            }*/
+            // Paper end
 
             if (flag) {
                 try (co.aikar.timings.Timing timing = world.timings.syncChunkLoadTimer.startTiming()) { // Paper
@@ -150,7 +219,8 @@ public class ChunkProviderServer implements IChunkProvider {
         return (IChunkAccess) (chunk != null ? chunk : (IChunkAccess) this.chunkScheduler.b(new ChunkCoordIntPair(i, j), flag));
     }
 
-    public CompletableFuture<ProtoChunk> a(Iterable<ChunkCoordIntPair> iterable, Consumer<Chunk> consumer) {
+    public CompletableFuture<Void> loadAllChunks(Iterable<ChunkCoordIntPair> iterable, Consumer<Chunk> consumer) { return a(iterable, consumer).thenCompose(protoChunk -> null); } // Paper - overriden in async chunk provider
+    private CompletableFuture<ProtoChunk> a(Iterable<ChunkCoordIntPair> iterable, Consumer<Chunk> consumer) { // Paper - mark private, use above method
         this.batchScheduler.b();
         Iterator iterator = iterable.iterator();
 
@@ -168,6 +238,7 @@ public class ChunkProviderServer implements IChunkProvider {
         return this.batchScheduler.c();
     }
 
+    ReportedException generateChunkError(int i, int j, Throwable throwable) { return a(i, j, throwable); } // Paper - OBFHELPER
     private ReportedException a(int i, int j, Throwable throwable) {
         CrashReport crashreport = CrashReport.a(throwable, "Exception generating new chunk");
         CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Chunk to be generated");
@@ -289,11 +360,13 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     public void close() {
-        try {
+        // Paper start - we do not need to wait for chunk generations to finish on close
+        /*try {
             this.batchScheduler.a();
         } catch (InterruptedException interruptedexception) {
             ChunkProviderServer.a.error("Couldn't stop taskManager", interruptedexception);
-        }
+        }*/
+        // Paper end
 
     }
 

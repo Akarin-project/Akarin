@@ -376,4 +376,57 @@ public class PaperConfig {
             }
         }
     }
+
+    public static boolean asyncChunks = false;
+    public static boolean asyncChunkGeneration = true;
+    public static boolean asyncChunkGenThreadPerWorld = true;
+    public static int asyncChunkLoadThreads = -1;
+    private static void asyncChunks() {
+        if (version < 15) {
+            boolean enabled = config.getBoolean("settings.async-chunks", true);
+            ConfigurationSection section = config.createSection("settings.async-chunks");
+            section.set("enable", enabled);
+            section.set("load-threads", -1);
+            section.set("generation", true);
+            section.set("thread-per-world-generation", true);
+        }
+
+        asyncChunks = getBoolean("settings.async-chunks.enable", true);
+        asyncChunkGeneration = getBoolean("settings.async-chunks.generation", true);
+        asyncChunkGenThreadPerWorld = getBoolean("settings.async-chunks.thread-per-world-generation", true);
+        asyncChunkLoadThreads = getInt("settings.async-chunks.load-threads", -1);
+        if (asyncChunkLoadThreads <= 0) {
+            asyncChunkLoadThreads = (int) Math.min(Integer.getInteger("paper.maxChunkThreads", 8), Runtime.getRuntime().availableProcessors() * 1.5);
+        }
+
+        // Let Shared Host set some limits
+        String sharedHostEnvGen = System.getenv("PAPER_ASYNC_CHUNKS_SHARED_HOST_GEN");
+        String sharedHostEnvLoad = System.getenv("PAPER_ASYNC_CHUNKS_SHARED_HOST_LOAD");
+        if ("1".equals(sharedHostEnvGen)) {
+            log("Async Chunks - Generation: Your host has requested to use a single thread world generation");
+            asyncChunkGenThreadPerWorld = false;
+        } else if ("2".equals(sharedHostEnvGen)) {
+            log("Async Chunks - Generation: Your host has disabled async world generation - You will experience lag from world generation");
+            asyncChunkGeneration = false;
+        }
+
+        if (sharedHostEnvLoad != null) {
+            try {
+                asyncChunkLoadThreads = Math.max(1, Math.min(asyncChunkLoadThreads, Integer.parseInt(sharedHostEnvLoad)));
+            } catch (NumberFormatException ignored) {}
+        }
+
+        if (!asyncChunks) {
+            log("Async Chunks: Disabled - Chunks will be managed synchronosuly, and will cause tremendous lag.");
+        } else {
+            log("Async Chunks: Enabled - Chunks will be loaded much faster, without lag.");
+            if (!asyncChunkGeneration) {
+                log("Async Chunks - Generation: Disabled - Chunks will be generated synchronosuly, and will cause tremendous lag.");
+            } else if (asyncChunkGenThreadPerWorld) {
+                log("Async Chunks - Generation: Enabled - Chunks will be generated much faster, without lag.");
+            } else {
+                log("Async Chunks - Generation: Enabled (Single Thread) - Chunks will be generated much faster, without lag.");
+            }
+        }
+    }
 }

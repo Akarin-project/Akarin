@@ -21,6 +21,7 @@ public class CustomChunkGenerator extends InternalChunkGenerator<GeneratorSettin
     private final WorldServer world;
     private final long seed;
     private final Random random;
+    public final boolean asyncSupported; // Paper
     private final WorldChunkManager chunkManager;
     private final WorldGenStronghold strongholdGen = new WorldGenStronghold();
     private final GeneratorSettingsDefault settings = new GeneratorSettingsDefault();
@@ -43,6 +44,15 @@ public class CustomChunkGenerator extends InternalChunkGenerator<GeneratorSettin
         this.world = (WorldServer) world;
         this.generator = generator;
         this.seed = seed;
+        // Paper start
+        boolean asyncSupported = false;
+        try {
+            java.lang.reflect.Field asyncSafe = generator.getClass().getDeclaredField("PAPER_ASYNC_SAFE");
+            asyncSafe.setAccessible(true);
+            asyncSupported = asyncSafe.getBoolean(generator);
+        } catch (NoSuchFieldException | IllegalAccessException ignored) {}
+        this.asyncSupported = asyncSupported;
+        // Paper end
 
         this.random = new Random(seed);
         this.chunkManager = world.worldProvider.getChunkGenerator().getWorldChunkManager();

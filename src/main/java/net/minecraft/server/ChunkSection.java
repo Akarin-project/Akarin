@@ -25,7 +25,17 @@ public class ChunkSection {
             this.skyLight = new NibbleArray();
         }
 
+        // Paper start - Async Chunks - Lock during world gen
+        if (chunk instanceof ProtoChunk) {
+            this.blockIds.enableLocks();
+        } else {
+            this.blockIds.disableLocks();
+        }
     }
+    void disableLocks() {
+        this.blockIds.disableLocks();
+    }
+    // Paper end
 
     public IBlockData getType(int i, int j, int k) {
         return (IBlockData) this.blockIds.a(i, j, k);

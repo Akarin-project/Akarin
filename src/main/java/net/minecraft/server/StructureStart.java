@@ -7,7 +7,7 @@ import java.util.Random;
 
 public abstract class StructureStart {
 
-    protected final List<StructurePiece> a = Lists.newArrayList();
+    protected final List<StructurePiece> a = java.util.Collections.synchronizedList(Lists.newArrayList()); // Paper
     protected StructureBoundingBox b;
     protected int c;
     protected int d;
@@ -51,13 +51,14 @@ public abstract class StructureStart {
 
     protected void a(IBlockAccess iblockaccess) {
         this.b = StructureBoundingBox.a();
+        synchronized (this.a) { // Paper - synchronize
         Iterator iterator = this.a.iterator();
 
         while (iterator.hasNext()) {
             StructurePiece structurepiece = (StructurePiece) iterator.next();
 
             this.b.b(structurepiece.d());
-        }
+        }} // Paper
 
     }
 
@@ -126,13 +127,14 @@ public abstract class StructureStart {
         int l = k - this.b.e;
 
         this.b.a(0, l, 0);
+        synchronized (this.a) { // Paper - synchronize
         Iterator iterator = this.a.iterator();
 
         while (iterator.hasNext()) {
             StructurePiece structurepiece = (StructurePiece) iterator.next();
 
             structurepiece.a(0, l, 0);
-        }
+        }} // Paper
 
     }
 
@@ -149,13 +151,14 @@ public abstract class StructureStart {
         int i1 = l - this.b.b;
 
         this.b.a(0, i1, 0);
+        synchronized (this.a) {
         Iterator iterator = this.a.iterator();
 
         while (iterator.hasNext()) {
             StructurePiece structurepiece = (StructurePiece) iterator.next();
 
             structurepiece.a(0, i1, 0);
-        }
+        }} // Paper
 
     }
 

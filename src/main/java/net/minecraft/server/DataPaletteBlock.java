@@ -3,7 +3,7 @@ package net.minecraft.server;
 import com.destroystokyo.paper.antixray.ChunkPacketInfo; // Paper - Anti-Xray
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,26 +21,43 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
     protected DataBits a; protected DataBits getDataBits() { return this.a; } // Paper - OBFHELPER
     private DataPalette<T> h; private DataPalette<T> getDataPalette() { return this.h; } // Paper - OBFHELPER
     private int i; private int getBitsPerObject() { return this.i; } // Paper - OBFHELPER
-    private final ReentrantLock j = new ReentrantLock();
+    // Paper start - use read write locks only during generation, disable once back on main thread
+    private static final NoopLock NOOP_LOCK = new NoopLock();
+    private java.util.concurrent.locks.Lock readLock = NOOP_LOCK;
+    private java.util.concurrent.locks.Lock writeLock = NOOP_LOCK;
 
-    private void b() {
-        if (this.j.isLocked() && !this.j.isHeldByCurrentThread()) {
-            String s = (String) Thread.getAllStackTraces().keySet().stream().filter(Objects::nonNull).map((thread) -> {
-                return thread.getName() + ": \n\tat " + (String) Arrays.stream(thread.getStackTrace()).map(Object::toString).collect(Collectors.joining("\n\tat "));
-            }).collect(Collectors.joining("\n"));
-            CrashReport crashreport = new CrashReport("Writing into PalettedContainer from multiple threads", new IllegalStateException());
-            CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Thread dumps");
+    private static class NoopLock extends ReentrantReadWriteLock.WriteLock {
+        private NoopLock() {
+            super(new ReentrantReadWriteLock());
+        }
 
-            crashreportsystemdetails.a("Thread dumps", (Object) s);
-            throw new ReportedException(crashreport);
-        } else {
-            this.j.lock();
+        @Override
+        public final void lock() {
+        }
+
+        @Override
+        public final void unlock() {
+
         }
     }
 
-    private void c() {
-        this.j.unlock();
+    synchronized void enableLocks() {
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        readLock = lock.readLock();
+        writeLock = lock.writeLock();
     }
+    synchronized void disableLocks() {
+        readLock = NOOP_LOCK;
+        writeLock = NOOP_LOCK;
+    }
+
+    private void b() {
+        writeLock.lock();
+    }
+    private void c() {
+        writeLock.unlock();
+    }
+    // Paper end
 
     public DataPaletteBlock(DataPalette<T> datapalette, RegistryBlockID<T> registryblockid, Function<NBTTagCompound, T> function, Function<T, NBTTagCompound> function1, T t0) {
         // Paper start - Anti-Xray - Support default constructor
@@ -155,9 +172,13 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
     }
 
     protected T a(int i) {
-        T t0 = this.h.a(this.a.a(i));
-
-        return t0 == null ? this.g : t0;
+        try { // Paper start - read lock
+            readLock.lock();
+            T object = this.h.a(this.a.a(i)); // Paper - decompile fix
+            return (T)(object == null ? this.g : object);
+        } finally {
+            readLock.unlock();
+        } // Paper end
     }
 
     // Paper start - Anti-Xray - Support default methods

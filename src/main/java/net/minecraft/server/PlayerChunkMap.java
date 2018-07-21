@@ -25,10 +25,10 @@ public class PlayerChunkMap {
     };
     private static final Predicate<EntityPlayer> b = (entityplayer) -> {
         return entityplayer != null && (!entityplayer.isSpectator() || entityplayer.getWorldServer().getGameRules().getBoolean("spectatorsGenerateChunks"));
-    };
+    }; static final Predicate<EntityPlayer> CAN_GEN_CHUNKS = b; // Paper - OBFHELPER
     private final WorldServer world;
     private final List<EntityPlayer> managedPlayers = Lists.newArrayList();
-    private final Long2ObjectMap<PlayerChunk> e = new Long2ObjectOpenHashMap(4096);
+    private final Long2ObjectMap<PlayerChunk> e = new Long2ObjectOpenHashMap(4096); Long2ObjectMap<PlayerChunk> getChunks() { return e; } // Paper - OBFHELPER
     private final Set<PlayerChunk> f = Sets.newHashSet();
     private final List<PlayerChunk> g = Lists.newLinkedList();
     private final List<PlayerChunk> h = Lists.newLinkedList();
@@ -341,7 +341,13 @@ public class PlayerChunkMap {
                             if (playerchunk != null) {
                                 playerchunk.b(entityplayer);
                             }
+                        } else { // Paper start
+                            PlayerChunk playerchunk = this.getChunk(l1 - j1, i2 - k1);
+                            if (playerchunk != null) {
+                                playerchunk.checkHighPriority(entityplayer); // Paper
+                            }
                         }
+                        // Paper end
                     }
                 }
 
@@ -352,7 +358,11 @@ public class PlayerChunkMap {
                 // CraftBukkit start - send nearest chunks first
                 Collections.sort(chunksToLoad, new ChunkCoordComparator(entityplayer));
                 for (ChunkCoordIntPair pair : chunksToLoad) {
-                    this.c(pair.x, pair.z).a(entityplayer);
+                    // Paper start
+                    PlayerChunk c = this.c(pair.x, pair.z);
+                    c.checkHighPriority(entityplayer);
+                    c.a(entityplayer);
+                    // Paper end
                 }
                 // CraftBukkit end
             }
@@ -423,6 +433,15 @@ public class PlayerChunkMap {
                 }
             }
         }
+    }
+
+    void shutdown() {
+        getChunks().values().forEach(pchunk -> {
+                PaperAsyncChunkProvider.CancellableChunkRequest chunkRequest = pchunk.chunkRequest;
+                if (chunkRequest != null) {
+                    chunkRequest.cancel();
+                }
+        });
     }
     // Paper end
 

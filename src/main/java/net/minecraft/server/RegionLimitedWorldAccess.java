@@ -34,7 +34,7 @@ public class RegionLimitedWorldAccess implements GeneratorAccess {
         this.d = l;
         this.e = i;
         this.f = j;
-        this.g = world;
+        this.g = world.regionLimited(this); // Paper
         this.h = world.getSeed();
         this.m = world.getChunkProvider().getChunkGenerator().getSettings();
         this.i = world.getSeaLevel();

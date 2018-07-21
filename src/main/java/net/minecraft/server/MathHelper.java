@@ -7,7 +7,7 @@ import java.util.function.IntPredicate;
 public class MathHelper {
 
     public static final float a = c(2.0F);
-    private static final float[] b = (float[]) SystemUtils.a((Object) (new float[65536]), (afloat) -> {
+    private static final float[] b = (float[]) SystemUtils.a((new float[65536]), (afloat) -> { // Paper - Decompile fix
         for (int i = 0; i < afloat.length; ++i) {
             afloat[i] = (float) Math.sin((double) i * 3.141592653589793D * 2.0D / 65536.0D);
         }
@@ -136,6 +136,7 @@ public class MathHelper {
         return Math.floorMod(i, j);
     }
 
+    public static float normalizeYaw(float fx) { return g(fx); } // Paper - OBFHELPER
     public static float g(float f) {
         f %= 360.0F;
         if (f >= 180.0F) {

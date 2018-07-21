@@ -163,6 +163,16 @@ public class CraftWorld implements World {
         }
     }
 
+    // Paper start - Async chunk load API
+    @Override
+    public java.util.concurrent.CompletableFuture<Chunk> getChunkAtAsync(final int x, final int z, final boolean gen) {
+        final ChunkProviderServer cps = this.world.getChunkProvider();
+        java.util.concurrent.CompletableFuture<Chunk> future = new java.util.concurrent.CompletableFuture<>();
+        cps.getChunkAt(x, z, true, gen, chunk -> future.complete(chunk != null ? chunk.bukkitChunk : null));
+        return future;
+    }
+    // Paper end
+
     public Chunk getChunkAt(int x, int z) {
         return this.world.getChunkProvider().getChunkAt(x, z, true, true).bukkitChunk;
     }
@@ -1466,10 +1476,13 @@ public class CraftWorld implements World {
         int chunkCoordZ = chunkcoordinates.getZ() >> 4;
         // Cycle through the 25x25 Chunks around it to load/unload the chunks.
         int radius = world.paperConfig.keepLoadedRange / 16; // Paper
-        for (int x = -radius; x <= radius; x++) { // Paper
-            for (int z = -radius; z <= radius; z++) { // Paper
+        // Paper start
+        for (ChunkCoordIntPair coords : world.getChunkProvider().getSpiralOutChunks(world.getSpawn(), radius)) {{
+            int x = coords.x;
+            int z = coords.z;
+            // Paper end
                 if (keepLoaded) {
-                    loadChunk(chunkCoordX + x, chunkCoordZ + z);
+                    getChunkAtAsync(chunkCoordX + x, chunkCoordZ + z, chunk -> {}); // Paper - Async Chunks
                 } else {
                     if (isChunkLoaded(chunkCoordX + x, chunkCoordZ + z)) {
                         unloadChunk(chunkCoordX + x, chunkCoordZ + z);

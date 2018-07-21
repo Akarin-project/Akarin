@@ -190,6 +190,7 @@ public class Chunk implements IChunkAccess {
 
         for (k = 0; k < this.sections.length; ++k) {
             this.sections[k] = protochunk.getSections()[k];
+            if (this.sections[k] != null) this.sections[k].disableLocks(); // Paper - Async Chunks - disable locks used during world gen
         }
 
         Iterator iterator = protochunk.s().iterator();

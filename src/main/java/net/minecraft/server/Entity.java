@@ -207,7 +207,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         this.random = SHARED_RANDOM; // Paper
         this.fireTicks = -this.getMaxFireTicks();
         this.justCreated = true;
-        this.uniqueID = MathHelper.a(this.random);
+        this.uniqueID = MathHelper.a(java.util.concurrent.ThreadLocalRandom.current()); // Paper
         this.au = this.uniqueID.toString();
         this.aJ = Sets.newHashSet();
         this.aL = new double[] { 0.0D, 0.0D, 0.0D};
