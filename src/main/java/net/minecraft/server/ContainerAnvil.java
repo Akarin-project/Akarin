@@ -74,6 +74,16 @@ public class ContainerAnvil extends Container {
                 if (!world.isClientSide) {
                     if (!entityhuman1.abilities.canInstantlyBuild && iblockdata.a(TagsBlock.ANVIL) && entityhuman1.getRandom().nextFloat() < 0.12F) {
                         IBlockData iblockdata1 = BlockAnvil.a_(iblockdata);
+                        // Paper start
+                        com.destroystokyo.paper.event.block.AnvilDamagedEvent event = new com.destroystokyo.paper.event.block.AnvilDamagedEvent(getBukkitView(), iblockdata1 != null ? org.bukkit.craftbukkit.block.data.CraftBlockData.fromData(iblockdata1) : null);
+                        if (!event.callEvent()) {
+                            return itemstack;
+                        } else if (event.getDamageState() == com.destroystokyo.paper.event.block.AnvilDamagedEvent.DamageState.BROKEN) {
+                            iblockdata1 = null;
+                        } else {
+                            iblockdata1 = ((org.bukkit.craftbukkit.block.data.CraftBlockData) event.getDamageState().getMaterial().createBlockData()).getState().set(BlockAnvil.FACING, iblockdata.get(BlockAnvil.FACING));
+                        }
+                        // Paper end
 
                         if (iblockdata1 == null) {
                             world.setAir(blockposition);
