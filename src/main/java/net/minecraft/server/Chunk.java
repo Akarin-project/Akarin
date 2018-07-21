@@ -1,5 +1,10 @@
 package net.minecraft.server;
 
+// Paper start
+import com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode;
+import java.util.HashMap;
+import java.util.UUID;
+// Paper end
 import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
@@ -41,6 +46,7 @@ public class Chunk implements IChunkAccess {
     public final World world;
     public final Map<HeightMap.Type, HeightMap> heightMap;
     public Long scheduledForUnload; // Paper - delay chunk unloads
+    private static final Logger logger = LogManager.getLogger(); // Paper
     public final int locX;
     public final int locZ;
     private boolean l;
@@ -691,6 +697,7 @@ public class Chunk implements IChunkAccess {
         if (i != this.locX || j != this.locZ) {
             Chunk.d.warn("Wrong location! ({}, {}) should be ({}, {}), {}", i, j, this.locX, this.locZ, entity);
             entity.die();
+            return; // Paper
         }
 
         int k = MathHelper.floor(entity.locY / 16.0D);
@@ -879,6 +886,50 @@ public class Chunk implements IChunkAccess {
 
         for (int j = 0; j < i; ++j) {
             List<Entity> entityslice = aentityslice[j]; // Spigot
+            // Paper start
+            DuplicateUUIDMode mode = world.paperConfig.duplicateUUIDMode;
+            if (mode == DuplicateUUIDMode.WARN || mode == DuplicateUUIDMode.DELETE || mode == DuplicateUUIDMode.SAFE_REGEN) {
+                Map<UUID, Entity> thisChunk = new HashMap<>();
+                for (Iterator<Entity> iterator = ((List<Entity>) entityslice).iterator(); iterator.hasNext(); ) {
+                    Entity entity = iterator.next();
+                    if (entity.dead || entity.valid) continue;
+                    Entity other = ((WorldServer) world).entitiesByUUID.get(entity.uniqueID);
+                    if (other == null || other.dead || world.getEntityUnloadQueue().contains(other)) {
+                        other = thisChunk.get(entity.uniqueID);
+                    }
+
+                    if (mode == DuplicateUUIDMode.SAFE_REGEN && other != null && !other.dead &&
+                        !world.getEntityUnloadQueue().contains(other)
+                        && java.util.Objects.equals(other.getSaveID(), entity.getSaveID())
+                        && entity.getBukkitEntity().getLocation().distance(other.getBukkitEntity().getLocation()) < world.paperConfig.duplicateUUIDDeleteRange
+                    ) {
+                        if (World.DEBUG_ENTITIES) logger.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", deleted entity " + entity + " because it was near the duplicate and likely an actual duplicate. See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                        entity.die();
+                        iterator.remove();
+                        continue;
+                    }
+                    if (other != null && !other.dead) {
+                        switch (mode) {
+                            case SAFE_REGEN: {
+                                entity.setUUID(UUID.randomUUID());
+                                if (World.DEBUG_ENTITIES) logger.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", regenerated UUID for " + entity + ". See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                                break;
+                            }
+                            case DELETE: {
+                                if (World.DEBUG_ENTITIES) logger.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", deleted entity " + entity + ". See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                                entity.die();
+                                iterator.remove();
+                                break;
+                            }
+                            default:
+                                if (World.DEBUG_ENTITIES) logger.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", doing nothing to " + entity + ". See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                                break;
+                        }
+                    }
+                    thisChunk.put(entity.uniqueID, entity);
+                }
+            }
+            // Paper end
 
             // CraftBukkit start
             List<Entity> toRemove = new LinkedList<>();

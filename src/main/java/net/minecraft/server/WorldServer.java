@@ -37,7 +37,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     private final MinecraftServer server;
     public EntityTracker tracker;
     private final PlayerChunkMap manager;
-    private final Map<UUID, Entity> entitiesByUUID = Maps.newHashMap();
+    public final Map<UUID, Entity> entitiesByUUID = Maps.newHashMap(); // Paper
     public boolean savingDisabled;
     private boolean J;
     private int emptyTime;
@@ -971,7 +971,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     this.g.remove(entity1);
                 } else {
                     if (!(entity instanceof EntityHuman)) {
-                        if (DEBUG_ENTITIES) {
+                        if (DEBUG_ENTITIES && entity.world.paperConfig.duplicateUUIDMode != com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode.NOTHING) {
                             WorldServer.a.error("Keeping entity {} that already exists with UUID {}", entity1, uuid.toString()); // CraftBukkit // Paper
                             WorldServer.a.error("Deleting duplicate entity {}", entity); // Paper
 
@@ -1002,7 +1002,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
 
         Entity old = this.entitiesByUUID.put(entity.getUniqueID(), entity);
-        if (old != null && old.getId() != entity.getId() && old.valid) {
+        if (old != null && old.getId() != entity.getId() && old.valid && entity.world.paperConfig.duplicateUUIDMode != com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode.NOTHING) {
             Logger logger = LogManager.getLogger();
             logger.error("Overwrote an existing entity " + old + " with " + entity);
             if (DEBUG_ENTITIES) {

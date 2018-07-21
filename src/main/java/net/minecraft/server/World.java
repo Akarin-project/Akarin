@@ -70,7 +70,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
     };
     // Spigot end
-    protected final Set<Entity> g = com.google.common.collect.Sets.newHashSet(); // Paper
+    protected final Set<Entity> g = com.google.common.collect.Sets.newHashSet(); public Set<Entity> getEntityUnloadQueue() { return g; };// Paper - OBFHELPER
     //public final List<TileEntity> tileEntityList = Lists.newArrayList(); // Paper - remove unused list
     public final List<TileEntity> tileEntityListTick = Lists.newArrayList();
     private final List<TileEntity> c = Lists.newArrayList();
