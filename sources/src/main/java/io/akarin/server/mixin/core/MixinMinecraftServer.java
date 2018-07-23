@@ -227,7 +227,7 @@ public abstract class MixinMinecraftServer {
         if (AkarinGlobalConfig.legacyWorldTimings) {
             for (int i = 0; i < worlds.size(); ++i) {
                 worlds.get(i).timings.tickEntities.stopTiming();
-                worlds.get(i).timings.doTick.startTiming();
+                worlds.get(i).timings.doTick.stopTiming();
             }
         }
         
