@@ -440,8 +440,7 @@ public abstract class MixinChunk implements IMixinChunk {
             return Collections.emptyList();
         }
         
-        List<Chunk> chunkList = Lists.newArrayList();
-        chunkList = this.getNeighbors();
+        List<Chunk> chunkList = this.getNeighbors();
         chunkList.add(southEastChunk);
         chunkList.add(southWestChunk);
         chunkList.add(northEastChunk);
