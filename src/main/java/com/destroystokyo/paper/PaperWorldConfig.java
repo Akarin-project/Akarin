@@ -366,6 +366,11 @@ public class PaperWorldConfig {
         }
     }
 
+    public boolean armorStandEntityLookups = true;
+    private void armorStandEntityLookups() {
+        armorStandEntityLookups = getBoolean("armor-stands-do-collision-entity-lookups", true);
+    }
+
     public int maxCollisionsPerEntity;
     private void maxEntityCollision() {
         maxCollisionsPerEntity = getInt( "max-entity-collisions", this.spigotConfig.getInt("max-entity-collisions", 8) );

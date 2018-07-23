@@ -1547,6 +1547,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
     }
 
+    // Paper start - Prevent armor stands from doing entity lookups
+    @Override
+    public boolean getCubes(@Nullable Entity entity, AxisAlignedBB axisAlignedBB) {
+        if (entity instanceof EntityArmorStand && !entity.world.paperConfig.armorStandEntityLookups) return false;
+        return GeneratorAccess.super.getCubes(entity, axisAlignedBB);
+    }
+    // Paper end
+
     public boolean a(AxisAlignedBB axisalignedbb) {
         int i = MathHelper.floor(axisalignedbb.minX);
         int j = MathHelper.f(axisalignedbb.maxX);
