@@ -12,6 +12,10 @@ import java.util.Map.Entry;
 import com.destroystokyo.paper.antixray.PacketPlayOutMapChunkInfo; // Anti-Xray
 // Paper end
 
+/**
+ * Akarin Changes Note
+ * 1) WrappedByteBuf -> ByteBuf (compatibility)
+ */
 public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
 
     private int a;
