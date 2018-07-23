@@ -18,10 +18,10 @@ public class AkarinSlackScheduler extends Thread {
         return Singleton.instance;
     }
     
-    public static void boot() {
-        Singleton.instance.setName("Akarin Slack Scheduler Thread");
-        Singleton.instance.setDaemon(true);
-        Singleton.instance.start();
+    public void boot() {
+        setName("Akarin Slack Scheduler Thread");
+        setDaemon(true);
+        start();
         Akari.logger.info("Slack scheduler service started");
     }
     
