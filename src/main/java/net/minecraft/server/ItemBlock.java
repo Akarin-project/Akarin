@@ -70,7 +70,8 @@ public class ItemBlock extends Item {
 
     protected boolean b(BlockActionContext blockactioncontext, IBlockData iblockdata) {
         // CraftBukkit start - store default return
-        boolean defaultReturn = iblockdata.canPlace(blockactioncontext.getWorld(), blockactioncontext.getClickPosition()) && blockactioncontext.getWorld().a(iblockdata, blockactioncontext.getClickPosition());
+        final World world = blockactioncontext.getWorld(); // Paper
+        boolean defaultReturn = iblockdata.canPlace(world, blockactioncontext.getClickPosition()) && world.a(iblockdata, blockactioncontext.getClickPosition()) && world.checkNoVisiblePlayerCollisions(blockactioncontext.getEntity(), iblockdata.getCollisionShape(world, blockactioncontext.getClickPosition())); // Paper - Use our entity search
         org.bukkit.entity.Player player = (blockactioncontext.getEntity() instanceof EntityPlayer) ? (org.bukkit.entity.Player) blockactioncontext.getEntity().getBukkitEntity() : null;
 
         BlockCanBuildEvent event = new BlockCanBuildEvent(CraftBlock.at(blockactioncontext.getWorld(), blockactioncontext.getClickPosition()), player, CraftBlockData.fromData(iblockdata), defaultReturn);

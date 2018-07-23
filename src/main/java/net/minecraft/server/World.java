@@ -1529,6 +1529,37 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
     }
 
+    // Paper start - Based on method below
+    /**
+     * @param entity causing the action ex. block placer
+     * @param voxelshape area to search within
+     * @return if there are no visible players colliding
+     */
+    public boolean checkNoVisiblePlayerCollisions(@Nullable Entity entity, VoxelShape voxelshape) {
+        if (voxelshape.isEmpty()) {
+            return true;
+        } else {
+            List list = this.getEntities((Entity) null, voxelshape.getBoundingBox());
+
+            for (int i = 0; i < list.size(); ++i) {
+                Entity entity1 = (Entity) list.get(i);
+
+                if (entity instanceof EntityPlayer && entity1 instanceof EntityPlayer) {
+                    if (!((EntityPlayer) entity).getBukkitEntity().canSee(((EntityPlayer) entity1).getBukkitEntity())) {
+                        continue;
+                    }
+                }
+
+                if (!entity1.dead && entity1.blocksEntitySpawning()) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+    // Paper end
+
     public boolean a(@Nullable Entity entity, VoxelShape voxelshape) {
         if (voxelshape.isEmpty()) {
             return true;
