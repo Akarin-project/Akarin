@@ -21,7 +21,7 @@ public class ChunkTaskScheduler extends Scheduler<ChunkCoordIntPair, ChunkStatus
         protected boolean a(Scheduler<ChunkCoordIntPair, ChunkStatus, ProtoChunk>.a scheduler_a) {
             ProtoChunk protochunk = (ProtoChunk) scheduler_a.a();
 
-            return !protochunk.ab_() && !protochunk.h();
+            return !protochunk.ab_() /*&& !protochunk.h()*/; // Paper
         }
     };
 
@@ -85,6 +85,7 @@ public class ChunkTaskScheduler extends Scheduler<ChunkCoordIntPair, ChunkStatus
     }
 
     public void a(BooleanSupplier booleansupplier) {
+        if (true) return; // Paper - we don't save proto chunks, and don't want to block thread
         IChunkLoader ichunkloader = this.e;
 
         synchronized (this.e) {

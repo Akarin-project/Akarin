@@ -304,6 +304,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     }
 
     public void saveChunk(World world, IChunkAccess ichunkaccess, boolean unloaded) throws IOException, ExceptionWorldConflict {
+        if (ichunkaccess.i().d() == ChunkStatus.Type.PROTOCHUNK) { return; } // Paper - don't save proto chunks
         // Spigot end
         world.checkSession();
 
