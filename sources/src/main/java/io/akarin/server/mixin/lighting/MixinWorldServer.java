@@ -54,7 +54,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     private static final short XZ_MASK = 0xF;
     private static final short Y_SHORT_MASK = 0xFF;
     
-    private final ExecutorService lightExecutorService = getExecutorService();
+    private final static ExecutorService lightExecutorService = getExecutorService();
     private static ExecutorService getExecutorService() {
         return AkarinGlobalConfig.asyncLightingWorkStealing ?
                 Executors.newFixedThreadPool(AkarinGlobalConfig.asyncLightingThreads, new ThreadFactoryBuilder().setNameFormat("Akarin Async Light Thread").build())
@@ -67,14 +67,15 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         return updateLightAsync(lightType, pos, null);
     }
     
+    @Override
     public boolean checkLightAsync(EnumSkyBlock lightType, BlockPosition pos, Chunk currentChunk, List<Chunk> neighbors) {
         // Sponge - This check is not needed as neighbors are checked in updateLightAsync
         if (false && !this.areChunksLoaded(pos, 17, false)) {
             return false;
         } else {
             final IMixinChunk spongeChunk = (IMixinChunk) currentChunk;
-            int i = 0;
-            int j = 0;
+            int recheckIndex = 0;
+            int blockIndex = 0;
             int current = this.getLightForAsync(lightType, pos, currentChunk, neighbors); // Sponge - use thread safe method
             int rawLight = this.getRawBlockLightAsync(lightType, pos, currentChunk, neighbors); // Sponge - use thread safe method
             int x = pos.getX();
@@ -82,16 +83,16 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             int z = pos.getZ();
             
             if (rawLight > current) {
-                this.J[j++] = 133152; // PAIL: lightUpdateBlockList
+                this.J[blockIndex++] = 133152; // PAIL: lightUpdateBlockList
             } else if (rawLight < current) {
-                this.J[j++] = 133152 | current << 18; // PAIL: lightUpdateBlockList
+                this.J[blockIndex++] = 133152 | current << 18; // PAIL: lightUpdateBlockList
                 
-                while (i < j) {
-                    int l1 = this.J[i++]; // PAIL: lightUpdateBlockList
-                    int i2 = (l1 & 63) - 32 + x;
-                    int j2 = (l1 >> 6 & 63) - 32 + y;
-                    int k2 = (l1 >> 12 & 63) - 32 + z;
-                    int l2 = l1 >> 18 & 15;
+                while (recheckIndex < blockIndex) {
+                    int blockData = this.J[recheckIndex++]; // PAIL: lightUpdateBlockList
+                    int i2 = (blockData & 63) - 32 + x;
+                    int j2 = (blockData >> 6 & 63) - 32 + y;
+                    int k2 = (blockData >> 12 & 63) - 32 + z;
+                    int l2 = blockData >> 18 & 15;
                     BlockPosition blockpos = new BlockPosition(i2, j2, k2);
                     int lightLevel = this.getLightForAsync(lightType, blockpos, currentChunk, neighbors); // Sponge - use thread safe method
                     
@@ -120,8 +121,8 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                                     lightLevel = this.getLightForAsync(lightType, mutableBlockpos, currentChunk, neighbors);
                                     // Sponge end
                                     
-                                    if (lightLevel == l2 - opacity && j < this.J.length) { // PAIL: lightUpdateBlockList
-                                        this.J[j++] = i4 - x + 32 | j4 - y + 32 << 6 | k4 - z + 32 << 12 | l2 - opacity << 18; // PAIL: lightUpdateBlockList
+                                    if (lightLevel == l2 - opacity && blockIndex < this.J.length) { // PAIL: lightUpdateBlockList
+                                        this.J[blockIndex++] = i4 - x + 32 | j4 - y + 32 << 6 | k4 - z + 32 << 12 | l2 - opacity << 18; // PAIL: lightUpdateBlockList
                                     }
                                 }
                                 
@@ -131,11 +132,11 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                     }
                 }
                 
-                i = 0;
+                recheckIndex = 0;
             }
             
-            while (i < j) {
-                int i5 = this.J[i++]; // PAIL: lightUpdateBlockList
+            while (recheckIndex < blockIndex) {
+                int i5 = this.J[recheckIndex++]; // PAIL: lightUpdateBlockList
                 int j5 = (i5 & 63) - 32 + x;
                 int k5 = (i5 >> 6 & 63) - 32 + y;
                 int l5 = (i5 >> 12 & 63) - 32 + z;
@@ -150,32 +151,32 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                         int k6 = Math.abs(j5 - x);
                         int l6 = Math.abs(k5 - y);
                         int i7 = Math.abs(l5 - z);
-                        boolean flag = j < this.J.length - 6; // PAIL: lightUpdateBlockList
+                        boolean flag = blockIndex < this.J.length - 6; // PAIL: lightUpdateBlockList
                         
                         if (k6 + l6 + i7 < 17 && flag) {
                             // Sponge start - use thread safe method getLightForAsync
                             if (this.getLightForAsync(lightType, blockpos1.west(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - 1 - x + 32 + (k5 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 - 1 - x + 32 + (k5 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.east(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 + 1 - x + 32 + (k5 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 + 1 - x + 32 + (k5 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.down(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - x + 32 + (k5 - 1 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 - x + 32 + (k5 - 1 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.up(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - x + 32 + (k5 + 1 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 - x + 32 + (k5 + 1 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.north(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - x + 32 + (k5 - y + 32 << 6) + (l5 - 1 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 - x + 32 + (k5 - y + 32 << 6) + (l5 - 1 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.south(), currentChunk, neighbors) < j6) {
-                                this.J[j++] = j5 - x + 32 + (k5 - y + 32 << 6) + (l5 + 1 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 - x + 32 + (k5 - y + 32 << 6) + (l5 + 1 - z + 32 << 12); // PAIL: lightUpdateBlockList
                             }
                             // Sponge end
                         }
@@ -197,7 +198,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     
     @Override
     public boolean updateLightAsync(EnumSkyBlock lightType, BlockPosition pos, @Nullable Chunk currentChunk) {
-        if (this.getMinecraftServer().isStopped() || this.lightExecutorService.isShutdown()) {
+        if (this.getMinecraftServer().isStopped() || lightExecutorService.isShutdown()) {
             return false;
         }
         
@@ -246,7 +247,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         }
         
         if (Akari.isPrimaryThread()) { // Akarin
-            this.lightExecutorService.execute(() -> {
+            lightExecutorService.execute(() -> {
                 this.checkLightAsync(lightType, pos, chunk, neighbors);
             });
         } else {
@@ -258,7 +259,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     
     @Override
     public ExecutorService getLightingExecutor() {
-        return this.lightExecutorService;
+        return lightExecutorService;
     }
     
     // Thread safe methods to retrieve a chunk during async light updates

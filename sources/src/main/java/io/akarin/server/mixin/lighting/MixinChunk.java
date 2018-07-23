@@ -42,8 +42,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.google.common.collect.Lists;
-
 import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.mixin.IMixinChunk;
 import io.akarin.api.internal.mixin.IMixinWorldServer;
