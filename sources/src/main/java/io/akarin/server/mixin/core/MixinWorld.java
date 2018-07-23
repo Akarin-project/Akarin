@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import net.minecraft.server.AxisAlignedBB;
@@ -21,6 +22,7 @@ public abstract class MixinWorld {
     /**
      * Returns true if there are no solid, live entities in the specified AxisAlignedBB, excluding the given entity
      */
+    @Overwrite
     public boolean a(AxisAlignedBB box, @Nullable Entity target) { // PAIL: checkNoEntityCollision
         List<Entity> list = this.getEntities(null, box);
         

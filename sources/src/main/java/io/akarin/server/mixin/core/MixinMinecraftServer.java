@@ -5,6 +5,8 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+
+import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -197,8 +199,9 @@ public abstract class MixinMinecraftServer {
         Akari.worldTiming.startTiming();
         if (AkarinGlobalConfig.legacyWorldTimings) {
             for (int i = 0; i < worlds.size(); ++i) {
-                worlds.get(i).timings.tickEntities.startTiming();
-                worlds.get(i).timings.doTick.startTiming();
+                WorldServer world = worlds.get(i);
+                world.timings.tickEntities.startTiming();
+                world.timings.doTick.startTiming();
             }
         }
         Akari.STAGE_TICK.submit(() -> {
@@ -226,8 +229,9 @@ public abstract class MixinMinecraftServer {
         Akari.worldTiming.stopTiming();
         if (AkarinGlobalConfig.legacyWorldTimings) {
             for (int i = 0; i < worlds.size(); ++i) {
-                worlds.get(i).timings.tickEntities.stopTiming();
-                worlds.get(i).timings.doTick.stopTiming();
+                WorldServer world = worlds.get(i);
+                world.timings.tickEntities.stopTiming();
+                world.timings.doTick.stopTiming();
             }
         }
         
