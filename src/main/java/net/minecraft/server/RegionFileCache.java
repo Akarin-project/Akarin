@@ -99,7 +99,7 @@ public class RegionFileCache {
 
     @Nullable
     // CraftBukkit start - call sites hoisted for synchronization
-    public static synchronized NBTTagCompound read(File file, int i, int j) throws IOException {
+    public static NBTTagCompound read(File file, int i, int j) throws IOException { // Paper - remove synchronization
         RegionFile regionfile = a(file, i, j);
 
         DataInputStream datainputstream = regionfile.a(i & 31, j & 31);
@@ -112,7 +112,7 @@ public class RegionFileCache {
     }
 
     @Nullable
-    public static synchronized void write(File file, int i, int j, NBTTagCompound nbttagcompound) throws IOException {
+    public static void write(File file, int i, int j, NBTTagCompound nbttagcompound) throws IOException {
         int attempts = 0; Exception laste = null; while (attempts++ < 5) { try { // Paper
         RegionFile regionfile = a(file, i, j);
 
@@ -138,7 +138,7 @@ public class RegionFileCache {
         // Paper end
     }
 
-    public static synchronized boolean chunkExists(File file, int i, int j) {
+    public static boolean chunkExists(File file, int i, int j) { // Paper - remove synchronization
         RegionFile regionfile = b(file, i, j);
 
         return regionfile != null ? regionfile.d(i & 31, j & 31) : false;
