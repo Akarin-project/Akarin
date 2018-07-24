@@ -716,6 +716,7 @@ public class Chunk implements IChunkAccess {
         entity.chunkZ = this.locZ;
         this.entitySlices[k].add(entity);
         // Paper start
+        this.markDirty();
         if (entity instanceof EntityItem) {
             itemCounts[k]++;
         } else if (entity instanceof IInventory) {
@@ -747,6 +748,7 @@ public class Chunk implements IChunkAccess {
         if (!this.entitySlices[i].remove(entity)) {
             return;
         }
+        this.markDirty();
         if (entity instanceof EntityItem) {
             itemCounts[i]--;
         } else if (entity instanceof IInventory) {
