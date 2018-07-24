@@ -18,7 +18,7 @@ public abstract class MixinEntity {
     private boolean isInLava;
     private int lastLavaCheck = Integer.MIN_VALUE;
     
-    @Overwrite // PAIL: isInLava
+    @Overwrite // OBFHELPER: isInLava
     public boolean au() {
         /*
          * This originally comes from Migot (https://github.com/Poweruser/Migot/commit/cafbf1707107d2a3aa6232879f305975bb1f0285)

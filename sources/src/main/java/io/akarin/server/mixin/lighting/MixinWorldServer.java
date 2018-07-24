@@ -63,7 +63,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     }
     
     @Override
-    public boolean checkLightFor(EnumSkyBlock lightType, BlockPosition pos) { // PAIL: checkLightFor
+    public boolean checkLightFor(EnumSkyBlock lightType, BlockPosition pos) { // OBFHELPER: checkLightFor
         return updateLightAsync(lightType, pos, null);
     }
     
@@ -83,12 +83,12 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             int z = pos.getZ();
             
             if (rawLight > current) {
-                this.J[blockIndex++] = 133152; // PAIL: lightUpdateBlockList
+                this.J[blockIndex++] = 133152; // OBFHELPER: lightUpdateBlockList
             } else if (rawLight < current) {
-                this.J[blockIndex++] = 133152 | current << 18; // PAIL: lightUpdateBlockList
+                this.J[blockIndex++] = 133152 | current << 18; // OBFHELPER: lightUpdateBlockList
                 
                 while (recheckIndex < blockIndex) {
-                    int blockData = this.J[recheckIndex++]; // PAIL: lightUpdateBlockList
+                    int blockData = this.J[recheckIndex++]; // OBFHELPER: lightUpdateBlockList
                     int i2 = (blockData & 63) - 32 + x;
                     int j2 = (blockData >> 6 & 63) - 32 + y;
                     int k2 = (blockData >> 12 & 63) - 32 + z;
@@ -117,12 +117,12 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                                     if (pooledChunk == null) {
                                         continue;
                                     }
-                                    int opacity = Math.max(1, pooledChunk.getBlockData(mutableBlockpos).c()); // PAIL: getLightOpacity
+                                    int opacity = Math.max(1, pooledChunk.getBlockData(mutableBlockpos).c()); // OBFHELPER: getLightOpacity
                                     lightLevel = this.getLightForAsync(lightType, mutableBlockpos, currentChunk, neighbors);
                                     // Sponge end
                                     
-                                    if (lightLevel == l2 - opacity && blockIndex < this.J.length) { // PAIL: lightUpdateBlockList
-                                        this.J[blockIndex++] = i4 - x + 32 | j4 - y + 32 << 6 | k4 - z + 32 << 12 | l2 - opacity << 18; // PAIL: lightUpdateBlockList
+                                    if (lightLevel == l2 - opacity && blockIndex < this.J.length) { // OBFHELPER: lightUpdateBlockList
+                                        this.J[blockIndex++] = i4 - x + 32 | j4 - y + 32 << 6 | k4 - z + 32 << 12 | l2 - opacity << 18; // OBFHELPER: lightUpdateBlockList
                                     }
                                 }
                                 
@@ -136,7 +136,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             }
             
             while (recheckIndex < blockIndex) {
-                int i5 = this.J[recheckIndex++]; // PAIL: lightUpdateBlockList
+                int i5 = this.J[recheckIndex++]; // OBFHELPER: lightUpdateBlockList
                 int j5 = (i5 & 63) - 32 + x;
                 int k5 = (i5 >> 6 & 63) - 32 + y;
                 int l5 = (i5 >> 12 & 63) - 32 + z;
@@ -151,32 +151,32 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                         int k6 = Math.abs(j5 - x);
                         int l6 = Math.abs(k5 - y);
                         int i7 = Math.abs(l5 - z);
-                        boolean flag = blockIndex < this.J.length - 6; // PAIL: lightUpdateBlockList
+                        boolean flag = blockIndex < this.J.length - 6; // OBFHELPER: lightUpdateBlockList
                         
                         if (k6 + l6 + i7 < 17 && flag) {
                             // Sponge start - use thread safe method getLightForAsync
                             if (this.getLightForAsync(lightType, blockpos1.west(), currentChunk, neighbors) < j6) {
-                                this.J[blockIndex++] = j5 - 1 - x + 32 + (k5 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 - 1 - x + 32 + (k5 - y + 32 << 6) + (l5 - z + 32 << 12); // OBFHELPER: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.east(), currentChunk, neighbors) < j6) {
-                                this.J[blockIndex++] = j5 + 1 - x + 32 + (k5 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 + 1 - x + 32 + (k5 - y + 32 << 6) + (l5 - z + 32 << 12); // OBFHELPER: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.down(), currentChunk, neighbors) < j6) {
-                                this.J[blockIndex++] = j5 - x + 32 + (k5 - 1 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 - x + 32 + (k5 - 1 - y + 32 << 6) + (l5 - z + 32 << 12); // OBFHELPER: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.up(), currentChunk, neighbors) < j6) {
-                                this.J[blockIndex++] = j5 - x + 32 + (k5 + 1 - y + 32 << 6) + (l5 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 - x + 32 + (k5 + 1 - y + 32 << 6) + (l5 - z + 32 << 12); // OBFHELPER: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.north(), currentChunk, neighbors) < j6) {
-                                this.J[blockIndex++] = j5 - x + 32 + (k5 - y + 32 << 6) + (l5 - 1 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 - x + 32 + (k5 - y + 32 << 6) + (l5 - 1 - z + 32 << 12); // OBFHELPER: lightUpdateBlockList
                             }
 
                             if (this.getLightForAsync(lightType, blockpos1.south(), currentChunk, neighbors) < j6) {
-                                this.J[blockIndex++] = j5 - x + 32 + (k5 - y + 32 << 6) + (l5 + 1 - z + 32 << 12); // PAIL: lightUpdateBlockList
+                                this.J[blockIndex++] = j5 - x + 32 + (k5 - y + 32 << 6) + (l5 + 1 - z + 32 << 12); // OBFHELPER: lightUpdateBlockList
                             }
                             // Sponge end
                         }
@@ -265,14 +265,14 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     // Thread safe methods to retrieve a chunk during async light updates
     // Each method avoids calling getLoadedChunk and instead accesses the passed neighbor chunk list to avoid concurrency issues
     public Chunk getLightChunk(BlockPosition pos, Chunk currentChunk, List<Chunk> neighbors) {
-        if (currentChunk.a(pos.getX() >> 4, pos.getZ() >> 4)) { // PAIL: isAtLocation
+        if (currentChunk.a(pos.getX() >> 4, pos.getZ() >> 4)) { // OBFHELPER: isAtLocation
             if (currentChunk.isUnloading()) {
                 return null;
             }
             return currentChunk;
         }
         for (Chunk neighbor : neighbors) {
-            if (neighbor.a(pos.getX() >> 4, pos.getZ() >> 4)) { // PAIL: isAtLocation
+            if (neighbor.a(pos.getX() >> 4, pos.getZ() >> 4)) { // OBFHELPER: isAtLocation
                 if (neighbor.isUnloading()) {
                     return null;
                 }
@@ -288,12 +288,12 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
             pos = new BlockPosition(pos.getX(), 0, pos.getZ());
         }
         if (!pos.isValidLocation()) {
-            return lightType.c; // PAIL: defaultLightValue
+            return lightType.c; // OBFHELPER: defaultLightValue
         }
         
         final Chunk chunk = this.getLightChunk(pos, currentChunk, neighbors);
         if (chunk == null || chunk.isUnloading()) {
-            return lightType.c; // PAIL: defaultLightValue
+            return lightType.c; // OBFHELPER: defaultLightValue
         }
         
         return chunk.getBrightness(lightType, pos);
@@ -302,15 +302,15 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     private int getRawBlockLightAsync(EnumSkyBlock lightType, BlockPosition pos, Chunk currentChunk, List<Chunk> neighbors) {
         final Chunk chunk = getLightChunk(pos, currentChunk, neighbors);
         if (chunk == null || chunk.isUnloading()) {
-            return lightType.c; // PAIL: defaultLightValue
+            return lightType.c; // OBFHELPER: defaultLightValue
         }
-        if (lightType == EnumSkyBlock.SKY && chunk.c(pos)) { // PAIL: canSeeSky
+        if (lightType == EnumSkyBlock.SKY && chunk.c(pos)) { // OBFHELPER: canSeeSky
             return 15;
         } else {
             IBlockData blockData = chunk.getBlockData(pos);
             int blockLight = blockData.d(); // getLightValue
             int rawLight = lightType == EnumSkyBlock.SKY ? 0 : blockLight;
-            int opacity = blockData.c(); // PAIL: getLightOpacity
+            int opacity = blockData.c(); // OBFHELPER: getLightOpacity
             
             if (opacity >= 15 && blockLight > 0) {
                 opacity = 1;
@@ -347,7 +347,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         if (pos.isValidLocation()) {
             final Chunk chunk = this.getLightChunk(pos, currentChunk, neighbors);
             if (chunk != null && !chunk.isUnloading()) {
-                chunk.a(type, pos, lightValue); // PAIL: setLightFor
+                chunk.a(type, pos, lightValue); // OBFHELPER: setLightFor
                 // this.notifyLightSet(pos); // client side
             }
         }

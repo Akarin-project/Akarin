@@ -43,7 +43,7 @@ public abstract class MixinPlayerConnection {
     @Shadow(aliases = "j") private int itemDropThreshold;
     @Shadow @Final private MinecraftServer minecraftServer;
     
-    // PAIL: update
+    // OBFHELPER: update
     @Redirect(method = "e()V", at = @At(value = "FIELD", target = NET_HANDLER_PLAY_CHAT_SPAM_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupChatSpamCheck(PlayerConnection self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) this.minecraftServer).getRealTimeTicks();

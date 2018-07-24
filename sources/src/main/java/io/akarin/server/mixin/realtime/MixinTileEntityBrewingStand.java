@@ -39,7 +39,7 @@ public abstract class MixinTileEntityBrewingStand extends TileEntity {
     private static final String BREWING_STAND_BREW_TIME_FIELD = "Lnet/minecraft/tileentity/TileEntityBrewingStand;brewTime:I";
     @Shadow private int brewTime;
     
-    // PAIL: update
+    // OBFHELPER: update
     @Redirect(method = "e()V", at = @At(value = "FIELD", target = BREWING_STAND_BREW_TIME_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupBrewTime(TileEntityBrewingStand self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) this.getWorld()).getRealTimeTicks();

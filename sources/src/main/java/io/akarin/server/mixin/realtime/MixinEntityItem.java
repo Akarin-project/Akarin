@@ -40,7 +40,7 @@ public abstract class MixinEntityItem {
     @Shadow public int age;
     @Shadow private int pickupDelay;
     
-    // PAIL: onUpdate
+    // OBFHELPER: onUpdate
     @Redirect(method = "B_()V", at = @At(value = "FIELD", target = ENTITY_ITEM_DELAY_PICKUP_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupPickupDelay(EntityItem self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) self.getWorld()).getRealTimeTicks();

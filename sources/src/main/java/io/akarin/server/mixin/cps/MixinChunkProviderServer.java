@@ -67,7 +67,7 @@ public abstract class MixinChunkProviderServer {
                 }
             }
             activityAccountant.endActivity();
-            this.chunkLoader.b(); // PAIL: chunkTick
+            this.chunkLoader.b(); // OBFHELPER: chunkTick
         }
         return false;
     }

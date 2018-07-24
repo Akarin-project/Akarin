@@ -23,11 +23,11 @@ public abstract class MixinWorld {
      * Returns true if there are no solid, live entities in the specified AxisAlignedBB, excluding the given entity
      */
     @Overwrite
-    public boolean a(AxisAlignedBB box, @Nullable Entity target) { // PAIL: checkNoEntityCollision
+    public boolean a(AxisAlignedBB box, @Nullable Entity target) { // OBFHELPER: checkNoEntityCollision
         List<Entity> list = this.getEntities(null, box);
         
         for (Entity each : list) {
-            if (!each.dead && each.i && each != target && (target == null || !each.x(target))) { // PAIL: preventEntitySpawning - isRidingSameEntity
+            if (!each.dead && each.i && each != target && (target == null || !each.x(target))) { // OBFHELPER: preventEntitySpawning - isRidingSameEntity
                 return false;
             }
         }

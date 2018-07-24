@@ -30,11 +30,11 @@ public abstract class MixinCommandKick {
                         message = message + args[i];
                     }
                     target.playerConnection.disconnect(message);
-                    CommandAbstract.a(sender, (ICommand) this, "commands.kick.success.reason", target.getName(), message); // PAIL: notifyCommandListener
+                    CommandAbstract.a(sender, (ICommand) this, "commands.kick.success.reason", target.getName(), message); // OBFHELPER: notifyCommandListener
                     // Akarin end
                 } else {
                     target.playerConnection.disconnect(AkarinGlobalConfig.messageKick); // Akarin
-                    CommandAbstract.a(sender, (ICommand) this, "commands.kick.success", target.getName()); // PAIL: notifyCommandListener
+                    CommandAbstract.a(sender, (ICommand) this, "commands.kick.success", target.getName()); // OBFHELPER: notifyCommandListener
                 }
             }
         } else {

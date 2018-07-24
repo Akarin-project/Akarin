@@ -40,7 +40,7 @@ public abstract class MixinPlayerInteractManager {
     @Shadow public World world;
     @Shadow private int currentTick;
     
-    // PAIL: updateBlockRemoving
+    // OBFHELPER: updateBlockRemoving
     @Redirect(method = "a()V", at = @At(value = "FIELD", target = PLAYER_INTERACTION_BLOCK_DAMAGE_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupDiggingTime(PlayerInteractManager self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) this.world.getMinecraftServer()).getRealTimeTicks();

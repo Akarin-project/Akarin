@@ -37,19 +37,19 @@ import net.minecraft.server.EntityExperienceOrb;
 public abstract class MixinEntityExperienceOrb {
     private static final String ENTITY_XP_DELAY_PICKUP_FIELD = "Lnet/minecraft/entity/item/EntityExperienceOrb;c:I"; // PUTFIELD: delayBeforeCanPickup
     private static final String ENTITY_XP_AGE_FIELD = "Lnet/minecraft/entity/item/EntityExperienceOrb;b:I"; // PUTFIELD: xpOrbAge
-    @Shadow public int c; // PAIL: delayBeforeCanPickup
-    @Shadow public int b; // PAIL: xpOrbAge
+    @Shadow public int c; // OBFHELPER: delayBeforeCanPickup
+    @Shadow public int b; // OBFHELPER: xpOrbAge
     
-    // PAIL: onUpdate
+    // OBFHELPER: onUpdate
     @Redirect(method = "B_()V", at = @At(value = "FIELD", target = ENTITY_XP_DELAY_PICKUP_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupPickupDelay(EntityExperienceOrb self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) self.getWorld()).getRealTimeTicks();
-        this.c = Math.max(0, this.c - ticks); // PAIL: delayBeforeCanPickup
+        this.c = Math.max(0, this.c - ticks); // OBFHELPER: delayBeforeCanPickup
     }
     
     @Redirect(method = "B_()V", at = @At(value = "FIELD", target = ENTITY_XP_AGE_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupAge(EntityExperienceOrb self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) self.getWorld()).getRealTimeTicks();
-        this.b += ticks; // PAIL: xpOrbAge
+        this.b += ticks; // OBFHELPER: xpOrbAge
     }
 }

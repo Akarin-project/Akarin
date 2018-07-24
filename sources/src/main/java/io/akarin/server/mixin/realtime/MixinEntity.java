@@ -41,16 +41,16 @@ public abstract class MixinEntity {
     @Shadow protected int al;
     @Shadow public World world;
     
-    // PAIL: onEntityUpdate
+    // OBFHELPER: onEntityUpdate
     @Redirect(method = "Y()V", at = @At(value = "FIELD", target = ENTITY_RIDABLE_COOLDOWN_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupEntityCooldown(Entity self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) this.world).getRealTimeTicks();
-        this.j = Math.max(0, this.j - ticks); // PAIL: rideCooldown
+        this.j = Math.max(0, this.j - ticks); // OBFHELPER: rideCooldown
     }
     
     @Redirect(method = "Y()V", at = @At(value = "FIELD", target = ENTITY_PORTAL_COUNTER_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupPortalCounter(Entity self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) this.world).getRealTimeTicks();
-        this.al += ticks; // PAIL: portalCounter
+        this.al += ticks; // OBFHELPER: portalCounter
     }
 }

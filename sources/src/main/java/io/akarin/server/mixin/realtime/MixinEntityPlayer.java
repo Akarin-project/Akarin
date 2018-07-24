@@ -42,7 +42,7 @@ public abstract class MixinEntityPlayer extends Entity {
         super(worldIn);
     }
     
-    // PAIL: decrementTimeUntilPortal
+    // OBFHELPER: decrementTimeUntilPortal
     @Redirect(method = "I()V", at = @At(value = "FIELD", target = ENTITY_PLAYER_MP_PORTAL_COOLDOWN_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupPortalCooldown(EntityPlayer self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) self.getWorld()).getRealTimeTicks();

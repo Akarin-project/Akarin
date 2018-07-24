@@ -37,7 +37,7 @@ import net.minecraft.server.World;
 @Mixin(value = World.class, remap = false, priority = 1002)
 public abstract class MixinWorld {
     @Shadow protected IChunkProvider chunkProvider;
-    @Shadow int[] J; // PAIL: lightUpdateBlockList
+    @Shadow int[] J; // OBFHELPER: lightUpdateBlockList
     
     @Shadow(aliases = "c") public abstract boolean checkLightFor(EnumSkyBlock lightType, BlockPosition pos);
     @Shadow public abstract MinecraftServer getMinecraftServer();

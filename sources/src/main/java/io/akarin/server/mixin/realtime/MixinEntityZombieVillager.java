@@ -38,7 +38,7 @@ public abstract class MixinEntityZombieVillager {
     
     @Shadow(aliases = "du") protected abstract int getConversionProgress();
     
-    // PAIL: onUpdate
+    // OBFHELPER: onUpdate
     @Redirect(method = "B_()V", at = @At(value = "INVOKE", target = ENTITY_ZOMBIE_GET_CONVERSION_BOOST_METHOD, ordinal = 0))
     public int fixupConversionTimeBoost(EntityZombieVillager self) {
         int ticks = (int) ((IMixinRealTimeTicking) self.getWorld()).getRealTimeTicks();

@@ -13,7 +13,7 @@ public abstract class MixinMinecraftServer implements IMixinRealTimeTicking {
     private static long lastTickNanos = System.nanoTime();
     private static long realTimeTicks = 1;
     
-    @Inject(method = "C()V", at = @At("HEAD")) // PAIL: fullTick
+    @Inject(method = "C()V", at = @At("HEAD")) // OBFHELPER: fullTick
     public void onTickUpdateRealTimeTicks(CallbackInfo ci) {
         long currentNanos = System.nanoTime();
         realTimeTicks = (currentNanos - lastTickNanos) / 50000000;

@@ -27,8 +27,8 @@ public class WorldData {
     private int h;
     private int i;
     private int j;
-    private volatile long k; // Akarin - volatile - PAIL: time
-    private volatile long l; // Akarin - volatile - PAIL: dayTime
+    private volatile long k; // Akarin - volatile - OBFHELPER: time
+    private volatile long l; // Akarin - volatile - OBFHELPER: dayTime
     private long m;
     private long n;
     private NBTTagCompound o;

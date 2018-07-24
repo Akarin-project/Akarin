@@ -40,11 +40,11 @@ public abstract class MixinEntityHuman {
     @Shadow public int bD;
     @Shadow private int sleepTicks;
     
-    // PAIL: onUpdate
+    // OBFHELPER: onUpdate
     @Redirect(method = "B_()V", at = @At(value = "FIELD", target = ENTITY_PLAYER_XP_COOLDOWN_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupXpCooldown(EntityHuman self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) self.getWorld()).getRealTimeTicks();
-        this.bD = Math.max(0, this.bD - ticks); // PAIL: xpCooldown
+        this.bD = Math.max(0, this.bD - ticks); // OBFHELPER: xpCooldown
     }
 
     @Redirect(method = "B_()V", at = @At(value = "FIELD", target = ENTITY_PLAYER_SLEEP_TIMER_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))

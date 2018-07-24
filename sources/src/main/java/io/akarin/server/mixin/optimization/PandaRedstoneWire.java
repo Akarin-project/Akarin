@@ -150,7 +150,7 @@ public abstract class PandaRedstoneWire extends Block {
             IBlockData state = worldIn.getType(pos);
             int oldPower = state.get(BlockRedstoneWire.POWER).intValue();
             this.canProvidePower = false;
-            int blockPower = worldIn.z(pos); // PAIL: isBlockIndirectlyGettingPowered
+            int blockPower = worldIn.z(pos); // OBFHELPER: isBlockIndirectlyGettingPowered
             this.canProvidePower = true;
             int wirePower = this.getSurroundingWirePower(worldIn, pos);
             
@@ -188,7 +188,7 @@ public abstract class PandaRedstoneWire extends Block {
             IBlockData state = worldIn.getType(pos);
             int oldPower = state.get(BlockRedstoneWire.POWER).intValue();
             this.canProvidePower = false;
-            int blockPower = worldIn.z(pos); // PAIL: isBlockIndirectlyGettingPowered
+            int blockPower = worldIn.z(pos); // OBFHELPER: isBlockIndirectlyGettingPowered
             this.canProvidePower = true;
             int wirePower = this.getSurroundingWirePower(worldIn, pos);
             // Lower the strength as it moved a block
@@ -264,11 +264,11 @@ public abstract class PandaRedstoneWire extends Block {
         }
         for (EnumDirection facingVertical : facingsVertical) {
             BlockPosition offsetPos = pos.shift(facingVertical);
-            boolean solidBlock = worldIn.getType(offsetPos).k(); // PAIL: isBlockNormalCube
+            boolean solidBlock = worldIn.getType(offsetPos).k(); // OBFHELPER: isBlockNormalCube
             for (EnumDirection facingHorizontal : facingsHorizontal) {
                 // wire can travel upwards if the block on top doesn't cut the wire (is non-solid)
                 // it can travel down if the block below is solid and the block "diagonal" doesn't cut off the wire (is non-solid) 
-                if ((facingVertical == EnumDirection.UP && !solidBlock) || (facingVertical == EnumDirection.DOWN && solidBlock && !worldIn.getType(offsetPos.shift(facingHorizontal)).k())) { // PAIL: isBlockNormalCube
+                if ((facingVertical == EnumDirection.UP && !solidBlock) || (facingVertical == EnumDirection.DOWN && solidBlock && !worldIn.getType(offsetPos.shift(facingHorizontal)).k())) { // OBFHELPER: isBlockNormalCube
                     this.addWireToList(worldIn, offsetPos.shift(facingHorizontal), ownPower);
                 }
             }
@@ -292,10 +292,10 @@ public abstract class PandaRedstoneWire extends Block {
             wirePower = this.getPower(worldIn, offsetPos, wirePower);
             
             // Block below the wire need to be solid (Upwards diode of slabs/stairs/glowstone) and no block should cut the wire
-            if(worldIn.getType(offsetPos).l() && !worldIn.getType(pos.up()).l()) { // PAIL: isNormalCube
+            if(worldIn.getType(offsetPos).l() && !worldIn.getType(pos.up()).l()) { // OBFHELPER: isNormalCube
                 wirePower = this.getPower(worldIn, offsetPos.up(), wirePower);
                 // Only get from power below if no block is cutting the wire
-            } else if (!worldIn.getType(offsetPos).l()) { // PAIL: isNormalCube
+            } else if (!worldIn.getType(offsetPos).l()) { // OBFHELPER: isNormalCube
                 wirePower = this.getPower(worldIn, offsetPos.down(), wirePower);
             }
         }
@@ -327,7 +327,7 @@ public abstract class PandaRedstoneWire extends Block {
         // Later add blocks around the surrounding blocks that get powered
         for (EnumDirection facing : facings) {
             BlockPosition offsetPos = pos.shift(facing);
-            if (!connectedSides.contains(facing.opposite()) && facing != EnumDirection.DOWN || !worldIn.getType(offsetPos).l()) continue; // PAIL: isNormalCube
+            if (!connectedSides.contains(facing.opposite()) && facing != EnumDirection.DOWN || !worldIn.getType(offsetPos).l()) continue; // OBFHELPER: isNormalCube
             for (EnumDirection facing1 : facings) {
                 if (this.canBlockBePoweredFromSide(worldIn.getType(offsetPos.shift(facing1)), facing1, false))
                     set.add(offsetPos.shift(facing1));
@@ -412,7 +412,7 @@ public abstract class PandaRedstoneWire extends Block {
      */
     private void addAllSurroundingBlocks(BlockPosition pos, Set<BlockPosition> set) {
         for (BaseBlockPosition vect : surroundingBlocksOffset) {
-            set.add(pos.a(vect)); // PAIL: add
+            set.add(pos.a(vect)); // OBFHELPER: add
         }
     }
 
@@ -445,7 +445,7 @@ public abstract class PandaRedstoneWire extends Block {
     public void onPlace(World world, BlockPosition pos, IBlockData state) {
         this.updateSurroundingRedstone(world, pos);
         for (BaseBlockPosition vec : surroundingBlocksOffset) {
-            world.applyPhysics(pos.a(vec), this, false); // PAIL: add
+            world.applyPhysics(pos.a(vec), this, false); // OBFHELPER: add
         }
     }
     
@@ -462,7 +462,7 @@ public abstract class PandaRedstoneWire extends Block {
         super.remove(world, pos, state);
         this.updateSurroundingRedstone(world, pos);
         for (BaseBlockPosition vec : surroundingBlocksOffset) {
-            world.applyPhysics(pos.a(vec), this, false); // PAIL: add
+            world.applyPhysics(pos.a(vec), this, false); // OBFHELPER: add
         }
     }
 
@@ -477,7 +477,7 @@ public abstract class PandaRedstoneWire extends Block {
      */
     @Override
     @Overwrite
-    public int b(IBlockData blockState, IBlockAccess blockAccess, BlockPosition pos, EnumDirection side) { // PAIL: getWeakPower
+    public int b(IBlockData blockState, IBlockAccess blockAccess, BlockPosition pos, EnumDirection side) { // OBFHELPER: getWeakPower
         if (!this.canProvidePower) {
             return 0;
         } else {
@@ -494,14 +494,14 @@ public abstract class PandaRedstoneWire extends Block {
         
         if (block == Blocks.REDSTONE_WIRE) {
             return true;
-        } else if (Blocks.UNPOWERED_REPEATER.D(blockState)) { // PAIL: isSameDiode
+        } else if (Blocks.UNPOWERED_REPEATER.D(blockState)) { // OBFHELPER: isSameDiode
             EnumDirection enumdirection1 = blockState.get(BlockRepeater.FACING);
             
             return enumdirection1 == side || enumdirection1.opposite() == side;
         } else if (Blocks.dk == blockState.getBlock()) {
-            return side == blockState.get(BlockObserver.FACING); // PAIL: OBSERVER
+            return side == blockState.get(BlockObserver.FACING); // OBFHELPER: OBSERVER
         } else {
-            return blockState.m() && side != null; // PAIL: canProvidePower
+            return blockState.m() && side != null; // OBFHELPER: canProvidePower
         }
     }
     

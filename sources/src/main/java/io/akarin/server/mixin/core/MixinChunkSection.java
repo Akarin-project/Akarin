@@ -11,7 +11,7 @@ import net.minecraft.server.ChunkSection;
 public abstract class MixinChunkSection {
     @Shadow private int nonEmptyBlockCount;
     
-    @Overwrite // PAIL: isEmpty
+    @Overwrite // OBFHELPER: isEmpty
     public boolean a() {
         return AkarinGlobalConfig.sendLightOnlyChunkSection ? false : nonEmptyBlockCount == 0;
     }

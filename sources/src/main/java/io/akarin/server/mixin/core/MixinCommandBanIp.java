@@ -19,7 +19,7 @@ import net.minecraft.server.MinecraftServer;
 
 @Mixin(value = CommandBanIp.class, remap = false)
 public abstract class MixinCommandBanIp {
-    @Overwrite // PAIL: banIp
+    @Overwrite // OBFHELPER: banIp
     protected void a(MinecraftServer server, ICommandListener sender, String args, @Nullable String banReason) {
         // Akarin start - modify message
         boolean hasReason = true;
@@ -31,7 +31,7 @@ public abstract class MixinCommandBanIp {
         IpBanEntry ipbanentry = new IpBanEntry(args, (Date) null, sender.getName(), (Date) null, banReason);
 
         server.getPlayerList().getIPBans().add(ipbanentry);
-        List<EntityPlayer> withIpPlayers = server.getPlayerList().b(args); // PAIL: getPlayersMatchingAddress
+        List<EntityPlayer> withIpPlayers = server.getPlayerList().b(args); // OBFHELPER: getPlayersMatchingAddress
         String[] banPlayerNames = new String[withIpPlayers.size()];
         
         for (int i = 0; i < banPlayerNames.length; i++) {
@@ -41,9 +41,9 @@ public abstract class MixinCommandBanIp {
         }
         
         if (withIpPlayers.isEmpty()) {
-            CommandAbstract.a(sender, (ICommand) this, "commands.banip.success", args); // PAIL: notifyCommandListener
+            CommandAbstract.a(sender, (ICommand) this, "commands.banip.success", args); // OBFHELPER: notifyCommandListener
         } else {
-            CommandAbstract.a(sender, (ICommand) this, "commands.banip.success.players", args, CommandAbstract.a(banPlayerNames)); // PAIL: notifyCommandListener - joinNiceString
+            CommandAbstract.a(sender, (ICommand) this, "commands.banip.success.players", args, CommandAbstract.a(banPlayerNames)); // OBFHELPER: notifyCommandListener - joinNiceString
         }
     }
 }

@@ -43,7 +43,7 @@ public abstract class MixinTileEntityFurnace extends TileEntity {
     @Shadow private int cookTime;
     @Shadow private int cookTimeTotal;
     
-    // PAIL: update
+    // OBFHELPER: update
     @Redirect(method = "e()V", at = @At(value = "FIELD", target = FURNACE_BURN_TIME_FIELD, opcode = Opcodes.PUTFIELD, ordinal = 0))
     public void fixupBurnTime(TileEntityFurnace self, int modifier) {
         int ticks = (int) ((IMixinRealTimeTicking) this.getWorld()).getRealTimeTicks();

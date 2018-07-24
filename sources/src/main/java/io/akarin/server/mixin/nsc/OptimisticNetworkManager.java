@@ -29,7 +29,7 @@ public abstract class OptimisticNetworkManager {
     @SuppressWarnings("unchecked")
     private static final QueuedPacket SIGNAL_PACKET = new QueuedPacket(null);
     
-    @Overwrite // PAIL: trySendQueue
+    @Overwrite // OBFHELPER: trySendQueue
     private boolean m() {
         if (this.channel != null && this.channel.isOpen()) {
             if (this.packets.isEmpty()) { // return if the packet queue is empty so that the write lock by Anti-Xray doesn't affect the vanilla performance at all

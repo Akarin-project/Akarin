@@ -52,7 +52,7 @@ public abstract class MixinCommandBan {
                     entityplayer.playerConnection.disconnect(hasReason ? message : AkarinGlobalConfig.messageBan);
                 }
                 
-                CommandAbstract.a(sender, (ICommand) this, "commands.ban.success", args[0]); // PAIL: notifyCommandListener
+                CommandAbstract.a(sender, (ICommand) this, "commands.ban.success", args[0]); // OBFHELPER: notifyCommandListener
             }
         } else {
             throw new ExceptionUsage("commands.ban.usage");

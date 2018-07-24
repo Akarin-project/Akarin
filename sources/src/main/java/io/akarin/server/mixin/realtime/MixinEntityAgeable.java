@@ -34,7 +34,7 @@ import net.minecraft.server.EntityAgeable;
 public abstract class MixinEntityAgeable {
     private static final String ENTITY_AGEABLE_SET_GROWING_AGE_METHOD = "Lnet/minecraft/entity/EntityAgeable;setAgeRaw(I)V";
     
-    // PAIL: onLivingUpdate
+    // OBFHELPER: onLivingUpdate
     @Redirect(method = "n()V", at = @At(value = "INVOKE", target = ENTITY_AGEABLE_SET_GROWING_AGE_METHOD, ordinal = 0))
     public void fixupGrowingUp(EntityAgeable self, int age) {
         // Subtract the one the original update method added

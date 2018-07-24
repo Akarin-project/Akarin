@@ -77,7 +77,7 @@ public abstract class NonblockingServerConnection {
         Class<? extends ServerChannel> channelClass;
         EventLoopGroup loopGroup;
         
-        if (Epoll.isAvailable() && this.server.af()) { // PAIL: MinecraftServer::useNativeTransport
+        if (Epoll.isAvailable() && this.server.af()) { // OBFHELPER: MinecraftServer::useNativeTransport
             channelClass = EpollServerSocketChannel.class;
             loopGroup = ServerConnection.b.c();
             logger.info("Using epoll channel type");
@@ -122,7 +122,7 @@ public abstract class NonblockingServerConnection {
         }
     }
     
-    @Shadow public volatile boolean d; // PAIL: neverTerminate
+    @Shadow public volatile boolean d; // OBFHELPER: neverTerminate
     /**
      * Shuts down all open endpoints
      */
@@ -139,7 +139,7 @@ public abstract class NonblockingServerConnection {
     
     public void processPackets(NetworkManager manager) {
         try {
-            manager.a(); // PAIL: NetworkManager::processReceivedPackets
+            manager.a(); // OBFHELPER: NetworkManager::processReceivedPackets
         } catch (Exception ex) {
             logger.warn("Failed to handle packet for {}", manager.getSocketAddress(), ex);
             final ChatComponentText message = new ChatComponentText("Internal server error");
@@ -168,7 +168,7 @@ public abstract class NonblockingServerConnection {
             Iterator<NetworkManager> it = networkManagers.iterator();
             while (it.hasNext()) {
                 NetworkManager manager = it.next();
-                if (manager.h()) continue; // PAIL: NetworkManager::hasNoChannel
+                if (manager.h()) continue; // OBFHELPER: NetworkManager::hasNoChannel
                 
                 if (manager.isConnected()) {
                     processPackets(manager);

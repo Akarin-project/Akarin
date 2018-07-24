@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import com.destroystokyo.paper.exception.ServerInternalException;
-import com.google.common.collect.Maps;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -95,7 +94,7 @@ public class RegionFileCache {
     }
 
     // CraftBukkit start - call sites hoisted for synchronization
-    public static synchronized NBTTagCompound d(File file, int i, int j) throws IOException {
+    public static synchronized NBTTagCompound d(File file, int i, int j) throws IOException { // OBFHELPER: read
         RegionFile regionfile = a(file, i, j);
 
         DataInputStream datainputstream = regionfile.a(i & 31, j & 31);
@@ -107,7 +106,7 @@ public class RegionFileCache {
         return NBTCompressedStreamTools.a(datainputstream);
     }
 
-    public static synchronized void e(File file, int i, int j, NBTTagCompound nbttagcompound) throws IOException {
+    public static synchronized void e(File file, int i, int j, NBTTagCompound nbttagcompound) throws IOException { // OBFHELPER: write
         RegionFile regionfile = a(file, i, j);
 
         DataOutputStream dataoutputstream = regionfile.b(i & 31, j & 31);

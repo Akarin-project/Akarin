@@ -121,7 +121,7 @@ public abstract class MixinChunk implements IMixinChunk {
     @Inject(method = "b(Z)V", at = @At("HEAD"), cancellable = true)
     private void onTickHead(boolean skipRecheckGaps, CallbackInfo ci) {
         final List<Chunk> neighbors = this.getSurroundingChunks();
-        if (this.isGapLightingUpdated && this.world.worldProvider.m() && !skipRecheckGaps && !neighbors.isEmpty()) { // PAIL: hasSkyLight
+        if (this.isGapLightingUpdated && this.world.worldProvider.m() && !skipRecheckGaps && !neighbors.isEmpty()) { // OBFHELPER: hasSkyLight
             lightExecutorService.execute(() -> {
                 this.recheckGapsAsync(neighbors);
             });
@@ -141,10 +141,10 @@ public abstract class MixinChunk implements IMixinChunk {
         while (!this.tileEntityPosQueue.isEmpty()) {
             BlockPosition blockpos = this.tileEntityPosQueue.poll();
             
-            if (this.getTileEntity(blockpos, Chunk.EnumTileEntityState.CHECK) == null && this.getBlockData(blockpos).getBlock().isTileEntity()) { // PAIL: getTileEntity
+            if (this.getTileEntity(blockpos, Chunk.EnumTileEntityState.CHECK) == null && this.getBlockData(blockpos).getBlock().isTileEntity()) { // OBFHELPER: getTileEntity
                 TileEntity tileentity = this.createNewTileEntity(blockpos);
                 this.world.setTileEntity(blockpos, tileentity);
-                this.world.b(blockpos, blockpos); // PAIL: markBlockRangeForRenderUpdate
+                this.world.b(blockpos, blockpos); // OBFHELPER: markBlockRangeForRenderUpdate
             }
         }
         ci.cancel();
@@ -157,7 +157,7 @@ public abstract class MixinChunk implements IMixinChunk {
             return BlockPosition.ZERO;
         }
         
-        return new BlockPosition(pos.getX(), chunk.b(pos.getX() & 15, pos.getZ() & 15), pos.getZ()); // PAIL: getHeightValue
+        return new BlockPosition(pos.getX(), chunk.b(pos.getX() & 15, pos.getZ() & 15), pos.getZ()); // OBFHELPER: getHeightValue
     }
     
     @Redirect(method = "a(IIII)V", at = @At(value = "INVOKE", target = "net/minecraft/server/World.areChunksLoaded(Lnet/minecraft/server/BlockPosition;I)Z"))
@@ -190,7 +190,7 @@ public abstract class MixinChunk implements IMixinChunk {
                         if (chunk == null || chunk.isUnloading()) {
                             continue;
                         }
-                        j1 = Math.min(j1, chunk.w()); // PAIL: getLowestHeight
+                        j1 = Math.min(j1, chunk.w()); // OBFHELPER: getLowestHeight
                     }
                     
                     this.checkSkylightNeighborHeight(l, i1, j1);
@@ -271,7 +271,7 @@ public abstract class MixinChunk implements IMixinChunk {
         this.isLightPopulated = true;
         BlockPosition blockpos = new BlockPosition(this.locX << 4, 0, this.locZ << 4);
         
-        if (this.world.worldProvider.m()) { // PAIL: hasSkyLight
+        if (this.world.worldProvider.m()) { // OBFHELPER: hasSkyLight
             reCheckLight:
             
             for (int i = 0; i < 16; ++i) {
@@ -285,13 +285,13 @@ public abstract class MixinChunk implements IMixinChunk {
             
             if (this.isLightPopulated) {
                 for (EnumDirection enumfacing : EnumDirection.EnumDirectionLimit.HORIZONTAL) {
-                    int k = enumfacing.c() == EnumDirection.EnumAxisDirection.POSITIVE ? 16 : 1; // PAIL: getAxisDirection
+                    int k = enumfacing.c() == EnumDirection.EnumAxisDirection.POSITIVE ? 16 : 1; // OBFHELPER: getAxisDirection
                     final BlockPosition pos = blockpos.shift(enumfacing, k);
                     final Chunk chunk = this.getLightChunk(pos.getX() >> 4, pos.getZ() >> 4, neighbors);
                     if (chunk == null) {
                         continue;
                     }
-                    chunk.a(enumfacing.opposite()); // PAIL: checkLightSide
+                    chunk.a(enumfacing.opposite()); // OBFHELPER: checkLightSide
                 }
                 
                 this.setSkylightUpdated();
@@ -315,7 +315,7 @@ public abstract class MixinChunk implements IMixinChunk {
         
         for (int j = i + 16 - 1; j > this.world.getSeaLevel() || j > 0 && !flag1; --j) {
             blockpos$mutableblockpos.setValues(blockpos$mutableblockpos.getX(), j, blockpos$mutableblockpos.getZ());
-            int k = this.getBlockData(blockpos$mutableblockpos).c(); // PAIL: getLightOpacity
+            int k = this.getBlockData(blockpos$mutableblockpos).c(); // OBFHELPER: getLightOpacity
             
             if (k == 255 && blockpos$mutableblockpos.getY() < this.world.getSeaLevel()) {
                 flag1 = true;
@@ -349,7 +349,7 @@ public abstract class MixinChunk implements IMixinChunk {
      */
     private Chunk getLightChunk(int chunkX, int chunkZ, List<Chunk> neighbors) {
         final Chunk currentChunk = (Chunk) (Object) this;
-        if (currentChunk.a(chunkX, chunkZ)) { // PAIL: isAtLocation
+        if (currentChunk.a(chunkX, chunkZ)) { // OBFHELPER: isAtLocation
             if (currentChunk.isUnloading()) {
                 return null;
             }
@@ -362,7 +362,7 @@ public abstract class MixinChunk implements IMixinChunk {
             }
         }
         for (Chunk neighbor : neighbors) {
-            if (neighbor.a(chunkX, chunkZ)) { // PAIL: isAtLocation
+            if (neighbor.a(chunkX, chunkZ)) { // OBFHELPER: isAtLocation
                 if (neighbor.isUnloading()) {
                     return null;
                 }
@@ -469,7 +469,7 @@ public abstract class MixinChunk implements IMixinChunk {
             j = y;
         }
         
-        while (j > 0 && this.getBlockData(x, j - 1, z).c() == 0) { // PAIL: getLightOpacity
+        while (j > 0 && this.getBlockData(x, j - 1, z).c() == 0) { // OBFHELPER: getLightOpacity
             --j;
         }
         
@@ -479,14 +479,14 @@ public abstract class MixinChunk implements IMixinChunk {
             int k = this.locX * 16 + x;
             int l = this.locZ * 16 + z;
             
-            if (this.world.worldProvider.m()) { // PAIL: hasSkyLight
+            if (this.world.worldProvider.m()) { // OBFHELPER: hasSkyLight
                 if (j < i) {
                     for (int j1 = j; j1 < i; ++j1) {
                         ChunkSection extendedblockstorage2 = this.sections[j1 >> 4];
                         
                         if (extendedblockstorage2 != Chunk.EMPTY_CHUNK_SECTION) {
-                            extendedblockstorage2.a(x, j1 & 15, z, 15); // PAIL: setSkyLight
-                            // this.world.m(new BlockPosition((this.locX << 4) + x, j1, (this.locZ << 4) + z)); // PAIL: notifyLightSet - client side
+                            extendedblockstorage2.a(x, j1 & 15, z, 15); // OBFHELPER: setSkyLight
+                            // this.world.m(new BlockPosition((this.locX << 4) + x, j1, (this.locZ << 4) + z)); // OBFHELPER: notifyLightSet - client side
                         }
                     }
                 } else {
@@ -494,8 +494,8 @@ public abstract class MixinChunk implements IMixinChunk {
                         ChunkSection extendedblockstorage = this.sections[i1 >> 4];
                         
                         if (extendedblockstorage != Chunk.EMPTY_CHUNK_SECTION) {
-                            extendedblockstorage.a(x, i1 & 15, z, 0); // PAIL: setSkyLight
-                            // this.world.m(new BlockPosition((this.locX << 4) + x, i1, (this.locZ << 4) + z)); // PAIL: notifyLightSet - client side
+                            extendedblockstorage.a(x, i1 & 15, z, 0); // OBFHELPER: setSkyLight
+                            // this.world.m(new BlockPosition((this.locX << 4) + x, i1, (this.locZ << 4) + z)); // OBFHELPER: notifyLightSet - client side
                         }
                     }
                 }
@@ -519,7 +519,7 @@ public abstract class MixinChunk implements IMixinChunk {
                     ChunkSection extendedblockstorage1 = this.sections[j >> 4];
                     
                     if (extendedblockstorage1 != Chunk.EMPTY_CHUNK_SECTION) {
-                        extendedblockstorage1.a(x, j & 15, z, k1); // PAIL: setSkyLight
+                        extendedblockstorage1.a(x, j & 15, z, k1); // OBFHELPER: setSkyLight
                     }
                 }
             }
@@ -537,9 +537,9 @@ public abstract class MixinChunk implements IMixinChunk {
                 this.heightMapMinimum = l1;
             }
             
-            if (this.world.worldProvider.m()) { // PAIL: hasSkyLight
+            if (this.world.worldProvider.m()) { // OBFHELPER: hasSkyLight
                 for (EnumDirection enumfacing : EnumDirection.EnumDirectionLimit.HORIZONTAL) {
-                    this.updateSkylightNeighborHeight(k + enumfacing.getAdjacentX(), l + enumfacing.getAdjacentZ(), j2, k2); // PAIL: updateSkylightNeighborHeight
+                    this.updateSkylightNeighborHeight(k + enumfacing.getAdjacentX(), l + enumfacing.getAdjacentZ(), j2, k2); // OBFHELPER: updateSkylightNeighborHeight
                 }
                 
                 this.updateSkylightNeighborHeight(k, l, j2, k2);
@@ -565,7 +565,7 @@ public abstract class MixinChunk implements IMixinChunk {
             x2 = i;
         }
         
-        if (this.world.worldProvider.m()) { // PAIL: hasSkyLight
+        if (this.world.worldProvider.m()) { // OBFHELPER: hasSkyLight
             for (int j = x2; j <= z2; ++j) {
                 final BlockPosition pos = new BlockPosition(x1, j, z1);
                 final Chunk chunk = this.getLightChunk(pos.getX() >> 4, pos.getZ() >> 4, null);
@@ -576,7 +576,7 @@ public abstract class MixinChunk implements IMixinChunk {
             }
         }
         
-        this.world.b(x1, x2, z1, x1, z2, z1); // PAIL: markBlockRangeForRenderUpdate
+        this.world.b(x1, x2, z1, x1, z2, z1); // OBFHELPER: markBlockRangeForRenderUpdate
     }
     
     /**
@@ -613,7 +613,7 @@ public abstract class MixinChunk implements IMixinChunk {
             return false;
         }
         
-        if (this.world.worldProvider.m()) { // PAIL: hasSkyLight
+        if (this.world.worldProvider.m()) { // OBFHELPER: hasSkyLight
             flag |= ((IMixinWorldServer) this.world).updateLightAsync(EnumSkyBlock.SKY, pos, chunk);
         }
         
