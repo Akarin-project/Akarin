@@ -10,6 +10,10 @@ import java.util.Map;
 import com.destroystokyo.paper.PaperConfig; // Paper
 import java.util.LinkedHashMap; // Paper
 
+/**
+ * Akarin Changes Note
+ * 1) Removes unneed synchronization (performance)
+ */
 public class RegionFileCache {
 
     public static final Map<File, RegionFile> a = new LinkedHashMap(PaperConfig.regionFileCacheSize, 0.75f, true); // Spigot - private -> public, Paper - HashMap -> LinkedHashMap
@@ -94,7 +98,7 @@ public class RegionFileCache {
     }
 
     // CraftBukkit start - call sites hoisted for synchronization
-    public static /*synchronized*/ NBTTagCompound d(File file, int i, int j) throws IOException { // Akarin - remove synchronization // OBFHELPER: read
+    public static /*synchronized*/ NBTTagCompound d(File file, int i, int j) throws IOException { // Akarin - 1.13 backport - remove synchronization // OBFHELPER: read
         RegionFile regionfile = a(file, i, j);
 
         DataInputStream datainputstream = regionfile.a(i & 31, j & 31);
@@ -106,7 +110,7 @@ public class RegionFileCache {
         return NBTCompressedStreamTools.a(datainputstream);
     }
 
-    public static /*synchronized*/ void e(File file, int i, int j, NBTTagCompound nbttagcompound) throws IOException { // Akarin - remove synchronization // OBFHELPER: write
+    public static /*synchronized*/ void e(File file, int i, int j, NBTTagCompound nbttagcompound) throws IOException { // Akarin - 1.13 backport - remove synchronization // OBFHELPER: write
         RegionFile regionfile = a(file, i, j);
 
         DataOutputStream dataoutputstream = regionfile.b(i & 31, j & 31);
@@ -115,7 +119,7 @@ public class RegionFileCache {
     }
     // CraftBukkit end
 
-    public static /*synchronized*/ boolean chunkExists(File file, int i, int j) { // Akarin - remove synchronization
+    public static /*synchronized*/ boolean chunkExists(File file, int i, int j) { // Akarin - 1.13 backport - remove synchronization
         RegionFile regionfile = b(file, i, j);
 
         return regionfile != null ? regionfile.c(i & 31, j & 31) : false;

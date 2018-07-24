@@ -5,6 +5,10 @@ import com.google.common.collect.Iterators;
 import java.util.Iterator;
 import javax.annotation.Nullable;
 
+/**
+ * Akarin Changes Note
+ * 1) BitSet for faster access (performance)
+ */
 public class RegistryID<K> implements Registry {
 
     private static final Object a = null;
@@ -13,12 +17,14 @@ public class RegistryID<K> implements Registry {
     private K[] d;
     private int e;
     private int f;
+    private java.util.BitSet usedIds; // Akarin - 1.13 backport
 
     public RegistryID(int i) {
         i = (int) ((float) i / 0.8F);
         this.b = (K[]) (new Object[i]);
         this.c = new int[i];
         this.d = (K[]) (new Object[i]);
+        this.usedIds = new java.util.BitSet(); // Akarin - 1.13 backport
     }
 
     public int getId(@Nullable K k0) {
@@ -42,9 +48,14 @@ public class RegistryID<K> implements Registry {
     }
 
     private int c() {
+        // Akarin start - 1.13 backport
+        /*
         while (this.e < this.d.length && this.d[this.e] != null) {
             ++this.e;
         }
+        */
+        this.e = this.usedIds.nextClearBit(0);
+        // Akarin end - 1.13 backport
 
         return this.e;
     }
@@ -58,6 +69,7 @@ public class RegistryID<K> implements Registry {
         this.d = (K[]) (new Object[i]);
         this.e = 0;
         this.f = 0;
+        this.usedIds.clear(); // Akarin - 1.13 backport
 
         for (int j = 0; j < aobject.length; ++j) {
             if (aobject[j] != null) {
@@ -83,6 +95,7 @@ public class RegistryID<K> implements Registry {
         this.b[k] = k0;
         this.c[k] = i;
         this.d[i] = k0;
+        this.usedIds.set(i); // Akarin - 1.13 backport
         ++this.f;
         if (i == this.e) {
             ++this.e;
