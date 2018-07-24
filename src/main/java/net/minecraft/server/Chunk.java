@@ -714,8 +714,27 @@ public class Chunk implements IChunkAccess {
         entity.chunkX = this.locX;
         entity.chunkY = k;
         entity.chunkZ = this.locZ;
-        this.entitySlices[k].add(entity);
+
         // Paper start
+        List<Entity> entitySlice = this.entitySlices[k];
+        boolean inThis = entitySlice.contains(entity);
+        List<Entity> currentSlice = entity.entitySlice;
+        if ((currentSlice != null && currentSlice.contains(entity)) || inThis) {
+            if (currentSlice == entitySlice || inThis) {
+                return;
+            } else {
+                Chunk chunk = entity.getCurrentChunk();
+                if (chunk != null) {
+                    chunk.removeEntity(entity);
+                } else {
+                    removeEntity(entity);
+                }
+                new Throwable().printStackTrace();
+            }
+        }
+        entity.entitySlice = entitySlice;
+        entitySlice.add(entity);
+
         this.markDirty();
         if (entity instanceof EntityItem) {
             itemCounts[k]++;
@@ -745,9 +764,10 @@ public class Chunk implements IChunkAccess {
             i = this.entitySlices.length - 1;
         }
         // Paper start
-        if (!this.entitySlices[i].remove(entity)) {
-            return;
+        if (entity.entitySlice == null || !entity.entitySlice.contains(entity) || entitySlices[i] == entity.entitySlice) {
+            entity.entitySlice = null;
         }
+        if (!this.entitySlices[i].remove(entity)) { return; }
         this.markDirty();
         if (entity instanceof EntityItem) {
             itemCounts[i]--;
@@ -1028,6 +1048,7 @@ public class Chunk implements IChunkAccess {
                 }
                 // Spigot End
                 entity.setCurrentChunk(null); // Paper
+                entity.entitySlice = null; // Paper
 
                 // Do not pass along players, as doing so can get them stuck outside of time.
                 // (which for example disables inventory icon updates and prevents block breaking)
