@@ -21,7 +21,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
     private int a;
     private int b;
     private int c;
-    private ByteBuf d; // Akarin
+    private ByteBuf d; // Akarin - byte[] -> ByteBuf
     private List<NBTTagCompound> e;
     private boolean f;
     private volatile boolean ready = false; // Paper - Async-Anti-Xray - Ready flag for the network manager
@@ -43,7 +43,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
 
         // Paper start - Anti-Xray - Add chunk packet info
         if (packetPlayOutMapChunkInfo != null) {
-            packetPlayOutMapChunkInfo.setData(this.d.array()); // Akarin
+            packetPlayOutMapChunkInfo.setData(this.d);
         }
         // Paper end
 
@@ -106,7 +106,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
         packetdataserializer.writeBoolean(this.f);
         packetdataserializer.d(this.c);
         packetdataserializer.d(this.d.array().length); // Akarin
-        packetdataserializer.writeBytes(this.d);
+        packetdataserializer.writeBytes(this.d.array());
         packetdataserializer.d(this.e.size());
         Iterator iterator = this.e.iterator();
 
