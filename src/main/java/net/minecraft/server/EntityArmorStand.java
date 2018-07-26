@@ -36,7 +36,7 @@ public class EntityArmorStand extends EntityLiving {
     private final NonNullList<ItemStack> bF;
     private boolean bG;
     public long h;
-    private int bH;
+    private int bH;public void setDisabledSlots(int i) { bH = i;} public int getDisabledSlots() { return bH ;} // Paper - OBFHELPER
     private boolean bI;
     public Vector3f headPose;
     public Vector3f bodyPose;
@@ -361,6 +361,7 @@ public class EntityArmorStand extends EntityLiving {
         return enumitemslot;
     }
 
+    public boolean isSlotDisabled(EnumItemSlot slot) { return this.c(slot); } // Paper - OBFHELPER
     public boolean c(EnumItemSlot enumitemslot) {
         return (this.bH & 1 << enumitemslot.c()) != 0 || enumitemslot.a() == EnumItemSlot.Function.HAND && !this.hasArms();
     }
