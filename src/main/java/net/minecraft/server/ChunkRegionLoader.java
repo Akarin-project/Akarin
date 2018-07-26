@@ -567,11 +567,22 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
         Iterator iterator;
 
+        java.util.List<Entity> toUpdate = new java.util.ArrayList<>(); // Paper
         for (int j = 0; j < chunk.getEntitySlices().length; ++j) {
             iterator = chunk.getEntitySlices()[j].iterator();
 
             while (iterator.hasNext()) {
                 Entity entity = (Entity) iterator.next();
+                // Paper start
+                if ((int)Math.floor(entity.locX) >> 4 != chunk.locX || (int)Math.floor(entity.locZ) >> 4 != chunk.locZ) {
+                    LogManager.getLogger().warn(entity + " is not in this chunk, skipping save. This a bug fix to a vanilla bug. Do not report this to PaperMC please.");
+                    toUpdate.add(entity);
+                    continue;
+                }
+                if (entity.dead) {
+                    continue;
+                }
+                // Paper end
                 NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 
                 if (entity.d(nbttagcompound1)) {
@@ -580,6 +591,11 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                 }
             }
         }
+        // Paper start - move entities to the correct chunk
+        for (Entity entity : toUpdate) {
+            world.entityJoinedWorld(entity, false);
+        }
+        // Paper end
 
         nbttagcompound.set("Entities", nbttaglist1);
         NBTTagList nbttaglist2 = new NBTTagList();
