@@ -160,7 +160,7 @@
         </repository>
         <repository>
             <id>akarin-repo</id>
-            <url>https://raw.githubusercontent.com/Akarin-project/akarin-repo/master/repository</url>
+            <url>https://repo.akarin.io/Akarin-project/akarin-repo/master/repository</url>
         </repository>
         <repository>
             <id>spongepowered-repo</id>

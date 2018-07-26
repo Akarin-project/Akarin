@@ -13,4 +13,4 @@ dependencies:
 
 test:
   post:
-    - yes|cp -rf ./akarin-1.12.2.jar $CIRCLE_ARTIFACTS
+    - yes|cp -rf ./akarin-*.jar $CIRCLE_ARTIFACTS
