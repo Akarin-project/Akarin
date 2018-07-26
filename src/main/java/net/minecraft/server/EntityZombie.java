@@ -239,6 +239,7 @@ public class EntityZombie extends EntityMonster {
                 return;
             }
             // CraftBukkit end
+            if (!new com.destroystokyo.paper.event.entity.EntityTransformedEvent(this.getBukkitEntity(), entityzombie.getBukkitEntity(), com.destroystokyo.paper.event.entity.EntityTransformedEvent.TransformedReason.DROWNED).callEvent()) return; // Paper
             this.world.addEntity(entityzombie, CreatureSpawnEvent.SpawnReason.DROWNED); // CraftBukkit - added spawn reason
             this.die();
         }
@@ -401,6 +402,7 @@ public class EntityZombie extends EntityMonster {
             if (CraftEventFactory.callEntityTransformEvent(this, entityzombievillager, EntityTransformEvent.TransformReason.INFECTION).isCancelled()) {
                 return;
             }
+            if (!new com.destroystokyo.paper.event.entity.EntityTransformedEvent(this.getBukkitEntity(), entityvillager.getBukkitEntity(), com.destroystokyo.paper.event.entity.EntityTransformedEvent.TransformedReason.INFECTED).callEvent()) return; // Paper
             this.world.kill(entityvillager); // CraftBukkit - from above
             this.world.addEntity(entityzombievillager, CreatureSpawnEvent.SpawnReason.INFECTION); // CraftBukkit - add SpawnReason
             // CraftBukkit end

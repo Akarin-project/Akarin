@@ -53,6 +53,7 @@ public class EntityMushroomCow extends EntityCow {
                 if (CraftEventFactory.callEntityTransformEvent(this, entitycow, EntityTransformEvent.TransformReason.SHEARED).isCancelled()) {
                     return false;
                 }
+                if (!new com.destroystokyo.paper.event.entity.EntityTransformedEvent(this.getBukkitEntity(), entitycow.getBukkitEntity(), com.destroystokyo.paper.event.entity.EntityTransformedEvent.TransformedReason.SHEARED).callEvent()) return false; // Paper
                 this.world.addEntity(entitycow, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SHEARED);
 
                 this.die(); // CraftBukkit - from above
