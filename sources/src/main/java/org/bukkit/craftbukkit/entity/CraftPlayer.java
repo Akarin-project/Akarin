@@ -1179,10 +1179,31 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         for (EntityPlayer player : players) {
             player.getBukkitEntity().reregisterPlayer(self);
         }
+        refreshPlayer();
     }
     @Override
     public PlayerProfile getPlayerProfile() {
         return new CraftPlayerProfile(this).clone();
+    }
+
+    private void refreshPlayer() {
+        EntityPlayer handle = getHandle();
+
+        Location loc = getLocation();
+
+        PlayerConnection connection = handle.playerConnection;
+        reregisterPlayer(handle);
+
+        //Respawn the player then update their position and selected slot
+        connection.sendPacket(new PacketPlayOutRespawn(handle.dimension, handle.world.getDifficulty(), handle.world.getWorldData().getType(), handle.playerInteractManager.getGameMode()));
+        handle.updateAbilities();
+        connection.sendPacket(new PacketPlayOutPosition(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch(), new HashSet<>(), 0));
+        MinecraftServer.getServer().getPlayerList().updateClient(handle);
+
+        if (this.isOp()) {
+            this.setOp(false);
+            this.setOp(true);
+        }
     }
     // Paper end
 

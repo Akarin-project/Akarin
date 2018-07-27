@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     public final PlayerChunkMap manager; // Akarin - private -> public
     // private final Set<NextTickListEntry> nextTickListHash = Sets.newHashSet();
     private final HashTreeSet<NextTickListEntry> nextTickList = new HashTreeSet<NextTickListEntry>(); // CraftBukkit - HashTreeSet
-    private final Map<UUID, Entity> entitiesByUUID = Maps.newHashMap();
+    public final Map<UUID, Entity> entitiesByUUID = Maps.newHashMap(); // Paper
     public boolean savingDisabled;
     private boolean Q;
     private int emptyTime;
@@ -52,6 +53,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     private final List<NextTickListEntry> W = Lists.newArrayList();
 
     // CraftBukkit start
+    private static final boolean DEBUG_ENTITIES = Boolean.getBoolean("debug.entities"); // Paper
+    private static Throwable getAddToWorldStackTrace(Entity entity) {
+        return new Throwable(entity + " Added to world at " + new Date());
+    }
     public final int dimension;
 
     // Add env and gen to constructor
@@ -1181,6 +1186,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     private boolean j(Entity entity) {
         if (entity.dead) {
             WorldServer.a.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.a(entity)); // CraftBukkit // Paper
+            if (DEBUG_ENTITIES) getAddToWorldStackTrace(entity).printStackTrace();
             return false;
         } else {
             UUID uuid = entity.getUniqueID();
@@ -1188,12 +1194,21 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             if (this.entitiesByUUID.containsKey(uuid)) {
                 Entity entity1 = this.entitiesByUUID.get(uuid);
 
-                if (this.f.contains(entity1)) {
+                if (this.f.contains(entity1) || entity1.dead) { // Paper - overwrite the current dead one
                     this.f.remove(entity1);
                 } else {
                     if (!(entity instanceof EntityHuman)) {
-                        WorldServer.a.error("Keeping entity {} that already exists with UUID {} - " + entity1, EntityTypes.a(entity1), uuid.toString()); // CraftBukkit // Paper
-                        WorldServer.a.error("Deleting duplicate entity {}", entity); // Paper
+                        if (entity.world.paperConfig.duplicateUUIDMode != com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode.NOTHING) {
+                             WorldServer.a.error("Keeping entity {} that already exists with UUID {}", entity1, uuid.toString()); // CraftBukkit // Paper
+                             WorldServer.a.error("Duplicate entity {} will not be added to the world. See paper.yml duplicate-uuid-resolver and set this to either regen, delete or nothing to get rid of this message", entity); // Paper
+                             if (DEBUG_ENTITIES) {
+                                 if (entity1.addedToWorldStack != null) {
+                                     entity1.addedToWorldStack.printStackTrace();
+                                 }
+                                 getAddToWorldStackTrace(entity).printStackTrace();
+                             }
+                        }
+
                         return false;
                     }
 
@@ -1211,7 +1226,24 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     protected void b(Entity entity) {
         super.b(entity);
         this.entitiesById.a(entity.getId(), entity);
-        this.entitiesByUUID.put(entity.getUniqueID(), entity);
+        // Paper start
+        if (DEBUG_ENTITIES) {
+            entity.addedToWorldStack = getAddToWorldStackTrace(entity);
+        }
+        Entity old = this.entitiesByUUID.put(entity.getUniqueID(), entity);
+        if (old != null && old.getId() != entity.getId() && old.valid && entity.world.paperConfig.duplicateUUIDMode != com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode.NOTHING) {
+            Logger logger = LogManager.getLogger();
+            logger.error("Overwrote an existing entity " + old + " with " + entity);
+            if (DEBUG_ENTITIES) {
+                if (old.addedToWorldStack != null) {
+                    old.addedToWorldStack.printStackTrace();
+                } else {
+                    logger.error("Oddly, the old entity was not added to the world in the normal way. Plugins?");
+                }
+                entity.addedToWorldStack.printStackTrace();
+            }
+        }
+        // Paper end
         Entity[] aentity = entity.bb();
 
         if (aentity != null) {

@@ -1,15 +1,18 @@
 package net.minecraft.server;
 
+import com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode;
 import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Queues;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +39,7 @@ public class Chunk {
     public final World world;
     public final int[] heightMap;
     public Long scheduledForUnload; // Paper - delay chunk unloads
+    private static final Logger logger = LogManager.getLogger(); // Paper
     public final int locX;
     public final int locZ;
     private boolean m;
@@ -679,8 +683,34 @@ public class Chunk {
         entity.ab = this.locX;
         entity.ac = k;
         entity.ad = this.locZ;
-        this.entitySlices[k].add(entity);
+
         // Paper start
+        List<Entity> entitySlice = this.entitySlices[k];
+        boolean inThis = entitySlice.contains(entity);
+        if (entity.entitySlice != null || inThis) {
+            if (entity.entitySlice == entitySlice || inThis) {
+                LogManager.getLogger().warn(entity + " was already in this chunk section! Report this to https://github.com/PaperMC/Paper/issues/1223");
+                new Throwable().printStackTrace();
+                return;
+            } else {
+                LogManager.getLogger().warn(entity + " is still in another ChunkSection! Report this to https://github.com/PaperMC/Paper/issues/1223");
+
+                Chunk chunk = entity.getCurrentChunk();
+                if (chunk != null) {
+                    if (chunk != this) {
+                        LogManager.getLogger().warn(entity + " was in another chunk at that! " + chunk.locX + "," + chunk.locZ);
+                    }
+                    chunk.removeEntity(entity);
+                } else {
+                    removeEntity(entity);
+                }
+                new Throwable().printStackTrace();
+            }
+        }
+        entity.entitySlice = entitySlice;
+        entitySlice.add(entity);
+
+        this.markDirty();
         entity.setCurrentChunk(this);
         entityCounts.increment(entity.entityKeyString);
         if (entity instanceof EntityItem) {
@@ -723,6 +753,13 @@ public class Chunk {
 
         // Paper start
         if (!this.entitySlices[i].remove(entity)) { return; }
+        if (entitySlices[i] == entity.entitySlice) {
+            entity.entitySlice = null;
+        } else {
+            LogManager.getLogger().warn(entity + " was removed from a entitySlice we did not expect. Report this to https://github.com/PaperMC/Paper/issues/1223");
+            new Throwable().printStackTrace();
+        }
+        this.markDirty();
         entity.setCurrentChunk(null);
         entityCounts.decrement(entity.entityKeyString);
         if (entity instanceof EntityItem) {
@@ -856,6 +893,36 @@ public class Chunk {
 
         for (int j = 0; j < i; ++j) {
             List entityslice = aentityslice[j]; // Spigot
+            // Paper start
+            DuplicateUUIDMode mode = world.paperConfig.duplicateUUIDMode;
+            if (mode == DuplicateUUIDMode.DELETE || mode == DuplicateUUIDMode.REGEN) {
+                Map<UUID, Entity> thisChunk = new HashMap<>();
+                for (Iterator<Entity> iterator = ((List<Entity>) entityslice).iterator(); iterator.hasNext(); ) {
+                    Entity entity = iterator.next();
+                    if (entity.dead) continue;
+                    Entity other = ((WorldServer) world).entitiesByUUID.get(entity.uniqueID);
+                    if (other == null) {
+                        other = thisChunk.get(entity.uniqueID);
+                    }
+                    if (other != null && !other.dead) {
+                        switch (mode) {
+                            case REGEN: {
+                                entity.setUUID(UUID.randomUUID());
+                                logger.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", regenerated UUID for " + entity + ". See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                                break;
+                            }
+                            case DELETE: {
+                                logger.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", deleted entity " + entity + ". See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                                entity.die();
+                                iterator.remove();
+                                break;
+                            }
+                        }
+                    }
+                    thisChunk.put(entity.uniqueID, entity);
+                }
+            }
+            // Paper end
 
             this.world.a((Collection) entityslice);
         }

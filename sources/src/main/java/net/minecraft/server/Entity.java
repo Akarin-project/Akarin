@@ -50,7 +50,21 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
 
     // CraftBukkit start
     private static final int CURRENT_LEVEL = 2;
-    public static Random SHARED_RANDOM = new io.akarin.api.internal.utils.random.LightRandom(); // Paper // Akarin - LightRNG
+    // Paper start
+    public static Random SHARED_RANDOM = new io.akarin.api.internal.utils.random.LightRandom() { // Akarin - LightRNG
+        private boolean locked = false;
+        @Override
+        public synchronized void setSeed(long seed) {
+            if (locked) {
+                LogManager.getLogger().error("Ignoring setSeed on Entity.SHARED_RANDOM", new Throwable());
+            } else {
+                super.setSeed(seed);
+                locked = true;
+            }
+        }
+    };
+    Object entitySlice = null;
+    // Paper end
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
     }
@@ -64,6 +78,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
         }
         return bukkitEntity;
     }
+    Throwable addedToWorldStack; // Paper - entity debug
     // CraftBukikt end
 
     private static final Logger a = LogManager.getLogger();
@@ -2352,7 +2367,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     }
 
     public String toString() {
-        return String.format("%s[\'%s\'/%d, uuid=\'%s\', l=\'%s\', x=%.2f, y=%.2f, z=%.2f]", new Object[] { this.getClass().getSimpleName(), this.getName(), Integer.valueOf(this.id), this.uniqueID.toString(), this.world == null ? "~NULL~" : this.world.getWorldData().getName(), Double.valueOf(this.locX), Double.valueOf(this.locY), Double.valueOf(this.locZ)}); // Paper - add UUID
+        return String.format("%s[\'%s\'/%d, uuid=\'%s\', l=\'%s\', x=%.2f, y=%.2f, z=%.2f, cx=%d, cd=%d, tl=%d, v=%b, d=%b]", new Object[] { this.getClass().getSimpleName(), this.getName(), Integer.valueOf(this.id), this.uniqueID.toString(), this.world == null ? "~NULL~" : this.world.getWorldData().getName(), Double.valueOf(this.locX), Double.valueOf(this.locY), Double.valueOf(this.locZ), getChunkX(), getChunkZ(), this.ticksLived, this.valid, this.dead}); // Paper - add more information
     }
 
     public boolean isInvulnerable(DamageSource damagesource) {
@@ -2604,6 +2619,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
         });
     }
 
+    public void setUUID(UUID uuid) { a(uuid); } // Paper - OBFHELPER
     public void a(UUID uuid) {
         this.uniqueID = uuid;
         this.ar = this.uniqueID.toString();
