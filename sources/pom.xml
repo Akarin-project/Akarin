@@ -155,12 +155,12 @@
 
     <repositories>
         <repository>
-            <id>spigotmc-public</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+            <id>akarin-repo</id>
+            <url>https://raw.githubusercontent.com/Akarin-project/akarin-repo/master/repository</url>
         </repository>
         <repository>
-            <id>akarin-repo</id>
-            <url>https://repo.akarin.io/Akarin-project/akarin-repo/master/repository</url>
+            <id>spigotmc-public</id>
+            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
         <repository>
             <id>spongepowered-repo</id>
