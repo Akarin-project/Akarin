@@ -109,11 +109,6 @@ public abstract class MixinChunk implements IMixinChunk {
     }
     
     @Override
-    public void setPendingLightUpdate() {
-        this.isLightPopulated = false;
-    }
-    
-    @Override
     public long getLightUpdateTime() {
         return this.lightUpdateTime;
     }

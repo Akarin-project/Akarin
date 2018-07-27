@@ -25,6 +25,4 @@ public interface IMixinChunk {
     void setNeighborChunk(int index, @Nullable Chunk chunk);
     
     void setLightUpdateTime(long time);
-    
-    void setPendingLightUpdate();
 }
