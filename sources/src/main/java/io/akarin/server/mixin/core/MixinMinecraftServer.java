@@ -119,14 +119,10 @@ public abstract class MixinMinecraftServer {
             executor.submit(() -> prepareChunks(world, fIndex), null);
         }
         
-        if (WorldLoadEvent.getHandlerList().getRegisteredListeners().length == 0) {
-            for (WorldServer world : this.worlds) {
-                if (world.getWorld().getKeepSpawnInMemory()) executor.take();
-            }
-        } else {
-            for (WorldServer world : this.worlds) {
-                if (world.getWorld().getKeepSpawnInMemory()) executor.take();
-            }
+        for (WorldServer world : this.worlds) {
+            if (world.getWorld().getKeepSpawnInMemory()) executor.take();
+        }
+        if (WorldLoadEvent.getHandlerList().getRegisteredListeners().length != 0) {
             for (WorldServer world : this.worlds) {
                 this.server.getPluginManager().callEvent(new WorldLoadEvent(world.getWorld()));
             }
