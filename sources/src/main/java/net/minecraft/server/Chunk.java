@@ -2,8 +2,8 @@ package net.minecraft.server;
 
 import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;

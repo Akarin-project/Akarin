@@ -26,7 +26,6 @@ package io.akarin.server.mixin.lighting;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.EnumSkyBlock;
