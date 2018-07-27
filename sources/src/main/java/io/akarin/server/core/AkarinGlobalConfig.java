@@ -187,7 +187,7 @@ public class AkarinGlobalConfig {
     
     public static int asyncLightingThreads;
     private static void asyncLightingThreads() {
-        asyncLightingThreads = getInt("core.async-lighting.executor-threads", 2);
+        asyncLightingThreads = getInt("core.async-lighting.executor-threads", 4);
     }
     
     public static boolean asyncLightingWorkStealing;
