@@ -24,7 +24,7 @@ public class RegistryID<K> implements Registry {
         this.b = (K[]) (new Object[i]);
         this.c = new int[i];
         this.d = (K[]) (new Object[i]);
-        this.usedIds = new java.util.BitSet(); // Akarin - 1.13 backport
+        this.usedIds = new io.akarin.api.internal.utils.FastBitSet(); // Akarin - 1.13 backport
     }
 
     public int getId(@Nullable K k0) {
