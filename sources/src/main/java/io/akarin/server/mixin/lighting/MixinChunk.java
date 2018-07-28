@@ -130,7 +130,7 @@ public abstract class MixinChunk implements IMixinChunk {
         
         this.ticked = true;
         
-        if ((true || !this.isLightPopulated) && this.isTerrainPopulated && !neighbors.isEmpty()) {
+        if (!this.isLightPopulated && this.isTerrainPopulated && !neighbors.isEmpty()) {
             lightExecutorService.execute(() -> {
                 this.checkLightAsync(neighbors);
             });
@@ -170,47 +170,12 @@ public abstract class MixinChunk implements IMixinChunk {
         return this.checkWorldLightFor(enumSkyBlock, pos);
     }
     
-    @Inject(method = "h(Z)V", at = @At("HEAD"), cancellable = true)
-    private void onRecheckGaps(CallbackInfo ci) {
-        if (this.world.getMinecraftServer().isStopped() || lightExecutorService.isShutdown()) {
-            return;
-        }
-        
-        if (this.isUnloading()) {
-            return;
-        }
-        final List<Chunk> neighborChunks = this.getSurroundingChunks();
-        if (neighborChunks.isEmpty()) {
-            this.isGapLightingUpdated = true;
-            return;
-        }
-        
-        if (Akari.isPrimaryThread()) {
-            try {
-                lightExecutorService.execute(() -> {
-                    this.recheckGapsAsync(neighborChunks);
-                });
-            } catch (RejectedExecutionException ex) {
-                // This could happen if ServerHangWatchdog kills the server
-                // between the start of the method and the execute() call.
-                if (!this.world.getMinecraftServer().isStopped() && !lightExecutorService.isShutdown()) {
-                    throw ex;
-                }
-            }
-        } else {
-            this.recheckGapsAsync(neighborChunks);
-        }
-        ci.cancel();
-    }
-    
     /**
      * Rechecks chunk gaps async.
      * 
      * @param neighbors A thread-safe list of surrounding neighbor chunks
      */
     private void recheckGapsAsync(List<Chunk> neighbors) {
-        this.isLightPopulated = false;
-        
         for (int i = 0; i < 16; ++i) {
             for (int j = 0; j < 16; ++j) {
                 if (this.updateSkylightColumns[i + j * 16]) {
@@ -236,7 +201,7 @@ public abstract class MixinChunk implements IMixinChunk {
                 }
             }
             
-            this.isGapLightingUpdated = false;
+            // this.isGapLightingUpdated = false;
         }
     }
     
@@ -328,7 +293,11 @@ public abstract class MixinChunk implements IMixinChunk {
                     chunk.a(enumfacing.opposite()); // OBFHELPER: checkLightSide
                 }
                 
-                this.setSkylightUpdated();
+                for (int i = 0; i < this.updateSkylightColumns.length; ++i) {
+                    this.updateSkylightColumns[i] = true;
+                }
+
+                this.recheckGapsAsync(neighbors);
             }
         }
     }

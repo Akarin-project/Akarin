@@ -214,6 +214,8 @@ public abstract class MixinMinecraftServer {
                 WorldServer world = worlds.get(i < worlds.size() ? i : 0);
                 synchronized (((IMixinLockProvider) world).lock()) {
                     tickEntities(world);
+                    world.getTracker().updatePlayers();
+                    world.explosionDensityCache.clear(); // Paper - Optimize explosions
                 }
             }
         }, null);
@@ -222,7 +224,6 @@ public abstract class MixinMinecraftServer {
             WorldServer world = worlds.get(i);
             synchronized (((IMixinLockProvider) world).lock()) {
                 tickWorld(world);
-                world.explosionDensityCache.clear(); // Paper - Optimize explosions
             }
         }
         
@@ -243,11 +244,6 @@ public abstract class MixinMinecraftServer {
         while ((runnable = Akari.callbackQueue.poll()) != null) runnable.run();
         Akari.callbackTiming.stopTiming();
         
-        for (int i = 0; i < worlds.size(); ++i) {
-            WorldServer world = worlds.get(i);
-            tickUnsafeSync(world);
-        }
-        
         MinecraftTimings.connectionTimer.startTiming();
         serverConnection().c();
         MinecraftTimings.connectionTimer.stopTiming();
@@ -265,13 +261,5 @@ public abstract class MixinMinecraftServer {
             tickables.get(i).e();
         }
         MinecraftTimings.tickablesTimer.stopTiming();
-    }
-    
-    public void tickUnsafeSync(WorldServer world) {
-        world.timings.doChunkMap.startTiming();
-        world.manager.flush();
-        world.timings.doChunkMap.stopTiming();
-        
-        world.getTracker().updatePlayers();
     }
 }

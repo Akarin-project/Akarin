@@ -203,6 +203,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         }
         
         if (currentChunk == null) {
+            if (!Akari.isPrimaryThread()) return false;
             currentChunk = MCUtil.getLoadedChunkWithoutMarkingActive(chunkProvider, pos.getX() >> 4, pos.getZ() >> 4);
         }
         
