@@ -1107,7 +1107,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             this.everyoneSleeping();
         }
 
-        if (!guardEntityList) { // Spigot - It will get removed after the tick if we are ticking
+        // if (!guardEntityList) { // Spigot - It will get removed after the tick if we are ticking // Paper - move down
         int i = entity.chunkX;
         int j = entity.chunkZ;
 
@@ -1115,6 +1115,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             this.getChunkAt(i, j).b(entity);
         }
 
+        if (!guardEntityList) { // Spigot - It will get removed after the tick if we are ticking // Paper - always remove from current chunk above
         // CraftBukkit start - Decrement loop variable field if we've already ticked this entity
         int index = this.entityList.indexOf(entity);
         if (index != -1) {
