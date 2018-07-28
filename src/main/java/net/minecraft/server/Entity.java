@@ -121,6 +121,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     protected boolean F;
     private boolean az;
     public boolean dead;
+    public boolean shouldBeRemoved; // Paper
     public float width;
     public float length;
     public float J;

@@ -1046,6 +1046,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
 
         entity.valid = true; // CraftBukkit
+        entity.shouldBeRemoved = false; // Paper - shouldn't be removed after being re-added
         new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
     }
 
@@ -1114,6 +1115,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         if (entity.inChunk && this.isChunkLoaded(i, j, true)) {
             this.getChunkAt(i, j).b(entity);
         }
+        entity.shouldBeRemoved = true; // Paper
 
         if (!guardEntityList) { // Spigot - It will get removed after the tick if we are ticking // Paper - always remove from current chunk above
         // CraftBukkit start - Decrement loop variable field if we've already ticked this entity
@@ -2324,6 +2326,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
         while (iterator.hasNext()) {
             Entity entity = (Entity) iterator.next();
+            if (entity.shouldBeRemoved) continue; // Paper
 
             if (oclass.isAssignableFrom(entity.getClass()) && predicate.test((T) entity)) { // CraftBukkit - decompile error
                 list.add((T) entity); // CraftBukkit - decompile error
@@ -2410,6 +2413,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
         while (iterator.hasNext()) {
             Entity entity = (Entity) iterator.next();
+            if (entity.shouldBeRemoved) continue; // Paper
             // CraftBukkit start - Split out persistent check, don't apply it to special persistent mobs
             if (entity instanceof EntityInsentient) {
                 EntityInsentient entityinsentient = (EntityInsentient) entity;
