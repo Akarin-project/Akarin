@@ -128,6 +128,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     protected boolean E;
     private boolean aw;
     public boolean dead;
+    public boolean shouldBeRemoved; // Paper
     public float width;
     public float length;
     public float I;
