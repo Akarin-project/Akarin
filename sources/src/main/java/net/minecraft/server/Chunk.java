@@ -54,11 +54,11 @@ public class Chunk {
             TileEntity replaced = super.put(key, value);
             if (replaced != null) {
                 replaced.setCurrentChunk(null);
-                tileEntityCounts.decrement(replaced.tileEntityKeyString);
+                tileEntityCounts.decrement(replaced.getMinecraftKeyString());
             }
             if (value != null) {
                 value.setCurrentChunk(Chunk.this);
-                tileEntityCounts.increment(value.tileEntityKeyString);
+                tileEntityCounts.increment(value.getMinecraftKeyString());
             }
             return replaced;
         }
@@ -68,7 +68,7 @@ public class Chunk {
             TileEntity removed = super.remove(key);
             if (removed != null) {
                 removed.setCurrentChunk(null);
-                tileEntityCounts.decrement(removed.tileEntityKeyString);
+                tileEntityCounts.decrement(removed.getMinecraftKeyString());
             }
             return removed;
         }
@@ -712,7 +712,7 @@ public class Chunk {
 
         this.markDirty();
         entity.setCurrentChunk(this);
-        entityCounts.increment(entity.entityKeyString);
+        entityCounts.increment(entity.getMinecraftKeyString());
         if (entity instanceof EntityItem) {
             itemCounts[k]++;
         } else if (entity instanceof IInventory) {
@@ -761,7 +761,7 @@ public class Chunk {
         }
         this.markDirty();
         entity.setCurrentChunk(null);
-        entityCounts.decrement(entity.entityKeyString);
+        entityCounts.decrement(entity.getMinecraftKeyString());
         if (entity instanceof EntityItem) {
             itemCounts[i]--;
         } else if (entity instanceof IInventory) {
@@ -895,13 +895,13 @@ public class Chunk {
             List entityslice = aentityslice[j]; // Spigot
             // Paper start
             DuplicateUUIDMode mode = world.paperConfig.duplicateUUIDMode;
-            if (mode == DuplicateUUIDMode.DELETE || mode == DuplicateUUIDMode.REGEN) {
+            if (mode == DuplicateUUIDMode.WARN | mode == DuplicateUUIDMode.DELETE || mode == DuplicateUUIDMode.REGEN) {
                 Map<UUID, Entity> thisChunk = new HashMap<>();
                 for (Iterator<Entity> iterator = ((List<Entity>) entityslice).iterator(); iterator.hasNext(); ) {
                     Entity entity = iterator.next();
                     if (entity.dead) continue;
                     Entity other = ((WorldServer) world).entitiesByUUID.get(entity.uniqueID);
-                    if (other == null) {
+                    if (other == null || other.dead || world.getEntityUnloadQueue().contains(other)) {
                         other = thisChunk.get(entity.uniqueID);
                     }
                     if (other != null && !other.dead) {
@@ -917,6 +917,9 @@ public class Chunk {
                                 iterator.remove();
                                 break;
                             }
+                            default:
+                                logger.warn("[DUPE-UUID] Duplicate UUID found used by " + other + ", doing nothing to " + entity + ". See https://github.com/PaperMC/Paper/issues/1223 for discussion on what this is about.");
+                                break;
                         }
                     }
                     thisChunk.put(entity.uniqueID, entity);

@@ -1813,21 +1813,26 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     public Chunk getChunkAtLocation() {
         return getCurrentChunkAt((int)Math.floor(locX) >> 4, (int)Math.floor(locZ) >> 4);
     }
-    public final MinecraftKey entityKey = EntityTypes.getKey(this);
-    public final String entityKeyString = entityKey != null ? entityKey.toString() : null;
+    private String entityKeyString = null;
+    private MinecraftKey entityKey = getMinecraftKey();
 
     @Override
     public MinecraftKey getMinecraftKey() {
+        if (entityKey == null) {
+            entityKey = EntityTypes.getKey(this);
+            entityKeyString = entityKey != null ? entityKey.toString() : null;
+        }
         return entityKey;
     }
 
     @Override
     public String getMinecraftKeyString() {
+        getMinecraftKey(); // Try to load if it doesn't exists. see: https://github.com/PaperMC/Paper/issues/1280
         return entityKeyString;
     }
     @Nullable
     public final String getSaveID() {
-        return entityKeyString;
+        return getMinecraftKeyString();
         // Paper end
     }
 
