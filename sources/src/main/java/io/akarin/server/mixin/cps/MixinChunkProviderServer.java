@@ -54,17 +54,14 @@ public abstract class MixinChunkProviderServer {
                 if (chunk.isUnloading()) {
                     if (chunk.scheduledForUnload != null) {
                         if (now - chunk.scheduledForUnload > unloadAfter) {
-                            chunk.scheduledForUnload = null;
+                            if (unloadChunk(chunk, true)) {
+                                chunk.scheduledForUnload = null;
+                                it.remove();
+                            }
+                            chunk.setShouldUnload(false);
                         } else {
                             continue;
                         }
-                    }
-                    
-                    if (!unloadChunk(chunk, true)) { // Event cancelled
-                        // If a plugin cancelled it, we shouldn't trying unload it for a while
-                        chunk.setShouldUnload(false);
-                    } else {
-                        it.remove();
                     }
                     
                     if (--remainingChunks <= targetSize || activityAccountant.activityTimeIsExhausted()) break; // more slack since the target size not work as intended
