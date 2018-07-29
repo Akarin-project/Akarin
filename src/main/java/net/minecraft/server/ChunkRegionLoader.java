@@ -58,8 +58,55 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     // private boolean f; // CraftBukkit
     public final LongSet blacklist = new LongOpenHashSet();
     private static final double SAVE_QUEUE_TARGET_SIZE = 625; // Spigot
+    // Paper start - support saving to an alternate directory
+    private final File templateWorld;
+    private final File actualWorld;
+    private final boolean useAltWorld;
+
+    private void copyIfNeeded(int x, int z) {
+        if (!useAltWorld) {
+            return;
+        }
+        synchronized (RegionFileCache.class) {
+            if (RegionFileCache.hasRegionFile(this.actualWorld, x, z)) {
+                return;
+            }
+            File actual = RegionFileCache.getRegionFileName(this.actualWorld, x, z);
+            File template = RegionFileCache.getRegionFileName(this.templateWorld, x, z);
+            if (!actual.exists() && template.exists()) {
+                try {
+                    //a.info("Copying" + template + " to " + actual);
+                    java.nio.file.Files.copy(template.toPath(), actual.toPath(), java.nio.file.StandardCopyOption.COPY_ATTRIBUTES);
+                } catch (IOException e1) {
+                    LogManager.getLogger().error("Error copying " + template + " to " + actual, e1);
+                    MinecraftServer.getServer().safeShutdown();
+                    com.destroystokyo.paper.util.SneakyThrow.sneaky(e1);
+                }
+            }
+        }
+    }
+    // Paper end
 
     public ChunkRegionLoader(File file, DataFixer datafixer) {
+        // Paper start
+        this.actualWorld = file;
+        if (com.destroystokyo.paper.PaperConfig.useVersionedWorld) {
+            this.useAltWorld = true;
+            String name = file.getName();
+            File container = file.getParentFile().getParentFile();
+            if (name.equals("DIM-1") || name.equals("DIM1")) {
+                container = container.getParentFile();
+            }
+            this.templateWorld = new File(container, name);
+            File region = new File(file, "region");
+            if (!region.exists()) {
+                region.mkdirs();
+            }
+        } else {
+            this.useAltWorld = false;
+            this.templateWorld = file;
+        }
+        // Paper end
         this.c = file;
         this.d = datafixer;
     }
@@ -97,7 +144,13 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
     }
 
     public boolean chunkExists(int x, int z) {
-        return RegionFileCache.chunkExists(this.c, x, z);
+        // Paper start
+        if (this.saveMap.containsKey(ChunkCoordIntPair.asLong(x, z))) {
+            return true;
+        }
+        copyIfNeeded(x, z);
+        return RegionFileCache.chunkExists(this.actualWorld, x, z);
+        // Paper end
     }
 
     @Nullable
@@ -107,6 +160,8 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             return null;
         }
         // CraftBukkit end
+        copyIfNeeded(i, j); // Paper
+
         NBTTagCompound nbttagcompound = SupplierUtils.getIfExists(this.saveMap.get(ChunkCoordIntPair.asLong(i, j))); // Spigot // Paper
 
         if (nbttagcompound != null) {

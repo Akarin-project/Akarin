@@ -32,6 +32,58 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
 
     public WorldNBTStorage(File file, String s, @Nullable MinecraftServer minecraftserver, DataFixer datafixer) {
         this.a = datafixer;
+        // Paper start
+        if (com.destroystokyo.paper.PaperConfig.useVersionedWorld) {
+            File origBaseDir = new File(file, s);
+            final String currentVersion = MinecraftServer.getServer().getVersion();
+            file = new File(file, currentVersion);
+            File baseDir = new File(file, s);
+
+            if (!baseDir.exists() && origBaseDir.exists() && !baseDir.mkdirs()) {
+                LogManager.getLogger().error("Could not create world directory for " + file);
+                System.exit(1);
+            }
+
+            try {
+                boolean printedHeader = false;
+                String[] dirs  = {"advancements", "data", "datapacks", "playerdata", "stats"};
+                for (String dir : dirs) {
+                    File origPlayerData = new File(origBaseDir, dir);
+                    File targetPlayerData = new File(baseDir, dir);
+                    if (origPlayerData.exists() && !targetPlayerData.exists()) {
+                        if (!printedHeader) {
+                            LogManager.getLogger().info("**** VERSIONED WORLD - Copying files");
+                            printedHeader = true;
+                        }
+                        LogManager.getLogger().info("- Copying: " + dir);
+                        org.apache.commons.io.FileUtils.copyDirectory(origPlayerData, targetPlayerData);
+                    }
+                }
+
+                String[] files = {"level.dat", "level.dat_old", "session.lock", "uid.dat"};
+                for (String fileName : files) {
+                    File origPlayerData = new File(origBaseDir, fileName);
+                    File targetPlayerData = new File(baseDir, fileName);
+                    if (origPlayerData.exists() && !targetPlayerData.exists()) {
+                        if (!printedHeader) {
+                            LogManager.getLogger().info("- Copying files");
+                            printedHeader = true;
+                        }
+                        LogManager.getLogger().info("- Copying: " + fileName);
+                        org.apache.commons.io.FileUtils.copyFile(origPlayerData, targetPlayerData);
+
+                    }
+                }
+                if (printedHeader) {
+                    LogManager.getLogger().info("**** VERSIONED WORLD - Copying DONE");
+                }
+            } catch (IOException e) {
+                LogManager.getLogger().error("Error copying versioned world data for " + origBaseDir + " to " + baseDir, e);
+                com.destroystokyo.paper.util.SneakyThrow.sneaky(e);
+            }
+
+        }
+        // Paper end
         this.baseDir = new File(file, s);
         this.baseDir.mkdirs();
         this.playerDir = new File(this.baseDir, "playerdata");

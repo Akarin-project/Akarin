@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.Lists;
@@ -306,6 +307,29 @@ public class PaperConfig {
         useAlternativeLuckFormula = getBoolean("settings.use-alternative-luck-formula", false);
         if (useAlternativeLuckFormula) {
             Bukkit.getLogger().log(Level.INFO, "Using Aikar's Alternative Luck Formula to apply Luck attribute to all loot pool calculations. See https://luckformula.emc.gs");
+        }
+    }
+
+    public static boolean useVersionedWorld = false;
+    private static void useVersionedWorld() {
+        useVersionedWorld = getBoolean("settings.use-versioned-world", false);
+        if (useVersionedWorld) {
+            Logger logger = Bukkit.getLogger();
+            String ver = MinecraftServer.getServer().getVersion();
+            logger.log(Level.INFO, "******************************************************");
+            logger.log(Level.INFO, "*** Using a versioned world folder. Your world will be saved");
+            logger.log(Level.INFO, "*** to into the " + ver + " folder, but copied from your current world.");
+            logger.log(Level.INFO, "*** ");
+            logger.log(Level.INFO, "*** This setting should not be used in your real world!!!");
+            logger.log(Level.INFO, "*** If you want to retain the new world, you need to move ");
+            logger.log(Level.INFO, "*** the folders out of the " + ver + " folder and overwrite existing");
+            logger.log(Level.INFO, "*** ");
+            logger.log(Level.INFO, "*** Deleting the " + ver + " folder will cause it to recreate again");
+            logger.log(Level.INFO, "*** from your unversioned world files.");
+            logger.log(Level.INFO, "*** ");
+            logger.log(Level.INFO, "*** You should backup your original world files incase something goes");
+            logger.log(Level.INFO, "*** wrong with this system! This is not a backup system.");
+            logger.log(Level.INFO, "******************************************************");
         }
     }
 }

@@ -76,6 +76,13 @@ public class RegionFileCache {
             itr.remove();
         }
     }
+    public static synchronized File getRegionFileName(File file, int i, int j) {
+        File file1 = new File(file, "region");
+        return new File(file1, "r." + (i >> 5) + "." + (j >> 5) + ".mca");
+    }
+    public static synchronized boolean hasRegionFile(File file, int i, int j) {
+        return RegionFileCache.cache.containsKey(getRegionFileName(file, i, j));
+    }
     // Paper End
 
     public static synchronized void a() {
