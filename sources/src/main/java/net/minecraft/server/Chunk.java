@@ -5,6 +5,8 @@ import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Queues;
 
+import io.akarin.server.core.AkarinGlobalConfig;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,6 +16,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,8 +28,7 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers; // Paper
 
 /**
  * Akarin Changes Note
- * 1) Add volatile to fields (async lighting)
- * 2) Expose private methods (async lighting)
+ * 1) Async lighting (performance)
  */
 public class Chunk {
 
@@ -73,11 +76,11 @@ public class Chunk {
             return removed;
         }
     }
-    public final PaperLightingQueue.LightingQueue lightingQueue = new PaperLightingQueue.LightingQueue(this); // Akarin - public
+    final PaperLightingQueue.LightingQueue lightingQueue = new PaperLightingQueue.LightingQueue(this);
     // Paper end
-    private volatile boolean done; // Akarin - volatile
-    private volatile boolean lit; // Akarin - volatile
-    private volatile boolean r; private boolean isTicked() { return r; }; // Paper - OBFHELPER // Akarin - volatile
+    private boolean done;
+    private boolean lit;
+    private boolean r; private boolean isTicked() { return r; }; // Paper - OBFHELPER
     private boolean s;
     private boolean t;
     private long lastSaved;
@@ -123,6 +126,10 @@ public class Chunk {
         this.neighbors &= ~(0x1 << (x * 5 + 12 + z));
     }
     // CraftBukkit end
+    // Akarin start - Re-add asynchronous light updates
+    public AtomicInteger pendingLightUpdates = new AtomicInteger();
+    public long lightUpdateTime;
+    // Akarin end
 
     public Chunk(World world, int i, int j) {
         this.sections = new ChunkSection[16];
@@ -337,7 +344,7 @@ public class Chunk {
     private void a(int i, int j, int k, int l) {
         if (l > k && this.world.areChunksLoaded(new BlockPosition(i, 0, j), 16)) {
             for (int i1 = k; i1 < l; ++i1) {
-                this.world.c(EnumSkyBlock.SKY, new BlockPosition(i, i1, j));
+                this.world.updateLight(EnumSkyBlock.SKY, new BlockPosition(i, i1, j)); // Akarin - Re-add asynchronous lighting updates
             }
 
             this.s = true;
@@ -1217,7 +1224,7 @@ public class Chunk {
 
     public void b(boolean flag) {
         if (this.m && this.world.worldProvider.m() && !flag) {
-            this.h(this.world.isClientSide);
+            this.recheckGaps(this.world.isClientSide); // Akarin - Re-add asynchronous lighting updates
         }
 
         this.r = true;
@@ -1237,6 +1244,22 @@ public class Chunk {
         }
 
     }
+    
+    // Akarin start - Recheck gaps asynchronously.
+    public void recheckGapsAsync(final boolean isClientSide) {
+        if (!AkarinGlobalConfig.useAsyncLighting) {
+            this.h(isClientSide);
+            return;
+        }
+
+        world.lightingExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                Chunk.this.h(isClientSide);
+            }
+        });
+    }
+    // Akarin end
 
     public boolean isReady() {
         // Spigot Start
@@ -1408,7 +1431,7 @@ public class Chunk {
         this.h(false);
     }
 
-    public void a(EnumDirection enumdirection) { // Akarin - private -> public
+    private void a(EnumDirection enumdirection) {
         if (this.done) {
             int i;
 
