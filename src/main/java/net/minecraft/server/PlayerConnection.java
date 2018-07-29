@@ -76,6 +76,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     // CraftBukkit start - multithreaded fields
     private volatile int chatThrottle;
     private static final AtomicIntegerFieldUpdater chatSpamField = AtomicIntegerFieldUpdater.newUpdater(PlayerConnection.class, "chatThrottle");
+    private final java.util.concurrent.atomic.AtomicInteger tabSpamLimiter = new java.util.concurrent.atomic.AtomicInteger(); // Paper - configurable tab spam limits
     // CraftBukkit end
     private int j;
     private final IntHashMap<Short> k = new IntHashMap<>();
@@ -204,6 +205,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.minecraftServer.methodProfiler.exit();
         // CraftBukkit start
         for (int spam; (spam = this.chatThrottle) > 0 && !chatSpamField.compareAndSet(this, spam, spam - 1); ) ;
+        if (tabSpamLimiter.get() > 0) tabSpamLimiter.getAndDecrement(); // Paper - split to seperate variable
         /* Use thread-safe field access instead
         if (this.chatThrottle > 0) {
             --this.chatThrottle;
@@ -509,7 +511,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     public void a(PacketPlayInTabComplete packetplayintabcomplete) {
         // PlayerConnectionUtils.ensureMainThread(packetplayintabcomplete, this, this.player.getWorldServer()); // Paper - run this async
         // CraftBukkit start
-        if (chatSpamField.addAndGet(this, 1) > 500 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
+        if (tabSpamLimiter.addAndGet(com.destroystokyo.paper.PaperConfig.tabSpamIncrement) > com.destroystokyo.paper.PaperConfig.tabSpamLimit && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) { // Paper start - split and make configurable
             minecraftServer.postToMainThread(() -> this.disconnect(new ChatMessage("disconnect.spam", new Object[0]))); // Paper
             return;
         }
