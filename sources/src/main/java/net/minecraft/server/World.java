@@ -41,6 +41,7 @@ import com.google.common.collect.Sets;
 // Paper end
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import io.akarin.launcher.AkarinMixinConfig;
 import io.akarin.server.core.AkarinGlobalConfig;
 
 /**
@@ -3438,7 +3439,7 @@ public abstract class World implements IBlockAccess {
         boolean flag = true;
         short keepLoadedRange = paperConfig.keepLoadedRange; // Paper
 
-        return k >= -keepLoadedRange && k <= keepLoadedRange && l >= -keepLoadedRange && l <= keepLoadedRange && this.keepSpawnInMemory; // CraftBukkit - Added 'this.keepSpawnInMemory' // Paper - Re-add range var
+        return k >= -keepLoadedRange && k <= keepLoadedRange && l >= -keepLoadedRange && l <= keepLoadedRange && this.keepSpawnInMemory && !AkarinMixinConfig.removeChunkUnloadQueue; // CraftBukkit - Added 'this.keepSpawnInMemory' // Paper - Re-add range var // Akarin
     }
 
     public void a(Packet<?> packet) {

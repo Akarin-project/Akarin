@@ -42,6 +42,7 @@ public abstract class MixinChunkProviderServer {
             long unloadAfter = world.paperConfig.delayChunkUnloadsBy;
             SlackActivityAccountant activityAccountant = world.getMinecraftServer().slackActivityAccountant;
             activityAccountant.startActivity(0.5);
+            
             ObjectIterator<Entry<Chunk>> it = chunks.long2ObjectEntrySet().fastIterator();
             int remainingChunks = chunks.size();
             int targetSize = Math.min(remainingChunks - 100,  (int) (remainingChunks * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
@@ -49,22 +50,19 @@ public abstract class MixinChunkProviderServer {
             while (it.hasNext()) {
                 Entry<Chunk> entry = it.next();
                 Chunk chunk = entry.getValue();
-                if (chunk == null) continue;
                 
-                if (chunk.isUnloading()) {
+                if (chunk != null && chunk.isUnloading()) {
                     if (chunk.scheduledForUnload != null) {
-                        if (now - chunk.scheduledForUnload > unloadAfter) {
-                            if (unloadChunk(chunk, true)) {
-                                chunk.scheduledForUnload = null;
-                                it.remove();
-                            }
-                            chunk.setShouldUnload(false);
-                        } else {
-                            continue;
-                        }
+                        if (now - chunk.scheduledForUnload <= unloadAfter) continue;
                     }
                     
-                    if (--remainingChunks <= targetSize || activityAccountant.activityTimeIsExhausted()) break; // more slack since the target size not work as intended
+                    if (unloadChunk(chunk, true)) {
+                        it.remove();
+                    }
+                    chunk.setShouldUnload(false);
+                    chunk.scheduledForUnload = null;
+                    
+                    if (--remainingChunks <= targetSize && activityAccountant.activityTimeIsExhausted()) break;
                 }
             }
             activityAccountant.endActivity();

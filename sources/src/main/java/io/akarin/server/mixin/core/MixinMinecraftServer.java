@@ -6,7 +6,6 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
