@@ -185,16 +185,6 @@ public class AkarinGlobalConfig {
         keepAliveTimeout = getSeconds(getString("core.keep-alive-response-timeout", "30s")) * 1000;
     }
     
-    public static int asyncLightingThreads;
-    private static void asyncLightingThreads() {
-        asyncLightingThreads = getInt("core.async-lighting.executor-threads", 4);
-    }
-    
-    public static boolean asyncLightingWorkStealing;
-    private static void asyncLightingWorkStealing() {
-        asyncLightingWorkStealing = getBoolean("core.async-lighting.use-work-stealing", false);
-    }
-    
     public static boolean throwOnAsyncCaught;
     private static void throwOnAsyncCaught() {
         throwOnAsyncCaught = getBoolean("core.thread-safe.async-catcher.throw-on-caught", true);
