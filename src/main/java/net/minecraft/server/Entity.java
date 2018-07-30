@@ -90,7 +90,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     private static final List<ItemStack> a = Collections.emptyList();
     private static final AxisAlignedBB b = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     private static double c = 1.0D;
-    private static int entityCount;
+    private static int entityCount = 1; // Paper - MC-111480 - ID 0 is treated as special for DataWatchers, start 1
     private final EntityTypes<?> g; public EntityTypes<?> getEntityType() { return g; } // Paper - OBFHELPER
     private int id;
     public boolean j; public boolean blocksEntitySpawning() { return j; } // Paper - OBFHELPER
