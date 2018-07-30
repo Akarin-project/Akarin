@@ -1960,7 +1960,7 @@ public abstract class World implements IBlockAccess {
                 this.getChunkAt(entity.ab, entity.ad).a(entity, entity.ac);
             }
 
-            if (!entity.bD() && !this.isChunkLoaded(i, k, true)) {
+            if (false && !entity.bD() && !this.isChunkLoaded(i, k, true)) { // Paper - Always send entities into a new chunk, never lose them
                 entity.aa = false;
             } else {
                 this.getChunkAt(i, k).a(entity);

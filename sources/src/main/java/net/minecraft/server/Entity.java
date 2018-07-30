@@ -85,7 +85,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     private static final List<ItemStack> b = Collections.emptyList();
     private static final AxisAlignedBB c = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     private static double f = 1.0D;
-    private static int entityCount;
+    private static int entityCount = 1; // Paper - MC-111480 - ID 0 is treated as special for DataWatchers, start 1
     private int id;
     public boolean i; public boolean blocksEntitySpawning() { return i; } // Paper - OBFHELPER
     public final List<Entity> passengers;
@@ -345,6 +345,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
         this.locX = d0;
         this.locY = d1;
         this.locZ = d2;
+        if (valid) world.entityJoinedWorld(this, false); // Paper - ensure Entity is moved to its proper chunk
         float f = this.width / 2.0F;
         float f1 = this.length;
 
@@ -990,6 +991,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
         this.locX = (axisalignedbb.a + axisalignedbb.d) / 2.0D;
         this.locY = axisalignedbb.b;
         this.locZ = (axisalignedbb.c + axisalignedbb.f) / 2.0D;
+        if (valid) world.entityJoinedWorld(this, false); // Paper - ensure Entity is moved to its proper chunk
     }
 
     protected SoundEffect ae() {
@@ -1792,7 +1794,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
      */
     public Chunk getCurrentChunk() {
         final Chunk chunk = currentChunk != null ? currentChunk.get() : null;
-        return chunk != null && chunk.isLoaded() ? chunk : null;
+        return chunk != null && chunk.isLoaded() ? chunk : (isAddedToChunk() ? world.getChunkIfLoaded(getChunkX(), getChunkZ()) : null);
     }
     /**
      * Returns the chunk at the location, using the entities local cache if avail

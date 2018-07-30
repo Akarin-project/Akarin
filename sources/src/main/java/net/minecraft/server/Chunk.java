@@ -982,6 +982,8 @@ public class Chunk {
                     }
                 }
                 // Spigot End
+                entity.setCurrentChunk(null); // Paper
+                entity.entitySlice = null; // Paper
 
                 // Do not pass along players, as doing so can get them stuck outside of time.
                 // (which for example disables inventory icon updates and prevents block breaking)
