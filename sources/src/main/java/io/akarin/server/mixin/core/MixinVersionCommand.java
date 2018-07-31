@@ -1,13 +1,23 @@
 package io.akarin.server.mixin.core;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.defaults.VersionCommand;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+
+import com.google.common.base.Charsets;
 
 import io.akarin.api.internal.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
@@ -15,7 +25,34 @@ import net.minecraft.server.MCUtil;
 
 @Mixin(value = VersionCommand.class, remap = false)
 public abstract class MixinVersionCommand {
-    @Shadow private static int getFromRepo(String repo, String hash) { return 0; }
+    @Overwrite
+    private static int getFromRepo(String repo, String hash) {
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.github.com/repos/" + repo + "/compare/ver/1.12.2/..." + hash).openConnection();
+            connection.connect();
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) return -2; // Unknown commit
+            try (
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), Charsets.UTF_8))
+            ) {
+                JSONObject obj = (JSONObject) new JSONParser().parse(reader);
+                String status = (String) obj.get("status");
+                switch (status) {
+                    case "identical":
+                        return 0;
+                    case "behind":
+                        return ((Number) obj.get("behind_by")).intValue();
+                    default:
+                        return -1;
+                }
+            } catch (ParseException | NumberFormatException e) {
+                e.printStackTrace();
+                return -1;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
     
     /**
      * Match current version with repository and calculate the distance
