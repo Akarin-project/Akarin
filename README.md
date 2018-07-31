@@ -47,6 +47,7 @@ Get Akarin
 Demo Servers
 ---
 * `demo.akarin.io` (official)
+* `omc.hk` (auth required)
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
