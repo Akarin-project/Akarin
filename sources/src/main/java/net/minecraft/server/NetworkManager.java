@@ -21,7 +21,6 @@ import io.netty.util.concurrent.GenericFutureListener;
 
 import java.net.SocketAddress;
 import java.util.Queue;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import org.apache.commons.lang3.ArrayUtils;

@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import io.akarin.server.core.AkarinGlobalConfig;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -23,7 +22,6 @@ public abstract class MixinChunkProviderServer {
     @Shadow public Long2ObjectOpenHashMap<Chunk> chunks;
     
     public void unload(Chunk chunk) {
-        if (AkarinGlobalConfig.useAsyncLighting && chunk != null && (chunk.pendingLightUpdates.get() > 0 || chunk.world.getTime() - chunk.lightUpdateTime < 20)) return; // Akarin start - Re-add asynchronous lighting updates
         if (this.world.worldProvider.c(chunk.locX, chunk.locZ)) {
             // Akarin - avoid using the queue and simply check the unloaded flag during unloads
             // this.unloadQueue.add(Long.valueOf(ChunkCoordIntPair.a(chunk.locX, chunk.locZ)));

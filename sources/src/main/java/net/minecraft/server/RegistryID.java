@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 /**
  * Akarin Changes Note
- * 1) BitSet for faster access (performance)
+ * 1) FastBitSet for faster access (performance)
  */
 public class RegistryID<K> implements Registry {
 

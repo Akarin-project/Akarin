@@ -284,9 +284,4 @@ public class AkarinGlobalConfig {
     private static void forceHardcoreDifficulty() {
         forceHardcoreDifficulty = getBoolean("alternative.force-difficulty-on-hardcore", true);
     }
-    
-    public static boolean useAsyncLighting;
-    private static void useAsyncLighting() {
-        useAsyncLighting = getBoolean("core.async-lighting.enable", true);
-    }
 }
