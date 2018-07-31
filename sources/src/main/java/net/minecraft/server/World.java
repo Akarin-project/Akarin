@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 // CraftBukkit start
@@ -26,7 +25,6 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.util.LongHashSet; // Paper
 import org.bukkit.event.block.BlockCanBuildEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -40,6 +38,10 @@ import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray; // A
 import com.google.common.collect.Sets;
 // Paper end
 
+/**
+ * Akarin Changes Note
+ * 1) Optimizes player lookup (performance)
+ */
 public abstract class World implements IBlockAccess {
 
     private int a = 63;
@@ -76,7 +78,7 @@ public abstract class World implements IBlockAccess {
     private final List<TileEntity> b = Lists.newArrayList();
     private final Set<TileEntity> tileEntityListUnload = Sets.newHashSet(); // Paper
     public final List<EntityHuman> players = Lists.newArrayList();
-    public final Map<String, EntityHuman> playersByName = Maps.newHashMap(); // Paper - World EntityHuman Lookup Optimizations
+    public final Map<String, EntityHuman> playersByName = Maps.newHashMap(); // Akarin - 1.13 backport - World EntityHuman Lookup Optimizations
     public final List<Entity> j = Lists.newArrayList();
     protected final IntHashMap<Entity> entitiesById = new IntHashMap();
     private final long K = 16777215L;
@@ -1199,8 +1201,7 @@ public abstract class World implements IBlockAccess {
                 EntityHuman entityhuman = (EntityHuman) entity;
 
                 this.players.add(entityhuman);
-                this.playersByName.put(entityhuman.getName(), entityhuman);
-                // Paper end
+                this.playersByName.put(entityhuman.getName(), entityhuman); // Akarin - 1.13 backport - World EntityHuman Lookup Optimizations
                 this.everyoneSleeping();
             }
 
@@ -1272,7 +1273,7 @@ public abstract class World implements IBlockAccess {
         entity.die();
         if (entity instanceof EntityHuman) {
             this.players.remove(entity);
-            this.playersByName.remove(entity.getName()); // Paper - World EntityHuman Lookup Optimizations
+            this.playersByName.remove(entity.getName()); // Akarin - 1.13 backport - World EntityHuman Lookup Optimizations
             this.everyoneSleeping();
         }
 
@@ -2974,7 +2975,7 @@ public abstract class World implements IBlockAccess {
 
     @Nullable
     public EntityHuman a(String s) {
-        // Paper start - World EntityHuman Lookup Optimizations
+        // Akarin start - 1.13 backport - World EntityHuman Lookup Optimizations
         /*
         for (int i = 0; i < this.players.size(); ++i) {
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
@@ -2987,12 +2988,12 @@ public abstract class World implements IBlockAccess {
         return null;
         */
         return this.playersByName.get(s);
-        // Paper end
+        // Akarin end
     }
 
     @Nullable
     public EntityHuman b(UUID uuid) {
-        // Paper start - World EntityHuman Lookup Optimizations
+        // Akarin start - 1.13 backport World EntityHuman Lookup Optimizations
         /*
         for (int i = 0; i < this.players.size(); ++i) {
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
@@ -3006,7 +3007,7 @@ public abstract class World implements IBlockAccess {
         */
         Entity entity = ((WorldServer)this).entitiesByUUID.get(uuid);
         return entity instanceof EntityHuman ? (EntityHuman) entity : null;
-        // Paper end
+        // Akarin end
     }
 
     public void checkSession() throws ExceptionWorldConflict {
