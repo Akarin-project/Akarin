@@ -28,7 +28,7 @@ public abstract class MixinVersionCommand {
     @Overwrite
     private static int getFromRepo(String repo, String hash) {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.github.com/repos/" + repo + "/compare/ver/1.12.2/..." + hash).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.github.com/repos/" + repo + "/compare/ver/1.12.2..." + hash).openConnection();
             connection.connect();
             if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) return -2; // Unknown commit
             try (
