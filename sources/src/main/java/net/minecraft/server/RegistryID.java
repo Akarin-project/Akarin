@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterators;
+
+import java.util.BitSet;
 import java.util.Iterator;
 import javax.annotation.Nullable;
 
@@ -24,7 +26,7 @@ public class RegistryID<K> implements Registry {
         this.b = (K[]) (new Object[i]);
         this.c = new int[i];
         this.d = (K[]) (new Object[i]);
-        this.usedIds = new io.akarin.api.internal.utils.FastBitSet(); // Akarin - 1.13 backport
+        this.usedIds = new BitSet(); // Akarin - 1.13 backport
     }
 
     public int getId(@Nullable K k0) {
