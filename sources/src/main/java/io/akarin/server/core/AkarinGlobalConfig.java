@@ -172,7 +172,7 @@ public class AkarinGlobalConfig {
     
     public static long timeUpdateInterval;
     private static void timeUpdateInterval() {
-        timeUpdateInterval = getSeconds(getString("core.tick-rate.world-time-update-interval", "1s")) * 10 * 2;
+        timeUpdateInterval = getSeconds(getString("core.tick-rate.world-time-update-interval", "1s")) * 10;
     }
     
     public static long keepAliveSendInterval;
@@ -267,7 +267,7 @@ public class AkarinGlobalConfig {
     
     public static long playersInfoUpdateInterval;
     private static void playersInfoUpdateInterval() {
-        playersInfoUpdateInterval = getSeconds(getString("core.tick-rate.players-info-update-interval", "30s")) * 10 * 2;
+        playersInfoUpdateInterval = getSeconds(getString("core.tick-rate.players-info-update-interval", "30s")) * 10;
     }
     
     public static long versionUpdateInterval;
