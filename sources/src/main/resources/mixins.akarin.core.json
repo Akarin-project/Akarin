@@ -19,6 +19,7 @@
         "core.MixinCommandKick",
         "core.MixinCraftServer",
         "core.MixinWorldServer",
+        "core.MixinFileIOThread",
         "core.MixinWorldManager",
         "core.MixinCommandBanIp",
         "core.MixinChunkSection",

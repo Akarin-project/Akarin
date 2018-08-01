@@ -1157,9 +1157,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, other));
 
+        tracker.entriesLock.lock(); // Akarin
         EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
         if (entry != null && !entry.trackedPlayers.contains(getHandle())) {
-            tracker.entriesLock.lock(); // Akarin
             entry.updatePlayer(getHandle());
             tracker.entriesLock.unlock(); // Akarin
         }

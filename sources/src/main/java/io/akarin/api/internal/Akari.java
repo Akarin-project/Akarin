@@ -96,9 +96,9 @@ public abstract class Akari {
      */
     public final static Timing worldTiming = getTiming("Akarin - Full World Tick");
     
-    public final static Timing entityCallbackTiming = getTiming("Akarin - Entity Callback");
+    public final static Timing entityCallbackTiming = getTiming("Akarin - Entity Parallell Await");
     
-    public final static Timing callbackTiming = getTiming("Akarin - Callback");
+    public final static Timing callbackTiming = getTiming("Akarin - Callback Queue");
     
     private static Timing getTiming(String name) {
         try {
