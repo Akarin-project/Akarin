@@ -1,16 +1,11 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Maps;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nullable;
 import java.util.concurrent.ConcurrentLinkedQueue; // Paper
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +15,10 @@ import java.util.function.Supplier;
 import org.spigotmc.SupplierUtils;
 // Spigot end
 
+/**
+ * Akarin Changes Note
+ * 1) Removes unneed synchronization (performance)
+ */
 public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
     private ConcurrentLinkedQueue<QueuedChunk> queue = new ConcurrentLinkedQueue<>(); // Paper - Chunk queue improvements
@@ -180,7 +179,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         return this.processSaveQueueEntry(false);
     }
 
-    private synchronized boolean processSaveQueueEntry(boolean logCompletion) {
+    private /*synchronized*/ boolean processSaveQueueEntry(boolean logCompletion) { // Akarin - remove synchronization
         // CraftBukkit start
         // Paper start - Chunk queue improvements
         QueuedChunk chunk = queue.poll();
