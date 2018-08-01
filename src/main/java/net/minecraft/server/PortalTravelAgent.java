@@ -208,11 +208,27 @@ public class PortalTravelAgent {
                 ++d4;
             }
 
-            if (shapedetector_shapedetectorcollection.getFacing().k() == EnumDirection.EnumAxis.X) {
-                d3 = d4 + (1.0D - entity.getPortalOffset().x) * (double) shapedetector_shapedetectorcollection.d() * (double) shapedetector_shapedetectorcollection.getFacing().e().c().a();
-            } else {
-                d2 = d4 + (1.0D - entity.getPortalOffset().x) * (double) shapedetector_shapedetectorcollection.d() * (double) shapedetector_shapedetectorcollection.getFacing().e().c().a();
+            // Paper start - Prevent portal suffocation (and therefore getting teleported up in an attempt to avoid it)
+            // Based on work by CarpetMod - Licensed GPL-3.0
+            double offset = (1.0D - entity.getPortalOffset().x) * (double) shapedetector_shapedetectorcollection.getWidth() * (double) shapedetector_shapedetectorcollection.getFacing().rotateY().getAxisDirection().getOffset();
+            double adjustedRadius = 1.02 * entity.width / 2;
+            if (adjustedRadius >= shapedetector_shapedetectorcollection.getWidth() - adjustedRadius) {
+                // entity wider than portal, place it in the middle
+                adjustedRadius = (double) shapedetector_shapedetectorcollection.getWidth() / 2 - 0.001;
             }
+
+            if (offset >= 0) {
+                offset = MathHelper.clamp(offset, adjustedRadius, (double) shapedetector_shapedetectorcollection.getWidth() - adjustedRadius);
+            } else {
+                offset = MathHelper.clamp(offset, (double) -shapedetector_shapedetectorcollection.getWidth() + adjustedRadius, -adjustedRadius);
+            }
+
+            if (shapedetector_shapedetectorcollection.getFacing().k() == EnumDirection.EnumAxis.X) {
+                d3 = d4 + offset;
+            } else {
+                d2 = d4 + offset;
+            }
+            // Paper end
 
             float f1 = 0.0F;
             float f2 = 0.0F;

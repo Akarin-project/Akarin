@@ -82,6 +82,7 @@ public enum EnumDirection implements INamable {
         return this.i;
     }
 
+    public final EnumDirection.EnumAxisDirection getAxisDirection() { return c(); } // Paper - OBFHELPER
     public EnumDirection.EnumAxisDirection c() {
         return this.l;
     }
@@ -90,6 +91,7 @@ public enum EnumDirection implements INamable {
         return fromType1(this.h);
     }
 
+    public final EnumDirection rotateY() { return e(); } // Paper - OBFHELPER
     public EnumDirection e() {
         switch (this) {
         case NORTH:
@@ -255,6 +257,7 @@ public enum EnumDirection implements INamable {
             this.d = s;
         }
 
+        public final int getOffset() { return a(); } // Paper - OBFHELPER
         public int a() {
             return this.c;
         }

@@ -140,6 +140,7 @@ public class ShapeDetector {
             return this.c;
         }
 
+        public final int getWidth() { return this.d(); } // Paper - OBFHELPER
         public int d() {
             return this.e;
         }

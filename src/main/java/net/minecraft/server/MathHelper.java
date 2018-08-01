@@ -81,6 +81,7 @@ public class MathHelper {
         return f < f1 ? f1 : (f > f2 ? f2 : f);
     }
 
+    public static double clamp(double d0, double d1, double d2) { return a(d0, d1, d2); } // Paper - OBFHELPER
     public static double a(double d0, double d1, double d2) {
         return d0 < d1 ? d1 : (d0 > d2 ? d2 : d0);
     }
