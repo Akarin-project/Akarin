@@ -60,7 +60,7 @@ public class PlayerChunkMap {
     private final List<PlayerChunk> h = Lists.newLinkedList();
     private final List<PlayerChunk> i = Lists.newArrayList();
     private AtomicInteger j = new AtomicInteger(); public int getViewDistance() { return j.get(); } // Paper OBFHELPER // Akarin - atmoic
-    private AtomicLong k = new AtomicLong(); // Akarin - atmoic
+    private long k;
     private AtomicBoolean l = new AtomicBoolean(true); // Akarin - atmoic
     private AtomicBoolean m = new AtomicBoolean(true); // Akarin - atmoic
     private boolean wasNotEmpty; // CraftBukkit - add field
@@ -118,9 +118,9 @@ public class PlayerChunkMap {
         int j;
         PlayerChunk playerchunk;
 
-        if (i - this.k.get() > 8000L) { // Akarin - atmoic
+        if (i - this.k > 8000L) {
             try (Timing ignored = world.timings.doChunkMapUpdate.startTiming()) { // Paper
-            this.k.getAndSet(i); // Akarin - atmoic
+            this.k = i;
 
             for (j = 0; j < this.i.size(); ++j) {
                 playerchunk = (PlayerChunk) this.i.get(j);
