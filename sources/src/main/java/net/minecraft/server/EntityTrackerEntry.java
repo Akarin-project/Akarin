@@ -22,7 +22,7 @@ public class EntityTrackerEntry {
     private static final Logger c = LogManager.getLogger();
     private final Entity tracker;
     private final int e;
-    private volatile int f; // Akarin
+    private volatile int f; // Akarin - volatile
     private final int g;
     private long xLoc;
     private long yLoc;

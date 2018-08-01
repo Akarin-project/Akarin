@@ -503,12 +503,12 @@ public class PlayerChunkMap {
     }
 
     public synchronized void a(PlayerChunk playerchunk) { // Akarin - synchronized
-        org.spigotmc.AsyncCatcher.catchOp("Async Player Chunk Add"); // Paper // Akarin
+        // org.spigotmc.AsyncCatcher.catchOp("Async Player Chunk Add"); // Paper // Akarin
         this.f.add(playerchunk);
     }
 
     public synchronized void b(PlayerChunk playerchunk) { // Akarin - synchronized
-        // org.spigotmc.AsyncCatcher.catchOp("Async Player Chunk Remove"); // Paper // Akarin
+        org.spigotmc.AsyncCatcher.catchOp("Async Player Chunk Remove"); // Paper
         ChunkCoordIntPair chunkcoordintpair = playerchunk.a();
         long i = d(chunkcoordintpair.x, chunkcoordintpair.z);
 

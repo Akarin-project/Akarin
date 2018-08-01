@@ -7,6 +7,9 @@ import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
+
+import javax.annotation.concurrent.ThreadSafe;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,6 +17,7 @@ import org.apache.logging.log4j.Logger;
  * Akarin Changes Note
  * 1) Made collections and entry access thread-safe (safety issue)
  */
+@ThreadSafe // Akarin
 public class EntityTracker {
 
     private static final Logger a = LogManager.getLogger();
@@ -21,7 +25,7 @@ public class EntityTracker {
     private final Set<EntityTrackerEntry> c = Sets.newHashSet();
     public final ReentrantReadWriteUpdateLock entriesLock = new ReentrantReadWriteUpdateLock(); // Akarin - add lock
     public final IntHashMap<EntityTrackerEntry> trackedEntities = new IntHashMap();
-    private int e;
+    private volatile int e; // Akarin - volatile
 
     public EntityTracker(WorldServer worldserver) {
         this.world = worldserver;
