@@ -234,11 +234,8 @@ public class PlayerChunkMap {
             } // Paper timing
         }
 
-        boolean unlockRequired = true; // Akarin
         managedPlayersLock.readLock().lock(); // Akarin
         if (this.managedPlayers.isEmpty()) {
-            managedPlayersLock.readLock().unlock(); // Akarin
-            unlockRequired = false; // Akarin
             try (Timing ignored = world.timings.doChunkMapUnloadChunks.startTiming()) { // Paper
             WorldProvider worldprovider = this.world.worldProvider;
 
@@ -247,7 +244,7 @@ public class PlayerChunkMap {
             }
             } // Paper timing
         }
-        if (unlockRequired) managedPlayersLock.readLock().unlock(); // Akarin
+        managedPlayersLock.readLock().unlock(); // Akarin
 
     }
 

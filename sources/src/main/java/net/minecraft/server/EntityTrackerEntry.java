@@ -15,14 +15,14 @@ import org.bukkit.event.player.PlayerVelocityEvent;
 
 /**
  * Akarin Changes Note
- * 1) Make trackedPlayerMap thread-safe (safety issue)
+ * 1) Made entry access thread-safe (safety issue)
  */
 public class EntityTrackerEntry {
 
     private static final Logger c = LogManager.getLogger();
     private final Entity tracker;
     private final int e;
-    private int f;
+    private volatile int f; // Akarin
     private final int g;
     private long xLoc;
     private long yLoc;
@@ -47,7 +47,7 @@ public class EntityTrackerEntry {
     // Paper start
     // Replace trackedPlayers Set with a Map. The value is true until the player receives
     // their first update (which is forced to have absolute coordinates), false afterward.
-    public java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = new java.util.concurrent.ConcurrentHashMap<EntityPlayer, Boolean>(); // Akarin - make concurrent
+    public java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = new java.util.HashMap<EntityPlayer, Boolean>();
     public Set<EntityPlayer> trackedPlayers = trackedPlayerMap.keySet();
     // Paper end
 
@@ -489,13 +489,23 @@ public class EntityTrackerEntry {
         return false;
     }
     private static boolean isTrackedBy(Entity entity, EntityPlayer entityplayer) {
-        return entity == entityplayer || entity.tracker != null && entity.tracker.trackedPlayers.contains(entityplayer);
+        // Akarin start
+        boolean mayTrackedBy = entity == entityplayer || entity.tracker != null;
+        if (mayTrackedBy) {
+            ((WorldServer) entity.world).tracker.entriesLock.readLock().lock();
+            mayTrackedBy = entity.tracker.trackedPlayers.contains(entityplayer);
+            ((WorldServer) entity.world).tracker.entriesLock.readLock().unlock();
+        }
+        return mayTrackedBy;
+        // Akarin end
     }
     private void updatePassengers(EntityPlayer player) {
         if (tracker.isVehicle()) {
             tracker.passengers.forEach((e) -> {
                 if (e.tracker != null) {
+                    ((WorldServer) e.world).tracker.entriesLock.writeLock().lock(); // Akarin
                     e.tracker.updatePlayer(player);
+                    ((WorldServer) e.world).tracker.entriesLock.writeLock().unlock(); // Akarin
                 }
             });
             player.playerConnection.sendPacket(new PacketPlayOutMount(this.tracker));
