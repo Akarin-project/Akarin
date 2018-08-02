@@ -65,7 +65,7 @@ public class EntityCow extends EntityAnimal {
         if (itemstack.getItem() == Items.BUCKET && !entityhuman.abilities.canInstantlyBuild && !this.isBaby()) {
             // CraftBukkit start - Got milk?
             org.bukkit.Location loc = this.getBukkitEntity().getLocation();
-            org.bukkit.event.player.PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(entityhuman, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), null, itemstack, Items.MILK_BUCKET);
+            org.bukkit.event.player.PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(entityhuman, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), null, itemstack, Items.MILK_BUCKET, enumhand); // Paper - add enumHand
 
             if (event.isCancelled()) {
                 return false;
