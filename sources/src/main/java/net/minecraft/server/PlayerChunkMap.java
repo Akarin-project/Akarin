@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.annotation.Nullable;
@@ -58,7 +57,7 @@ public class PlayerChunkMap {
     private final Set<PlayerChunk> f = Sets.newHashSet();
     private final List<PlayerChunk> g = Lists.newLinkedList();
     private final List<PlayerChunk> h = Lists.newLinkedList();
-    private final List<PlayerChunk> i = Lists.newArrayList();
+    private final List<PlayerChunk> i = Lists.newCopyOnWriteArrayList(); // Akarin - bad plugin will access this
     private AtomicInteger j = new AtomicInteger(); public int getViewDistance() { return j.get(); } // Paper OBFHELPER // Akarin - atmoic
     private long k;
     private AtomicBoolean l = new AtomicBoolean(true); // Akarin - atmoic
@@ -74,10 +73,10 @@ public class PlayerChunkMap {
         return this.world;
     }
 
-    public synchronized Iterator<Chunk> b() { // Akarin - synchronized
+    public Iterator<Chunk> b() {
         final Iterator iterator = this.i.iterator();
 
-        return new AbstractIterator() {
+        return new AbstractIterator<Chunk>() {
             protected Chunk a() {
                 while (true) {
                     if (iterator.hasNext()) {
@@ -107,7 +106,7 @@ public class PlayerChunkMap {
                 }
             }
 
-            protected Object computeNext() {
+            protected Chunk computeNext() {
                 return this.a();
             }
         };
