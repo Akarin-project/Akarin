@@ -9,9 +9,6 @@ import javax.annotation.Nullable;
 
 // Spigot start
 import com.google.common.base.Predicate;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import com.google.common.util.concurrent.Futures;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -30,13 +27,12 @@ import java.util.concurrent.Callable;
  */
 public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Paper - remove tickable
 
-    private int a;
-    public int rotation;
-    private GameProfile g;
-    private int h;
-    private boolean i;
-    private static UserCache j;
-    private static MinecraftSessionService k;
+    private GameProfile a;
+    private int e;
+    private boolean f;
+    public boolean drop = true;
+    private static UserCache h;
+    private static MinecraftSessionService i;
     // Spigot start
     public static final ExecutorService executor = Executors.newFixedThreadPool(3,
             new ThreadFactoryBuilder()
@@ -80,7 +76,7 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
 
                         if ( property == null )
                         {
-                            profile = MinecraftServer.getServer().az().fillProfileProperties( profile, true );
+                            profile = TileEntitySkull.i.fillProfileProperties( profile, true );
                         }
                     }
 
@@ -90,24 +86,24 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
             } );
     // Spigot end
 
-    public TileEntitySkull() {}
+    public TileEntitySkull() {
+        super(TileEntityTypes.p);
+    }
 
     public static void a(UserCache usercache) {
-        TileEntitySkull.j = usercache;
+        TileEntitySkull.h = usercache;
     }
 
     public static void a(MinecraftSessionService minecraftsessionservice) {
-        TileEntitySkull.k = minecraftsessionservice;
+        TileEntitySkull.i = minecraftsessionservice;
     }
 
     public NBTTagCompound save(NBTTagCompound nbttagcompound) {
         super.save(nbttagcompound);
-        nbttagcompound.setByte("SkullType", (byte) (this.a & 255));
-        nbttagcompound.setByte("Rot", (byte) (this.rotation & 255));
-        if (this.g != null) {
+        if (this.a != null) {
             NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 
-            GameProfileSerializer.serialize(nbttagcompound1, this.g);
+            GameProfileSerializer.serialize(nbttagcompound1, this.a);
             nbttagcompound.set("Owner", nbttagcompound1);
         }
 
@@ -116,30 +112,28 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
 
     public void load(NBTTagCompound nbttagcompound) {
         super.load(nbttagcompound);
-        this.a = nbttagcompound.getByte("SkullType");
-        this.rotation = nbttagcompound.getByte("Rot");
-        if (this.a == 3) {
-            if (nbttagcompound.hasKeyOfType("Owner", 10)) {
-                this.g = GameProfileSerializer.deserialize(nbttagcompound.getCompound("Owner"));
-            } else if (nbttagcompound.hasKeyOfType("ExtraType", 8)) {
-                String s = nbttagcompound.getString("ExtraType");
+        if (nbttagcompound.hasKeyOfType("Owner", 10)) {
+            this.a = GameProfileSerializer.deserialize(nbttagcompound.getCompound("Owner"));
+        } else if (nbttagcompound.hasKeyOfType("ExtraType", 8)) {
+            String s = nbttagcompound.getString("ExtraType");
 
-                if (!UtilColor.b(s)) {
-                    this.g = new GameProfile((UUID) null, s);
-                    this.i();
-                }
+            if (!UtilColor.b(s)) {
+                this.a = new GameProfile((UUID) null, s);
+                this.f();
             }
         }
 
     }
 
-    public void e() {
-        if (this.a == 5) {
+    public void Y_() {
+        Block block = this.getBlock().getBlock();
+
+        if (block == Blocks.DRAGON_HEAD || block == Blocks.DRAGON_WALL_HEAD) {
             if (this.world.isBlockIndirectlyPowered(this.position)) {
-                this.i = true;
-                ++this.h;
+                this.f = true;
+                ++this.e;
             } else {
-                this.i = false;
+                this.f = false;
             }
         }
 
@@ -147,46 +141,35 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
 
     @Nullable
     public GameProfile getGameProfile() {
-        return this.g;
+        return this.a;
     }
 
     @Nullable
     public PacketPlayOutTileEntityData getUpdatePacket() {
-        return new PacketPlayOutTileEntityData(this.position, 4, this.d());
+        return new PacketPlayOutTileEntityData(this.position, 4, this.aa_());
     }
 
-    public NBTTagCompound d() {
+    public NBTTagCompound aa_() {
         return this.save(new NBTTagCompound());
     }
 
-    public void setSkullType(int i) {
-        this.a = i;
-        this.g = null;
-    }
-
     public void setGameProfile(@Nullable GameProfile gameprofile) {
-        this.a = 3;
-        this.g = gameprofile;
-        this.i();
+        this.a = gameprofile;
+        this.f();
     }
 
-    private void i() {
+    private void f() {
         // Spigot start
-        GameProfile profile = this.g;
-        setSkullType( 0 ); // Work around client bug
+        GameProfile profile = this.getGameProfile();
         b(profile, new Predicate<GameProfile>() {
 
             @Override
             public boolean apply(GameProfile input) {
-                setSkullType(3); // Work around client bug
-                g = input;
+                a = input;
                 update();
-                if (world != null) {
-                    world.m(position); // PAIL: notify
-                }
                 return false;
             }
-        }, false); 
+        }, false);
         // Spigot end
     }
 
@@ -241,25 +224,24 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
     }
     // Spigot end
 
-    public int getSkullType() {
-        return this.a;
+    // CraftBukkit start
+    public static void a(IBlockAccess iblockaccess, BlockPosition blockposition) {
+        setShouldDrop(iblockaccess, blockposition, false);
     }
 
-    public void setRotation(int i) {
-        this.rotation = i;
-    }
+    public static void setShouldDrop(IBlockAccess iblockaccess, BlockPosition blockposition, boolean flag) {
+        // CraftBukkit end
+        TileEntity tileentity = iblockaccess.getTileEntity(blockposition);
 
-    public void a(EnumBlockMirror enumblockmirror) {
-        if (this.world != null && this.world.getType(this.getPosition()).get(BlockSkull.FACING) == EnumDirection.UP) {
-            this.rotation = enumblockmirror.a(this.rotation, 16);
+        if (tileentity instanceof TileEntitySkull) {
+            TileEntitySkull tileentityskull = (TileEntitySkull) tileentity;
+
+            tileentityskull.drop = flag; // CraftBukkit
         }
 
     }
 
-    public void a(EnumBlockRotation enumblockrotation) {
-        if (this.world != null && this.world.getType(this.getPosition()).get(BlockSkull.FACING) == EnumDirection.UP) {
-            this.rotation = enumblockrotation.a(this.rotation, 16);
-        }
-
+    public boolean shouldDrop() {
+        return this.drop;
     }
 }

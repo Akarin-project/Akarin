@@ -14,10 +14,10 @@ import net.minecraft.server.ItemMonsterEgg;
 public abstract class MixinItemMonsterEgg {
     @Redirect(method = "a*", at = @At(
             value = "FIELD",
-            target = "net/minecraft/server/Blocks.MOB_SPAWNER:Lnet/minecraft/server/Block;",
+            target = "net/minecraft/server/Blocks.SPAWNER:Lnet/minecraft/server/Block;",
             opcode = Opcodes.GETSTATIC
     ))
     private boolean configurable(Block target) {
-        return target == Blocks.MOB_SPAWNER && AkarinGlobalConfig.allowSpawnerModify;
+        return target == Blocks.SPAWNER && AkarinGlobalConfig.allowSpawnerModify;
     }
 }

@@ -15,7 +15,7 @@ import net.minecraft.server.MCUtil;
 
 @Mixin(value = VersionCommand.class, remap = false)
 public abstract class MixinVersionCommand {
-    @Shadow private static int getFromRepo(String repo, String hash) { return 0; }
+    @Shadow private static int getFromRepo(String repo, String branch, String hash) { return 0; }
     
     /**
      * Match current version with repository and calculate the distance
@@ -26,7 +26,7 @@ public abstract class MixinVersionCommand {
     @Overwrite
     private static int getDistance(String repo, String verInfo) {
         verInfo = verInfo.replace("\"", "");
-        return getFromRepo("Akarin-project/Akarin", verInfo);
+        return getFromRepo("Akarin-project/Akarin", "ver/1.13", verInfo);
     }
     
     /**
@@ -37,7 +37,7 @@ public abstract class MixinVersionCommand {
     @Overwrite
     private static int getFromJenkins(int currentVer) {
         String[] parts = Bukkit.getVersion().substring("git-Akarin-".length()).split("[-\\s]");
-        return getFromRepo("Akarin-project/Akarin", parts[0]);
+        return getFromRepo("Akarin-project/Akarin","ver/1.13", parts[0]);
     }
     
     @Shadow private boolean hasVersion;
@@ -82,7 +82,7 @@ public abstract class MixinVersionCommand {
             }
         }
         if (!hasVersion) {
-            obtainVersion(sender);
+            obtainVersionAsync(sender);
             if (AkarinGlobalConfig.legacyVersioningCompat) currentSender = sender;
         }
     }
@@ -90,7 +90,7 @@ public abstract class MixinVersionCommand {
     @Overwrite
     private void obtainVersion() {
         if (AkarinGlobalConfig.legacyVersioningCompat) {
-            obtainVersion(currentSender);
+            obtainVersionAsync(currentSender);
             currentSender = null; // try release
         } else {
             Akari.logger.warn("A legacy version lookup was caught, legacy-versioning-compat enabled forcely!");
@@ -99,7 +99,7 @@ public abstract class MixinVersionCommand {
         }
     }
     
-    private void obtainVersion(CommandSender sender) {
+    private void obtainVersionAsync(CommandSender sender) {
         // We post all things because a custom version is rare (expiring is not rare),
         // and we'd better post this task as early as we can, since it's a will (horrible destiny).
         MCUtil.scheduleAsyncTask(() -> {

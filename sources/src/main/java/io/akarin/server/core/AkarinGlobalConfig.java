@@ -185,16 +185,6 @@ public class AkarinGlobalConfig {
         keepAliveTimeout = getSeconds(getString("core.keep-alive-response-timeout", "30s")) * 1000;
     }
     
-    public static int asyncLightingThreads;
-    private static void asyncLightingThreads() {
-        asyncLightingThreads = getInt("core.async-lighting.executor-threads", 4);
-    }
-    
-    public static boolean asyncLightingWorkStealing;
-    private static void asyncLightingWorkStealing() {
-        asyncLightingWorkStealing = getBoolean("core.async-lighting.use-work-stealing", false);
-    }
-    
     public static boolean throwOnAsyncCaught;
     private static void throwOnAsyncCaught() {
         throwOnAsyncCaught = getBoolean("core.thread-safe.async-catcher.throw-on-caught", true);
@@ -208,56 +198,6 @@ public class AkarinGlobalConfig {
     public static boolean noResponseDoGC;
     private static void noResponseDoGC() {
         noResponseDoGC = getBoolean("alternative.gc-before-stuck-restart", true);
-    }
-    
-    public static String messageKick;
-    private static void messageKick() {
-        messageKick = getString("messages.disconnect.kick-player", "Kicked by an operator.");
-    }
-    
-    public static String messageBan;
-    private static void messageBan() {
-        messageBan = getString("messages.disconnect.ban-player-name", "You are banned from this server! %s %s");
-    }
-    
-    public static String messageBanReason;
-    private static void messageBanReason() {
-        messageBanReason = getString("messages.disconnect.ban-reason", "\nReason: ");
-    }
-    
-    public static String messageBanExpires;
-    private static void messageBanExpires() {
-        messageBanExpires = getString("messages.disconnect.ban-expires", "\nYour ban will be removed on ");
-    }
-    
-    public static String messageBanIp;
-    private static void messageBanIp() {
-        messageBanIp = getString("messages.disconnect.ban-player-ip", "Your IP address is banned from this server! %s %s");
-    }
-    
-    public static String messageDupLogin;
-    private static void messageDupLogin() {
-        messageDupLogin = getString("messages.disconnect.kick-player-duplicate-login", "You logged in from another location");
-    }
-    
-    public static String messageJoin;
-    private static void messageJoin() {
-        messageJoin = getString("messages.connect.player-join-server", "§e%s joined the game");
-    }
-    
-    public static String messageJoinRenamed;
-    private static void messageJoinRenamed() {
-        messageJoinRenamed = getString("messages.connect.renamed-player-join-server", "§e%s (formerly known as %s) joined the game");
-    }
-    
-    public static String messageKickKeepAlive;
-    private static void messagekickKeepAlive() {
-        messageKickKeepAlive = getString("messages.disconnect.kick-player-timeout-keep-alive", "Timed out");
-    }
-    
-    public static String messagePlayerQuit;
-    private static void messagePlayerQuit() {
-        messagePlayerQuit = getString("messages.disconnect.player-quit-server", "§e%s left the game");
     }
     
     public static String serverBrandName;
@@ -293,5 +233,10 @@ public class AkarinGlobalConfig {
     public static boolean forceHardcoreDifficulty;
     private static void forceHardcoreDifficulty() {
         forceHardcoreDifficulty = getBoolean("alternative.force-difficulty-on-hardcore", true);
+    }
+    
+    public static int fileIOThreads;
+    private static void fileIOThreads() {
+        fileIOThreads = getInt("core.chunk-save-threads", 2);
     }
 }

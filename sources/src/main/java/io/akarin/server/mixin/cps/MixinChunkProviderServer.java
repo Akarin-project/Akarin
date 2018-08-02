@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.ChunkProviderServer;
+import net.minecraft.server.ChunkTaskScheduler;
 import net.minecraft.server.IChunkLoader;
 import net.minecraft.server.WorldServer;
 
@@ -20,9 +21,10 @@ import net.minecraft.server.WorldServer;
 public abstract class MixinChunkProviderServer {
     @Shadow @Final public WorldServer world;
     @Shadow public Long2ObjectOpenHashMap<Chunk> chunks;
+    @Shadow(aliases = "f") @Final private ChunkTaskScheduler scheduler;
     
     public void unload(Chunk chunk) {
-        if (this.world.worldProvider.c(chunk.locX, chunk.locZ)) {
+        if (this.world.worldProvider.a(chunk.locX, chunk.locZ)) {
             // Akarin - avoid using the queue and simply check the unloaded flag during unloads
             // this.unloadQueue.add(Long.valueOf(ChunkCoordIntPair.a(chunk.locX, chunk.locZ)));
             chunk.setShouldUnload(true);
@@ -40,6 +42,7 @@ public abstract class MixinChunkProviderServer {
             long unloadAfter = world.paperConfig.delayChunkUnloadsBy;
             SlackActivityAccountant activityAccountant = world.getMinecraftServer().slackActivityAccountant;
             activityAccountant.startActivity(0.5);
+            
             ObjectIterator<Entry<Chunk>> it = chunks.long2ObjectEntrySet().fastIterator();
             int remainingChunks = chunks.size();
             int targetSize = Math.min(remainingChunks - 100,  (int) (remainingChunks * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
@@ -47,26 +50,24 @@ public abstract class MixinChunkProviderServer {
             while (it.hasNext()) {
                 Entry<Chunk> entry = it.next();
                 Chunk chunk = entry.getValue();
-                if (chunk == null) continue;
                 
-                if (chunk.isUnloading()) {
+                if (chunk != null && chunk.isUnloading()) {
                     if (chunk.scheduledForUnload != null) {
-                        if (now - chunk.scheduledForUnload > unloadAfter) {
-                            chunk.scheduledForUnload = null;
-                        } else continue;
+                        if (now - chunk.scheduledForUnload <= unloadAfter) continue;
                     }
                     
-                    if (!unloadChunk(chunk, true)) { // Event cancelled
-                        // If a plugin cancelled it, we shouldn't trying unload it for a while
-                        chunk.setShouldUnload(false);
-                        continue;
+                    if (unloadChunk(chunk, true)) {
+                        it.remove();
                     }
+                    chunk.setShouldUnload(false);
+                    chunk.scheduledForUnload = null;
                     
-                    it.remove();
-                    if (--remainingChunks <= targetSize || activityAccountant.activityTimeIsExhausted()) break; // more slack since the target size not work as intended
+                    if (--remainingChunks <= targetSize && activityAccountant.activityTimeIsExhausted()) break;
                 }
             }
             activityAccountant.endActivity();
+            
+            this.scheduler.a();
             this.chunkLoader.b(); // OBFHELPER: chunkTick
         }
         return false;
@@ -74,7 +75,7 @@ public abstract class MixinChunkProviderServer {
     
     @Redirect(method = "unloadChunk", at = @At(
             value = "INVOKE",
-            target = "it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.remove(J)Ljava/lang/Object;"
+            target = "it/unimi/dsi/fastutil/longs/Long2ObjectMap.remove(J)Ljava/lang/Object;"
     ))
     private Object remove(Long2ObjectOpenHashMap<Chunk> chunks, long chunkHash) {
         return null;

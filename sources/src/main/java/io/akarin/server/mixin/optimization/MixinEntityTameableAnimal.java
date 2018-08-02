@@ -24,6 +24,7 @@
  */
 package io.akarin.server.mixin.optimization;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -33,37 +34,36 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.google.common.base.Optional;
-
 import net.minecraft.server.DataWatcherObject;
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityTameableAnimal;
+import net.minecraft.server.EntityTypes;
 import net.minecraft.server.World;
 
 @Mixin(value = EntityTameableAnimal.class, remap = false)
 public abstract class MixinEntityTameableAnimal extends Entity {
-    @Shadow @Final protected static DataWatcherObject<Optional<UUID>> by;
+    @Shadow @Final protected static DataWatcherObject<Optional<UUID>> bD;
     
     @Nullable private Optional<UUID> cachedOwnerId;
     
     @Nullable
     @Overwrite
     public UUID getOwnerUUID() {
-        if (cachedOwnerId == null) cachedOwnerId = datawatcher.get(by);
-        return cachedOwnerId.orNull();
+        if (cachedOwnerId == null) cachedOwnerId = datawatcher.get(bD);
+        return cachedOwnerId.orElse(null);
     }
     
     @Overwrite
     public void setOwnerUUID(@Nullable UUID uuid) {
-        cachedOwnerId = Optional.fromNullable(uuid);
-        datawatcher.set(by, cachedOwnerId);
+        cachedOwnerId = Optional.ofNullable(uuid);
+        datawatcher.set(bD, cachedOwnerId);
     }
     
     /**
      * Extends from superclass
      * @param world
      */
-    public MixinEntityTameableAnimal(World world) {
-        super(world);
+    public MixinEntityTameableAnimal(EntityTypes<?> entitytypes, World world) {
+        super(entitytypes, world);
     }
 }

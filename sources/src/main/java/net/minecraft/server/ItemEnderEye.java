@@ -8,37 +8,40 @@ import io.akarin.server.core.AkarinGlobalConfig;
  */
 public class ItemEnderEye extends Item {
 
-    public ItemEnderEye() {
-        this.b(CreativeModeTab.f);
+    public ItemEnderEye(Item.Info item_info) {
+        super(item_info);
     }
 
-    @Override
-    public EnumInteractionResult a(EntityHuman entityhuman, World world, BlockPosition blockposition, EnumHand enumhand, EnumDirection enumdirection, float f, float f1, float f2) {
+    public EnumInteractionResult a(ItemActionContext itemactioncontext) {
+        World world = itemactioncontext.getWorld();
+        BlockPosition blockposition = itemactioncontext.getClickPosition();
         IBlockData iblockdata = world.getType(blockposition);
-        ItemStack itemstack = entityhuman.b(enumhand);
 
-        if (entityhuman.a(blockposition.shift(enumdirection), enumdirection, itemstack) && iblockdata.getBlock() == Blocks.END_PORTAL_FRAME && !iblockdata.get(BlockEnderPortalFrame.EYE).booleanValue()) {
+        if (iblockdata.getBlock() == Blocks.END_PORTAL_FRAME && !((Boolean) iblockdata.get(BlockEnderPortalFrame.EYE)).booleanValue()) {
             if (world.isClientSide) {
                 return EnumInteractionResult.SUCCESS;
             } else {
-                world.setTypeAndData(blockposition, iblockdata.set(BlockEnderPortalFrame.EYE, Boolean.valueOf(true)), 2);
+                IBlockData iblockdata1 = (IBlockData) iblockdata.set(BlockEnderPortalFrame.EYE, Boolean.valueOf(true));
+
+                Block.a(iblockdata, iblockdata1, (GeneratorAccess) world, blockposition);
+                world.setTypeAndData(blockposition, iblockdata1, 2);
                 world.updateAdjacentComparators(blockposition, Blocks.END_PORTAL_FRAME);
-                itemstack.subtract(1);
+                itemactioncontext.getItemStack().subtract(1);
 
                 for (int i = 0; i < 16; ++i) {
-                    double d0 = blockposition.getX() + (5.0F + ItemEnderEye.j.nextFloat() * 6.0F) / 16.0F;
-                    double d1 = blockposition.getY() + 0.8125F;
-                    double d2 = blockposition.getZ() + (5.0F + ItemEnderEye.j.nextFloat() * 6.0F) / 16.0F;
+                    double d0 = (double) ((float) blockposition.getX() + (5.0F + ItemEnderEye.k.nextFloat() * 6.0F) / 16.0F);
+                    double d1 = (double) ((float) blockposition.getY() + 0.8125F);
+                    double d2 = (double) ((float) blockposition.getZ() + (5.0F + ItemEnderEye.k.nextFloat() * 6.0F) / 16.0F);
                     double d3 = 0.0D;
                     double d4 = 0.0D;
                     double d5 = 0.0D;
 
-                    world.addParticle(EnumParticle.SMOKE_NORMAL, d0, d1, d2, 0.0D, 0.0D, 0.0D, new int[0]);
+                    world.addParticle(Particles.M, d0, d1, d2, 0.0D, 0.0D, 0.0D);
                 }
 
-                world.a((EntityHuman) null, blockposition, SoundEffects.bp, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                world.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_END_PORTAL_FRAME_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 if (AkarinGlobalConfig.disableEndPortalCreate) return EnumInteractionResult.SUCCESS; // Akarin
-                ShapeDetector.ShapeDetectorCollection shapedetector_shapedetectorcollection = BlockEnderPortalFrame.e().a(world, blockposition);
+                ShapeDetector.ShapeDetectorCollection shapedetector_shapedetectorcollection = BlockEnderPortalFrame.d().a(world, blockposition);
 
                 if (shapedetector_shapedetectorcollection != null) {
                     BlockPosition blockposition1 = shapedetector_shapedetectorcollection.a().a(-3, 0, -3);
@@ -55,11 +58,10 @@ public class ItemEnderEye extends Item {
                 return EnumInteractionResult.SUCCESS;
             }
         } else {
-            return EnumInteractionResult.FAIL;
+            return EnumInteractionResult.PASS;
         }
     }
 
-    @Override
     public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
         ItemStack itemstack = entityhuman.b(enumhand);
         MovingObjectPosition movingobjectposition = this.a(world, entityhuman, false);
@@ -69,24 +71,24 @@ public class ItemEnderEye extends Item {
         } else {
             entityhuman.c(enumhand);
             if (!world.isClientSide) {
-                BlockPosition blockposition = ((WorldServer) world).getChunkProviderServer().a(world, "Stronghold", new BlockPosition(entityhuman), false);
+                BlockPosition blockposition = ((WorldServer) world).getChunkProviderServer().a(world, "Stronghold", new BlockPosition(entityhuman), 100);
 
                 if (blockposition != null) {
-                    EntityEnderSignal entityendersignal = new EntityEnderSignal(world, entityhuman.locX, entityhuman.locY + entityhuman.length / 2.0F, entityhuman.locZ);
+                    EntityEnderSignal entityendersignal = new EntityEnderSignal(world, entityhuman.locX, entityhuman.locY + (double) (entityhuman.length / 2.0F), entityhuman.locZ);
 
                     entityendersignal.a(blockposition);
                     world.addEntity(entityendersignal);
                     if (entityhuman instanceof EntityPlayer) {
-                        CriterionTriggers.l.a((EntityPlayer) entityhuman, blockposition);
+                        CriterionTriggers.m.a((EntityPlayer) entityhuman, blockposition);
                     }
 
-                    world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.bc, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderEye.j.nextFloat() * 0.4F + 0.8F));
+                    world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ENDER_EYE_LAUNCH, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderEye.k.nextFloat() * 0.4F + 0.8F));
                     world.a((EntityHuman) null, 1003, new BlockPosition(entityhuman), 0);
                     if (!entityhuman.abilities.canInstantlyBuild) {
                         itemstack.subtract(1);
                     }
 
-                    entityhuman.b(StatisticList.b(this));
+                    entityhuman.b(StatisticList.ITEM_USED.b(this));
                     return new InteractionResultWrapper(EnumInteractionResult.SUCCESS, itemstack);
                 }
             }

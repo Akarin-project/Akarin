@@ -41,6 +41,7 @@ public abstract class Bootstrap {
         Akari.logger.warn("Visit our website for latest information https://akarin.io/");
     }
     
+    /*
     @Redirect(method = "main", at = @At(
             value = "INVOKE_STRING",
             target = "Ljava/io/PrintStream;println(Ljava/lang/String;)V",
@@ -49,4 +50,5 @@ public abstract class Bootstrap {
     private static void notifyLoading(PrintStream stream, String text) {
         Akari.logger.info("Loading libraries as parallel capable..");
     }
+    */
 }

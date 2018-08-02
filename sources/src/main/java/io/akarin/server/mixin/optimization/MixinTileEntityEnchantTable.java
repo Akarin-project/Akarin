@@ -7,5 +7,5 @@ import net.minecraft.server.TileEntityEnchantTable;
 @Mixin(value = TileEntityEnchantTable.class, remap = false)
 public abstract class MixinTileEntityEnchantTable {
     @Overwrite
-    public void e() {} // No tickable
+    public void Y_() {} // No tickable
 }

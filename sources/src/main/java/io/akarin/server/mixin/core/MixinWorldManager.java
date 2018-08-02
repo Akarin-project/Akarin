@@ -16,9 +16,9 @@ public abstract class MixinWorldManager {
     
     @Overwrite
     public void a(Entity entity) {
-        this.world.getTracker().entriesLock.lock(); // Akarin
+        this.world.getTracker().entriesLock.writeLock().lock(); // Akarin
         this.world.getTracker().track(entity);
-        this.world.getTracker().entriesLock.unlock(); // Akarin
+        this.world.getTracker().entriesLock.writeLock().unlock(); // Akarin
         
         if (entity instanceof EntityPlayer) {
             this.world.worldProvider.a((EntityPlayer) entity);

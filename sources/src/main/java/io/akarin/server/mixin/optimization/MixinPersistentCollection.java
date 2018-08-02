@@ -18,13 +18,13 @@ import net.minecraft.server.PersistentCollection;
 
 @Mixin(value = PersistentCollection.class, remap = false)
 public abstract class MixinPersistentCollection {
-    @Shadow(aliases = "b") @Final private IDataManager dataManager;
+    @Shadow(aliases = "c") @Final private IDataManager dataManager;
     
     @Overwrite
     private void a(PersistentBase persistentbase) {
         if (this.dataManager == null) return;
         
-        File file = this.dataManager.getDataFile(persistentbase.id);
+        File file = this.dataManager.getDataFile(persistentbase.getId());
         if (file == null) return;
         
         NBTTagCompound nbttagcompound = new NBTTagCompound();
@@ -33,6 +33,7 @@ public abstract class MixinPersistentCollection {
         // Akarin start
         MCUtil.scheduleAsyncTask(() -> {
             try {
+                nbttagcompound.setInt("DataVersion", 1519);
                 FileOutputStream fileoutputstream = new FileOutputStream(file);
                 
                 NBTCompressedStreamTools.a(nbttagcompound, fileoutputstream);

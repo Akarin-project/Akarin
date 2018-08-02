@@ -28,8 +28,48 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.md_5.bungee.api.chat.BaseComponent;
 
-import net.minecraft.server.*;
-import net.minecraft.server.PacketPlayOutTitle.EnumTitleAction;
+import net.minecraft.server.AdvancementDataPlayer;
+import net.minecraft.server.AdvancementProgress;
+import net.minecraft.server.AttributeInstance;
+import net.minecraft.server.AttributeMapServer;
+import net.minecraft.server.AttributeModifiable;
+import net.minecraft.server.AttributeRanged;
+import net.minecraft.server.BlockPosition;
+import net.minecraft.server.ChatComponentText;
+import net.minecraft.server.Container;
+import net.minecraft.server.Entity;
+import net.minecraft.server.EntityHuman;
+import net.minecraft.server.EntityLiving;
+import net.minecraft.server.EntityPlayer;
+import net.minecraft.server.EntityTracker;
+import net.minecraft.server.EntityTrackerEntry;
+import net.minecraft.server.EnumChatFormat;
+import net.minecraft.server.EnumGamemode;
+import net.minecraft.server.IChatBaseComponent;
+import net.minecraft.server.MapIcon;
+import net.minecraft.server.MinecraftKey;
+import net.minecraft.server.NBTTagCompound;
+import net.minecraft.server.PacketDataSerializer;
+import net.minecraft.server.PacketPlayOutBlockChange;
+import net.minecraft.server.PacketPlayOutChat;
+import net.minecraft.server.PacketPlayOutCustomPayload;
+import net.minecraft.server.PacketPlayOutCustomSoundEffect;
+import net.minecraft.server.PacketPlayOutMap;
+import net.minecraft.server.PacketPlayOutNamedSoundEffect;
+import net.minecraft.server.PacketPlayOutPlayerInfo;
+import net.minecraft.server.PacketPlayOutPlayerListHeaderFooter;
+import net.minecraft.server.PacketPlayOutSpawnPosition;
+import net.minecraft.server.PacketPlayOutStopSound;
+import net.minecraft.server.PacketPlayOutTitle;
+import net.minecraft.server.PacketPlayOutUpdateAttributes;
+import net.minecraft.server.PacketPlayOutUpdateHealth;
+import net.minecraft.server.PacketPlayOutWorldEvent;
+import net.minecraft.server.PacketPlayOutWorldParticles;
+import net.minecraft.server.PlayerConnection;
+import net.minecraft.server.TileEntitySign;
+import net.minecraft.server.Vec3D;
+import net.minecraft.server.WhiteListEntry;
+import net.minecraft.server.WorldServer;
 
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.NotImplementedException;
@@ -40,12 +80,14 @@ import org.bukkit.Statistic;
 import org.bukkit.Material;
 import org.bukkit.Statistic.Type;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.conversations.Conversation;
 import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.conversations.ManuallyAbandonedConversationCanceller;
-import org.bukkit.craftbukkit.*;
+import org.bukkit.craftbukkit.CraftParticle;
 import org.bukkit.craftbukkit.block.CraftSign;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.conversations.ConversationTracker;
 import org.bukkit.craftbukkit.CraftEffect;
 import org.bukkit.craftbukkit.CraftOfflinePlayer;
@@ -78,6 +120,7 @@ import javax.annotation.Nullable;
 /**
  * Akarin Changes Note
  * 1) Make hidden players thread-safe (safety issue)
+ * 2) Add locks for entry operation (safety issue)
  */
 @DelegateDeserialization(CraftOfflinePlayer.class)
 public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -126,12 +169,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         perm.recalculatePermissions();
     }
 
-    @Override
     public boolean isOnline() {
         return server.getPlayer(getUniqueId()) != null;
     }
 
-    @Override
     public InetSocketAddress getAddress() {
         if (getHandle().playerConnection == null) return null;
 
@@ -193,7 +234,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void sendActionBar(String message) {
         if (getHandle().playerConnection == null || message == null || message.isEmpty()) return;
-        getHandle().playerConnection.sendPacket(new PacketPlayOutChat(new ChatComponentText(message), ChatMessageType.GAME_INFO));
+        getHandle().playerConnection.sendPacket(new PacketPlayOutChat(new net.minecraft.server.ChatComponentText(message), net.minecraft.server.ChatMessageType.GAME_INFO));
     }
 
     @Override
@@ -300,12 +341,53 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (name == null) {
             name = getName();
         }
-        getHandle().listName = name.equals(getName()) ? null : CraftChatMessage.fromString(name)[0];
-        for (EntityPlayer player : server.getHandle().players) {
+        getHandle().listName = name.equals(getName()) ? null : CraftChatMessage.fromStringOrNull(name);
+        for (EntityPlayer player : (List<EntityPlayer>)server.getHandle().players) {
             if (player.getBukkitEntity().canSee(this)) {
                 player.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_DISPLAY_NAME, getHandle()));
             }
         }
+    }
+
+    private IChatBaseComponent playerListHeader;
+    private IChatBaseComponent playerListFooter;
+
+    @Override
+    public String getPlayerListHeader() {
+        return (playerListHeader == null) ? null : CraftChatMessage.fromComponent(playerListHeader);
+    }
+
+    @Override
+    public String getPlayerListFooter() {
+        return (playerListFooter == null) ? null : CraftChatMessage.fromComponent(playerListFooter);
+    }
+
+    @Override
+    public void setPlayerListHeader(String header) {
+        this.playerListHeader = CraftChatMessage.fromStringOrNull(header);
+        updatePlayerListHeaderFooter();
+    }
+
+    @Override
+    public void setPlayerListFooter(String footer) {
+        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer);
+        updatePlayerListHeaderFooter();
+    }
+
+    @Override
+    public void setPlayerListHeaderFooter(String header, String footer) {
+        this.playerListHeader = CraftChatMessage.fromStringOrNull(header);
+        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer);
+        updatePlayerListHeaderFooter();
+    }
+
+    private void updatePlayerListHeaderFooter() {
+        if (getHandle().playerConnection == null) return;
+
+        PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
+        packet.a = (this.playerListHeader == null) ? new ChatComponentText("") : this.playerListHeader;
+        packet.b = (this.playerListFooter == null) ? new ChatComponentText("") : this.playerListFooter;
+        getHandle().playerConnection.sendPacket(packet);
     }
 
     @Override
@@ -400,7 +482,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
 
         float f = (float) Math.pow(2.0D, (note - 12.0D) / 12.0D);
-        getHandle().playerConnection.sendPacket(new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect("block.note." + instrumentName), net.minecraft.server.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f));
+        getHandle().playerConnection.sendPacket(new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect("block.note_block." + instrumentName), net.minecraft.server.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f));
     }
 
     @Override
@@ -441,7 +523,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
                 break;
         }
         float f = (float) Math.pow(2.0D, (note.getId() - 12.0D) / 12.0D);
-        getHandle().playerConnection.sendPacket(new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect("block.note." + instrumentName), net.minecraft.server.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f));
+        getHandle().playerConnection.sendPacket(new PacketPlayOutNamedSoundEffect(CraftSound.getSoundEffect("block.note_block." + instrumentName), net.minecraft.server.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, f));
     }
 
     @Override
@@ -466,7 +548,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void playSound(Location loc, String sound, org.bukkit.SoundCategory category, float volume, float pitch) {
         if (loc == null || sound == null || category == null || getHandle().playerConnection == null) return;
 
-        PacketPlayOutCustomSoundEffect packet = new PacketPlayOutCustomSoundEffect(sound, net.minecraft.server.SoundCategory.valueOf(category.name()), loc.getX(), loc.getY(), loc.getZ(), volume, pitch);
+        PacketPlayOutCustomSoundEffect packet = new PacketPlayOutCustomSoundEffect(new MinecraftKey(sound), net.minecraft.server.SoundCategory.valueOf(category.name()), new Vec3D(loc.getX(), loc.getY(), loc.getZ()), volume, pitch);
         getHandle().playerConnection.sendPacket(packet);
     }
 
@@ -488,18 +570,17 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void stopSound(String sound, org.bukkit.SoundCategory category) {
         if (getHandle().playerConnection == null) return;
-        PacketDataSerializer packetdataserializer = new PacketDataSerializer(Unpooled.buffer());
 
-        packetdataserializer.a(category == null ? "" : net.minecraft.server.SoundCategory.valueOf(category.name()).a());
-        packetdataserializer.a(sound);
-        getHandle().playerConnection.sendPacket(new PacketPlayOutCustomPayload("MC|StopSound", packetdataserializer));
+        getHandle().playerConnection.sendPacket(new PacketPlayOutStopSound(new MinecraftKey(sound), category == null ? net.minecraft.server.SoundCategory.MASTER : net.minecraft.server.SoundCategory.valueOf(category.name())));
     }
 
     @Override
     public void playEffect(Location loc, Effect effect, int data) {
         if (getHandle().playerConnection == null) return;
 
-        spigot().playEffect(loc, effect, data, 0, 0, 0, 0, 1, 1, 64); // Spigot
+        int packetData = effect.getId();
+        PacketPlayOutWorldEvent packet = new PacketPlayOutWorldEvent(packetData, new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), data, false);
+        getHandle().playerConnection.sendPacket(packet);
     }
 
     @Override
@@ -516,16 +597,21 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void sendBlockChange(Location loc, Material material, byte data) {
-        sendBlockChange(loc, material.getId(), data);
-    }
-
-    @Override
-    public void sendBlockChange(Location loc, int material, byte data) {
         if (getHandle().playerConnection == null) return;
 
         PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(((CraftWorld) loc.getWorld()).getHandle(), new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
 
-        packet.block = CraftMagicNumbers.getBlock(material).fromLegacyData(data);
+        packet.block = CraftMagicNumbers.getBlock(material, data);
+        getHandle().playerConnection.sendPacket(packet);
+    }
+
+    @Override
+    public void sendBlockChange(Location loc, BlockData block) {
+        if (getHandle().playerConnection == null) return;
+
+        PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(((CraftWorld) loc.getWorld()).getHandle(), new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
+
+        packet.block = ((CraftBlockData) block).getState();
         getHandle().playerConnection.sendPacket(packet);
     }
 
@@ -594,7 +680,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         Collection<MapIcon> icons = new ArrayList<MapIcon>();
         for (MapCursor cursor : data.cursors) {
             if (cursor.isVisible()) {
-                icons.add(new MapIcon(MapIcon.Type.a(cursor.getRawType()), cursor.getX(), cursor.getY(), cursor.getDirection()));
+                icons.add(new MapIcon(MapIcon.Type.a(cursor.getRawType()), cursor.getX(), cursor.getY(), cursor.getDirection(), CraftChatMessage.fromStringOrNull(cursor.getCaption())));
             }
         }
 
@@ -604,6 +690,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public boolean teleport(Location location, PlayerTeleportEvent.TeleportCause cause) {
+        Preconditions.checkArgument(location != null, "location");
+        Preconditions.checkArgument(location.getWorld() != null, "location.world");
+        location.checkFinite();
+
         EntityPlayer entity = getHandle();
 
         if (getHealth() == 0 || entity.dead) {
@@ -908,9 +998,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void setWhitelisted(boolean value) {
         if (value) {
-            server.getHandle().addWhitelist(getProfile());
+            server.getHandle().getWhitelist().add(new WhiteListEntry(getProfile()));
         } else {
-            server.getHandle().removeWhitelist(getProfile());
+            server.getHandle().getWhitelist().remove(getProfile());
         }
     }
 
@@ -935,10 +1025,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public int applyMending(int amount) {
         EntityPlayer handle = getHandle();
         // Logic copied from EntityExperienceOrb and remapped to unobfuscated methods/properties
-        ItemStack itemstack = EnchantmentManager.getRandomEquippedItemWithEnchant(Enchantments.MENDING, handle);
-        if (!itemstack.isEmpty() && itemstack.hasDamage()) {
+        net.minecraft.server.ItemStack itemstack = net.minecraft.server.EnchantmentManager.getRandomEquippedItemWithEnchant(net.minecraft.server.Enchantments.MENDING, handle);
+        if (!itemstack.isEmpty() && itemstack.getItem().usesDurability()) {
 
-            EntityExperienceOrb orb = new EntityExperienceOrb(handle.world);
+            net.minecraft.server.EntityExperienceOrb orb = new net.minecraft.server.EntityExperienceOrb(handle.world);
             orb.value = amount;
             orb.spawnReason = org.bukkit.entity.ExperienceOrb.SpawnReason.CUSTOM;
             orb.locX = handle.locX;
@@ -1107,10 +1197,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         EntityTracker tracker = ((WorldServer) entity.world).tracker;
         // Paper end
 
+        tracker.entriesLock.updateLock().lock(); // Akarin
         EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
         if (entry != null) {
+            tracker.entriesLock.writeLock().lock(); // Akarin
             entry.clear(getHandle());
+            tracker.entriesLock.writeLock().unlock(); // Akarin
         }
+        tracker.entriesLock.updateLock().unlock(); // Akarin
 
         // Remove the hidden player from this player user list, if they're on it
         if (other.sentListPacket) {
@@ -1157,12 +1251,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, other));
 
+        tracker.entriesLock.updateLock().lock(); // Akarin
         EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
         if (entry != null && !entry.trackedPlayers.contains(getHandle())) {
-            tracker.entriesLock.lock(); // Akarin
+            tracker.entriesLock.writeLock().lock(); // Akarin
             entry.updatePlayer(getHandle());
-            tracker.entriesLock.unlock(); // Akarin
+            tracker.entriesLock.writeLock().unlock(); // Akarin
         }
+        tracker.entriesLock.updateLock().unlock(); // Akarin
     }
     // Paper start
     private void reregisterPlayer(EntityPlayer player) {
@@ -1171,7 +1267,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             registerPlayer(player);
         }
     }
-    @Override
     public void setPlayerProfile(PlayerProfile profile) {
         EntityPlayer self = getHandle();
         self.setProfile(CraftPlayerProfile.asAuthlibCopy(profile));
@@ -1181,7 +1276,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
         refreshPlayer();
     }
-    @Override
     public PlayerProfile getPlayerProfile() {
         return new CraftPlayerProfile(this).clone();
     }
@@ -1195,10 +1289,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         reregisterPlayer(handle);
 
         //Respawn the player then update their position and selected slot
-        connection.sendPacket(new PacketPlayOutRespawn(handle.dimension, handle.world.getDifficulty(), handle.world.getWorldData().getType(), handle.playerInteractManager.getGameMode()));
+        connection.sendPacket(new net.minecraft.server.PacketPlayOutRespawn(handle.dimension, handle.world.getDifficulty(), handle.world.getWorldData().getType(), handle.playerInteractManager.getGameMode()));
         handle.updateAbilities();
-        connection.sendPacket(new PacketPlayOutPosition(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch(), new HashSet<>(), 0));
-        MinecraftServer.getServer().getPlayerList().updateClient(handle);
+        connection.sendPacket(new net.minecraft.server.PacketPlayOutPosition(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch(), new HashSet<>(), 0));
+        net.minecraft.server.MinecraftServer.getServer().getPlayerList().updateClient(handle);
 
         if (this.isOp()) {
             this.setOp(false);
@@ -1340,7 +1434,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().playerConnection == null) return;
 
         if (channels.contains(channel)) {
-            PacketPlayOutCustomPayload packet = new PacketPlayOutCustomPayload(channel, new PacketDataSerializer(Unpooled.wrappedBuffer(message)));
+            channel = StandardMessenger.validateAndCorrectChannel(channel);
+            PacketPlayOutCustomPayload packet = new PacketPlayOutCustomPayload(new MinecraftKey(channel), new PacketDataSerializer(Unpooled.wrappedBuffer(message)));
             getHandle().playerConnection.sendPacket(packet);
         }
     }
@@ -1367,13 +1462,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void addChannel(String channel) {
-       com.google.common.base.Preconditions.checkState( DISABLE_CHANNEL_LIMIT || channels.size() < 128, "Too many channels registered" ); // Spigot // Paper - flag to disable channel limit
+        com.google.common.base.Preconditions.checkState( DISABLE_CHANNEL_LIMIT || channels.size() < 128, "Too many channels registered" ); // Spigot // Paper - flag to disable channel limit
+        channel = StandardMessenger.validateAndCorrectChannel(channel);
         if (channels.add(channel)) {
             server.getPluginManager().callEvent(new PlayerRegisterChannelEvent(this, channel));
         }
     }
 
     public void removeChannel(String channel) {
+        channel = StandardMessenger.validateAndCorrectChannel(channel);
         if (channels.remove(channel)) {
             server.getPluginManager().callEvent(new PlayerUnregisterChannelEvent(this, channel));
         }
@@ -1400,7 +1497,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
                 }
             }
 
-            getHandle().playerConnection.sendPacket(new PacketPlayOutCustomPayload("REGISTER", new PacketDataSerializer(Unpooled.wrappedBuffer(stream.toByteArray()))));
+            getHandle().playerConnection.sendPacket(new PacketPlayOutCustomPayload(new MinecraftKey("register"), new PacketDataSerializer(Unpooled.wrappedBuffer(stream.toByteArray()))));
         }
     }
 
@@ -1437,7 +1534,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
         // Paper start
         if (prop == Property.REPAIR_COST && container instanceof net.minecraft.server.ContainerAnvil) {
-            ((ContainerAnvil) container).levelCost = value;
+            ((net.minecraft.server.ContainerAnvil) container).levelCost = value;
         }
         // Paper end
         getHandle().setContainerData(container, prop.getId(), value);
@@ -1508,7 +1605,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public float getFlySpeed() {
-        return getHandle().abilities.flySpeed * 2f;
+        return (float) getHandle().abilities.flySpeed * 2f;
     }
 
     @Override
@@ -1610,7 +1707,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             getHandle().playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(getHandle().getId(), set));
             sendHealthUpdate();
         }
-        getHandle().getDataWatcher().set(EntityLiving.HEALTH, getScaledHealth());
+        getHandle().getDataWatcher().set(EntityLiving.HEALTH, (float) getScaledHealth());
 
         getHandle().maxHealthCache = getMaxHealth();
     }
@@ -1663,19 +1760,19 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         getHandle().playerConnection.sendPacket(times);
 
         if (title != null) {
-            PacketPlayOutTitle packetTitle = new PacketPlayOutTitle(EnumTitleAction.TITLE, CraftChatMessage.fromString(title)[0]);
+            PacketPlayOutTitle packetTitle = new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.TITLE, CraftChatMessage.fromStringOrNull(title));
             getHandle().playerConnection.sendPacket(packetTitle);
         }
 
         if (subtitle != null) {
-            PacketPlayOutTitle packetSubtitle = new PacketPlayOutTitle(EnumTitleAction.SUBTITLE, CraftChatMessage.fromString(subtitle)[0]);
+            PacketPlayOutTitle packetSubtitle = new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.SUBTITLE, CraftChatMessage.fromStringOrNull(subtitle));
             getHandle().playerConnection.sendPacket(packetSubtitle);
         }
     }
 
     @Override
     public void resetTitle() {
-        PacketPlayOutTitle packetReset = new PacketPlayOutTitle(EnumTitleAction.RESET, null);
+        PacketPlayOutTitle packetReset = new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.RESET, null);
         getHandle().playerConnection.sendPacket(packetReset);
     }
 
@@ -1739,7 +1836,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (data != null && !particle.getDataType().isInstance(data)) {
             throw new IllegalArgumentException("data should be " + particle.getDataType() + " got " + data.getClass());
         }
-        PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(CraftParticle.toNMS(particle), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count, CraftParticle.toData(particle, data));
+        PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(CraftParticle.toNMS(particle, data), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
         getHandle().playerConnection.sendPacket(packetplayoutworldparticles);
 
     }
@@ -1763,7 +1860,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         // Paper end
     }
 
-    @Override
+    // Paper start
     public void setAffectsSpawning(boolean affects) {
         this.getHandle().affectsSpawning = affects;
     }
@@ -1772,6 +1869,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public boolean getAffectsSpawning() {
         return this.getHandle().affectsSpawning;
     }
+    // Paper end
 
     @Override
     public int getViewDistance() {
@@ -1839,63 +1937,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
 
         @Override
-        public void playEffect( Location location, Effect effect, int id, int data, float offsetX, float offsetY, float offsetZ, float speed, int particleCount, int radius )
-        {
-            Validate.notNull( location, "Location cannot be null" );
-            Validate.notNull( effect, "Effect cannot be null" );
-            Validate.notNull( location.getWorld(), "World cannot be null" );
-            Packet packet;
-            if ( effect.getType() != Effect.Type.PARTICLE )
-            {
-                int packetData = effect.getId();
-                packet = new PacketPlayOutWorldEvent( packetData, new BlockPosition(location.getBlockX(), location.getBlockY(), location.getBlockZ() ), id, false );
-            } else
-            {
-                net.minecraft.server.EnumParticle particle = null;
-                int[] extra = null;
-                for ( net.minecraft.server.EnumParticle p : net.minecraft.server.EnumParticle.values() )
-                {
-                    if ( effect.getName().startsWith( p.b().replace("_", "") ) )
-                    {
-                        particle = p;
-                        if ( effect.getData() != null ) 
-                        {
-                            if ( effect.getData().equals( org.bukkit.Material.class ) )
-                            {
-                                extra = new int[]{ id };
-                            } else 
-                            {
-                                extra = new int[]{ (data << 12) | (id & 0xFFF) };
-                            }
-                        }
-                        break;
-                    }
-                }
-                if ( extra == null )
-                {
-                    extra = new int[0];
-                }
-                packet = new PacketPlayOutWorldParticles( particle, true, (float) location.getX(), (float) location.getY(), (float) location.getZ(), offsetX, offsetY, offsetZ, speed, particleCount, extra );
-            }
-            int distance;
-            radius *= radius;
-            if ( getHandle().playerConnection == null )
-            {
-                return;
-            }
-            if ( !location.getWorld().equals( getWorld() ) )
-            {
-                return;
-            }
-
-            distance = (int) getLocation().distanceSquared( location );
-            if ( distance <= radius )
-            {
-                getHandle().playerConnection.sendPacket( packet );
-            }
-        }
-
-        @Override
         public String getLocale()
         {
             return CraftPlayer.this.getLocale(); // Paper
@@ -1922,7 +1963,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         public void sendMessage(BaseComponent... components) {
            if ( getHandle().playerConnection == null ) return;
 
-            PacketPlayOutChat packet = new PacketPlayOutChat(null, ChatMessageType.CHAT);
+            PacketPlayOutChat packet = new PacketPlayOutChat(null, net.minecraft.server.ChatMessageType.CHAT);
             packet.components = components;
             getHandle().playerConnection.sendPacket(packet);
         }
@@ -1936,7 +1977,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         public void sendMessage(net.md_5.bungee.api.ChatMessageType position, BaseComponent... components) {
             if ( getHandle().playerConnection == null ) return;
 
-            PacketPlayOutChat packet = new PacketPlayOutChat(null, ChatMessageType.a((byte) position.ordinal()));
+            PacketPlayOutChat packet = new PacketPlayOutChat(null, net.minecraft.server.ChatMessageType.a((byte) position.ordinal()));
             // Action bar doesn't render colours, replace colours with legacy section symbols
             if (position == net.md_5.bungee.api.ChatMessageType.ACTION_BAR) {
                 components = new BaseComponent[]{new net.md_5.bungee.api.chat.TextComponent(BaseComponent.toLegacyText(components))};
@@ -1952,7 +1993,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
     };
 
-    @Override
     public Player.Spigot spigot()
     {
         return spigot;

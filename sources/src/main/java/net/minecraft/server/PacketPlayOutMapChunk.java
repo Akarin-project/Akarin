@@ -8,10 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-// Paper start
-import com.destroystokyo.paper.antixray.PacketPlayOutMapChunkInfo; // Anti-Xray
-// Paper end
-
 /**
  * Akarin Changes Note
  * 1) WrappedByteBuf -> ByteBuf (compatibility)
@@ -24,30 +20,17 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
     private ByteBuf d; // Akarin - byte[] -> ByteBuf
     private List<NBTTagCompound> e;
     private boolean f;
-    private volatile boolean ready = false; // Paper - Async-Anti-Xray - Ready flag for the network manager
 
-    // Paper start - Async-Anti-Xray - Set the ready flag to true
-    public PacketPlayOutMapChunk() {
-        this.ready = true;
-    }
-    // Paper end
+    public PacketPlayOutMapChunk() {}
 
     public PacketPlayOutMapChunk(Chunk chunk, int i) {
-        PacketPlayOutMapChunkInfo packetPlayOutMapChunkInfo = chunk.world.chunkPacketBlockController.getPacketPlayOutMapChunkInfo(this, chunk, i); // Paper - Anti-Xray - Add chunk packet info
         this.a = chunk.locX;
         this.b = chunk.locZ;
         this.f = i == '\uffff';
-        boolean flag = chunk.getWorld().worldProvider.m();
+        boolean flag = chunk.getWorld().worldProvider.g();
 
         this.d = allocateBuffer(this.a(chunk, flag, i)); // Akarin
-
-        // Paper start - Anti-Xray - Add chunk packet info
-        if (packetPlayOutMapChunkInfo != null) {
-            packetPlayOutMapChunkInfo.setData(this.d);
-        }
-        // Paper end
-
-        this.c = this.writeChunk(new PacketDataSerializer(this.d), chunk, flag, i, packetPlayOutMapChunkInfo); // Paper - Anti-Xray - Add chunk packet info // Akarin
+        this.c = this.a(new PacketDataSerializer(this.d), chunk, flag, i); // Akarin
         this.e = Lists.newArrayList();
         Iterator iterator = chunk.getTileEntities().entrySet().iterator();
 
@@ -57,25 +40,14 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
             TileEntity tileentity = (TileEntity) entry.getValue();
             int j = blockposition.getY() >> 4;
 
-            if (this.e() || (i & 1 << j) != 0) {
-                NBTTagCompound nbttagcompound = tileentity.d();
+            if (this.f() || (i & 1 << j) != 0) {
+                NBTTagCompound nbttagcompound = tileentity.aa_();
 
                 this.e.add(nbttagcompound);
             }
         }
 
-        chunk.world.chunkPacketBlockController.modifyBlocks(this, packetPlayOutMapChunkInfo); // Paper - Anti-Xray - Modify blocks
     }
-
-    // Paper start - Async-Anti-Xray - Getter and Setter for the ready flag
-    public boolean isReady() {
-        return this.ready;
-    }
-
-    public void setReady(boolean ready) {
-        this.ready = ready;
-    }
-    // Paper end
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
         this.a = packetdataserializer.readInt();
@@ -106,7 +78,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
         packetdataserializer.writeBoolean(this.f);
         packetdataserializer.d(this.c);
         packetdataserializer.d(this.d.array().length); // Akarin
-        packetdataserializer.writeBytes(this.d.array());
+        packetdataserializer.writeBytes(this.d);
         packetdataserializer.d(this.e.size());
         Iterator iterator = this.e.iterator();
 
@@ -122,33 +94,27 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
         packetlistenerplayout.a(this);
     }
 
-    private ByteBuf allocateBuffer(int expectedCapacity) { return g(expectedCapacity); } // Akarin - OBFHELPER
-    private ByteBuf g(int expectedCapacity) { // Akarin - added argument
+    private ByteBuf allocateBuffer(int expectedCapacity) { return h(expectedCapacity); } // Akarin - OBFHELPER
+    private ByteBuf h(int expectedCapacity) { // Akarin - added argument
         ByteBuf bytebuf = Unpooled.buffer(expectedCapacity); // Akarin
 
         bytebuf.writerIndex(0);
         return bytebuf;
     }
 
-    // Paper start - Anti-Xray - Support default method
-    public int writeChunk(PacketDataSerializer packetDataSerializer, Chunk chunk, boolean writeSkyLightArray, int chunkSectionSelector) { return this.a(packetDataSerializer, chunk, writeSkyLightArray, chunkSectionSelector); } // OBFHELPER
     public int a(PacketDataSerializer packetdataserializer, Chunk chunk, boolean flag, int i) {
-        return this.a(packetdataserializer, chunk, flag, i, null);
-    }
-    // Paper end
-
-    public int writeChunk(PacketDataSerializer packetDataSerializer, Chunk chunk, boolean writeSkyLightArray, int chunkSectionSelector, PacketPlayOutMapChunkInfo packetPlayOutMapChunkInfo) { return this.a(packetDataSerializer, chunk, writeSkyLightArray, chunkSectionSelector, packetPlayOutMapChunkInfo); } // Paper - Anti-Xray - OBFHELPER
-    public int a(PacketDataSerializer packetdataserializer, Chunk chunk, boolean flag, int i, PacketPlayOutMapChunkInfo packetPlayOutMapChunkInfo) { // Paper - Anti-Xray - Add chunk packet info
         int j = 0;
         ChunkSection[] achunksection = chunk.getSections();
         int k = 0;
 
-        for (int l = achunksection.length; k < l; ++k) {
+        int l;
+
+        for (l = achunksection.length; k < l; ++k) {
             ChunkSection chunksection = achunksection[k];
 
-            if (chunksection != Chunk.a && (!this.e() || !chunksection.a()) && (i & 1 << k) != 0) {
+            if (chunksection != Chunk.a && (!this.f() || !chunksection.a()) && (i & 1 << k) != 0) {
                 j |= 1 << k;
-                chunksection.getBlocks().writeBlocks(packetdataserializer, packetPlayOutMapChunkInfo, k); // Paper - Anti-Xray - Add chunk packet info
+                chunksection.getBlocks().b(packetdataserializer);
                 packetdataserializer.writeBytes(chunksection.getEmittedLightArray().asBytes());
                 if (flag) {
                     packetdataserializer.writeBytes(chunksection.getSkyLightArray().asBytes());
@@ -156,8 +122,12 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
             }
         }
 
-        if (this.e()) {
-            packetdataserializer.writeBytes(chunk.getBiomeIndex());
+        if (this.f()) {
+            BiomeBase[] abiomebase = chunk.getBiomeIndex();
+
+            for (l = 0; l < abiomebase.length; ++l) {
+                packetdataserializer.writeInt(BiomeBase.REGISTRY_ID.a((BiomeBase) abiomebase[l]));
+            }
         }
 
         return j;
@@ -171,7 +141,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
         for (int l = achunksection.length; k < l; ++k) {
             ChunkSection chunksection = achunksection[k];
 
-            if (chunksection != Chunk.a && (!this.e() || !chunksection.a()) && (i & 1 << k) != 0) {
+            if (chunksection != Chunk.a && (!this.f() || !chunksection.a()) && (i & 1 << k) != 0) {
                 j += chunksection.getBlocks().a();
                 j += chunksection.getEmittedLightArray().asBytes().length;
                 if (flag) {
@@ -180,14 +150,14 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
             }
         }
 
-        if (this.e()) {
-            j += chunk.getBiomeIndex().length;
+        if (this.f()) {
+            j += chunk.getBiomeIndex().length * 4;
         }
 
         return j;
     }
 
-    public boolean e() {
+    public boolean f() {
         return this.f;
     }
 }

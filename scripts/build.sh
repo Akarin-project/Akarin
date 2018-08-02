@@ -4,6 +4,7 @@
 set -e
 basedir="$(cd "$1" && pwd -P)"
 workdir="$basedir/work"
+version="ver/1.13"
 paperbasedir="$basedir/work/Paper"
 paperworkdir="$basedir/work/Paper/work"
 
@@ -16,6 +17,7 @@ if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 				rm Minecraft/ -r
 			fi
 			git clone https://github.com/Akarin-project/Minecraft.git
+			cd "Minecraft" && git checkout "$version"
 		fi
 		
 		cd "$paperbasedir"
@@ -25,6 +27,8 @@ fi
 
 echo "[Akarin] Ready to build"
 (
+	cd "$paperworkdir/BuildData" && git checkout "$version"
+	cd "$paperbasedir"
 	echo "[Akarin] Touch sources.."
 	
 	cd "$paperbasedir"

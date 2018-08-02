@@ -15,8 +15,20 @@ import net.minecraft.server.MinecraftServer;
 @Mixin(value = MCUtil.class, remap = false)
 public abstract class MixinMCUtil {
     @Overwrite
+    public static void ensureMain(String reason, Runnable run) {
+        if (AsyncCatcher.enabled && !Akari.isPrimaryThread()) { // Akarin
+            if (reason != null) {
+                new IllegalStateException("Asynchronous " + reason + "!").printStackTrace();
+            }
+            MinecraftServer.getServer().processQueue.add(run);
+            return;
+        }
+        run.run();
+    }
+    
+    @Overwrite
     public static <T> T ensureMain(String reason, Supplier<T> run) {
-        if (AsyncCatcher.enabled && !Akari.isPrimaryThread()) {
+        if (AsyncCatcher.enabled && !Akari.isPrimaryThread()) { // Akarin
             new IllegalStateException("Asynchronous " + reason + "! Blocking thread until it returns ").printStackTrace();
             Waitable<T> wait = new Waitable<T>() {
                 @Override
@@ -32,7 +44,6 @@ public abstract class MixinMCUtil {
             }
             return null;
         }
-        
         return run.get();
     }
 }

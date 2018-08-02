@@ -32,8 +32,6 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.server.ChatComponentText;
 import net.minecraft.server.EnumProtocolDirection;
 import net.minecraft.server.HandshakeListener;
@@ -54,16 +52,16 @@ public abstract class NonblockingServerConnection {
     /**
      * Contains all endpoints added to this NetworkSystem
      */
-    @Shadow(aliases = "g") @Mutable @Final private List<ChannelFuture> endPoints;
+    @Shadow(aliases = "f") @Mutable @Final private List<ChannelFuture> endPoints;
     /**
      * A list containing all NetworkManager instances of all endpoints
      */
-    @Shadow(aliases = "h") @Mutable @Final private List<NetworkManager> networkManagers;
+    @Shadow(aliases = "g") @Mutable @Final private List<NetworkManager> networkManagers;
     
     @Overwrite
     private void addPending() {} // just keep compatibility
     
-    @Shadow(aliases = "f") @Final private MinecraftServer server;
+    @Shadow(aliases = "e") @Final private MinecraftServer server;
     
     /**
      * Adds channels (endpoint) that listens on publicly accessible network ports
@@ -77,13 +75,13 @@ public abstract class NonblockingServerConnection {
         Class<? extends ServerChannel> channelClass;
         EventLoopGroup loopGroup;
         
-        if (Epoll.isAvailable() && this.server.af()) { // OBFHELPER: MinecraftServer::useNativeTransport
+        if (Epoll.isAvailable() && this.server.X()) { // OBFHELPER: MinecraftServer::useNativeTransport
             channelClass = EpollServerSocketChannel.class;
-            loopGroup = ServerConnection.b.c();
+            loopGroup = ServerConnection.b.a();
             logger.info("Using epoll channel type");
         } else {
             channelClass = NioServerSocketChannel.class;
-            loopGroup = ServerConnection.a.c();
+            loopGroup = ServerConnection.a.a();
             logger.info("Using nio channel type");
         }
         
@@ -122,12 +120,12 @@ public abstract class NonblockingServerConnection {
         }
     }
     
-    @Shadow public volatile boolean d; // OBFHELPER: neverTerminate
+    @Shadow public volatile boolean c; // OBFHELPER: neverTerminate
     /**
      * Shuts down all open endpoints
      */
     public void b() {
-        this.d = false;
+        this.c = false;
         try {
             synchronized (endPoints) { // safe fixes
                 for (ChannelFuture channel : endPoints) channel.channel().close().sync();
@@ -144,12 +142,7 @@ public abstract class NonblockingServerConnection {
             logger.warn("Failed to handle packet for {}", manager.getSocketAddress(), ex);
             final ChatComponentText message = new ChatComponentText("Internal server error");
             
-            manager.sendPacket(new PacketPlayOutKickDisconnect(message), new GenericFutureListener<Future<? super Void>>() {
-                @Override
-                public void operationComplete(Future<? super Void> future) throws Exception {
-                    manager.close(message);
-                }
-            }, new GenericFutureListener[0]);
+            manager.sendPacket(new PacketPlayOutKickDisconnect(message), (future) -> manager.close(message));
             manager.stopReading();
         }
     }

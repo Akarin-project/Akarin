@@ -19,7 +19,7 @@ public abstract class MixinCraftWorld {
     
     @Redirect(method = "processChunkGC()V", at = @At(
             value = "INVOKE",
-            target = "java/util/Set.contains(Ljava/lang/Object;)Z",
+            target = "it/unimi/dsi/fastutil/longs/LongSet.contains(J)Z",
             opcode = Opcodes.INVOKEINTERFACE
     ))
     public boolean checkUnloading(Set<Long> set, Object chunkHash) {
@@ -28,7 +28,7 @@ public abstract class MixinCraftWorld {
     
     @Redirect(method = "regenerateChunk", at = @At(
             value = "INVOKE",
-            target = "java/util/Set.remove(Ljava/lang/Object;)Z",
+            target = "it/unimi/dsi/fastutil/longs/LongSet.remove(J)Z",
             opcode = Opcodes.INVOKEINTERFACE
     ))
     public boolean regenChunk(Set<Long> set, Object chunkHash) {
