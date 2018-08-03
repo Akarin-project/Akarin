@@ -147,6 +147,7 @@ public abstract class PandaRedstoneWire extends Block {
         
         while (!turnOff.isEmpty()) {
             BlockPosition pos = turnOff.remove(0);
+            if (pos == null) continue; // Akarin
             IBlockData state = worldIn.getType(pos);
             int oldPower = state.get(BlockRedstoneWire.POWER).intValue();
             this.canProvidePower = false;
@@ -185,6 +186,7 @@ public abstract class PandaRedstoneWire extends Block {
         // Now all needed wires are turned off. Time to turn them on again if there is a power source.
         while (!this.turnOn.isEmpty()) {
             BlockPosition pos = this.turnOn.remove(0);
+            if (pos == null) continue; // Akarin
             IBlockData state = worldIn.getType(pos);
             int oldPower = state.get(BlockRedstoneWire.POWER).intValue();
             this.canProvidePower = false;
