@@ -205,14 +205,14 @@ public class EntityExperienceOrb extends Entity {
     public void b(NBTTagCompound nbttagcompound) {
         nbttagcompound.setShort("Health", (short) this.d);
         nbttagcompound.setShort("Age", (short) this.b);
-        nbttagcompound.setShort("Value", (short) this.value);
+        nbttagcompound.setInt("Value", this.value); // Paper - save as Integer
         savePaperNBT(nbttagcompound); // Paper
     }
 
     public void a(NBTTagCompound nbttagcompound) {
         this.d = nbttagcompound.getShort("Health");
         this.b = nbttagcompound.getShort("Age");
-        this.value = nbttagcompound.getShort("Value");
+        this.value = nbttagcompound.getInt("Value"); // Paper - load as Integer
         loadPaperNBT(nbttagcompound); // Paper
     }
 
