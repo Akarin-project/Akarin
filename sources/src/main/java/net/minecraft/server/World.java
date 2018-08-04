@@ -1,4 +1,4 @@
-	package net.minecraft.server;
+package net.minecraft.server;
 
 import com.destroystokyo.paper.event.server.ServerExceptionEvent;
 import com.destroystokyo.paper.exception.ServerInternalException;
@@ -1149,23 +1149,25 @@ public abstract class World implements IBlockAccess {
             if (radius > 0) {
                 // Paper start - Maximum exp value when merging - Whole section has been tweaked, see comments for specifics
                 final int maxValue = paperConfig.expMergeMaxValue;
-                final boolean mergeUnconditionally = maxValue <= 0;
+                final boolean mergeUnconditionally = paperConfig.expMergeMaxValue <= 0;
                 if (mergeUnconditionally || xp.value < maxValue) { // Paper - Skip iteration if unnecessary
 
                 List<Entity> entities = this.getEntities(entity, entity.getBoundingBox().grow(radius, radius, radius));
                 for (Entity e : entities) {
                     if (e instanceof EntityExperienceOrb) {
                         EntityExperienceOrb loopItem = (EntityExperienceOrb) e;
-                        if (!loopItem.dead && !(maxValue > 0 && loopItem.value >= maxValue) && new com.destroystokyo.paper.event.entity.ExperienceOrbMergeEvent((org.bukkit.entity.ExperienceOrb) entity.getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) loopItem.getBukkitEntity()).callEvent()) { // Paper
-                            xp.value += loopItem.value;
-                            // Paper start
-                            if (!mergeUnconditionally && xp.value > maxValue) {
-                                loopItem.value = xp.value - maxValue;
+                        // Paper start
+                        if (!loopItem.dead && !(maxValue > 0 && loopItem.value >= maxValue) && new com.destroystokyo.paper.event.entity.ExperienceOrbMergeEvent((org.bukkit.entity.ExperienceOrb) entity.getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) loopItem.getBukkitEntity()).callEvent()) {
+                            long newTotal = (long)xp.value + (long)loopItem.value;
+                            if ((int) newTotal < 0) continue; // Overflow
+                            if (maxValue > 0 && newTotal > (long)maxValue) {
+                                loopItem.value = (int) (newTotal - maxValue);
                                 xp.value = maxValue;
-                                break;
+                            } else {
+                                xp.value += loopItem.value;
+                                loopItem.die();
                             }
                             // Paper end
-                            loopItem.die();
                         }
                     }
                 }
@@ -1206,7 +1208,8 @@ public abstract class World implements IBlockAccess {
             }
 
             this.getChunkAt(i, j).a(entity);
-            if (!entity.dead) this.entityList.add(entity); // Paper - don't add dead entities, chunk registration may of killed it
+            if (entity.dead) return false; // Paper - don't add dead entities, chunk registration may of killed it
+            this.entityList.add(entity);
             this.b(entity);
             return true;
         }
@@ -1218,6 +1221,7 @@ public abstract class World implements IBlockAccess {
         }
 
         entity.valid = true; // CraftBukkit
+        entity.shouldBeRemoved = false; // Paper - shouldn't be removed after being re-added
         new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
     }
 
@@ -2745,6 +2749,7 @@ public abstract class World implements IBlockAccess {
         return i;
     }
 
+    public void addChunkEntities(Collection<Entity> collection) { a(collection); } // Paper - OBFHELPER
     public void a(Collection<Entity> collection) {
         org.spigotmc.AsyncCatcher.catchOp( "entity world add"); // Spigot
         // CraftBukkit start
@@ -2754,7 +2759,7 @@ public abstract class World implements IBlockAccess {
         while (iterator.hasNext()) {
             Entity entity = (Entity) iterator.next();
 
-            if (entity == null) {
+            if (entity == null || entity.dead || entity.valid) { // Paper - prevent adding already added or dead entities
                 continue;
             }
             this.entityList.add(entity);
