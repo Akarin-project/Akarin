@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 // Paper start
 import com.destroystokyo.paper.PaperWorldConfig.DuplicateUUIDMode;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 // Paper end
@@ -954,15 +956,16 @@ public class Chunk implements IChunkAccess {
             // Paper end
 
             // CraftBukkit start
-            List<Entity> toRemove = new LinkedList<>();
-            this.world.a(entityslice.stream().filter((entity) -> {
-                if (this.needsDecoration && !CraftEventFactory.doEntityAddEventCalling(this.world, entity, CreatureSpawnEvent.SpawnReason.CHUNK_GEN)) { // Only call for new chunks
-                    toRemove.add(entity);
-                    return false;
-                }
-                return !(entity instanceof EntityHuman);
-            }));
-            entityslice.removeAll(toRemove);
+            this.world.addChunkEntities(entityslice.stream() // Paper - add all at same time to avoid entities adding to world modifying slice state, skip already added entities (not normal, but can happen)
+                // Paper start - Inline event into stream
+                .filter((entity) -> {
+                    if (!this.needsDecoration) {
+                        return true;
+                    }
+                    return CraftEventFactory.doEntityAddEventCalling(this.world, entity, CreatureSpawnEvent.SpawnReason.CHUNK_GEN);
+                })
+                // Paper end - Inline event into stream
+                .filter((entity) -> !(entity instanceof EntityHuman || entity.valid))); // Paper - add all at same time to avoid entities adding to world modifying slice state, skip already added entities (not normal, but can happen)
             // CraftBukkit end
         }
 

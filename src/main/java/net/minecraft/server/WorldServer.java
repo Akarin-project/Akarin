@@ -967,7 +967,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             if (this.entitiesByUUID.containsKey(uuid)) {
                 Entity entity1 = (Entity) this.entitiesByUUID.get(uuid);
 
-                if (this.g.contains(entity1)) {
+                if (this.g.contains(entity1) || entity1.dead) { // Paper - if dupe is dead, overwrite
                     this.g.remove(entity1);
                 } else {
                     if (!(entity instanceof EntityHuman)) {

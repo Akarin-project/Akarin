@@ -1037,6 +1037,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             }
 
             this.getChunkAt(i, j).a(entity);
+            if (entity.dead) return false; // Paper - don't add dead entities, chunk registration may of killed it
             this.entityList.add(entity);
             this.b(entity);
             return true;
@@ -2442,9 +2443,13 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         return j;
     }
 
+    public void addChunkEntities(Stream<Entity> collection) { a(collection); } // Paper - OBFHELPER
     public void a(Stream<Entity> stream) {
         org.spigotmc.AsyncCatcher.catchOp( "entity world add"); // Spigot
         stream.forEach((entity) -> {
+            if (entity == null || entity.dead || entity.valid) { // Paper - prevent adding already added or dead entities
+                return;
+            }
             this.entityList.add(entity);
             this.b(entity);
         });
