@@ -21,7 +21,6 @@
         "core.MixinAsyncCatcher",
         "core.MixinTimingHandler",
         "core.MixinVersionCommand",
-        "core.MixinItemMonsterEgg",
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
         "core.MixinPlayerConnectionUtils",
