@@ -39,7 +39,7 @@ public class ItemMonsterEgg extends Item {
             IBlockData iblockdata = world.getType(blockposition);
             Block block = iblockdata.getBlock();
 
-            if (block == Blocks.MOB_SPAWNER && AkarinGlobalConfig.allowSpawnerModify && entityhuman.isCreativeAndOp()) { // Akarin
+            if (block == Blocks.MOB_SPAWNER && (AkarinGlobalConfig.allowSpawnerModify || entityhuman.isCreativeAndOp())) { // Akarin
                 TileEntity tileentity = world.getTileEntity(blockposition);
 
                 if (tileentity instanceof TileEntityMobSpawner) {
