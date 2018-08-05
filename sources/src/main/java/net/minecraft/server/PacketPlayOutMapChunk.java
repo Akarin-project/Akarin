@@ -42,6 +42,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
 
             if (this.f() || (i & 1 << j) != 0) {
                 NBTTagCompound nbttagcompound = tileentity.aa_();
+                if (tileentity instanceof TileEntitySkull) { TileEntitySkull.sanitizeTileEntityUUID(nbttagcompound); } // Paper
 
                 this.e.add(nbttagcompound);
             }
