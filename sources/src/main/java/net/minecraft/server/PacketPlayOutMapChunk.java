@@ -106,7 +106,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
         packetdataserializer.writeBoolean(this.f);
         packetdataserializer.d(this.c);
         packetdataserializer.d(this.d.array().length); // Akarin
-        packetdataserializer.writeBytes(this.d.array());
+        packetdataserializer.writeBytes(this.d.array()); // Akarin
         packetdataserializer.d(this.e.size());
         Iterator iterator = this.e.iterator();
 
