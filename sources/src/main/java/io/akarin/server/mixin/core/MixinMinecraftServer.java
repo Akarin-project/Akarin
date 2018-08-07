@@ -41,6 +41,7 @@ import net.minecraft.server.WorldServer;
 @Mixin(value = MinecraftServer.class, remap = false)
 public abstract class MixinMinecraftServer {
     @Shadow @Final public Thread primaryThread;
+	private int cachedWorlds;
     
     @Overwrite
     public String getServerModName() {
@@ -53,6 +54,8 @@ public abstract class MixinMinecraftServer {
             shift = At.Shift.BEFORE
     ))
     private void prerun(CallbackInfo info) {
+        Akari.STAGE_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool((cachedWorlds = worlds.size()), new AssignableFactory()));
+		
         primaryThread.setPriority(AkarinGlobalConfig.primaryThreadPriority < Thread.NORM_PRIORITY ? Thread.NORM_PRIORITY :
             (AkarinGlobalConfig.primaryThreadPriority > Thread.MAX_PRIORITY ? 10 : AkarinGlobalConfig.primaryThreadPriority));
         
@@ -178,6 +181,8 @@ public abstract class MixinMinecraftServer {
     
     @Overwrite
     public void D() throws InterruptedException {
+        if (worlds.size() != cachedWorlds) Akari.STAGE_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool(cachedWorlds, new AssignableFactory())); // Resize
+		
         Runnable runnable;
         MinecraftTimings.bukkitSchedulerTimer.startTiming();
         this.server.getScheduler().mainThreadHeartbeat(this.ticks);
@@ -210,7 +215,7 @@ public abstract class MixinMinecraftServer {
 		
 		// Never tick one world concurrently!
         for (int i = 0; i < worlds.size(); i++) {
-			int interlace = i + 1;
+            int interlace = i + 1;
             WorldServer entitiesWorld = worlds.get(interlace < worlds.size() ? interlace : 0);
 			Akari.STAGE_TICK.submit(() -> {
 				synchronized (((IMixinLockProvider) entitiesWorld).lock()) {
@@ -220,14 +225,14 @@ public abstract class MixinMinecraftServer {
 				}
 			}, null);
 			
-			WorldServer world = worlds.get(i);
+            WorldServer world = worlds.get(i);
             synchronized (((IMixinLockProvider) world).lock()) {
                 tickWorld(world);
             }
         }
         
         Akari.entityCallbackTiming.startTiming();
-		for (int i = worlds.size(); i --> 0 ;) Akari.STAGE_TICK.take();
+        for (int i = worlds.size(); i --> 0 ;) Akari.STAGE_TICK.take();
         Akari.entityCallbackTiming.stopTiming();
         
         Akari.worldTiming.stopTiming();

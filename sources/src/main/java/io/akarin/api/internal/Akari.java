@@ -57,7 +57,7 @@ public abstract class Akari {
     /**
      * A common tick pool
      */
-    public static final ExecutorCompletionService<?> STAGE_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool(4, new AssignableFactory()));
+    public static ExecutorCompletionService<?> STAGE_TICK;
     
     public static boolean isPrimaryThread() {
         return isPrimaryThread(true);
