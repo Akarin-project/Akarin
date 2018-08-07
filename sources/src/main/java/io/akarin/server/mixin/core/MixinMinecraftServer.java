@@ -207,27 +207,27 @@ public abstract class MixinMinecraftServer {
                 world.timings.doTick.startTiming();
             }
         }
-        Akari.STAGE_TICK.submit(() -> {
-            // Never tick one world concurrently!
-            for (int i = 1; i <= worlds.size(); ++i) {
-                WorldServer world = worlds.get(i < worlds.size() ? i : 0);
-                synchronized (((IMixinLockProvider) world).lock()) {
-                    tickEntities(world);
-                    world.getTracker().updatePlayers();
-                    world.explosionDensityCache.clear(); // Paper - Optimize explosions
-                }
-            }
-        }, null);
-        
-        for (int i = 0; i < worlds.size(); ++i) {
-            WorldServer world = worlds.get(i);
+		
+		// Never tick one world concurrently!
+        for (int i = 0; i < worlds.size(); i++) {
+			int interlace = i + 1;
+            WorldServer entitiesWorld = worlds.get(interlace < worlds.size() ? interlace : 0);
+			Akari.STAGE_TICK.submit(() -> {
+				synchronized (((IMixinLockProvider) entitiesWorld).lock()) {
+					tickEntities(entitiesWorld);
+					entitiesWorld.getTracker().updatePlayers();
+					entitiesWorld.explosionDensityCache.clear(); // Paper - Optimize explosions
+				}
+			}, null);
+			
+			WorldServer world = worlds.get(i);
             synchronized (((IMixinLockProvider) world).lock()) {
                 tickWorld(world);
             }
         }
         
         Akari.entityCallbackTiming.startTiming();
-        Akari.STAGE_TICK.take();
+		for (int i = worlds.size(); i --> 0 ;) Akari.STAGE_TICK.take();
         Akari.entityCallbackTiming.stopTiming();
         
         Akari.worldTiming.stopTiming();
