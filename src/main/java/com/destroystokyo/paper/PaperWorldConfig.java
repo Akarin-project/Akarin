@@ -472,6 +472,12 @@ public class PaperWorldConfig {
         }
     }
 
+    public int waterOverLavaFlowSpeed;
+    private void waterOverLavaFlowSpeed() {
+        waterOverLavaFlowSpeed = getInt("water-over-lava-flow-speed", 5);
+        log("Water over lava flow speed: " + waterOverLavaFlowSpeed);
+    }
+
     public enum DuplicateUUIDMode {
         SAFE_REGEN, DELETE, NOTHING, WARN
     }
