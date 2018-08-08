@@ -45,7 +45,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     private static final EnumDirection[] a = EnumDirection.values();
     private int b = 63;
     // Spigot start - guard entity list from removals
-    public final List<Entity> entityList = new java.util.ArrayList<Entity>()
+    public final com.destroystokyo.paper.PaperWorldEntityList entityList = new com.destroystokyo.paper.PaperWorldEntityList(this);
+        /* // Paper start
     {
         @Override
         public Entity remove(int index)
@@ -69,6 +70,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             }
         }
     };
+    */ // Paper end
     // Spigot end
     protected final Set<Entity> g = com.google.common.collect.Sets.newHashSet(); public Set<Entity> getEntityUnloadQueue() { return g; };// Paper - OBFHELPER
     //public final List<TileEntity> tileEntityList = Lists.newArrayList(); // Paper - remove unused list
@@ -139,8 +141,10 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     public final com.destroystokyo.paper.PaperWorldConfig paperConfig; // Paper
 
     public final co.aikar.timings.WorldTimingsHandler timings; // Paper
-    private boolean guardEntityList; // Spigot
+    public boolean guardEntityList; // Spigot // Paper - public
     public static BlockPosition lastPhysicsProblem; // Spigot
+    public static boolean haveWeSilencedAPhysicsCrash;
+    public static String blockLocation;
     private org.spigotmc.TickLimiter entityLimiter;
     private org.spigotmc.TickLimiter tileLimiter;
     private int tileTickPosition;
@@ -1122,6 +1126,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             this.getChunkAt(i, j).b(entity);
         }
         entity.shouldBeRemoved = true; // Paper
+        entityList.updateEntityCount(entity, -1); // Paper
 
         if (!guardEntityList) { // Spigot - It will get removed after the tick if we are ticking // Paper - always remove from current chunk above
         // CraftBukkit start - Decrement loop variable field if we've already ticked this entity

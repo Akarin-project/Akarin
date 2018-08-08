@@ -114,7 +114,7 @@ public final class SpawnerCreature {
 
                 if ((!enumcreaturetype.c() || flag1) && (enumcreaturetype.c() || flag) && (!enumcreaturetype.d() || flag2)) {
                     k = limit * i / SpawnerCreature.b; // CraftBukkit - use per-world limits
-                    int l1 = worldserver.a(enumcreaturetype.a(), k);
+                    int l1 = worldserver.entityList.getCreatureCount(enumcreaturetype); // Paper - entity count cache
 
                     if (l1 <= k) {
                         BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
