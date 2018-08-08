@@ -25,6 +25,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import co.aikar.timings.Timings;
 import co.aikar.timings.TimingsManager;
 import org.spigotmc.SpigotConfig;
+import org.spigotmc.WatchdogThread;
 
 public class PaperConfig {
 
@@ -331,6 +332,14 @@ public class PaperConfig {
             logger.log(Level.INFO, "*** wrong with this system! This is not a backup system.");
             logger.log(Level.INFO, "******************************************************");
         }
+    }
+
+    public static int watchdogPrintEarlyWarningEvery = 5000;
+    public static int watchdogPrintEarlyWarningDelay = 10000;
+    private static void watchdogEarlyWarning() {
+        watchdogPrintEarlyWarningEvery = getInt("settings.watchdog.early-warning-every", 5000);
+        watchdogPrintEarlyWarningDelay = getInt("settings.watchdog.early-warning-delay", 10000);
+        WatchdogThread.doStart(SpigotConfig.timeoutTime, SpigotConfig.restartOnCrash );
     }
 
     public static int tabSpamIncrement = 1;

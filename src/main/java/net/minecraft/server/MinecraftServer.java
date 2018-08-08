@@ -792,6 +792,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
                 this.a(this.m);
 
                 // Spigot start
+                org.spigotmc.WatchdogThread.hasStarted = true; // Paper
                 Arrays.fill( recentTps, 20 );
                 long start = System.nanoTime(), curTime, wait, tickSection = start; // Paper - Further improve server tick loop
                 lastTick = start - TICK_TIME; // Paper
