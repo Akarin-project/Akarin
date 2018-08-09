@@ -4,8 +4,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Queue;
 import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +15,7 @@ import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.WorldServer;
 
 @SuppressWarnings("restriction")
 public abstract class Akari {
@@ -54,10 +53,8 @@ public abstract class Akari {
         }
     }
     
-    /**
-     * A common tick pool
-     */
-    public static ExecutorCompletionService<?> STAGE_TICK;
+    public static ExecutorCompletionService<WorldServer> STAGE_ENTITY_TICK;
+    public static ExecutorCompletionService<WorldServer> STAGE_WORLD_TICK;
     
     public static boolean isPrimaryThread() {
         return isPrimaryThread(true);
@@ -96,8 +93,6 @@ public abstract class Akari {
      * Timings
      */
     public final static Timing worldTiming = getTiming("Akarin - Full World Tick");
-    
-    public final static Timing entityCallbackTiming = getTiming("Akarin - Entity Parallell Await");
     
     public final static Timing callbackTiming = getTiming("Akarin - Callback Queue");
     

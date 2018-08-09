@@ -33,7 +33,7 @@ import java.util.logging.Level;
  * Akarin Changes Note
  * 1) Add volatile to fields (safety issue)
  */
-class TimingHandler implements Timing {
+public class TimingHandler implements Timing { // Akarin
 
     private static int idPool = 1;
     final int id = idPool++;
@@ -124,6 +124,14 @@ class TimingHandler implements Timing {
             start = 0;
         }
     }
+    
+    // Akarin start
+    public void stopTiming(long start) {
+        if (enabled && --timingDepth == 0 && start != 0) {
+            addDiff(System.nanoTime() - start);
+        }
+    }
+    // Akarin end
 
     @Override
     public void abort() {
