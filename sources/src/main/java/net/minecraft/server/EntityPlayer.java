@@ -33,7 +33,6 @@ import org.bukkit.inventory.MainHand;
 
 /**
  * Akarin Changes Note
- * 1) Add volatile to fields (time update)
  * 2) Add lock to player track (safety issue)
  */
 public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -1455,8 +1454,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     // CraftBukkit start - Add per-player time and weather.
-    public volatile long timeOffset = 0; // Akarin - volatile
-    public volatile boolean relativeTime = true; // Akarin - volatile
+    public long timeOffset = 0;
+    public boolean relativeTime = true;
 
     public long getPlayerTime() {
         if (this.relativeTime) {

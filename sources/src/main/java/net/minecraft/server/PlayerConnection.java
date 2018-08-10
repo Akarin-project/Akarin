@@ -75,9 +75,9 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     private final MinecraftServer minecraftServer;
     public EntityPlayer player;
     private int e;
-    private volatile long f = SystemUtils.b(); public void setLastPing(long lastPing) { this.f = lastPing;}; public long getLastPing() { return this.f;}; // Paper - OBFHELPER - set ping to delay initial // Akarin - private -> public - volatile
-    private volatile boolean g; public void setPendingPing(boolean isPending) { this.g = isPending;}; public boolean isPendingPing() { return this.g;}; // Paper - OBFHELPER // Akarin - private -> public - volatile
-    private volatile long h; public void setKeepAliveID(long keepAliveID) { this.h = keepAliveID;}; public long getKeepAliveID() {return this.h; };  // Paper - OBFHELPER // Akarin - private -> public - volatile
+    private long f = SystemUtils.b(); public void setLastPing(long lastPing) { this.f = lastPing;}; public long getLastPing() { return this.f;}; // Paper - OBFHELPER - set ping to delay initial // Akarin - private -> public
+    private boolean g; public void setPendingPing(boolean isPending) { this.g = isPending;}; public boolean isPendingPing() { return this.g;}; // Paper - OBFHELPER // Akarin - private -> public
+    private long h; public void setKeepAliveID(long keepAliveID) { this.h = keepAliveID;}; public long getKeepAliveID() {return this.h; };  // Paper - OBFHELPER // Akarin - private -> public
     // CraftBukkit start - multithreaded fields
     private volatile int chatThrottle;
     private static final AtomicIntegerFieldUpdater chatSpamField = AtomicIntegerFieldUpdater.newUpdater(PlayerConnection.class, "chatThrottle");

@@ -12,8 +12,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -44,10 +42,10 @@ public class PlayerChunkMap {
     private final List<PlayerChunk> g = Lists.newLinkedList();
     private final List<PlayerChunk> h = Lists.newLinkedList();
     private final List<PlayerChunk> i = Lists.newCopyOnWriteArrayList(); // Akarin - bad plugin will access this
-    private AtomicInteger j = new AtomicInteger(); public int getViewDistance() { return j.get(); } // Paper OBFHELPER // Akarin - atmoic
+    private int j; public int getViewDistance() { return j; } // Paper OBFHELPER
     private long k;
-    private AtomicBoolean l = new AtomicBoolean(true); // Akarin - atmoic
-    private AtomicBoolean m = new AtomicBoolean(true); // Akarin - atmoic
+    private boolean l = true;
+    private boolean m = true;
     private boolean wasNotEmpty; // CraftBukkit - add field
 
     public PlayerChunkMap(WorldServer worldserver) {
@@ -124,8 +122,8 @@ public class PlayerChunkMap {
             } // Paper timing
         }
 
-        if (this.l.get() && i % 4L == 0L) { // Akarin
-            this.l.getAndSet(false); // Akarin
+        if (this.l && i % 4L == 0L) {
+            this.l = false;
             try (Timing ignored = world.timings.doChunkMapSortMissing.startTiming()) { // Paper
             // CraftBukkit start
             Collections.sort(this.h, (playerchunkx, playerchunk1x) -> {
@@ -134,8 +132,8 @@ public class PlayerChunkMap {
             } // Paper timing
         }
 
-        if (this.m.get() && i % 4L == 2L) { // Akarin
-            this.m.getAndSet(false); // Akarin
+        if (this.m && i % 4L == 2L) {
+            this.m = false;
             try (Timing ignored = world.timings.doChunkMapSortSendToPlayers.startTiming()) { // Paper
             Collections.sort(this.g, (playerchunkx, playerchunk1x) -> {
                 return ComparisonChain.start().compare(playerchunkx.g(), playerchunk1x.g()).result();
@@ -397,8 +395,8 @@ public class PlayerChunkMap {
     // Paper start - Separate into two methods
     public void a(int i) {
         i = MathHelper.clamp(i, 3, 32);
-        if (i != this.j.get()) { // Akarin
-            int j = i - this.j.get(); // Akarin
+        if (i != this.j) { // Akarin
+            int j = i - this.j; // Akarin
             managedPlayersLock.readLock().lock(); // Akarin
             ArrayList arraylist = Lists.newArrayList(this.managedPlayers);
             managedPlayersLock.readLock().unlock(); // Akarin
@@ -409,7 +407,7 @@ public class PlayerChunkMap {
                 this.setViewDistance(entityplayer, i, false); // Paper - Split, don't mark sort pending, we'll handle it after
             }
 
-            this.j.getAndSet(i); // Akarin
+            this.j = i;
             this.e();
         }
     }
@@ -461,8 +459,8 @@ public class PlayerChunkMap {
     // Paper end
 
     private void e() {
-        this.l.getAndSet(true); // Akarin
-        this.m.getAndSet(true); // Akarin
+        this.l = true;
+        this.m = true;
     }
 
     public static int getFurthestViewableBlock(int i) {
