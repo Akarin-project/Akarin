@@ -8,14 +8,10 @@ public class ReentrantSpinningLock {
 
     public void lock() {
         long currentThreadId = Thread.currentThread().getId();
-        attemptLock.getAndSet(true); // In case acquire one lock concurrently
-        
         if (heldThreadId != 0 && heldThreadId != currentThreadId) {
-            attemptLock.set(false);
             while (heldThreadId != 0) ; // The current thread is spinning here
-            attemptLock.getAndSet(true);
         }
-        
+        attemptLock.getAndSet(true); // In case acquire one lock concurrently
         heldThreadId = currentThreadId;
         attemptLock.set(false);
     }
