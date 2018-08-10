@@ -1,6 +1,8 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Lists;
+
+import io.akarin.api.internal.Akari;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -14,7 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import com.destroystokyo.paper.exception.ServerInternalException;
@@ -26,7 +27,7 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 
 /**
  * Akarin Changes Note
- * 1) synchronized block -> reentrant lock (compatibility)
+ * 1) Lock for event (safety issue)
  */
 public class ChunkProviderServer implements IChunkProvider {
 
@@ -35,7 +36,6 @@ public class ChunkProviderServer implements IChunkProvider {
     public final ChunkGenerator<?> chunkGenerator;
     private final IChunkLoader chunkLoader;
     public final Long2ObjectMap<Chunk> chunks = Long2ObjectMaps.synchronize(new ChunkMap(8192));
-    private final ReentrantLock chunksLock = new ReentrantLock(); // Akarin
     private final ChunkTaskScheduler f;
     private final SchedulerBatch<ChunkCoordIntPair, ChunkStatus, ProtoChunk> g;
     // Paper start - chunk save stats
@@ -112,21 +112,14 @@ public class ChunkProviderServer implements IChunkProvider {
     public Chunk getOrLoadChunkAt(int i, int j) {
         Long2ObjectMap long2objectmap = this.chunks;
 
-        // Akarin start
-        /*
+        Akari.eventLock.lock(); // Akarin
+        try { // Akarin
         synchronized (this.chunks) {
             Chunk chunk = world.paperConfig.allowPermaChunkLoaders ? getLoadedChunkAt(i, j) : getChunkIfLoaded(i, j); // Paper - Configurable perma chunk loaders
 
             return chunk != null ? chunk : this.loadChunkAt(i, j);
         }
-        */
-        chunksLock.lock();
-        Chunk chunk = world.paperConfig.allowPermaChunkLoaders ? getLoadedChunkAt(i, j) : getChunkIfLoaded(i, j); // Paper - Configurable perma chunk loaders
-
-        chunk = chunk != null ? chunk : this.loadChunkAt(i, j);
-        chunksLock.unlock();
-        return chunk;
-        // Akarin end
+        } finally { Akari.eventLock.unlock(); } // Akarin
     }
 
     // CraftBukkit start
@@ -154,21 +147,11 @@ public class ChunkProviderServer implements IChunkProvider {
     public IChunkAccess d(int i, int j) {
         Long2ObjectMap long2objectmap = this.chunks;
 
-        // Akarin start
-        /*
         synchronized (this.chunks) {
             IChunkAccess ichunkaccess = (IChunkAccess) this.chunks.get(ChunkCoordIntPair.a(i, j));
 
             return ichunkaccess != null ? ichunkaccess : (IChunkAccess) this.f.c((new ChunkCoordIntPair(i, j))); // CraftBukkit - decompile error
         }
-        */
-        chunksLock.lock();
-        IChunkAccess ichunkaccess = (IChunkAccess) this.chunks.get(ChunkCoordIntPair.a(i, j));
-
-        ichunkaccess = ichunkaccess != null ? ichunkaccess : (IChunkAccess) this.f.c((new ChunkCoordIntPair(i, j))); // CraftBukkit - decompile error
-        chunksLock.unlock();
-        return ichunkaccess;
-        // Akarin end
     }
 
     public CompletableFuture<ProtoChunk> a(Iterable<ChunkCoordIntPair> iterable, Consumer<Chunk> consumer) {
@@ -226,8 +209,7 @@ public class ChunkProviderServer implements IChunkProvider {
         Long2ObjectMap long2objectmap = this.chunks;
         Chunk chunk;
 
-        chunksLock.lock(); // Akarin
-        /*synchronized (this.chunks)*/ { // Akarin
+        synchronized (this.chunks) {
             Chunk chunk1 = (Chunk) this.chunks.get(k);
 
             if (chunk1 != null) {
@@ -246,7 +228,6 @@ public class ChunkProviderServer implements IChunkProvider {
 
             this.chunks.put(k, chunk);
         }
-        chunksLock.unlock(); // Akarin
 
         chunk.addEntities();
         return chunk;

@@ -6,6 +6,8 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,6 +16,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
+import io.akarin.api.internal.utils.ReentrantSpinningLock;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
 
@@ -90,6 +93,8 @@ public abstract class Akari {
     public static String getServerVersion() {
         return serverVersion + " (MC: " + MinecraftServer.getServer().getVersion() + ")";
     }
+    
+    public static final ReentrantSpinningLock eventLock = new ReentrantSpinningLock();
     
     /*
      * Timings
