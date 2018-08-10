@@ -17,6 +17,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
+import io.akarin.api.internal.utils.ReentrantSpinningLock;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
 
@@ -94,7 +95,7 @@ public abstract class Akari {
         return serverVersion + " (MC: " + MinecraftServer.getServer().getVersion() + ")";
     }
     
-    public static final ReentrantLock eventLock = new ReentrantLock();
+    public static final ReentrantSpinningLock eventLock = new ReentrantSpinningLock();
     
     /*
      * Timings
