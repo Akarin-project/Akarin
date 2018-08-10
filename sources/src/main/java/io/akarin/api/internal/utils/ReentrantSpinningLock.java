@@ -12,7 +12,7 @@ public class ReentrantSpinningLock {
         long currentThreadId = Thread.currentThread().getId();
         if (heldThreadId == currentThreadId) {
             reentrantLocks.getAndIncrement(); // Reentrant
-        } else if (heldThreadId != 0) {
+        } else {
             while (heldThreadId != 0) ; // The current thread is spinning here
         }
         tryLock(currentThreadId);
