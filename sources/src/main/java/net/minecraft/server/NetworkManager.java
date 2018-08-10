@@ -32,7 +32,6 @@ import org.apache.logging.log4j.MarkerManager;
 
 /**
  * Akarin Changes Note
- * 1) Add volatile to fields (nsc)
  * 2) Expose private members (nsc)
  * 3) Changes lock type to updatable lock (compatibility)
  * 4) Removes unneed array creation (performance)
@@ -81,7 +80,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     public SocketAddress l;
     public java.util.UUID spoofedUUID;
     public com.mojang.authlib.properties.Property[] spoofedProfile;
-    public volatile boolean preparing = true; // Akarin - add volatile
+    public boolean preparing = true;
     // Spigot End
     private PacketListener m;
     private IChatBaseComponent n;

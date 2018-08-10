@@ -31,7 +31,8 @@ import java.util.logging.Level;
 
 /**
  * Akarin Changes Note
- * 1) Add volatile to fields (safety issue)
+ * 1) Make class public (compatibility)
+ * 2) Add stopTiming method that accept given start time (compatibility)
  */
 public class TimingHandler implements Timing { // Akarin
 
@@ -46,8 +47,8 @@ public class TimingHandler implements Timing { // Akarin
     final TimingData record;
     private final TimingHandler groupHandler;
 
-    private volatile long start = 0; // Akarin - volatile
-    private volatile int timingDepth = 0; // Akarin - volatile
+    private long start = 0;
+    private int timingDepth = 0;
     private boolean added;
     private boolean timed;
     private boolean enabled;

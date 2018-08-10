@@ -60,8 +60,8 @@ public abstract class MixinMinecraftServer {
             shift = At.Shift.BEFORE
     ))
     private void prerun(CallbackInfo info) {
-        Akari.STAGE_ENTITY_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool((cachedWorldSize = worlds.size()), new AssignableFactory()));
-        Akari.STAGE_WORLD_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool(cachedWorldSize - 1, new AssignableFactory()));
+        Akari.STAGE_ENTITY_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool((cachedWorldSize = worlds.size()), new AssignableFactory("Akarin Parallel Entity Ticking Thread - $")));
+        Akari.STAGE_WORLD_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool(cachedWorldSize - 1, new AssignableFactory("Akarin Parallel World Ticking Thread - $")));
 		
         primaryThread.setPriority(AkarinGlobalConfig.primaryThreadPriority < Thread.NORM_PRIORITY ? Thread.NORM_PRIORITY :
             (AkarinGlobalConfig.primaryThreadPriority > Thread.MAX_PRIORITY ? 10 : AkarinGlobalConfig.primaryThreadPriority));
@@ -118,7 +118,7 @@ public abstract class MixinMinecraftServer {
     
     @Overwrite
     protected void l() throws InterruptedException {
-        ExecutorCompletionService<?> executor = new ExecutorCompletionService<>(Executors.newFixedThreadPool(worlds.size(), new AssignableFactory()));
+        ExecutorCompletionService<?> executor = new ExecutorCompletionService<>(Executors.newFixedThreadPool(worlds.size(), new AssignableFactory("Akarin Parallel Terrain Generation Thread - $")));
         
         for (int index = 0; index < worlds.size(); index++) {
             WorldServer world = this.worlds.get(index);
@@ -216,8 +216,8 @@ public abstract class MixinMinecraftServer {
         Akari.worldTiming.startTiming();
         // Resize
         if (cachedWorldSize != worlds.size()) {
-            Akari.STAGE_ENTITY_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool(cachedWorldSize = worlds.size(), new AssignableFactory()));
-            Akari.STAGE_WORLD_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool(cachedWorldSize - 1, new AssignableFactory()));
+            Akari.STAGE_ENTITY_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool(cachedWorldSize = worlds.size(), new AssignableFactory("Akarin Parallel Entity Ticking Thread - $")));
+            Akari.STAGE_WORLD_TICK = new ExecutorCompletionService<>(Executors.newFixedThreadPool(cachedWorldSize - 1, new AssignableFactory("Akarin Parallel World Ticking Thread - $")));
         }
         tickedPrimaryEntities = false;
 		// Never tick one world concurrently!

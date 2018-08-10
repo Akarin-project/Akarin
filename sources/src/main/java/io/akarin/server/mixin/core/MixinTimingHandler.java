@@ -12,12 +12,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import co.aikar.timings.Timing;
+import co.aikar.timings.TimingHandler;
 import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.Akari.AssignableThread;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
 
-@Mixin(targets = "co.aikar.timings.TimingHandler", remap = false)
+@Mixin(value = TimingHandler.class, remap = false)
 public abstract class MixinTimingHandler {
     @Shadow @Final String name;
     @Shadow private boolean enabled;

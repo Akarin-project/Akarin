@@ -6,6 +6,7 @@ import java.util.Queue;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ThreadFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.collect.Queues;
@@ -44,10 +45,17 @@ public abstract class Akari {
     }
     
     public static class AssignableFactory implements ThreadFactory {
+        private final String threadName;
+        private int threadNumber;
+        
+        public AssignableFactory(String name) {
+            threadName = name;
+        }
+        
         @Override
         public Thread newThread(Runnable run) {
             Thread thread = new AssignableThread(run);
-            thread.setName("Akarin Parallel Schedule Thread");
+            thread.setName(StringUtils.replaceChars(threadName, "$", String.valueOf(threadNumber++)));
             thread.setPriority(AkarinGlobalConfig.primaryThreadPriority); // Fair
             return thread;
         }
