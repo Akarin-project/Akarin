@@ -10,20 +10,21 @@ public class ReentrantSpinningLock {
 
     public void lock() {
         long currentThreadId = Thread.currentThread().getId();
-        if (heldThreadId != 0 && heldThreadId != currentThreadId) {
+        if (heldThreadId == currentThreadId) {
+            reentrantLocks.getAndIncrement(); // Reentrant
+        } else if (heldThreadId != 0) {
             while (heldThreadId != 0) ; // The current thread is spinning here
         }
+        tryLock(currentThreadId);
+    }
+    
+    private void tryLock(long currentThreadId) {
         attemptLock.getAndSet(true); // In case acquire one lock concurrently
-        if (heldThreadId == currentThreadId) reentrantLocks.getAndIncrement();
         heldThreadId = currentThreadId;
         attemptLock.set(false);
     }
     
     public void unlock() {
-        if (reentrantLocks.get() > 0) {
-            if (reentrantLocks.getAndDecrement() == 1) heldThreadId = 0;
-        } else {
-            heldThreadId = 0;
-        }
+        if (reentrantLocks.get() == 0 || reentrantLocks.getAndDecrement() == 1) heldThreadId = 0;
     }
 }
