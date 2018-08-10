@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.server.Chunk;
@@ -20,7 +21,7 @@ import net.minecraft.server.WorldServer;
 @Mixin(value = ChunkProviderServer.class, remap = false)
 public abstract class MixinChunkProviderServer {
     @Shadow @Final public WorldServer world;
-    @Shadow public Long2ObjectOpenHashMap<Chunk> chunks;
+    @Shadow public Long2ObjectMap<Chunk> chunks;
     @Shadow(aliases = "f") @Final private ChunkTaskScheduler scheduler;
     
     public void unload(Chunk chunk) {
@@ -43,7 +44,7 @@ public abstract class MixinChunkProviderServer {
             SlackActivityAccountant activityAccountant = world.getMinecraftServer().slackActivityAccountant;
             activityAccountant.startActivity(0.5);
             
-            ObjectIterator<Entry<Chunk>> it = chunks.long2ObjectEntrySet().fastIterator();
+            ObjectIterator<Entry<Chunk>> it = chunks.long2ObjectEntrySet().iterator();
             int remainingChunks = chunks.size();
             int targetSize = Math.min(remainingChunks - 100,  (int) (remainingChunks * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
             
