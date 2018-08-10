@@ -1197,14 +1197,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         EntityTracker tracker = ((WorldServer) entity.world).tracker;
         // Paper end
 
-        tracker.entriesLock.updateLock().lock(); // Akarin
+        synchronized (tracker.entriesLock) { // Akarin
         EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
         if (entry != null) {
-            tracker.entriesLock.writeLock().lock(); // Akarin
             entry.clear(getHandle());
-            tracker.entriesLock.writeLock().unlock(); // Akarin
         }
-        tracker.entriesLock.updateLock().unlock(); // Akarin
+        } // Akarin
 
         // Remove the hidden player from this player user list, if they're on it
         if (other.sentListPacket) {
@@ -1251,14 +1249,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, other));
 
-        tracker.entriesLock.updateLock().lock(); // Akarin
+        synchronized (tracker.entriesLock) { // Akarin
         EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
         if (entry != null && !entry.trackedPlayers.contains(getHandle())) {
-            tracker.entriesLock.writeLock().lock(); // Akarin
             entry.updatePlayer(getHandle());
-            tracker.entriesLock.writeLock().unlock(); // Akarin
         }
-        tracker.entriesLock.updateLock().unlock(); // Akarin
+        } // Akarin
     }
     // Paper start
     private void reregisterPlayer(EntityPlayer player) {

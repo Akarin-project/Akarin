@@ -762,9 +762,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         if (entity instanceof EntityPlayer) {
             WorldServer worldServer = (WorldServer) entity.getWorld();
             worldServer.tracker.untrackEntity(this);
-            worldServer.tracker.entriesLock.writeLock().lock(); // Akarin - ProtocolSupport will overwrite track method
+            synchronized (worldServer.tracker.entriesLock) { // Akarin
             worldServer.tracker.track(this);
-            worldServer.tracker.entriesLock.writeLock().unlock(); // Akarin - ProtocolSupport will overwrite track method
+            } // Akarin
         }
         // Paper end
 

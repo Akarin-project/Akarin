@@ -23,7 +23,7 @@ public class EntityTracker {
     private static final Logger a = LogManager.getLogger();
     private final WorldServer world;
     private final Set<EntityTrackerEntry> c = Sets.newHashSet();
-    public final ReentrantReadWriteUpdateLock entriesLock = new ReentrantReadWriteUpdateLock(); // Akarin - add lock
+    public final Object entriesLock = new Object(); // Akarin - add lock
     public final IntHashMap<EntityTrackerEntry> trackedEntities = new IntHashMap();
     private int e;
 
@@ -160,7 +160,7 @@ public class EntityTracker {
 
     public void untrackEntity(Entity entity) {
         org.spigotmc.AsyncCatcher.catchOp( "entity untrack"); // Spigot
-        entriesLock.writeLock().lock(); // Akarin
+        synchronized (entriesLock) { // Akarin
         if (entity instanceof EntityPlayer) {
             EntityPlayer entityplayer = (EntityPlayer) entity;
             Iterator iterator = this.c.iterator();
@@ -179,14 +179,14 @@ public class EntityTracker {
             entitytrackerentry1.a();
         }
 
-        entriesLock.writeLock().unlock(); // Akarin
+        } // Akarin
     }
 
     public void updatePlayers() {
         ArrayList arraylist = Lists.newArrayList();
         Iterator iterator = this.c.iterator();
         world.timings.tracker1.startTiming(); // Spigot
-        entriesLock.writeLock().lock(); // Akarin
+        synchronized (entriesLock) { // Akarin
         while (iterator.hasNext()) {
             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
 
@@ -214,14 +214,14 @@ public class EntityTracker {
                 }
             }
         }
-        entriesLock.writeLock().unlock(); // Akarin
+        } // Akarin
         world.timings.tracker2.stopTiming(); // Spigot
 
     }
 
     public void a(EntityPlayer entityplayer) {
         Iterator iterator = this.c.iterator();
-        entriesLock.writeLock().lock(); // Akarin
+        synchronized (entriesLock) { // Akarin
 
         while (iterator.hasNext()) {
             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
@@ -233,34 +233,34 @@ public class EntityTracker {
             }
         }
 
-        entriesLock.writeLock().unlock(); // Akarin
+        } // Akarin
     }
 
     public void a(Entity entity, Packet<?> packet) {
-        entriesLock.readLock().lock(); // Akarin
+        synchronized (entriesLock) { // Akarin
         EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) this.trackedEntities.get(entity.getId());
-        entriesLock.readLock().unlock(); // Akarin
 
         if (entitytrackerentry != null) {
             entitytrackerentry.broadcast(packet);
         }
 
+        } // Akarin
     }
 
     public void sendPacketToEntity(Entity entity, Packet<?> packet) {
-        entriesLock.readLock().lock(); // Akarin
+        synchronized (entriesLock) { // Akarin
         EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) this.trackedEntities.get(entity.getId());
-        entriesLock.readLock().unlock(); // Akarin
 
         if (entitytrackerentry != null) {
             entitytrackerentry.broadcastIncludingSelf(packet);
         }
 
+        } // Akarin
     }
 
     public void untrackPlayer(EntityPlayer entityplayer) {
         Iterator iterator = this.c.iterator();
-        entriesLock.writeLock().lock(); // Akarin
+        synchronized (entriesLock) { // Akarin
 
         while (iterator.hasNext()) {
             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
@@ -268,14 +268,14 @@ public class EntityTracker {
             entitytrackerentry.clear(entityplayer);
         }
 
-        entriesLock.writeLock().unlock(); // Akarin
+        } // Akarin
     }
 
     public void a(EntityPlayer entityplayer, Chunk chunk) {
         ArrayList arraylist = Lists.newArrayList();
         ArrayList arraylist1 = Lists.newArrayList();
         Iterator iterator = this.c.iterator();
-        entriesLock.writeLock().lock(); // Akarin
+        synchronized (entriesLock) { // Akarin
 
         while (iterator.hasNext()) {
             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
@@ -292,7 +292,7 @@ public class EntityTracker {
                 }
             }
         }
-        entriesLock.writeLock().unlock(); // Akarin
+        } // Akarin
 
         Entity entity1;
 
@@ -319,7 +319,7 @@ public class EntityTracker {
     public void a(int i) {
         this.e = (i - 1) * 16;
         Iterator iterator = this.c.iterator();
-        entriesLock.readLock().lock(); // Akarin
+        synchronized (entriesLock) { // Akarin
 
         while (iterator.hasNext()) {
             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
@@ -327,6 +327,6 @@ public class EntityTracker {
             entitytrackerentry.a(this.e);
         }
 
-        entriesLock.readLock().unlock(); // Akarin
+        } // Akarin
     }
 }
