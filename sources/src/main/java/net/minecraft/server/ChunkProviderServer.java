@@ -209,6 +209,8 @@ public class ChunkProviderServer implements IChunkProvider {
         Long2ObjectMap long2objectmap = this.chunks;
         Chunk chunk;
 
+        Akari.eventLock.lock(); // Akarin
+        try { // Akarin
         synchronized (this.chunks) {
             Chunk chunk1 = (Chunk) this.chunks.get(k);
 
@@ -228,6 +230,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
             this.chunks.put(k, chunk);
         }
+        } finally { Akari.eventLock.unlock(); } // Akarin
 
         chunk.addEntities();
         return chunk;
