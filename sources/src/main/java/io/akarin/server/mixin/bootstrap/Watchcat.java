@@ -81,7 +81,7 @@ public abstract class Watchcat extends Thread {
                 }
                 // Paper end - Different message for short timeout
                 log.log(Level.SEVERE, "------------------------------");
-                log.log(Level.SEVERE, "Server thread dump (Look for plugins here before reporting to Paper!):");
+                log.log(Level.SEVERE, "Server thread dump (Look for plugins here before reporting to Akarin!):");
                 dumpThread(ManagementFactory.getThreadMXBean().getThreadInfo(MinecraftServer.getServer().primaryThread.getId(), Integer.MAX_VALUE), log);
                 log.log(Level.SEVERE, "------------------------------");
                 //
