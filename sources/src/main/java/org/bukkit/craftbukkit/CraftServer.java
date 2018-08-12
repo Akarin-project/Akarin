@@ -92,6 +92,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.loot.LootTable;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.Plugin;
@@ -119,7 +120,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.common.collect.MapMaker;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
@@ -1899,6 +1899,13 @@ public final class CraftServer implements Server {
         }
     }
 
+    public LootTable getLootTable(NamespacedKey key) {
+        Validate.notNull(key, "NamespacedKey cannot be null");
+
+        LootTableRegistry registry = getServer().aP(); // PAIL getLootTableRegistry
+        return new CraftLootTable(key, registry.a(CraftNamespacedKey.toMinecraft(key))); // PAIL rename getLootTable
+    }
+
     @Deprecated
     @Override
     public UnsafeValues getUnsafe() {
@@ -1992,17 +1999,20 @@ public final class CraftServer implements Server {
 
     @Override
     public void reloadPermissions() {
-        ((SimplePluginManager) pluginManager).clearPermissions();
-        loadCustomPermissions();
+        pluginManager.clearPermissions();
+        if (com.destroystokyo.paper.PaperConfig.loadPermsBeforePlugins) loadCustomPermissions();
         for (Plugin plugin : pluginManager.getPlugins()) {
-            plugin.getDescription().getPermissions().forEach((perm) -> {
+            for (Permission perm : plugin.getDescription().getPermissions()) {
                 try {
                     pluginManager.addPermission(perm);
                 } catch (IllegalArgumentException ex) {
                     getLogger().log(Level.WARNING, "Plugin " + plugin.getDescription().getFullName() + " tried to register permission '" + perm.getName() + "' but it's already registered", ex);
                 }
-            });
+            }
         }
+        if (!com.destroystokyo.paper.PaperConfig.loadPermsBeforePlugins) loadCustomPermissions();
+        DefaultPermissions.registerCorePermissions();
+        CraftDefaultPermissions.registerCorePermissions();
     }
 
     @Override

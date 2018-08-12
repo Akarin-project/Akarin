@@ -5,7 +5,6 @@ import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
@@ -17,7 +16,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -131,7 +129,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private boolean hasPlayedBefore = false;
     private final ConversationTracker conversationTracker = new ConversationTracker();
     private final Set<String> channels = new HashSet<String>();
-    private final Map<UUID, Set<WeakReference<Plugin>>> hiddenPlayers = Collections.synchronizedMap(new HashMap<>()); // Akarin
+    private final Map<UUID, Set<WeakReference<Plugin>>> hiddenPlayers = new java.util.concurrent.ConcurrentHashMap<>(); // Akarin
     private static final WeakHashMap<Plugin, WeakReference<Plugin>> pluginWeakReferences = new WeakHashMap<>();
     private int hash = 0;
     private double health = 20;
@@ -1199,14 +1197,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         EntityTracker tracker = ((WorldServer) entity.world).tracker;
         // Paper end
 
-        tracker.entriesLock.updateLock().lock(); // Akarin
+        tracker.entriesLock.writeLock().lock(); // Akarin
         EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
         if (entry != null) {
-            tracker.entriesLock.writeLock().lock(); // Akarin
             entry.clear(getHandle());
-            tracker.entriesLock.writeLock().unlock(); // Akarin
         }
-        tracker.entriesLock.updateLock().unlock(); // Akarin
+        tracker.entriesLock.writeLock().unlock(); // Akarin
 
         // Remove the hidden player from this player user list, if they're on it
         if (other.sentListPacket) {
@@ -1253,14 +1249,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, other));
 
-        tracker.entriesLock.updateLock().lock(); // Akarin
+        tracker.entriesLock.writeLock().lock(); // Akarin
         EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
         if (entry != null && !entry.trackedPlayers.contains(getHandle())) {
-            tracker.entriesLock.writeLock().lock(); // Akarin
             entry.updatePlayer(getHandle());
-            tracker.entriesLock.writeLock().unlock(); // Akarin
         }
-        tracker.entriesLock.updateLock().unlock(); // Akarin
+        tracker.entriesLock.writeLock().unlock(); // Akarin
     }
     // Paper start
     private void reregisterPlayer(EntityPlayer player) {
@@ -1871,7 +1865,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public boolean getAffectsSpawning() {
         return this.getHandle().affectsSpawning;
     }
-    // Paper end
 
     @Override
     public int getViewDistance() {
@@ -1881,6 +1874,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     @Override
     public void setViewDistance(int viewDistance) {
         ((WorldServer) getHandle().world).getPlayerChunkMap().updateViewDistance(getHandle(), viewDistance);
+    }
+    // Paper end
+
+    @Override
+    public void updateCommands() {
+        if (getHandle().playerConnection == null) return;
+
+        getHandle().server.getCommandDispatcher().a(getHandle());
     }
 
     @Override

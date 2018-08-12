@@ -25,7 +25,7 @@ public class AkarinGlobalConfig {
             + "Some options may impact gameplay, so use with caution,\n"
             + "and make sure you know what each option does before configuring.\n"
             + "\n"
-            + "Akarin forums: https://akarin.io/ \n";
+            + "Akarin website: https://akarin.io/ \n";
     /*========================================================================*/
     public static YamlConfiguration config;
     static int version;

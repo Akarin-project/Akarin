@@ -17,7 +17,6 @@ import com.destroystokyo.paper.event.executor.asm.ClassDefiner;
 import com.google.common.base.Preconditions;
 
 import io.akarin.api.internal.Akari;
-import io.akarin.api.internal.utils.thread.SuspendableExecutorCompletionService;
 // Paper end
 import io.akarin.server.core.AkarinGlobalConfig;
 

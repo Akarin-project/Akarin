@@ -395,8 +395,8 @@ public class PlayerChunkMap {
     // Paper start - Separate into two methods
     public void a(int i) {
         i = MathHelper.clamp(i, 3, 32);
-        if (i != this.j) { // Akarin
-            int j = i - this.j; // Akarin
+        if (i != this.j) {
+            int j = i - this.j;
             managedPlayersLock.readLock().lock(); // Akarin
             ArrayList arraylist = Lists.newArrayList(this.managedPlayers);
             managedPlayersLock.readLock().unlock(); // Akarin
