@@ -165,11 +165,6 @@ public class AkarinGlobalConfig {
         silentAsyncTimings = getBoolean("core.always-silent-async-timing", false);
     }
     
-    public static boolean legacyWorldTimings;
-    private static void legacyWorldTimings() {
-        legacyWorldTimings = getBoolean("alternative.legacy-world-timings-required", false);
-    }
-    
     public static long timeUpdateInterval;
     private static void timeUpdateInterval() {
         timeUpdateInterval = getSeconds(getString("core.tick-rate.world-time-update-interval", "1s")) * 10;
