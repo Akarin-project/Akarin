@@ -57,6 +57,7 @@ public abstract class MixinTimingHandler implements IMixinTimingHandler {
         }*/
         
         // Safety ensured
-        addDiff(System.nanoTime() - start.getAndSet(0));
+        long prev = start.getAndSet(0); // Akarin
+        addDiff(System.nanoTime() - prev); // Akarin
     }
 }

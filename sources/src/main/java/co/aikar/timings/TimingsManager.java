@@ -31,6 +31,7 @@ import org.bukkit.command.Command;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.PluginClassLoader;
 import co.aikar.util.LoadingMap;
+import io.akarin.api.internal.Akari;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public final class TimingsManager {
     public static List<String> hiddenConfigs = new ArrayList<String>();
     public static boolean privacy = false;
 
-    static final Collection<TimingHandler> HANDLERS = Collections.synchronizedCollection(new ArrayDeque<TimingHandler>()); // Akarin
+    static final Collection<TimingHandler> HANDLERS = new ArrayDeque<TimingHandler>();
     static final ArrayDeque<TimingHistory.MinuteReport> MINUTE_REPORTS = new ArrayDeque<TimingHistory.MinuteReport>();
 
     static EvictingQueue<TimingHistory> HISTORY = EvictingQueue.create(12);
@@ -91,6 +92,7 @@ public final class TimingsManager {
         if (Timings.timingsEnabled) {
             boolean violated = FULL_SERVER_TICK.isViolated();
 
+            Akari.timingsLock.lock(); // Akarin
             for (TimingHandler handler : HANDLERS) {
                 if (handler.isSpecial()) {
                     // We manually call this
@@ -98,6 +100,7 @@ public final class TimingsManager {
                 }
                 handler.processTick(violated);
             }
+            Akari.timingsLock.unlock(); // Akarin
 
             TimingHistory.playerTicks += Bukkit.getOnlinePlayers().size();
             TimingHistory.timedTicks++;
@@ -133,12 +136,16 @@ public final class TimingsManager {
         } else {
             // Soft resets only need to act on timings that have done something
             // Handlers can only be modified on main thread.
+            Akari.timingsLock.lock(); // Akarin
             for (TimingHandler timings : HANDLERS) {
                 timings.reset(false);
             }
+            Akari.timingsLock.unlock(); // Akarin
         }
 
+        Akari.timingsLock.lock(); // Akarin
         HANDLERS.clear();
+        Akari.timingsLock.unlock(); // Akarin
         MINUTE_REPORTS.clear();
 
         TimingHistory.resetTicks(true);

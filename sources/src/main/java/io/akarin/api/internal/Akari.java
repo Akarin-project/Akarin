@@ -89,11 +89,8 @@ public abstract class Akari {
                 parallelism = 1;
                 break;
             case 1:
-                parallelism = worlds;
-                break;
-            case 2:
             default:
-                parallelism = worlds * 2;
+                parallelism = worlds;
                 break;
         }
         STAGE_TICK = new SuspendableExecutorCompletionService<>(new SuspendableThreadPoolExecutor(parallelism, parallelism,
@@ -136,12 +133,11 @@ public abstract class Akari {
     }
     
     public static final ReentrantSpinningLock eventLock = new ReentrantSpinningLock();
+    public static final ReentrantSpinningLock timingsLock = new ReentrantSpinningLock();
     
     /*
      * Timings
      */
-    public final static Timing worldTiming = getTiming("Akarin - Full World Tick");
-    
     public final static Timing eventSuspendTiming = getTiming("Akarin - Event Suspend");
 
     public final static Timing eventResumeTiming = getTiming("Akarin - Event Resume");

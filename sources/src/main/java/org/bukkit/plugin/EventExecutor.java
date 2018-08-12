@@ -75,6 +75,7 @@ public interface EventExecutor {
                             // Akarin start
                             if (AkarinGlobalConfig.parallelMode != -1) {
                                 Akari.eventSuspendTiming.startTiming();
+                                Akari.timingsLock.lock();
                                 Akari.STAGE_TICK.suspend();
                                 Akari.eventSuspendTiming.stopTiming();
                             }
@@ -84,6 +85,7 @@ public interface EventExecutor {
                             if (AkarinGlobalConfig.parallelMode != -1) {
                                 Akari.eventResumeTiming.startTiming();
                                 Akari.STAGE_TICK.resume();
+                                Akari.timingsLock.unlock();
                                 Akari.eventResumeTiming.stopTiming();
                             }
                             // Akarin end

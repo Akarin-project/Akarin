@@ -24,10 +24,11 @@
 package co.aikar.timings;
 
 import co.aikar.util.LoadingIntMap;
+import io.akarin.api.internal.Akari;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+
 import org.bukkit.Bukkit;
 
-import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -44,7 +45,7 @@ class TimingHandler implements Timing {
     final String name;
     private final boolean verbose;
 
-    private final Map<Integer, TimingData> children = Collections.synchronizedMap(new LoadingIntMap<>(TimingData::new)); // Akarin - HashMap
+    private final Int2ObjectOpenHashMap<TimingData> children = new LoadingIntMap<>(TimingData::new);
 
     final TimingData record;
     private final TimingHandler groupHandler;
@@ -84,9 +85,11 @@ class TimingHandler implements Timing {
         }
 
         record.processTick(violated);
+        Akari.timingsLock.lock(); // Akarin
         for (TimingData handler : children.values()) {
             handler.processTick(violated);
         }
+        Akari.timingsLock.unlock(); // Akarin
     }
 
     @Override
@@ -121,7 +124,8 @@ class TimingHandler implements Timing {
                 start.getAndSet(0);
                 return;
             }
-            addDiff(System.nanoTime() - start.getAndSet(0));
+            long prev = start.getAndSet(0); // Akarin
+            addDiff(System.nanoTime() - prev); // Akarin
         }
     }
 
@@ -136,18 +140,24 @@ class TimingHandler implements Timing {
         if (TimingsManager.CURRENT == this) {
             TimingsManager.CURRENT = parent;
             if (parent != null) {
+                Akari.timingsLock.lock(); // Akarin
                 parent.children.get(id).add(diff);
+                Akari.timingsLock.unlock(); // Akarin
             }
         }
         record.add(diff);
         if (!added) {
             added = true;
             timed = true;
+            Akari.timingsLock.lock(); // Akarin
             TimingsManager.HANDLERS.add(this);
+            Akari.timingsLock.unlock(); // Akarin
         }
         if (groupHandler != null) {
             groupHandler.addDiff(diff);
+            Akari.timingsLock.lock(); // Akarin
             groupHandler.children.get(id).add(diff);
+            Akari.timingsLock.unlock(); // Akarin
         }
     }
 
@@ -164,7 +174,9 @@ class TimingHandler implements Timing {
         start.set(0);
         timingDepth.set(0);
         added = false;
+        Akari.timingsLock.lock(); // Akarin
         children.clear();
+        Akari.timingsLock.unlock(); // Akarin
         checkEnabled();
     }
 
@@ -206,10 +218,12 @@ class TimingHandler implements Timing {
 
     TimingData[] cloneChildren() {
         int i = 0;
+        Akari.timingsLock.lock(); // Akarin
         final TimingData[] clonedChildren = new TimingData[children.size()];
         for (TimingData child : children.values()) {
             clonedChildren[i++] = child.clone();
         }
+        Akari.timingsLock.unlock(); // Akarin
         return clonedChildren;
     }
 }
