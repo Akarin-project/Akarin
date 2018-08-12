@@ -4,6 +4,9 @@ import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.spongepowered.asm.mixin.Mixin;
+
+import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock;
+
 import io.akarin.api.internal.mixin.IMixinWorldServer;
 import net.minecraft.server.WorldServer;
 
@@ -33,5 +36,12 @@ public abstract class MixinWorldServer implements IMixinWorldServer {
     @Override
     public Random rand() {
         return sharedRandom;
+    }
+    
+    public final ReentrantReadWriteUpdateLock trackerLock = new ReentrantReadWriteUpdateLock();
+    
+    @Override
+    public ReentrantReadWriteUpdateLock trackerLock() {
+        return trackerLock;
     }
 }

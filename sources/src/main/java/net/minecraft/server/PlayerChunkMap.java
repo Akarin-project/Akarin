@@ -1,6 +1,8 @@
 package net.minecraft.server;
 
 import co.aikar.timings.Timing;
+import io.akarin.api.internal.mixin.IMixinWorldServer;
+
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
@@ -36,7 +38,6 @@ public class PlayerChunkMap {
     };
     private final WorldServer world;
     private final List<EntityPlayer> managedPlayers = Lists.newArrayList();
-    private final ReentrantReadWriteLock managedPlayersLock = new ReentrantReadWriteLock(); // Akarin - add lock
     private final Long2ObjectMap<PlayerChunk> e = new Long2ObjectOpenHashMap(4096);
     private final Set<PlayerChunk> f = Sets.newHashSet();
     private final List<PlayerChunk> g = Lists.newLinkedList();
@@ -92,10 +93,11 @@ public class PlayerChunkMap {
         };
     }
 
-    public synchronized void flush() { // Akarin - synchronized
+    public void flush() {
         long i = this.world.getTime();
         int j;
         PlayerChunk playerchunk;
+        ((IMixinWorldServer) world).trackerLock().writeLock().lock(); // Akarin
 
         if (i - this.k > 8000L) {
             try (Timing ignored = world.timings.doChunkMapUpdate.startTiming()) { // Paper
@@ -203,7 +205,6 @@ public class PlayerChunkMap {
             } // Paper timing
         }
 
-        managedPlayersLock.readLock().lock(); // Akarin
         if (this.managedPlayers.isEmpty()) {
             try (Timing ignored = world.timings.doChunkMapUnloadChunks.startTiming()) { // Paper
             WorldProvider worldprovider = this.world.worldProvider;
@@ -213,19 +214,23 @@ public class PlayerChunkMap {
             }
             } // Paper timing
         }
-        managedPlayersLock.readLock().unlock(); // Akarin
+        ((IMixinWorldServer) world).trackerLock().writeLock().unlock(); // Akarin
 
     }
 
-    public synchronized boolean a(int i, int j) { // Akarin - synchronized
+    public boolean a(int i, int j) {
         long k = d(i, j);
 
+        ((IMixinWorldServer) world).trackerLock().writeLock().lock(); try { // Akarin
         return this.e.get(k) != null;
+        } finally { ((IMixinWorldServer) world).trackerLock().writeLock().unlock(); } // Akarin
     }
 
     @Nullable
-    public synchronized PlayerChunk getChunk(int i, int j) { // Akarin - synchronized
+    public PlayerChunk getChunk(int i, int j) {
+        ((IMixinWorldServer) world).trackerLock().writeLock().lock(); try { // Akarin
         return (PlayerChunk) this.e.get(d(i, j));
+        } finally { ((IMixinWorldServer) world).trackerLock().writeLock().unlock(); } // Akarin
     }
 
     private PlayerChunk c(int i, int j) {
@@ -290,16 +295,14 @@ public class PlayerChunkMap {
         }
 
         Collections.sort(chunkList, new ChunkCoordComparator(entityplayer));
-        synchronized (this) { // Akarin - synchronized
+        ((IMixinWorldServer) world).trackerLock().writeLock().lock(); // Akarin
         for (ChunkCoordIntPair pair : chunkList) {
             this.c(pair.x, pair.z).a(entityplayer);
         }
-        } // Akarin
         // CraftBukkit end
 
-        managedPlayersLock.writeLock().lock(); // Akarin
         this.managedPlayers.add(entityplayer);
-        managedPlayersLock.writeLock().unlock(); // Akarin
+        ((IMixinWorldServer) world).trackerLock().writeLock().unlock(); // Akarin
         this.e();
     }
 
@@ -320,9 +323,9 @@ public class PlayerChunkMap {
             }
         }
 
-        managedPlayersLock.writeLock().lock(); // Akarin
+        ((IMixinWorldServer) world).trackerLock().writeLock().lock(); // Akarin
         this.managedPlayers.remove(entityplayer);
-        managedPlayersLock.writeLock().unlock(); // Akarin
+        ((IMixinWorldServer) world).trackerLock().writeLock().unlock(); // Akarin
         this.e();
     }
 
@@ -375,11 +378,11 @@ public class PlayerChunkMap {
 
                 // CraftBukkit start - send nearest chunks first
                 Collections.sort(chunksToLoad, new ChunkCoordComparator(entityplayer));
-                synchronized (this) { // Akarin - synchronized
+                ((IMixinWorldServer) world).trackerLock().writeLock().lock(); // Akarin
                 for (ChunkCoordIntPair pair : chunksToLoad) {
                     this.c(pair.x, pair.z).a(entityplayer);
                 }
-                } // Akarin
+                ((IMixinWorldServer) world).trackerLock().writeLock().unlock(); // Akarin
                 // CraftBukkit end
             }
         }
@@ -397,9 +400,9 @@ public class PlayerChunkMap {
         i = MathHelper.clamp(i, 3, 32);
         if (i != this.j) {
             int j = i - this.j;
-            managedPlayersLock.readLock().lock(); // Akarin
+            ((IMixinWorldServer) world).trackerLock().readLock().lock(); // Akarin
             ArrayList arraylist = Lists.newArrayList(this.managedPlayers);
-            managedPlayersLock.readLock().unlock(); // Akarin
+            ((IMixinWorldServer) world).trackerLock().readLock().unlock(); // Akarin
             Iterator iterator = arraylist.iterator();
 
             while (iterator.hasNext()) {
@@ -428,8 +431,8 @@ public class PlayerChunkMap {
             int i1;
             int j1;
 
+            ((IMixinWorldServer) world).trackerLock().writeLock().lock(); // Akarin
             if (j > 0) {
-                synchronized (this) { // Akarin - synchronized
                 for (i1 = k - i; i1 <= k + i; ++i1) {
                     for (j1 = l - i; j1 <= l + i; ++j1) {
                         PlayerChunk playerchunk = this.c(i1, j1);
@@ -439,9 +442,7 @@ public class PlayerChunkMap {
                         }
                     }
                 }
-                } // Akarin
             } else {
-                synchronized (this) { // Akarin - synchronized
                 for (i1 = k - oldViewDistance; i1 <= k + oldViewDistance; ++i1) {
                     for (j1 = l - oldViewDistance; j1 <= l + oldViewDistance; ++j1) {
                         if (!this.a(i1, j1, k, l, i)) {
@@ -449,11 +450,11 @@ public class PlayerChunkMap {
                         }
                     }
                 }
-                } // Akarin
                 if (markSort) {
                     this.e();
                 }
             }
+            ((IMixinWorldServer) world).trackerLock().writeLock().unlock(); // Akarin
         }
     }
     // Paper end
@@ -471,12 +472,15 @@ public class PlayerChunkMap {
         return (long) i + 2147483647L | (long) j + 2147483647L << 32;
     }
 
-    public synchronized void a(PlayerChunk playerchunk) { // Akarin - synchronized
+    public void a(PlayerChunk playerchunk) {
         org.spigotmc.AsyncCatcher.catchOp("Async Player Chunk Add"); // Paper
+        ((IMixinWorldServer) world).trackerLock().writeLock().lock(); // Akarin
         this.f.add(playerchunk);
+        ((IMixinWorldServer) world).trackerLock().writeLock().unlock(); // Akarin
     }
 
-    public synchronized void b(PlayerChunk playerchunk) { // Akarin - synchronized
+    public void b(PlayerChunk playerchunk) {
+        ((IMixinWorldServer) world).trackerLock().writeLock().lock(); // Akarin
         org.spigotmc.AsyncCatcher.catchOp("Async Player Chunk Remove"); // Paper
         ChunkCoordIntPair chunkcoordintpair = playerchunk.a();
         long i = d(chunkcoordintpair.x, chunkcoordintpair.z);
@@ -498,6 +502,7 @@ public class PlayerChunkMap {
             }
             // Paper end
         }
+        ((IMixinWorldServer) world).trackerLock().writeLock().unlock(); // Akarin
 
     }
 

@@ -5,6 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
+import io.akarin.api.internal.mixin.IMixinWorldServer;
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.WorldManager;
@@ -16,9 +17,9 @@ public abstract class MixinWorldManager {
     
     @Overwrite
     public void a(Entity entity) {
-        this.world.getTracker().entriesLock.writeLock().lock(); // Akarin
+        ((IMixinWorldServer) this.world).trackerLock().writeLock().lock(); // Akarin
         this.world.getTracker().track(entity);
-        this.world.getTracker().entriesLock.writeLock().unlock(); // Akarin
+        ((IMixinWorldServer) this.world).trackerLock().writeLock().unlock(); // Akarin
         
         if (entity instanceof EntityPlayer) {
             this.world.worldProvider.a((EntityPlayer) entity);

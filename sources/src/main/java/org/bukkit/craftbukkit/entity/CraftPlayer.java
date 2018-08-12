@@ -7,6 +7,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.BaseEncoding;
 import com.mojang.authlib.GameProfile;
+
+import io.akarin.api.internal.mixin.IMixinWorldServer;
 import io.netty.buffer.Unpooled;
 
 import java.io.ByteArrayOutputStream;
@@ -1197,12 +1199,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         EntityTracker tracker = ((WorldServer) entity.world).tracker;
         // Paper end
 
-        tracker.entriesLock.writeLock().lock(); // Akarin
+        ((IMixinWorldServer) entity.world).trackerLock().writeLock().lock(); // Akarin
         EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
         if (entry != null) {
             entry.clear(getHandle());
         }
-        tracker.entriesLock.writeLock().unlock(); // Akarin
+        ((IMixinWorldServer) entity.world).trackerLock().writeLock().unlock(); // Akarin
 
         // Remove the hidden player from this player user list, if they're on it
         if (other.sentListPacket) {
@@ -1249,12 +1251,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, other));
 
-        tracker.entriesLock.writeLock().lock(); // Akarin
+        ((IMixinWorldServer) entity.world).trackerLock().writeLock().lock(); // Akarin
         EntityTrackerEntry entry = tracker.trackedEntities.get(other.getId());
         if (entry != null && !entry.trackedPlayers.contains(getHandle())) {
             entry.updatePlayer(getHandle());
         }
-        tracker.entriesLock.writeLock().unlock(); // Akarin
+        ((IMixinWorldServer) entity.world).trackerLock().writeLock().unlock(); // Akarin
     }
     // Paper start
     private void reregisterPlayer(EntityPlayer player) {

@@ -153,22 +153,29 @@ public abstract class MixinMinecraftServer {
             case 1:
             default:
                 // Never tick one world concurrently!
-                for (int i = 0; i < cachedWorldSize; i++) {
+                for (int i = 1; i <= cachedWorldSize; ++i) {
                     // Impl Note:
                     // Entities ticking: index 1 -> ... -> 0 (parallel)
                     //   World  ticking: index 0 -> ... (parallel)
-                    int interlace = i + 1;
-                    WorldServer entityWorld = worlds.get(interlace < cachedWorldSize ? interlace : 0);
+                    WorldServer entityWorld = worlds.get(i < cachedWorldSize ? i : 0);
                     Akari.STAGE_TICK.submit(() -> {
                         synchronized (((IMixinWorldServer) entityWorld).lock()) {
                             tickEntities(entityWorld);
                         }
                     }, null/*new TimingSignal(entityWorld, true)*/);
-                    
-                    WorldServer world = worlds.get(i);
-                    synchronized (((IMixinWorldServer) world).lock()) {
-                        tickWorld(world);
+                }
+                
+                Akari.STAGE_TICK.submit(() -> {
+                    for (int i = 0; i < cachedWorldSize; i++) {
+                        WorldServer world = worlds.get(i);
+                        synchronized (((IMixinWorldServer) world).lock()) {
+                            tickWorld(world);
+                        }
                     }
+                }, null);
+                
+                for (int i = cachedWorldSize; i -->= 0 ;) {
+                    Akari.STAGE_TICK.take();
                 }
                 
                 /* for (int i = (AkarinGlobalConfig.parallelMode == 1 ? cachedWorldSize : cachedWorldSize * 2); i --> 0 ;) {
@@ -189,13 +196,16 @@ public abstract class MixinMinecraftServer {
                     }
                 }, null);
                 
-                for (int i = 0; i < cachedWorldSize; ++i) {
-                    WorldServer world = worlds.get(i);
-                    synchronized (((IMixinWorldServer) world).lock()) {
-                        tickWorld(world);
+                Akari.STAGE_TICK.submit(() -> {
+                    for (int i = 0; i < cachedWorldSize; ++i) {
+                        WorldServer world = worlds.get(i);
+                        synchronized (((IMixinWorldServer) world).lock()) {
+                            tickWorld(world);
+                        }
                     }
-                }
+                }, null);
                 
+                Akari.STAGE_TICK.take();
                 Akari.STAGE_TICK.take();
                 break;
             case -1:

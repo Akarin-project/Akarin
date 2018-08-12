@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
+
+import io.akarin.api.internal.mixin.IMixinWorldServer;
 import io.netty.buffer.Unpooled;
 import java.util.ArrayDeque; // Paper
 import java.util.ArrayList;
@@ -761,9 +763,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         if (entity instanceof EntityPlayer) {
             WorldServer worldServer = (WorldServer) entity.getWorld();
             worldServer.tracker.untrackEntity(this);
-            worldServer.tracker.entriesLock.writeLock().lock(); // Akarin
+            ((IMixinWorldServer) worldServer).trackerLock().writeLock().lock(); // Akarin
             worldServer.tracker.track(this);
-            worldServer.tracker.entriesLock.writeLock().unlock(); // Akarin
+            ((IMixinWorldServer) worldServer).trackerLock().writeLock().unlock(); // Akarin
         }
         // Paper end
 
