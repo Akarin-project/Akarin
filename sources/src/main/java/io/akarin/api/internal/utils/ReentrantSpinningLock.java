@@ -31,7 +31,7 @@ public class ReentrantSpinningLock {
     public void unlock() {
         if (reentrantLocks == 0) {
             heldThreadId = 0;
-            if (readerThreads.getAndDecrement() == 1) { // Micro-optimization: this saves one subtract
+            if (readerThreads.get() == 0 || readerThreads.getAndDecrement() == 1) { // Micro-optimization: this saves one subtract
                 writeLocked.set(false);
             }
         } else {
