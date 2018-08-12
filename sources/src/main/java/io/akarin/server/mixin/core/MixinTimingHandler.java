@@ -18,8 +18,8 @@ import net.minecraft.server.MinecraftServer;
 public abstract class MixinTimingHandler implements IMixinTimingHandler {
     @Shadow @Final String name;
     @Shadow private boolean enabled;
-    @Shadow private volatile long start;
-    @Shadow private volatile int timingDepth;
+    @Shadow private long start;
+    @Shadow private int timingDepth;
     
     @Shadow abstract void addDiff(long diff);
     @Shadow public abstract Timing startTiming();
@@ -47,7 +47,7 @@ public abstract class MixinTimingHandler implements IMixinTimingHandler {
         if (!alreadySync) {
             Thread curThread = Thread.currentThread();
             if (curThread != MinecraftServer.getServer().primaryThread) {
-                if (false && !AkarinGlobalConfig.silentAsyncTimings) {
+                if (!AkarinGlobalConfig.silentAsyncTimings) {
                     Bukkit.getLogger().log(Level.SEVERE, "stopTiming called async for " + name);
                     Thread.dumpStack();
                 }

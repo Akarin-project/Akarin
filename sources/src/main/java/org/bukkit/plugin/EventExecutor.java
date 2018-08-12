@@ -3,8 +3,6 @@ package org.bukkit.plugin;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockPhysicsEvent;
-
 // Paper start
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -22,6 +20,10 @@ import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.utils.thread.SuspendableExecutorCompletionService;
 // Paper end
 
+/**
+ * Akarin Changes Note
+ * 1) Suspend for event (safety issue)
+ */
 /**
  * Interface which defines the class for event call backs to plugins
  */
@@ -71,11 +73,11 @@ public interface EventExecutor {
                         if (!eventClass.isInstance(event)) return;
                         try {
                             Akari.eventSuspendTiming.startTimingIfSync(); // Akarin
-                            SuspendableExecutorCompletionService.suspend(Akari.STAGE_TICK); // Akarin
+                            Akari.STAGE_TICK.suspend(); // Akarin
                             Akari.eventSuspendTiming.stopTimingIfSync(); // Akarin
                             asmExecutor.execute(listener, event);
                             Akari.eventResumeTiming.startTimingIfSync(); // Akarin
-                            SuspendableExecutorCompletionService.resume(Akari.STAGE_TICK); // Akarin
+                            Akari.STAGE_TICK.resume(); // Akarin
                             Akari.eventResumeTiming.stopTimingIfSync(); // Akarin
                         } catch (Exception e) {
                             throw new EventException(e);
