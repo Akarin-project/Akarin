@@ -89,6 +89,8 @@ public abstract class MixinMinecraftServer {
     private boolean tickEntities(WorldServer world) {
         try {
             world.tickEntities();
+            world.getTracker().updatePlayers();
+            world.explosionDensityCache.clear(); // Paper - Optimize explosions
         } catch (Throwable throwable) {
             CrashReport crashreport;
             try {
@@ -147,35 +149,78 @@ public abstract class MixinMinecraftServer {
         Akari.worldTiming.startTiming();
         if (cachedWorldSize != worlds.size()) Akari.resizeTickExecutors((cachedWorldSize = worlds.size()));
         
-        // Never tick one world concurrently!
-        for (int i = 0; i < cachedWorldSize; i++) {
-            // Impl Note:
-            // Entities ticking: index 1 -> ... -> 0 (parallel)
-            //   World  ticking: index 0 -> ... (parallel)
-            int interlace = i + 1;
-            WorldServer entityWorld = worlds.get(interlace < cachedWorldSize ? interlace : 0);
-            Akari.STAGE_TICK.submit(() -> {
-                synchronized (((IMixinLockProvider) entityWorld).lock()) {
-                    tickEntities(entityWorld);
-                    entityWorld.getTracker().updatePlayers();
-                    entityWorld.explosionDensityCache.clear(); // Paper - Optimize explosions
+        switch (AkarinGlobalConfig.parallelMode) {
+            case 1:
+            case 2:
+            default:
+                // Never tick one world concurrently!
+                for (int i = 0; i < cachedWorldSize; i++) {
+                    // Impl Note:
+                    // Entities ticking: index 1 -> ... -> 0 (parallel)
+                    //   World  ticking: index 0 -> ... (parallel)
+                    int interlace = i + 1;
+                    WorldServer entityWorld = worlds.get(interlace < cachedWorldSize ? interlace : 0);
+                    Akari.STAGE_TICK.submit(() -> {
+                        synchronized (((IMixinLockProvider) entityWorld).lock()) {
+                            tickEntities(entityWorld);
+                        }
+                    }, new TimingSignal(entityWorld, true));
+                    
+                    WorldServer world = worlds.get(i);
+                    switch (AkarinGlobalConfig.parallelMode) {
+                        case 1:
+                            world.timings.doTick.startTiming();
+                            synchronized (((IMixinLockProvider) world).lock()) {
+                                tickWorld(world);
+                            }
+                            world.timings.doTick.stopTiming();
+                            break;
+                        default:
+                            Akari.STAGE_TICK.submit(() -> {
+                                synchronized (((IMixinLockProvider) world).lock()) {
+                                    tickWorld(world);
+                                }
+                            }, new TimingSignal(world, false));
+                            break;
+                    }
                 }
-            }, new TimingSignal(entityWorld, true));
-            
-            WorldServer world = worlds.get(i);
-            world.timings.doTick.startTiming();
-            synchronized (((IMixinLockProvider) world).lock()) {
-                tickWorld(world);
-            }
-            world.timings.doTick.stopTiming();
+                
+                for (int i = AkarinGlobalConfig.parallelMode == 1 ? cachedWorldSize : cachedWorldSize * 2; i --> 0 ;) {
+                    long startTiming = System.nanoTime();
+                    TimingSignal signal = Akari.STAGE_TICK.take().get();
+                    IMixinTimingHandler timing = (IMixinTimingHandler) (signal.isEntities ? signal.tickedWorld.timings.tickEntities : signal.tickedWorld.timings.doTick);
+                    timing.stopTiming(startTiming);
+                }
+                
+                break;
+            case 0:
+                Akari.STAGE_TICK.submit(() -> {
+                    for (int i = 1; i <= cachedWorldSize; ++i) {
+                        WorldServer world = worlds.get(i < cachedWorldSize ? i : 0);
+                        synchronized (((IMixinLockProvider) world).lock()) {
+                            tickEntities(world);
+                        }
+                    }
+                }, null);
+                
+                for (int i = 0; i < cachedWorldSize; ++i) {
+                    WorldServer world = worlds.get(i);
+                    synchronized (((IMixinLockProvider) world).lock()) {
+                        tickWorld(world);
+                    }
+                }
+                
+                Akari.STAGE_TICK.take();
+                break;
+            case -1:
+                for (int i = 0; i < cachedWorldSize; ++i) {
+                    WorldServer world = worlds.get(i);
+                    tickWorld(world);
+                    tickEntities(world);
+                }
+                break;
         }
-        
-        for (int i = cachedWorldSize; i --> 0 ;) {
-            long startTiming = System.nanoTime();
-            TimingSignal signal = Akari.STAGE_TICK.take().get();
-            IMixinTimingHandler timing = (IMixinTimingHandler) (signal.isEntities ? signal.tickedWorld.timings.tickEntities : signal.tickedWorld.timings.doTick);
-            timing.stopTiming(startTiming);
-        }
+        Akari.worldTiming.stopTiming();
         
         Akari.callbackTiming.startTiming();
         while ((runnable = Akari.callbackQueue.poll()) != null) runnable.run();

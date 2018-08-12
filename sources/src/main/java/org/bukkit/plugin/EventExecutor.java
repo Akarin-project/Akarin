@@ -19,6 +19,7 @@ import com.google.common.base.Preconditions;
 import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.utils.thread.SuspendableExecutorCompletionService;
 // Paper end
+import io.akarin.server.core.AkarinGlobalConfig;
 
 /**
  * Akarin Changes Note
@@ -72,13 +73,21 @@ public interface EventExecutor {
                     public void execute(Listener listener, Event event) throws EventException {
                         if (!eventClass.isInstance(event)) return;
                         try {
-                            Akari.eventSuspendTiming.startTimingIfSync(); // Akarin
-                            Akari.STAGE_TICK.suspend(); // Akarin
-                            Akari.eventSuspendTiming.stopTimingIfSync(); // Akarin
+                            // Akarin start
+                            if (AkarinGlobalConfig.parallelMode != -1) {
+                                Akari.eventSuspendTiming.startTiming();
+                                Akari.STAGE_TICK.suspend();
+                                Akari.eventSuspendTiming.stopTiming();
+                            }
+                            // Akarin end
                             asmExecutor.execute(listener, event);
-                            Akari.eventResumeTiming.startTimingIfSync(); // Akarin
-                            Akari.STAGE_TICK.resume(); // Akarin
-                            Akari.eventResumeTiming.stopTimingIfSync(); // Akarin
+                            // Akarin start
+                            if (AkarinGlobalConfig.parallelMode != -1) {
+                                Akari.eventResumeTiming.startTiming();
+                                Akari.STAGE_TICK.resume();
+                                Akari.eventResumeTiming.stopTiming();
+                            }
+                            // Akarin end
                         } catch (Exception e) {
                             throw new EventException(e);
                         }

@@ -3,16 +3,9 @@ package io.akarin.api.internal;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Queue;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,15 +14,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
-import io.akarin.api.internal.Akari.AssignableFactory;
-import io.akarin.api.internal.Akari.AssignableThread;
 import io.akarin.api.internal.utils.ReentrantSpinningLock;
 import io.akarin.api.internal.utils.thread.SuspendableExecutorCompletionService;
 import io.akarin.api.internal.utils.thread.SuspendableThreadPoolExecutor;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.World;
-import net.minecraft.server.WorldServer;
 
 @SuppressWarnings("restriction")
 public abstract class Akari {
@@ -91,7 +81,22 @@ public abstract class Akari {
     }
     
     public static void resizeTickExecutors(int worlds) {
-        STAGE_TICK = new SuspendableExecutorCompletionService<>(new SuspendableThreadPoolExecutor(worlds, worlds,
+        int parallelism;
+        switch (AkarinGlobalConfig.parallelMode) {
+            case -1:
+                return;
+            case 0:
+                parallelism = 1;
+                break;
+            case 1:
+                parallelism = worlds;
+                break;
+            case 2:
+            default:
+                parallelism = worlds * 2;
+                break;
+        }
+        STAGE_TICK = new SuspendableExecutorCompletionService<>(new SuspendableThreadPoolExecutor(parallelism, parallelism,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(),
                 new AssignableFactory("Akarin Parallel Ticking Thread - $")));
