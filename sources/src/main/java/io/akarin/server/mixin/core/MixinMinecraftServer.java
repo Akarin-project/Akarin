@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import co.aikar.timings.MinecraftTimings;
 import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.Akari.TimingSignal;
-import io.akarin.api.internal.mixin.IMixinLockProvider;
+import io.akarin.api.internal.mixin.IMixinWorldServer;
 import io.akarin.api.internal.mixin.IMixinTimingHandler;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.AkarinSlackScheduler;
@@ -161,7 +161,7 @@ public abstract class MixinMinecraftServer {
                     int interlace = i + 1;
                     WorldServer entityWorld = worlds.get(interlace < cachedWorldSize ? interlace : 0);
                     Akari.STAGE_TICK.submit(() -> {
-                        synchronized (((IMixinLockProvider) entityWorld).lock()) {
+                        synchronized (((IMixinWorldServer) entityWorld).lock()) {
                             tickEntities(entityWorld);
                         }
                     }, new TimingSignal(entityWorld, true));
@@ -170,14 +170,14 @@ public abstract class MixinMinecraftServer {
                     switch (AkarinGlobalConfig.parallelMode) {
                         case 1:
                             world.timings.doTick.startTiming();
-                            synchronized (((IMixinLockProvider) world).lock()) {
+                            synchronized (((IMixinWorldServer) world).lock()) {
                                 tickWorld(world);
                             }
                             world.timings.doTick.stopTiming();
                             break;
                         default:
                             Akari.STAGE_TICK.submit(() -> {
-                                synchronized (((IMixinLockProvider) world).lock()) {
+                                synchronized (((IMixinWorldServer) world).lock()) {
                                     tickWorld(world);
                                 }
                             }, new TimingSignal(world, false));
@@ -197,7 +197,7 @@ public abstract class MixinMinecraftServer {
                 Akari.STAGE_TICK.submit(() -> {
                     for (int i = 1; i <= cachedWorldSize; ++i) {
                         WorldServer world = worlds.get(i < cachedWorldSize ? i : 0);
-                        synchronized (((IMixinLockProvider) world).lock()) {
+                        synchronized (((IMixinWorldServer) world).lock()) {
                             tickEntities(world);
                         }
                     }
@@ -205,7 +205,7 @@ public abstract class MixinMinecraftServer {
                 
                 for (int i = 0; i < cachedWorldSize; ++i) {
                     WorldServer world = worlds.get(i);
-                    synchronized (((IMixinLockProvider) world).lock()) {
+                    synchronized (((IMixinWorldServer) world).lock()) {
                         tickWorld(world);
                     }
                 }
