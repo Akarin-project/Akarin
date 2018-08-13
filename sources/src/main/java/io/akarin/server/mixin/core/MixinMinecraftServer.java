@@ -151,20 +151,33 @@ public abstract class MixinMinecraftServer {
         if (cachedWorldSize != worlds.size()) Akari.resizeTickExecutors((cachedWorldSize = worlds.size()));
         switch (AkarinGlobalConfig.parallelMode) {
             case 1:
+            case 2:
             default:
                 // Never tick one world concurrently!
-                for (int i = 1; i <= cachedWorldSize; ++i) {
+                for (int i = 0; i < cachedWorldSize; i++) {
                     // Impl Note:
                     // Entities ticking: index 1 -> ... -> 0 (parallel)
                     //   World  ticking: index 0 -> ... (parallel)
-                    WorldServer entityWorld = worlds.get(i < cachedWorldSize ? i : 0);
+                    int interlace = i + 1;
+                    WorldServer entityWorld = worlds.get(interlace < cachedWorldSize ? interlace : 0);
                     Akari.STAGE_TICK.submit(() -> {
                         synchronized (((IMixinWorldServer) entityWorld).lock()) {
                             tickEntities(entityWorld);
                         }
                     }, null/*new TimingSignal(entityWorld, true)*/);
+                    
+                    if (AkarinGlobalConfig.parallelMode != 1) {
+                        int fi = i;
+                        Akari.STAGE_TICK.submit(() -> {
+                            WorldServer world = worlds.get(fi);
+                            synchronized (((IMixinWorldServer) world).lock()) {
+                                tickWorld(world);
+                            }
+                        }, null);
+                    }
                 }
                 
+                if (AkarinGlobalConfig.parallelMode == 1)
                 Akari.STAGE_TICK.submit(() -> {
                     for (int i = 0; i < cachedWorldSize; i++) {
                         WorldServer world = worlds.get(i);
@@ -174,7 +187,7 @@ public abstract class MixinMinecraftServer {
                     }
                 }, null);
                 
-                for (int i = cachedWorldSize; i -->= 0 ;) {
+                for (int i = (AkarinGlobalConfig.parallelMode == 1 ? cachedWorldSize + 1 : cachedWorldSize * 2); i --> 0 ;) {
                     Akari.STAGE_TICK.take();
                 }
                 

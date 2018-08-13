@@ -86,11 +86,14 @@ public abstract class Akari {
             case -1:
                 return;
             case 0:
-                parallelism = 1;
+                parallelism = 2;
                 break;
             case 1:
+                parallelism = worlds + 1;
+                break;
+            case 2:
             default:
-                parallelism = worlds;
+                parallelism = worlds * 2;
                 break;
         }
         STAGE_TICK = new SuspendableExecutorCompletionService<>(new SuspendableThreadPoolExecutor(parallelism, parallelism,
