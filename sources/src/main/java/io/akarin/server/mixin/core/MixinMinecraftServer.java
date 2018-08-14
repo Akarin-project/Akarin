@@ -24,7 +24,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import co.aikar.timings.MinecraftTimings;
-import co.aikar.timings.TimingHandler;
 import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.Akari.AssignableFactory;
 import io.akarin.api.internal.mixin.IMixinWorldServer;
