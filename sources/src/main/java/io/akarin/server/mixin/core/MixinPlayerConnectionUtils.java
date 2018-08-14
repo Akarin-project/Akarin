@@ -14,7 +14,7 @@ import net.minecraft.server.PlayerConnectionUtils;
 @Mixin(value = PlayerConnectionUtils.class, remap = false)
 public abstract class MixinPlayerConnectionUtils {
     @Overwrite
-    public static <T extends PacketListener> void ensureMainThread(final Packet<T> packet, final T listener, IAsyncTaskHandler iasynctaskhandler) throws CancelledPacketHandleException {
+    public static <T extends PacketListener> void ensureMainThread(Packet<T> packet, T listener, IAsyncTaskHandler iasynctaskhandler) throws CancelledPacketHandleException {
         if (!iasynctaskhandler.isMainThread()) {
             Timing timing = MinecraftTimings.getPacketTiming(packet);
             // MinecraftServer#postToMainThread inlined thread check, no twice
