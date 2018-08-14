@@ -70,7 +70,7 @@ public abstract class Akari {
     
     public static boolean isPrimaryThread(boolean assign) {
         Thread current = Thread.currentThread();
-        return current == MinecraftServer.getServer().primaryThread || (assign ? current instanceof AssignableThread : false);
+        return current == MinecraftServer.getServer().primaryThread || (assign ? (current.getClass() == AssignableThread.class) : false);
     }
     
     public static final String EMPTY_STRING = "";

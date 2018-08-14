@@ -27,7 +27,7 @@ import co.aikar.timings.MinecraftTimings;
 import co.aikar.timings.TimingHandler;
 import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.Akari.AssignableFactory;
-import io.akarin.api.internal.mixin.IMixinLockProvider;
+import io.akarin.api.internal.mixin.IMixinWorldServer;
 import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.AkarinSlackScheduler;
 import net.minecraft.server.BlockPosition;
@@ -241,7 +241,7 @@ public abstract class MixinMinecraftServer {
             entityWorld.timings.tickEntities.startTiming();
             WorldServer fEntityWorld = entityWorld;
 			Akari.STAGE_ENTITY_TICK.submit(() -> {
-				synchronized (((IMixinLockProvider) fEntityWorld).lock()) {
+				synchronized (((IMixinWorldServer) fEntityWorld).lock()) {
 					tickEntities(fEntityWorld);
 					fEntityWorld.getTracker().updatePlayers();
 					fEntityWorld.explosionDensityCache.clear(); // Paper - Optimize explosions
@@ -253,7 +253,7 @@ public abstract class MixinMinecraftServer {
                 WorldServer world = worlds.get(interlaceWorld);
                 world.timings.doTick.startTiming();
                 Akari.STAGE_WORLD_TICK.submit(() -> {
-                    synchronized (((IMixinLockProvider) world).lock()) {
+                    synchronized (((IMixinWorldServer) world).lock()) {
                         tickWorld(world);
                     }
                 }, world);
@@ -262,7 +262,7 @@ public abstract class MixinMinecraftServer {
         
         WorldServer primaryWorld = worlds.get(0);
         primaryWorld.timings.doTick.startTiming();
-        synchronized (((IMixinLockProvider) primaryWorld).lock()) {
+        synchronized (((IMixinWorldServer) primaryWorld).lock()) {
             tickWorld(primaryWorld);
         }
         primaryWorld.timings.doTick.stopTiming();

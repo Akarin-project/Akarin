@@ -1,5 +1,6 @@
 package io.akarin.api.internal.mixin;
 
-public interface IMixinLockProvider {
+public interface IMixinWorldServer {
     public Object lock();
+    public Object rand();
 }

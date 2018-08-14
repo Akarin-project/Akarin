@@ -27,6 +27,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Vehicle;
 import co.aikar.timings.MinecraftTimings; // Paper
 import co.aikar.timings.Timing; // Paper
+import io.akarin.api.internal.mixin.IMixinWorldServer;
+
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;
@@ -51,7 +53,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     // CraftBukkit start
     private static final int CURRENT_LEVEL = 2;
     // Paper start
-    public static Random SHARED_RANDOM = new io.akarin.api.internal.utils.random.LightRandom() { // Akarin - LightRNG
+    public static Random SHARED_RANDOM = new java.util.Random() {
         private boolean locked = false;
         @Override
         public synchronized void setSeed(long seed) {
@@ -208,7 +210,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
         this.length = 1.8F;
         this.ax = 1;
         this.ay = 1.0F;
-        this.random = SHARED_RANDOM; // Paper
+        this.random = ((IMixinWorldServer) world).rand(); // Paper // Akarin
         this.fireTicks = -this.getMaxFireTicks();
         this.justCreated = true;
         this.uniqueID = MathHelper.a(this.random);
