@@ -24,17 +24,20 @@
 package co.aikar.timings;
 
 import co.aikar.util.LoadingIntMap;
+import io.akarin.api.internal.Akari;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+
 import org.bukkit.Bukkit;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
 /**
  * Akarin Changes Note
- * 1) Make class public (compatibility)
- * 2) Add stopTiming method that accept given start time (compatibility)
+ * 1) Thread safe timing (safety)
  */
-public class TimingHandler implements Timing { // Akarin
+class TimingHandler implements Timing {
 
     private static int idPool = 1;
     final int id = idPool++;
@@ -47,12 +50,12 @@ public class TimingHandler implements Timing { // Akarin
     final TimingData record;
     private final TimingHandler groupHandler;
 
-    private long start = 0;
-    private int timingDepth = 0;
-    private boolean added;
+    private AtomicLong start = new AtomicLong(); // Akarin
+    private AtomicInteger timingDepth = new AtomicInteger(); // Akarin
+    private volatile boolean added; // Akarin
     private boolean timed;
     private boolean enabled;
-    private TimingHandler parent;
+    private volatile TimingHandler parent; // Akarin
 
     TimingHandler(TimingIdentifier id) {
         if (id.name.startsWith("##")) {
@@ -75,16 +78,18 @@ public class TimingHandler implements Timing { // Akarin
     }
 
     void processTick(boolean violated) {
-        if (timingDepth != 0 || record.getCurTickCount() == 0) {
-            timingDepth = 0;
-            start = 0;
+        if (timingDepth.get() != 0 || record.getCurTickCount() == 0) {
+            timingDepth.set(0);
+            start.set(0);
             return;
         }
 
         record.processTick(violated);
+        Akari.timingsLock.lock(); // Akarin
         for (TimingData handler : children.values()) {
             handler.processTick(violated);
         }
+        Akari.timingsLock.unlock(); // Akarin
     }
 
     @Override
@@ -102,42 +107,32 @@ public class TimingHandler implements Timing { // Akarin
         }
     }
 
-    @Override
     public Timing startTiming() {
-        if (enabled && ++timingDepth == 1) {
-            start = System.nanoTime();
+        if (enabled && timingDepth.incrementAndGet() == 1) {
+            start.getAndSet(System.nanoTime());
             parent = TimingsManager.CURRENT;
             TimingsManager.CURRENT = this;
         }
         return this;
     }
 
-    @Override
     public void stopTiming() {
-        if (enabled && --timingDepth == 0 && start != 0) {
+        if (enabled && timingDepth.decrementAndGet() == 0 && start.get() != 0) {
             if (!Bukkit.isPrimaryThread()) {
                 Bukkit.getLogger().log(Level.SEVERE, "stopTiming called async for " + name);
                 new Throwable().printStackTrace();
-                start = 0;
+                start.getAndSet(0);
                 return;
             }
-            addDiff(System.nanoTime() - start);
-            start = 0;
+            long prev = start.getAndSet(0); // Akarin
+            addDiff(System.nanoTime() - prev); // Akarin
         }
     }
-    
-    // Akarin start
-    public void stopTiming(long start) {
-        if (enabled && --timingDepth == 0 && start != 0) {
-            addDiff(System.nanoTime() - start);
-        }
-    }
-    // Akarin end
 
     @Override
     public void abort() {
-        if (enabled && timingDepth > 0) {
-            start = 0;
+        if (enabled && timingDepth.get() > 0) {
+            start.getAndSet(0);
         }
     }
 
@@ -145,18 +140,24 @@ public class TimingHandler implements Timing { // Akarin
         if (TimingsManager.CURRENT == this) {
             TimingsManager.CURRENT = parent;
             if (parent != null) {
+                Akari.timingsLock.lock(); // Akarin
                 parent.children.get(id).add(diff);
+                Akari.timingsLock.unlock(); // Akarin
             }
         }
         record.add(diff);
         if (!added) {
             added = true;
             timed = true;
+            Akari.timingsLock.lock(); // Akarin
             TimingsManager.HANDLERS.add(this);
+            Akari.timingsLock.unlock(); // Akarin
         }
         if (groupHandler != null) {
             groupHandler.addDiff(diff);
+            Akari.timingsLock.lock(); // Akarin
             groupHandler.children.get(id).add(diff);
+            Akari.timingsLock.unlock(); // Akarin
         }
     }
 
@@ -170,10 +171,12 @@ public class TimingHandler implements Timing { // Akarin
         if (full) {
             timed = false;
         }
-        start = 0;
-        timingDepth = 0;
+        start.set(0);
+        timingDepth.set(0);
         added = false;
+        Akari.timingsLock.lock(); // Akarin
         children.clear();
+        Akari.timingsLock.unlock(); // Akarin
         checkEnabled();
     }
 
@@ -214,11 +217,13 @@ public class TimingHandler implements Timing { // Akarin
     }
 
     TimingData[] cloneChildren() {
-        final TimingData[] clonedChildren = new TimingData[children.size()];
         int i = 0;
+        Akari.timingsLock.lock(); // Akarin
+        final TimingData[] clonedChildren = new TimingData[children.size()];
         for (TimingData child : children.values()) {
             clonedChildren[i++] = child.clone();
         }
+        Akari.timingsLock.unlock(); // Akarin
         return clonedChildren;
     }
 }

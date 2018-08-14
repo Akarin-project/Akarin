@@ -4,7 +4,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Queue;
 import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -14,8 +16,14 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
+import io.akarin.api.internal.Akari.AssignableFactory;
+import io.akarin.api.internal.Akari.TimingSignal;
+import io.akarin.api.internal.utils.ReentrantSpinningLock;
+import io.akarin.api.internal.utils.thread.SuspendableExecutorCompletionService;
+import io.akarin.api.internal.utils.thread.SuspendableThreadPoolExecutor;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.World;
 import net.minecraft.server.WorldServer;
 
 @SuppressWarnings("restriction")
@@ -61,8 +69,43 @@ public abstract class Akari {
         }
     }
     
-    public static ExecutorCompletionService<WorldServer> STAGE_ENTITY_TICK;
-    public static ExecutorCompletionService<WorldServer> STAGE_WORLD_TICK;
+    public static class TimingSignal {
+        public final World tickedWorld;
+        public final boolean isEntities;
+        
+        public TimingSignal(World world, boolean entities) {
+            tickedWorld = world;
+            isEntities = entities;
+        }
+    }
+    
+    public static SuspendableExecutorCompletionService<TimingSignal> STAGE_TICK;
+    
+    static {
+        resizeTickExecutors(3);
+    }
+    
+    public static void resizeTickExecutors(int worlds) {
+        int parallelism;
+        switch (AkarinGlobalConfig.parallelMode) {
+            case -1:
+                return;
+            case 0:
+                parallelism = 2;
+                break;
+            case 1:
+                parallelism = worlds + 1;
+                break;
+            case 2:
+            default:
+                parallelism = worlds * 2;
+                break;
+        }
+        STAGE_TICK = new SuspendableExecutorCompletionService<>(new SuspendableThreadPoolExecutor(parallelism, parallelism,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new AssignableFactory("Akarin Parallel Ticking Thread - $")));
+    }
     
     public static boolean isPrimaryThread() {
         return isPrimaryThread(true);
@@ -96,6 +139,8 @@ public abstract class Akari {
     public static String getServerVersion() {
         return serverVersion + " (MC: " + MinecraftServer.getServer().getVersion() + ")";
     }
+    
+    public static final ReentrantSpinningLock timingsLock = new ReentrantSpinningLock();
     
     /*
      * Timings
