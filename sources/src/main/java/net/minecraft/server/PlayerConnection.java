@@ -18,6 +18,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -2060,7 +2062,9 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     }
 
     public void a(PacketPlayInWindowClick packetplayinwindowclick) {
+        Bukkit.getLogger().info("Current thread: " + Thread.currentThread().getName());
         PlayerConnectionUtils.ensureMainThread(packetplayinwindowclick, this, this.player.getWorldServer());
+        Bukkit.getLogger().info("Current thread (ensured): " + Thread.currentThread().getName());
         if (this.player.isFrozen()) return; // CraftBukkit
         this.player.resetIdleTimer();
         if (this.player.activeContainer.windowId == packetplayinwindowclick.b() && this.player.activeContainer.c(this.player) && this.player.activeContainer.canUse(this.player)) { // CraftBukkit

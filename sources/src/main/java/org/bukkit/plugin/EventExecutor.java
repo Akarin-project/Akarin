@@ -73,7 +73,7 @@ public interface EventExecutor {
                         if (!eventClass.isInstance(event)) return;
                         try {
                             // Akarin start
-                            if (AkarinGlobalConfig.parallelMode != -1) {
+                            if (false && AkarinGlobalConfig.parallelMode != -1) {
                                 Akari.eventSuspendTiming.startTiming();
                                 Akari.timingsLock.lock();
                                 Akari.STAGE_TICK.suspend();
@@ -82,7 +82,7 @@ public interface EventExecutor {
                             // Akarin end
                             asmExecutor.execute(listener, event);
                             // Akarin start
-                            if (AkarinGlobalConfig.parallelMode != -1) {
+                            if (false && AkarinGlobalConfig.parallelMode != -1) {
                                 Akari.eventResumeTiming.startTiming();
                                 Akari.STAGE_TICK.resume();
                                 Akari.timingsLock.unlock();
