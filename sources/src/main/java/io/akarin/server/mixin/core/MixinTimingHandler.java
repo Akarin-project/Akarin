@@ -8,10 +8,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import co.aikar.timings.Timing;
-import io.akarin.api.internal.mixin.IMixinTimingHandler;
 
 @Mixin(targets = "co.aikar.timings.TimingHandler", remap = false)
-public abstract class MixinTimingHandler implements IMixinTimingHandler {
+public abstract class MixinTimingHandler {
     @Shadow @Final String name;
     @Shadow private boolean enabled;
     @Shadow private AtomicLong start;
