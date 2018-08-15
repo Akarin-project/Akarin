@@ -498,4 +498,10 @@ public class PaperWorldConfig {
                 break;
         }
     }
+
+    public boolean armorStandTick = true;
+    private void armorStandTick() {
+        this.armorStandTick = this.getBoolean("armor-stands-tick", this.armorStandTick);
+        log("ArmorStand ticking is " + (this.armorStandTick ? "enabled" : "disabled") + " by default");
+    }
 }

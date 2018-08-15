@@ -45,6 +45,11 @@ public class EntityArmorStand extends EntityLiving {
     public Vector3f leftLegPose;
     public Vector3f rightLegPose;
     public boolean canMove = true; // Paper
+    // Paper start - Allow ArmorStands not to tick
+    public boolean canTick = true;
+    private boolean noTickPoseDirty = false;
+    private boolean noTickEquipmentDirty = false;
+    // Paper end
 
     public EntityArmorStand(World world) {
         super(EntityTypes.ARMOR_STAND, world);
@@ -57,6 +62,7 @@ public class EntityArmorStand extends EntityLiving {
         this.leftLegPose = EntityArmorStand.bB;
         this.rightLegPose = EntityArmorStand.bC;
         this.noclip = this.isNoGravity();
+        if (world != null) this.canTick = world.paperConfig.armorStandTick; // Paper - armour stand ticking
         this.setSize(0.5F, 1.975F);
         this.Q = 0.0F;
     }
@@ -128,6 +134,7 @@ public class EntityArmorStand extends EntityLiving {
             this.bF.set(enumitemslot.b(), itemstack);
         }
 
+        this.noTickEquipmentDirty = true; // Paper - Allow equipment to be updated even when tick disabled
     }
 
     public boolean c(int i, ItemStack itemstack) {
@@ -199,6 +206,7 @@ public class EntityArmorStand extends EntityLiving {
         }
 
         nbttagcompound.set("Pose", this.z());
+        nbttagcompound.setBoolean("Paper.CanTick", this.canTick); // Paper - persist no tick setting
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -230,6 +238,11 @@ public class EntityArmorStand extends EntityLiving {
         this.setMarker(nbttagcompound.getBoolean("Marker"));
         this.bI = !this.isMarker();
         this.noclip = this.isNoGravity();
+        // Paper start - persist no tick
+        if (nbttagcompound.hasKey("Paper.CanTick")) {
+            this.canTick = nbttagcompound.getBoolean("Paper.CanTick");
+        }
+        // Paper end
         NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("Pose");
 
         this.g(nbttagcompound1);
@@ -553,7 +566,30 @@ public class EntityArmorStand extends EntityLiving {
     }
 
     public void tick() {
+        // Paper start
+        if (!this.canTick) {
+            if (this.noTickPoseDirty) {
+                this.noTickPoseDirty = false;
+                this.updatePose();
+            }
+
+            if (this.noTickEquipmentDirty) {
+                this.noTickEquipmentDirty = false;
+                this.updateEntityEquipment();
+            }
+
+            return;
+        }
+        // Paper end
+
         super.tick();
+
+        // Paper start - Split into separate method
+        updatePose();
+    }
+
+    public void updatePose() {
+        // Paper end
         Vector3f vector3f = (Vector3f) this.datawatcher.get(EntityArmorStand.b);
 
         if (!this.headPose.equals(vector3f)) {
@@ -682,31 +718,37 @@ public class EntityArmorStand extends EntityLiving {
     public void setHeadPose(Vector3f vector3f) {
         this.headPose = vector3f;
         this.datawatcher.set(EntityArmorStand.b, vector3f);
+        this.noTickPoseDirty = true; // Paper - Allow updates when not ticking
     }
 
     public void setBodyPose(Vector3f vector3f) {
         this.bodyPose = vector3f;
         this.datawatcher.set(EntityArmorStand.c, vector3f);
+        this.noTickPoseDirty = true; // Paper - Allow updates when not ticking
     }
 
     public void setLeftArmPose(Vector3f vector3f) {
         this.leftArmPose = vector3f;
         this.datawatcher.set(EntityArmorStand.d, vector3f);
+        this.noTickPoseDirty = true; // Paper - Allow updates when not ticking
     }
 
     public void setRightArmPose(Vector3f vector3f) {
         this.rightArmPose = vector3f;
         this.datawatcher.set(EntityArmorStand.e, vector3f);
+        this.noTickPoseDirty = true; // Paper - Allow updates when not ticking
     }
 
     public void setLeftLegPose(Vector3f vector3f) {
         this.leftLegPose = vector3f;
         this.datawatcher.set(EntityArmorStand.f, vector3f);
+        this.noTickPoseDirty = true; // Paper - Allow updates when not ticking
     }
 
     public void setRightLegPose(Vector3f vector3f) {
         this.rightLegPose = vector3f;
         this.datawatcher.set(EntityArmorStand.g, vector3f);
+        this.noTickPoseDirty = true; // Paper - Allow updates when not ticking
     }
 
     public Vector3f r() {

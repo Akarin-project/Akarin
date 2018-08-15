@@ -2083,52 +2083,7 @@ public abstract class EntityLiving extends Entity {
                 }
             }
 
-            EnumItemSlot[] aenumitemslot = EnumItemSlot.values();
-            int j = aenumitemslot.length;
-
-            for (int k = 0; k < j; ++k) {
-                EnumItemSlot enumitemslot = aenumitemslot[k];
-                ItemStack itemstack;
-
-                switch (enumitemslot.a()) {
-                case HAND:
-                    itemstack = (ItemStack) this.bB.get(enumitemslot.b());
-                    break;
-                case ARMOR:
-                    itemstack = (ItemStack) this.bC.get(enumitemslot.b());
-                    break;
-                default:
-                    continue;
-                }
-
-                ItemStack itemstack1 = this.getEquipment(enumitemslot);
-
-                if (!ItemStack.matches(itemstack1, itemstack)) {
-                    // Paper start - PlayerArmorChangeEvent
-                    if (this instanceof EntityPlayer && enumitemslot.getType() == EnumItemSlot.Function.ARMOR && !itemstack.getItem().equals(itemstack1.getItem())) {
-                        final org.bukkit.inventory.ItemStack oldItem = CraftItemStack.asBukkitCopy(itemstack);
-                        final org.bukkit.inventory.ItemStack newItem = CraftItemStack.asBukkitCopy(itemstack1);
-                        new PlayerArmorChangeEvent((Player) this.getBukkitEntity(), PlayerArmorChangeEvent.SlotType.valueOf(enumitemslot.name()), oldItem, newItem).callEvent();
-                    }
-                    // Paper end
-                    ((WorldServer) this.world).getTracker().a((Entity) this, (Packet) (new PacketPlayOutEntityEquipment(this.getId(), enumitemslot, itemstack1)));
-                    if (!itemstack.isEmpty()) {
-                        this.getAttributeMap().a(itemstack.a(enumitemslot));
-                    }
-
-                    if (!itemstack1.isEmpty()) {
-                        this.getAttributeMap().b(itemstack1.a(enumitemslot));
-                    }
-
-                    switch (enumitemslot.a()) {
-                    case HAND:
-                        this.bB.set(enumitemslot.b(), itemstack1.isEmpty() ? ItemStack.a : itemstack1.cloneItemStack());
-                        break;
-                    case ARMOR:
-                        this.bC.set(enumitemslot.b(), itemstack1.isEmpty() ? ItemStack.a : itemstack1.cloneItemStack());
-                    }
-                }
-            }
+            updateEntityEquipment(); // Paper - split into own method
 
             if (this.ticksLived % 20 == 0) {
                 this.getCombatTracker().g();
@@ -2220,6 +2175,57 @@ public abstract class EntityLiving extends Entity {
             this.bv = 0;
         }
     }
+
+    // Paper start - split into own method from above
+    public void updateEntityEquipment() {
+        EnumItemSlot[] aenumitemslot = EnumItemSlot.values();
+        int j = aenumitemslot.length;
+
+        for (int k = 0; k < j; ++k) {
+            EnumItemSlot enumitemslot = aenumitemslot[k];
+            ItemStack itemstack;
+
+            switch (enumitemslot.a()) {
+                case HAND:
+                    itemstack = (ItemStack) this.bB.get(enumitemslot.b());
+                    break;
+                case ARMOR:
+                    itemstack = (ItemStack) this.bC.get(enumitemslot.b());
+                    break;
+                default:
+                    continue;
+            }
+
+            ItemStack itemstack1 = this.getEquipment(enumitemslot);
+
+            if (!ItemStack.matches(itemstack1, itemstack)) {
+                // Paper start - PlayerArmorChangeEvent
+                if (this instanceof EntityPlayer && enumitemslot.getType() == EnumItemSlot.Function.ARMOR && !itemstack.getItem().equals(itemstack1.getItem())) {
+                    final org.bukkit.inventory.ItemStack oldItem = CraftItemStack.asBukkitCopy(itemstack);
+                    final org.bukkit.inventory.ItemStack newItem = CraftItemStack.asBukkitCopy(itemstack1);
+                    new PlayerArmorChangeEvent((Player) this.getBukkitEntity(), PlayerArmorChangeEvent.SlotType.valueOf(enumitemslot.name()), oldItem, newItem).callEvent();
+                }
+                // Paper end
+                ((WorldServer) this.world).getTracker().a((Entity) this, (Packet) (new PacketPlayOutEntityEquipment(this.getId(), enumitemslot, itemstack1)));
+                if (!itemstack.isEmpty()) {
+                    this.getAttributeMap().a(itemstack.a(enumitemslot));
+                }
+
+                if (!itemstack1.isEmpty()) {
+                    this.getAttributeMap().b(itemstack1.a(enumitemslot));
+                }
+
+                switch (enumitemslot.a()) {
+                    case HAND:
+                        this.bB.set(enumitemslot.b(), itemstack1.isEmpty() ? ItemStack.a : itemstack1.cloneItemStack());
+                        break;
+                    case ARMOR:
+                        this.bC.set(enumitemslot.b(), itemstack1.isEmpty() ? ItemStack.a : itemstack1.cloneItemStack());
+                }
+            }
+        }
+    }
+    // Paper end
 
     protected float e(float f, float f1) {
         float f2 = MathHelper.g(f - this.aQ);
