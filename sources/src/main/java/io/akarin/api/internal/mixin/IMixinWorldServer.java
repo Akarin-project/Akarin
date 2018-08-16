@@ -1,11 +1,10 @@
 package io.akarin.api.internal.mixin;
 
 import java.util.Random;
-
-import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public interface IMixinWorldServer {
     public Object lock();
     public Random rand();
-    public ReentrantReadWriteUpdateLock trackerLock();
+    public ReentrantReadWriteLock trackerLock();
 }
