@@ -136,7 +136,7 @@ public class SpigotWorldConfig
     public byte mobSpawnRange;
     private void mobSpawnRange()
     {
-        mobSpawnRange = (byte) getInt( "mob-spawn-range", 6 );
+        mobSpawnRange = (byte) getInt( "mob-spawn-range", 8 ); // Paper - Vanilla
         log( "Mob Spawn Range: " + mobSpawnRange );
     }
 
