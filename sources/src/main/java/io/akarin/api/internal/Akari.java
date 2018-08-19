@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -139,8 +140,6 @@ public abstract class Akari {
     public static String getServerVersion() {
         return serverVersion + " (MC: " + MinecraftServer.getServer().getVersion() + ")";
     }
-    
-    public static final ReentrantSpinningLock timingsLock = new ReentrantSpinningLock();
     
     /*
      * Timings

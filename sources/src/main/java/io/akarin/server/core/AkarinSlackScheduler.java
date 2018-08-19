@@ -40,6 +40,7 @@ public class AkarinSlackScheduler extends Thread {
         MinecraftServer server = MinecraftServer.getServer();
         
         while (server.isRunning()) {
+            long startProcessTiming = System.currentTimeMillis();
             // Send time updates to everyone, it will get the right time from the world the player is in.
             // Time update, from MinecraftServer#D
             if (++updateTime >= AkarinGlobalConfig.timeUpdateInterval) {
@@ -97,10 +98,9 @@ public class AkarinSlackScheduler extends Thread {
             }
             
             try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                Akari.logger.warn("Slack scheduler thread was interrupted unexpectly!");
-                ex.printStackTrace();
+                Thread.sleep(100 - (System.currentTimeMillis() - startProcessTiming));
+            } catch (InterruptedException interrupted) {
+                ;
             }
         }
     }

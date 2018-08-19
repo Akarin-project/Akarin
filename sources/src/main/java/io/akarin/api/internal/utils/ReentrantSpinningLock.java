@@ -8,6 +8,7 @@ public class ReentrantSpinningLock {
      * Impl Note:
      * A write lock can reentrant as a read lock, while a
      * read lock is not allowed to reentrant as a write lock.
+     * READ LOCK IS UNTESTED, USE WITH CATION.
      */
     private final AtomicBoolean writeLocked = new AtomicBoolean(false);
     
@@ -16,7 +17,7 @@ public class ReentrantSpinningLock {
     private int reentrantLocks = 0;
     
     /**
-     * Lock as a typical write lock
+     * Lock as a typical reentrant write lock
      */
     public void lock() {
         long currentThreadId = Thread.currentThread().getId();
@@ -31,9 +32,9 @@ public class ReentrantSpinningLock {
     public void unlock() {
         if (reentrantLocks == 0) {
             heldThreadId = 0;
-            if (readerThreads.get() == 0 || readerThreads.getAndDecrement() == 1) { // Micro-optimization: this saves one subtract
+            //if (readerThreads.get() == 0 || readerThreads.getAndDecrement() == 1) { // Micro-optimization: this saves one subtract
                 writeLocked.set(false);
-            }
+            //}
         } else {
             --reentrantLocks;
         }
@@ -42,8 +43,9 @@ public class ReentrantSpinningLock {
     private final AtomicInteger readerThreads = new AtomicInteger(0);
     
     /**
-     * Lock as a typical read lock
+     * Lock as a typical reentrant read lock
      */
+    @Deprecated
     public void lockWeak() {
         long currentThreadId = Thread.currentThread().getId();
         if (heldThreadId == currentThreadId) {
@@ -57,6 +59,7 @@ public class ReentrantSpinningLock {
         }
     }
     
+    @Deprecated
     public void unlockWeak() {
         if (reentrantLocks == 0) {
             heldThreadId = 0;
@@ -79,6 +82,7 @@ public class ReentrantSpinningLock {
         }
     }
     
+    @Deprecated
     public class SpinningReadLock {
         public void lock() {
             lockWeak();
@@ -92,7 +96,7 @@ public class ReentrantSpinningLock {
         return wrappedWriteLock;
     }
     
-    public SpinningReadLock readLocked() {
+    public SpinningReadLock readLock() {
         return wrappedReadLock;
     }
 }
