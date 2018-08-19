@@ -1315,6 +1315,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
             this.lastYaw -= 360.0F;
         }
 
+        world.getChunkAt((int) Math.floor(this.locX) >> 4, (int) Math.floor(this.locZ) >> 4); // Paper - ensure chunk is always loaded
         this.setPosition(this.locX, this.locY, this.locZ);
         this.setYawPitch(f, f1);
     }

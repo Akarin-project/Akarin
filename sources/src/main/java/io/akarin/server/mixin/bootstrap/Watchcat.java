@@ -22,8 +22,10 @@ import net.minecraft.server.MinecraftServer;
 public abstract class Watchcat extends Thread {
     @Shadow private static WatchdogThread instance;
     @Shadow private @Final long timeoutTime;
-    @Shadow private @Final long shortTimeout; // Paper - Timeout time for just printing a dump but not restarting
-    @Shadow private long lastShortDump; // Paper - Keep track of short dump times to avoid spamming console with short dumps
+    @Shadow private @Final long earlyWarningEvery; // Paper - Timeout time for just printing a dump but not restarting
+    @Shadow private @Final long earlyWarningDelay; // Paper
+    @Shadow public static volatile boolean hasStarted; // Paper
+    @Shadow private long lastEarlyWarning; // Paper - Keep track of short dump times to avoid spamming console with short dumps
     @Shadow private @Final boolean restart;
     @Shadow private volatile long lastTick;
     @Shadow private volatile boolean stopping;
@@ -39,24 +41,23 @@ public abstract class Watchcat extends Thread {
     @Overwrite
     public void run() {
         while (!stopping) {
-            //
-            long currentTime = System.currentTimeMillis(); // Paper - do we REALLY need to call this method multiple times?
-            if (lastTick != 0 && currentTime > lastTick + shortTimeout && !Boolean.getBoolean("disable.watchdog")) // Paper - Add property to disable and short timeout
+            // Paper start
+            long currentTime = System.currentTimeMillis();
+            if ( lastTick != 0 && currentTime > lastTick + earlyWarningEvery && !Boolean.getBoolean("disable.watchdog") )
             {
-                // Paper start
                 boolean isLongTimeout = currentTime > lastTick + timeoutTime;
-                // Don't spam short dumps
-                if (!isLongTimeout && currentTime < lastShortDump + shortTimeout)
+                // Don't spam early warning dumps
+                if (!isLongTimeout && (earlyWarningEvery <= 0 || !hasStarted || currentTime < lastEarlyWarning + earlyWarningEvery || currentTime < lastTick + earlyWarningDelay))
                     continue;
-                lastShortDump = currentTime;
+                lastEarlyWarning = currentTime;
                 // Paper end
                 Logger log = Bukkit.getServer().getLogger();
                 // Paper start - Different message when it's a short timeout
                 if (isLongTimeout) {
                     log.log(Level.SEVERE, "The server has stopped responding!");
-                    log.log(Level.SEVERE, "Please report this to https://github.com/Akarin-project/Akarin/issues");
+                    log.log(Level.SEVERE, "Please report this to https://github.com/Akarin-project/Akarin/issues"); // Akarin
                     log.log(Level.SEVERE, "Be sure to include ALL relevant console errors and Minecraft crash reports");
-                    log.log(Level.SEVERE, "Paper version: " + Bukkit.getServer().getVersion());
+                    log.log(Level.SEVERE, "Akarin version: " + Bukkit.getServer().getVersion()); // Akarin
                     //
                     if (net.minecraft.server.World.haveWeSilencedAPhysicsCrash) {
                         log.log(Level.SEVERE, "------------------------------");
@@ -75,7 +76,8 @@ public abstract class Watchcat extends Thread {
                     }
                     // Paper end
                 } else {
-                    log.log(Level.SEVERE, "The server has not responded for " + shortTimeout / 1000 + " seconds! Creating thread dump");
+                    // log.log(Level.SEVERE, "--- DO NOT REPORT THIS TO PAPER - THIS IS NOT A BUG OR A CRASH ---"); // Akarin
+                    log.log(Level.SEVERE, "The server has not responded for " + (currentTime - lastTick) / 1000 + " seconds! Creating thread dump");
                 }
                 // Paper end - Different message for short timeout
                 log.log(Level.SEVERE, "------------------------------");
@@ -90,8 +92,13 @@ public abstract class Watchcat extends Thread {
                     for (ThreadInfo thread : threads) {
                         dumpThread(thread, log);
                     }
+                } else {
+                    // log.log(Level.SEVERE, "--- DO NOT REPORT THIS TO PAPER - THIS IS NOT A BUG OR A CRASH ---"); // Akarin
+                }
                     log.log(Level.SEVERE, "------------------------------");
                     
+                    if ( isLongTimeout )
+                    {
                     if (restart) {
                         RestartCommand.restart();
                     }
