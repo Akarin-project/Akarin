@@ -41,13 +41,12 @@ public abstract class Watchcat extends Thread {
     @Overwrite
     public void run() {
         while (!stopping) {
-            //
-            long currentTime = System.currentTimeMillis(); // Paper - do we REALLY need to call this method multiple times?
-            if (lastTick != 0 && currentTime > lastTick + earlyWarningEvery && !Boolean.getBoolean("disable.watchdog")) // Paper - Add property to disable and short timeout
+            // Paper start
+            long currentTime = System.currentTimeMillis();
+            if ( lastTick != 0 && currentTime > lastTick + earlyWarningEvery && !Boolean.getBoolean("disable.watchdog") )
             {
-                // Paper start
                 boolean isLongTimeout = currentTime > lastTick + timeoutTime;
-                // Don't spam short dumps
+                // Don't spam early warning dumps
                 if (!isLongTimeout && (earlyWarningEvery <= 0 || !hasStarted || currentTime < lastEarlyWarning + earlyWarningEvery || currentTime < lastTick + earlyWarningDelay))
                     continue;
                 lastEarlyWarning = currentTime;
@@ -77,7 +76,8 @@ public abstract class Watchcat extends Thread {
                     }
                     // Paper end
                 } else {
-                    log.log(Level.SEVERE, "The server has not responded for " + earlyWarningEvery / 1000 + " seconds! Creating thread dump");
+                    // log.log(Level.SEVERE, "--- DO NOT REPORT THIS TO PAPER - THIS IS NOT A BUG OR A CRASH ---"); // Akarin
+                    log.log(Level.SEVERE, "The server has not responded for " + (currentTime - lastTick) / 1000 + " seconds! Creating thread dump");
                 }
                 // Paper end - Different message for short timeout
                 log.log(Level.SEVERE, "------------------------------");
@@ -92,8 +92,13 @@ public abstract class Watchcat extends Thread {
                     for (ThreadInfo thread : threads) {
                         dumpThread(thread, log);
                     }
+                } else {
+                    // log.log(Level.SEVERE, "--- DO NOT REPORT THIS TO PAPER - THIS IS NOT A BUG OR A CRASH ---"); // Akarin
+                }
                     log.log(Level.SEVERE, "------------------------------");
                     
+                    if ( isLongTimeout )
+                    {
                     if (restart) {
                         RestartCommand.restart();
                     }

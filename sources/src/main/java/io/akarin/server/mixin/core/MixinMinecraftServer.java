@@ -1,12 +1,16 @@
 package io.akarin.server.mixin.core;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
+import javax.activation.FileDataSource;
+
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -29,6 +33,7 @@ import net.minecraft.server.MojangStatisticsGenerator;
 import net.minecraft.server.ReportedException;
 import net.minecraft.server.ServerConnection;
 import net.minecraft.server.SystemUtils;
+import net.minecraft.server.TileEntityHopper;
 import net.minecraft.server.WorldServer;
 
 @Mixin(value = MinecraftServer.class, remap = false)
@@ -46,17 +51,17 @@ public abstract class MixinMinecraftServer {
             target = "net/minecraft/server/SystemUtils.b()J",
             shift = At.Shift.BEFORE
     ))
-    private void prerun(CallbackInfo info) {
+    private void prerun(CallbackInfo info) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
         primaryThread.setPriority(AkarinGlobalConfig.primaryThreadPriority < Thread.NORM_PRIORITY ? Thread.NORM_PRIORITY :
             (AkarinGlobalConfig.primaryThreadPriority > Thread.MAX_PRIORITY ? 10 : AkarinGlobalConfig.primaryThreadPriority));
         Akari.resizeTickExecutors((cachedWorldSize = worlds.size()));
         
-        /*
+        Field skipHopperEvents = TileEntityHopper.class.getDeclaredField("skipHopperEvents"); // No idea why static but check each world
+        skipHopperEvents.setAccessible(true);
         for (int i = 0; i < worlds.size(); ++i) {
             WorldServer world = worlds.get(i);
-            TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
+            skipHopperEvents.set(null, world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0);
         }
-        */
         AkarinSlackScheduler.get().boot();
     }
     
@@ -161,7 +166,7 @@ public abstract class MixinMinecraftServer {
                     int interlace = i + 1;
                     WorldServer entityWorld = worlds.get(interlace < cachedWorldSize ? interlace : 0);
                     Akari.STAGE_TICK.submit(() -> {
-                        synchronized (((IMixinWorldServer) entityWorld).lock()) {
+                        synchronized (((IMixinWorldServer) entityWorld).tickLock()) {
                             tickEntities(entityWorld);
                         }
                     }, null/*new TimingSignal(entityWorld, true)*/);
@@ -170,7 +175,7 @@ public abstract class MixinMinecraftServer {
                         int fi = i;
                         Akari.STAGE_TICK.submit(() -> {
                             WorldServer world = worlds.get(fi);
-                            synchronized (((IMixinWorldServer) world).lock()) {
+                            synchronized (((IMixinWorldServer) world).tickLock()) {
                                 tickWorld(world);
                             }
                         }, null);
@@ -181,7 +186,7 @@ public abstract class MixinMinecraftServer {
                 Akari.STAGE_TICK.submit(() -> {
                     for (int i = 0; i < cachedWorldSize; i++) {
                         WorldServer world = worlds.get(i);
-                        synchronized (((IMixinWorldServer) world).lock()) {
+                        synchronized (((IMixinWorldServer) world).tickLock()) {
                             tickWorld(world);
                         }
                     }
@@ -203,7 +208,7 @@ public abstract class MixinMinecraftServer {
                 Akari.STAGE_TICK.submit(() -> {
                     for (int i = 1; i <= cachedWorldSize; ++i) {
                         WorldServer world = worlds.get(i < cachedWorldSize ? i : 0);
-                        synchronized (((IMixinWorldServer) world).lock()) {
+                        synchronized (((IMixinWorldServer) world).tickLock()) {
                             tickEntities(world);
                         }
                     }
@@ -212,7 +217,7 @@ public abstract class MixinMinecraftServer {
                 Akari.STAGE_TICK.submit(() -> {
                     for (int i = 0; i < cachedWorldSize; ++i) {
                         WorldServer world = worlds.get(i);
-                        synchronized (((IMixinWorldServer) world).lock()) {
+                        synchronized (((IMixinWorldServer) world).tickLock()) {
                             tickWorld(world);
                         }
                     }

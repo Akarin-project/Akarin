@@ -128,6 +128,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     private boolean az;
     public boolean dead;
     public boolean shouldBeRemoved; // Paper
+    public boolean hasBeenCounted = false; // Paper
     public float width;
     public float length;
     public float J;
@@ -1372,6 +1373,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             this.lastYaw -= 360.0F;
         }
 
+        world.getChunkAt((int) Math.floor(this.locX) >> 4, (int) Math.floor(this.locZ) >> 4); // Paper - ensure chunk is always loaded
         this.setPosition(this.locX, this.locY, this.locZ);
         this.setYawPitch(f, f1);
     }

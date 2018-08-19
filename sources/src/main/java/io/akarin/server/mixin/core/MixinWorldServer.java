@@ -1,12 +1,8 @@
 package io.akarin.server.mixin.core;
 
 import java.util.Random;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.apache.logging.log4j.LogManager;
 import org.spongepowered.asm.mixin.Mixin;
-
-import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock;
 
 import io.akarin.api.internal.mixin.IMixinWorldServer;
 import net.minecraft.server.WorldServer;
@@ -16,7 +12,7 @@ public abstract class MixinWorldServer implements IMixinWorldServer {
     private final Object tickLock = new Object();
 
     @Override
-    public Object lock() {
+    public Object tickLock() {
         return tickLock;
     }
     
@@ -39,10 +35,10 @@ public abstract class MixinWorldServer implements IMixinWorldServer {
         return sharedRandom;
     }
     
-    public final ReentrantReadWriteLock trackerLock = new ReentrantReadWriteLock();
+    public final Object trackLock = new Object();
     
     @Override
-    public ReentrantReadWriteLock trackerLock() {
-        return trackerLock;
+    public Object trackLock() {
+        return trackLock;
     }
 }

@@ -1090,7 +1090,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
         // CraftBukkit end
         if (super.strikeLightning(entity)) {
-            this.server.getPlayerList().sendPacketNearby((EntityHuman) null, entity.locX, entity.locY, entity.locZ, 512.0D, dimension, new PacketPlayOutSpawnEntityWeather(entity)); // CraftBukkit - Use dimension
+            this.server.getPlayerList().sendPacketNearby((EntityHuman) null, entity.locX, entity.locY, entity.locZ, 512.0D, this, new PacketPlayOutSpawnEntityWeather(entity)); // CraftBukkit - Use dimension, // Paper - use world instead of dimension
             return true;
         } else {
             return false;
@@ -1150,8 +1150,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             BlockActionData blockactiondata = (BlockActionData) this.d.removeFirst();
 
             if (this.a(blockactiondata)) {
-                // CraftBukkit - this.worldProvider.dimension -> this.dimension
-                this.server.getPlayerList().sendPacketNearby((EntityHuman) null, (double) blockactiondata.a().getX(), (double) blockactiondata.a().getY(), (double) blockactiondata.a().getZ(), 64.0D, dimension, new PacketPlayOutBlockAction(blockactiondata.a(), blockactiondata.b(), blockactiondata.c(), blockactiondata.d()));
+                // CraftBukkit - this.worldProvider.dimension -> this.dimension, // Paper - dimension -> world
+                this.server.getPlayerList().sendPacketNearby((EntityHuman) null, (double) blockactiondata.a().getX(), (double) blockactiondata.a().getY(), (double) blockactiondata.a().getZ(), 64.0D, this, new PacketPlayOutBlockAction(blockactiondata.a(), blockactiondata.b(), blockactiondata.c(), blockactiondata.d()));
             }
         }
 
@@ -1243,15 +1243,14 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return sendParticles(null, t0, d0, d1, d2, i, d3, d4, d5, d6);
     }
     // Paper start - Particle API Expansion
-    // TODO: rework this, "flag" should probably be exposed as it was before
     public <T extends ParticleParam> int sendParticles(EntityPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6) {
-        return sendParticles(this.players, sender, t0, d0, d1, d2, i, d3, d5, d5, d6);
+        return sendParticles(this.players, sender, t0, false, d0, d1, d2, i, d3, d5, d5, d6);
     }
 
-    public <T extends ParticleParam> int sendParticles(List<EntityHuman> receivers, EntityPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6) {
-        // Paper end
+    public <T extends ParticleParam> int sendParticles(List<EntityHuman> receivers, EntityPlayer sender, T t0, boolean force, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6) {
         // CraftBukkit end
-        PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(t0, false, (float) d0, (float) d1, (float) d2, (float) d3, (float) d4, (float) d5, (float) d6, i);
+        PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(t0, force, (float) d0, (float) d1, (float) d2, (float) d3, (float) d4, (float) d5, (float) d6, i);
+        // Paper end
         int j = 0;
 
         for (EntityHuman entityhuman : receivers) { // Paper - Particle API Expansion
