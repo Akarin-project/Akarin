@@ -1922,17 +1922,20 @@ public final class CraftServer implements Server {
 
     @Override
     public void reloadPermissions() {
-        ((SimplePluginManager) pluginManager).clearPermissions();
-        loadCustomPermissions();
+        pluginManager.clearPermissions();
+        if (com.destroystokyo.paper.PaperConfig.loadPermsBeforePlugins) loadCustomPermissions();
         for (Plugin plugin : pluginManager.getPlugins()) {
-            plugin.getDescription().getPermissions().forEach((perm) -> {
+            for (Permission perm : plugin.getDescription().getPermissions()) {
                 try {
                     pluginManager.addPermission(perm);
                 } catch (IllegalArgumentException ex) {
                     getLogger().log(Level.WARNING, "Plugin " + plugin.getDescription().getFullName() + " tried to register permission '" + perm.getName() + "' but it's already registered", ex);
                 }
-            });
+            }
         }
+        if (!com.destroystokyo.paper.PaperConfig.loadPermsBeforePlugins) loadCustomPermissions();
+        DefaultPermissions.registerCorePermissions();
+        CraftDefaultPermissions.registerCorePermissions();
     }
 
     @Override

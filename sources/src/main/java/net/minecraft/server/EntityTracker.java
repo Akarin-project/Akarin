@@ -25,7 +25,7 @@ public class EntityTracker {
     private final Set<EntityTrackerEntry> c = Sets.newHashSet();
     public final ReentrantReadWriteUpdateLock entriesLock = new ReentrantReadWriteUpdateLock(); // Akarin - add lock
     public final IntHashMap<EntityTrackerEntry> trackedEntities = new IntHashMap();
-    private volatile int e; // Akarin - volatile
+    private int e;
 
     public EntityTracker(WorldServer worldserver) {
         this.world = worldserver;

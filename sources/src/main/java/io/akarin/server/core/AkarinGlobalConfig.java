@@ -160,16 +160,6 @@ public class AkarinGlobalConfig {
         playersPerIOThread = getInt("core.players-per-chunk-io-thread", 50);
     }
     
-    public static boolean silentAsyncTimings;
-    private static void silentAsyncTimings() {
-        silentAsyncTimings = getBoolean("core.always-silent-async-timing", false);
-    }
-    
-    public static boolean legacyWorldTimings;
-    private static void legacyWorldTimings() {
-        legacyWorldTimings = getBoolean("alternative.legacy-world-timings-required", false);
-    }
-    
     public static long timeUpdateInterval;
     private static void timeUpdateInterval() {
         timeUpdateInterval = getSeconds(getString("core.tick-rate.world-time-update-interval", "1s")) * 10;
@@ -201,52 +191,25 @@ public class AkarinGlobalConfig {
     }
     
     public static String messageKick;
-    private static void messageKick() {
-        messageKick = getString("messages.disconnect.kick-player", "Kicked by an operator.");
-    }
-    
     public static String messageBan;
-    private static void messageBan() {
-        messageBan = getString("messages.disconnect.ban-player-name", "You are banned from this server! %s %s");
-    }
-    
     public static String messageBanReason;
-    private static void messageBanReason() {
-        messageBanReason = getString("messages.disconnect.ban-reason", "\nReason: ");
-    }
-    
     public static String messageBanExpires;
-    private static void messageBanExpires() {
-        messageBanExpires = getString("messages.disconnect.ban-expires", "\nYour ban will be removed on ");
-    }
-    
     public static String messageBanIp;
-    private static void messageBanIp() {
-        messageBanIp = getString("messages.disconnect.ban-player-ip", "Your IP address is banned from this server! %s %s");
-    }
-    
     public static String messageDupLogin;
-    private static void messageDupLogin() {
-        messageDupLogin = getString("messages.disconnect.kick-player-duplicate-login", "You logged in from another location");
-    }
-    
     public static String messageJoin;
-    private static void messageJoin() {
-        messageJoin = getString("messages.connect.player-join-server", "§e%s joined the game");
-    }
-    
     public static String messageJoinRenamed;
-    private static void messageJoinRenamed() {
-        messageJoinRenamed = getString("messages.connect.renamed-player-join-server", "§e%s (formerly known as %s) joined the game");
-    }
-    
     public static String messageKickKeepAlive;
-    private static void messagekickKeepAlive() {
-        messageKickKeepAlive = getString("messages.disconnect.kick-player-timeout-keep-alive", "Timed out");
-    }
-    
     public static String messagePlayerQuit;
-    private static void messagePlayerQuit() {
+    private static void messagekickKeepAlive() {
+        messageKick = getString("messages.disconnect.kick-player", "Kicked by an operator.");
+        messageBan = getString("messages.disconnect.ban-player-name", "You are banned from this server! %s %s");
+        messageBanReason = getString("messages.disconnect.ban-reason", "\nReason: ");
+        messageBanExpires = getString("messages.disconnect.ban-expires", "\nYour ban will be removed on ");
+        messageBanIp = getString("messages.disconnect.ban-player-ip", "Your IP address is banned from this server! %s %s");
+        messageDupLogin = getString("messages.disconnect.kick-player-duplicate-login", "You logged in from another location");
+        messageJoin = getString("messages.connect.player-join-server", "§e%s joined the game");
+        messageJoinRenamed = getString("messages.connect.renamed-player-join-server", "§e%s (formerly known as %s) joined the game");
+        messageKickKeepAlive = getString("messages.disconnect.kick-player-timeout-keep-alive", "Timed out");
         messagePlayerQuit = getString("messages.disconnect.player-quit-server", "§e%s left the game");
     }
     
@@ -288,5 +251,10 @@ public class AkarinGlobalConfig {
     public static int fileIOThreads;
     private static void fileIOThreads() {
         fileIOThreads = getInt("core.chunk-save-threads", 2);
+    }
+    
+    public static int parallelMode;
+    private static void parallelMode() {
+        parallelMode = getInt("core.parallel-mode", 1);
     }
 }
