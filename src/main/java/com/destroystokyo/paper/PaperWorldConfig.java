@@ -1,7 +1,10 @@
 package com.destroystokyo.paper;
 
+import java.util.Arrays;
 import java.util.List;
 
+import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray.ChunkEdgeMode;
+import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray.EngineMode;
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -512,5 +515,35 @@ public class PaperWorldConfig {
     private void armorStandTick() {
         this.armorStandTick = this.getBoolean("armor-stands-tick", this.armorStandTick);
         log("ArmorStand ticking is " + (this.armorStandTick ? "enabled" : "disabled") + " by default");
+    }
+
+    public boolean antiXray;
+    public boolean asynchronous;
+    public EngineMode engineMode;
+    public ChunkEdgeMode chunkEdgeMode;
+    public int maxChunkSectionIndex;
+    public int updateRadius;
+    public List<String> hiddenBlocks;
+    public List<String> replacementBlocks;
+    private void antiXray() {
+        antiXray = getBoolean("anti-xray.enabled", false);
+        asynchronous = true;
+        engineMode = EngineMode.getById(getInt("anti-xray.engine-mode", EngineMode.HIDE.getId()));
+        engineMode = engineMode == null ? EngineMode.HIDE : engineMode;
+        chunkEdgeMode = ChunkEdgeMode.getById(getInt("anti-xray.chunk-edge-mode", ChunkEdgeMode.WAIT.getId()));
+        chunkEdgeMode = chunkEdgeMode == null ? ChunkEdgeMode.DEFAULT : chunkEdgeMode;
+
+        if (chunkEdgeMode != ChunkEdgeMode.WAIT) {
+            log("Migrating anti-xray chunk edge mode to " + ChunkEdgeMode.WAIT + " (" + ChunkEdgeMode.WAIT.getId() + ")");
+            chunkEdgeMode = ChunkEdgeMode.WAIT;
+            set("anti-xray.chunk-edge-mode", ChunkEdgeMode.WAIT.getId());
+        }
+
+        maxChunkSectionIndex = getInt("anti-xray.max-chunk-section-index", 3);
+        maxChunkSectionIndex = maxChunkSectionIndex > 15 ? 15 : maxChunkSectionIndex;
+        updateRadius = getInt("anti-xray.update-radius", 2);
+        hiddenBlocks = getList("anti-xray.hidden-blocks", Arrays.asList("gold_ore", "iron_ore", "coal_ore", "lapis_ore", "mossy_cobblestone", "obsidian", "chest", "diamond_ore", "redstone_ore", "lit_redstone_ore", "clay", "emerald_ore", "ender_chest"));
+        replacementBlocks = getList("anti-xray.replacement-blocks", Arrays.asList("stone", "planks"));
+        log("Anti-Xray: " + (antiXray ? "enabled" : "disabled") + " / Engine Mode: " + engineMode.getDescription() + " / Chunk Edge Mode: " + chunkEdgeMode.getDescription() + " / Up to " + ((maxChunkSectionIndex + 1) * 16) + " blocks / Update Radius: " + updateRadius);
     }
 }

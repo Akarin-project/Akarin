@@ -11,9 +11,15 @@ public class ChunkSection {
     private NibbleArray emittedLight;
     private NibbleArray skyLight;
 
+    // Paper start - Anti-Xray - Support default constructor
     public ChunkSection(int i, boolean flag) {
+        this(i, flag, null, null, true);
+    }
+    // Paper end
+
+    public ChunkSection(int i, boolean flag, IChunkAccess chunk, IWorldReader world, boolean initializeBlocks) { // Paper - Anti-Xray
         this.yPos = i;
-        this.blockIds = new DataPaletteBlock<>(ChunkSection.GLOBAL_PALETTE, Block.REGISTRY_ID, GameProfileSerializer::d, GameProfileSerializer::a, Blocks.AIR.getBlockData());
+        this.blockIds = new DataPaletteBlock<>(ChunkSection.GLOBAL_PALETTE, Block.REGISTRY_ID, GameProfileSerializer::d, GameProfileSerializer::a, Blocks.AIR.getBlockData(), world instanceof GeneratorAccess ? ((GeneratorAccess) world).getMinecraftWorld().chunkPacketBlockController.getPredefinedBlockData(world, chunk, this, flag, initializeBlocks) : null, initializeBlocks); // Paper - Anti-Xray - Add predefined block data
         this.emittedLight = new NibbleArray();
         if (flag) {
             this.skyLight = new NibbleArray();

@@ -103,6 +103,8 @@ public class PlayerChunk {
             return false;
         } else if (!this.chunk.isReady()) {
             return false;
+        } else if (!this.chunk.world.chunkPacketBlockController.onChunkPacketCreate(this.chunk, '\uffff', false)) { // Paper - Anti-Xray - Load nearby chunks if necessary
+            return false; // Paper - Anti-Xray - Wait and try again later
         } else {
             this.dirtyCount = 0;
             this.h = 0;
@@ -125,6 +127,7 @@ public class PlayerChunk {
 
     public void sendChunk(EntityPlayer entityplayer) {
         if (this.done) {
+            this.chunk.world.chunkPacketBlockController.onChunkPacketCreate(this.chunk, '\uffff', true); // Paper - Anti-Xray - Load nearby chunks if necessary
             entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunk(this.chunk, 65535));
             this.playerChunkMap.getWorld().getTracker().a(entityplayer, this.chunk);
         }
@@ -189,6 +192,9 @@ public class PlayerChunk {
                         this.a(this.playerChunkMap.getWorld().getTileEntity(blockposition));
                     }
                 } else if (this.dirtyCount == 64) {
+                    // Paper - Anti-Xray - Loading chunks here could cause a ConcurrentModificationException #1104
+                    // Paper - Anti-Xray - TODO: Check if this is still the case for 1.13
+                    //this.chunk.world.chunkPacketBlockController.onChunkPacketCreate(this.chunk, this.h, true); // Paper - Anti-Xray - Load nearby chunks if necessary
                     this.a((Packet) (new PacketPlayOutMapChunk(this.chunk, this.h)));
                 } else {
                     this.a((Packet) (new PacketPlayOutMultiBlockChange(this.dirtyCount, this.dirtyBlocks, this.chunk)));

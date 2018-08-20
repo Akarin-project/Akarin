@@ -207,6 +207,8 @@ public class PlayerInteractManager {
             }
 
         }
+
+        this.world.chunkPacketBlockController.onPlayerLeftClickBlock(this, blockposition, enumdirection); // Paper - Anti-Xray
     }
 
     public void a(BlockPosition blockposition) {

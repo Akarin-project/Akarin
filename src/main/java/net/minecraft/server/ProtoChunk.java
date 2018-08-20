@@ -41,12 +41,24 @@ public class ProtoChunk implements IChunkAccess {
     private long s;
     private final Map<WorldGenStage.Features, BitSet> t;
     private boolean u;
+    private GeneratorAccess world; // Paper - Anti-Xray
 
+    // Paper start - Anti-Xray - Support default constructors
     public ProtoChunk(int i, int j, ChunkConverter chunkconverter) {
-        this(new ChunkCoordIntPair(i, j), chunkconverter);
+        this(new ChunkCoordIntPair(i, j), chunkconverter, null);
     }
 
     public ProtoChunk(ChunkCoordIntPair chunkcoordintpair, ChunkConverter chunkconverter) {
+        this(chunkcoordintpair, chunkconverter, null);
+    }
+
+    public ProtoChunk(int i, int j, ChunkConverter chunkconverter, GeneratorAccess world) {
+        this(new ChunkCoordIntPair(i, j), chunkconverter, world);
+    }
+
+    public ProtoChunk(ChunkCoordIntPair chunkcoordintpair, ChunkConverter chunkconverter, GeneratorAccess world) {
+        this.world = world;
+    // Paper end
         this.d = new AtomicInteger();
         this.f = Maps.newEnumMap(HeightMap.Type.class);
         this.g = ChunkStatus.EMPTY;
@@ -135,7 +147,7 @@ public class ProtoChunk implements IChunkAccess {
                     return iblockdata;
                 }
 
-                this.j[j >> 4] = new ChunkSection(j >> 4 << 4, this.x());
+                this.j[j >> 4] = new ChunkSection(j >> 4 << 4, this.x(), this, this.world, true); // Paper - Anti-Xray
             }
 
             IBlockData iblockdata1 = this.j[j >> 4].getType(i & 15, j & 15, k & 15);
@@ -389,7 +401,7 @@ public class ProtoChunk implements IChunkAccess {
                     return;
                 }
 
-                this.j[i1] = new ChunkSection(i1 << 4, this.x());
+                this.j[i1] = new ChunkSection(i1 << 4, this.x(), this, this.world, true); // Paper - Anti-Xray
             }
 
             if (enumskyblock == EnumSkyBlock.SKY) {

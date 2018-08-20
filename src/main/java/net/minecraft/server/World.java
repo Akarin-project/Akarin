@@ -1,6 +1,8 @@
 	package net.minecraft.server;
 
 import co.aikar.timings.Timings;
+import com.destroystokyo.paper.antixray.ChunkPacketBlockController; // Paper - Anti-Xray
+import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray; // Paper - Anti-Xray
 import com.destroystokyo.paper.event.server.ServerExceptionEvent;
 import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.base.MoreObjects;
@@ -139,6 +141,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     public final org.spigotmc.SpigotWorldConfig spigotConfig; // Spigot
 
     public final com.destroystokyo.paper.PaperWorldConfig paperConfig; // Paper
+    public final ChunkPacketBlockController chunkPacketBlockController; // Paper - Anti-Xray
 
     public final co.aikar.timings.WorldTimingsHandler timings; // Paper
     public boolean guardEntityList; // Spigot // Paper - public
@@ -165,6 +168,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     protected World(IDataManager idatamanager, @Nullable PersistentCollection persistentcollection, WorldData worlddata, WorldProvider worldprovider, MethodProfiler methodprofiler, boolean flag, ChunkGenerator gen, org.bukkit.World.Environment env) {
         this.spigotConfig = new org.spigotmc.SpigotWorldConfig( worlddata.getName() ); // Spigot
         this.paperConfig = new com.destroystokyo.paper.PaperWorldConfig(worlddata.getName(), this.spigotConfig); // Paper
+        this.chunkPacketBlockController = this.paperConfig.antiXray ? new ChunkPacketBlockControllerAntiXray(this.paperConfig) : ChunkPacketBlockController.NO_OPERATION_INSTANCE; // Paper - Anti-Xray
         this.generator = gen;
         this.world = new CraftWorld((WorldServer) this, gen, env);
         this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
@@ -407,6 +411,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             // CraftBukkit end
 
             IBlockData iblockdata1 = chunk.setType(blockposition, iblockdata, (i & 64) != 0, (i & 1024) == 0); // CraftBukkit custom NO_PLACE flag
+            this.chunkPacketBlockController.onBlockChange(this, blockposition, iblockdata, iblockdata1, i); // Paper - Anti-Xray
 
             if (iblockdata1 == null) {
                 // CraftBukkit start - remove blockstate if failed

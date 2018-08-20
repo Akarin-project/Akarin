@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import com.destroystokyo.paper.antixray.ChunkPacketInfo; // Paper - Anti-Xray
 import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -16,17 +17,28 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
     private byte[] d; private byte[] getData() { return this.d; } // Paper - OBFHELPER
     private List<NBTTagCompound> e;
     private boolean f;
+    private volatile boolean ready = false; // Paper - Async-Anti-Xray - Ready flag for the network manager
 
-    public PacketPlayOutMapChunk() {}
+    public PacketPlayOutMapChunk() {
+        this.ready = true; // Paper - Async-Anti-Xray - Set the ready flag to true
+    }
 
     public PacketPlayOutMapChunk(Chunk chunk, int i) {
+        ChunkPacketInfo<IBlockData> chunkPacketInfo = chunk.world.chunkPacketBlockController.getChunkPacketInfo(this, chunk, i); // Paper - Anti-Xray - Add chunk packet info
         this.a = chunk.locX;
         this.b = chunk.locZ;
         this.f = i == 65535;
         boolean flag = chunk.getWorld().worldProvider.g();
 
         this.d = new byte[this.a(chunk, flag, i)];
-        this.c = this.a(new PacketDataSerializer(this.h()), chunk, flag, i);
+
+        // Paper start - Anti-Xray - Add chunk packet info
+        if (chunkPacketInfo != null) {
+            chunkPacketInfo.setData(this.getData());
+        }
+        // Paper end
+
+        this.c = this.writeChunk(new PacketDataSerializer(this.h()), chunk, flag, i, chunkPacketInfo); // Paper - Anti-Xray - Add chunk packet info
         this.e = Lists.newArrayList();
         Iterator iterator = chunk.getTileEntities().entrySet().iterator();
 
@@ -44,7 +56,18 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
             }
         }
 
+        chunk.world.chunkPacketBlockController.modifyBlocks(this, chunkPacketInfo); // Paper - Anti-Xray - Modify blocks
     }
+
+    // Paper start - Async-Anti-Xray - Getter and Setter for the ready flag
+    public boolean isReady() {
+        return this.ready;
+    }
+
+    public void setReady(boolean ready) {
+        this.ready = ready;
+    }
+    // Paper end
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
         this.a = packetdataserializer.readInt();
@@ -98,8 +121,15 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
         return bytebuf;
     }
 
-    public int writeChunk(PacketDataSerializer packetDataSerializer, Chunk chunk, boolean writeSkyLightArray, int chunkSectionSelector) { return this.a(packetDataSerializer, chunk, writeSkyLightArray, chunkSectionSelector); } // Paper - OBFHELPER
+    // Paper start - Anti-Xray - Support default methods
+    public int writeChunk(PacketDataSerializer packetDataSerializer, Chunk chunk, boolean writeSkyLightArray, int chunkSectionSelector) { return this.a(packetDataSerializer, chunk, writeSkyLightArray, chunkSectionSelector); }
     public int a(PacketDataSerializer packetdataserializer, Chunk chunk, boolean flag, int i) {
+        return this.a(packetdataserializer, chunk, flag, i, null);
+    }
+    // Paper end
+
+    public int writeChunk(PacketDataSerializer packetDataSerializer, Chunk chunk, boolean writeSkyLightArray, int chunkSectionSelector, ChunkPacketInfo<IBlockData> chunkPacketInfo) { return this.a(packetDataSerializer, chunk, writeSkyLightArray, chunkSectionSelector, chunkPacketInfo); } // Paper - OBFHELPER // Paper - Anti-Xray - Add chunk packet info
+    public int a(PacketDataSerializer packetdataserializer, Chunk chunk, boolean flag, int i, ChunkPacketInfo<IBlockData> chunkPacketInfo) { // Paper - Anti-Xray - Add chunk packet info
         int j = 0;
         ChunkSection[] achunksection = chunk.getSections();
         int k = 0;
@@ -111,7 +141,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
 
             if (chunksection != Chunk.a && (!this.f() || !chunksection.a()) && (i & 1 << k) != 0) {
                 j |= 1 << k;
-                chunksection.getBlocks().b(packetdataserializer);
+                chunksection.getBlocks().writeDataPaletteBlock(packetdataserializer, chunkPacketInfo, k); // Paper - Anti-Xray - Add chunk packet info
                 packetdataserializer.writeBytes(chunksection.getEmittedLightArray().asBytes());
                 if (flag) {
                     packetdataserializer.writeBytes(chunksection.getSkyLightArray().asBytes());

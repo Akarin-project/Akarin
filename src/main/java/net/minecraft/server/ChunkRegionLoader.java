@@ -849,7 +849,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
 
         ChunkConverter chunkconverter = nbttagcompound.hasKeyOfType("UpgradeData", 10) ? new ChunkConverter(nbttagcompound.getCompound("UpgradeData")) : ChunkConverter.a;
-        ProtoChunk protochunk = new ProtoChunk(i, j, chunkconverter);
+        ProtoChunk protochunk = new ProtoChunk(i, j, chunkconverter, generatoraccess); // Paper - Anti-Xray
 
         protochunk.a(abiomebase);
         protochunk.b(nbttagcompound.getLong("InhabitedTime"));
@@ -955,7 +955,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         for (int i = 0; i < nbttaglist.size(); ++i) {
             NBTTagCompound nbttagcompound = nbttaglist.getCompound(i);
             byte b0 = nbttagcompound.getByte("Y");
-            ChunkSection chunksection = new ChunkSection(b0 << 4, flag1);
+            ChunkSection chunksection = new ChunkSection(b0 << 4, flag1, null, iworldreader, false); // Paper - Anti-Xray
 
             chunksection.getBlocks().a(nbttagcompound, "Palette", "BlockStates");
             chunksection.a(new NibbleArray(nbttagcompound.getByteArray("BlockLight")));

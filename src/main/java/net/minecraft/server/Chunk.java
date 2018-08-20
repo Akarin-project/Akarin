@@ -541,7 +541,7 @@ public class Chunk implements IChunkAccess {
                     return null;
                 }
 
-                chunksection = new ChunkSection(j >> 4 << 4, this.world.worldProvider.g());
+                chunksection = new ChunkSection(j >> 4 << 4, this.world.worldProvider.g(), this, this.world, true); // Paper - Anti-Xray
                 this.sections[j >> 4] = chunksection;
                 flag1 = j >= l;
             }
@@ -641,7 +641,7 @@ public class Chunk implements IChunkAccess {
                     return;
                 }
 
-                chunksection = new ChunkSection(i1 << 4, flag);
+                chunksection = new ChunkSection(i1 << 4, flag, this, this.world, true); // Paper - Anti-Xray
                 this.sections[i1] = chunksection;
                 this.initLighting();
             }

@@ -39,7 +39,7 @@ public class ChunkTaskScheduler extends Scheduler<ChunkCoordIntPair, ChunkStatus
 
     // CraftBukkit start
     public void forcePolluteCache(ChunkCoordIntPair chunkcoordintpair) {
-        this.progressCache.put(chunkcoordintpair.a(), new Scheduler.a(chunkcoordintpair, new ProtoChunk(chunkcoordintpair, ChunkConverter.a), ChunkStatus.EMPTY));
+        this.progressCache.put(chunkcoordintpair.a(), new Scheduler.a(chunkcoordintpair, new ProtoChunk(chunkcoordintpair, ChunkConverter.a, this.getWorld()), ChunkStatus.EMPTY)); // Paper - Anti-Xray
     }
     // CraftBukkit end
 
@@ -65,7 +65,7 @@ public class ChunkTaskScheduler extends Scheduler<ChunkCoordIntPair, ChunkStatus
                     protochunk.setLastSaved(this.c.getTime());
                     return new Scheduler.a(chunkcoordintpair, protochunk, protochunk.i());
                 } else {
-                    return new Scheduler.a(chunkcoordintpair, new ProtoChunk(chunkcoordintpair, ChunkConverter.a), ChunkStatus.EMPTY);
+                    return new Scheduler.a(chunkcoordintpair, new ProtoChunk(chunkcoordintpair, ChunkConverter.a, this.getWorld()), ChunkStatus.EMPTY); // Paper - Anti-Xray
                 }
             }) : (Scheduler.a) this.progressCache.get(chunkcoordintpair.a());
         }
