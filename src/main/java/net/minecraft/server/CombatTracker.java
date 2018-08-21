@@ -175,6 +175,7 @@ public class CombatTracker {
         this.h = null;
     }
 
+    public void reset() { this.g(); } // Paper - OBFHELPER
     public void g() {
         int i = this.f ? 300 : 100;
 
