@@ -154,6 +154,7 @@ public class Block implements IMaterial {
         return tag.isTagged(this);
     }
 
+    public static IBlockData getValidBlockForPosition(IBlockData iblockdata, GeneratorAccess generatoraccess, BlockPosition blockposition) { return Block.b(iblockdata, generatoraccess, blockposition); } // Paper - OBFHELPER
     public static IBlockData b(IBlockData iblockdata, GeneratorAccess generatoraccess, BlockPosition blockposition) {
         IBlockData iblockdata1 = iblockdata;
         BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
