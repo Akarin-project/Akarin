@@ -27,6 +27,8 @@ public interface IBlockData extends IBlockDataHolder<IBlockData> {
 
     Block getBlock();
 
+    org.bukkit.craftbukkit.block.data.CraftBlockData createCraftBlockData(); // Paper - property for converting IBlockData to CraftBlockData, should only be used by CraftBlockData#fromData and should return a clone
+
     default Material getMaterial() {
         return this.getBlock().n(this);
     }

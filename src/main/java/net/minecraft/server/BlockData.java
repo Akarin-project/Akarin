@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import com.google.common.collect.ImmutableMap;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
 public class BlockData extends BlockDataAbstract<Block, IBlockData> implements IBlockData {
 
@@ -11,4 +12,14 @@ public class BlockData extends BlockDataAbstract<Block, IBlockData> implements I
     public Block getBlock() {
         return (Block) this.e_;
     }
+
+    // Paper start - impl cached craft block data, lazy load to fix issue with loading at the wrong time
+    private CraftBlockData cachedCraftBlockData;
+
+    @Override
+    public CraftBlockData createCraftBlockData() {
+        if(cachedCraftBlockData == null) cachedCraftBlockData = CraftBlockData.createData(this);
+        return (CraftBlockData) cachedCraftBlockData.clone();
+    }
+    // Paper end
 }
