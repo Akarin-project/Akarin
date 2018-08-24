@@ -76,4 +76,22 @@ public class CraftCreeper extends CraftMonster implements Creeper {
     public EntityType getType() {
         return EntityType.CREEPER;
     }
+
+    // Paper start
+    public void setIgnited(boolean ignited) {
+        getHandle().setIgnited(ignited);
+    }
+
+    public boolean isIgnited() {
+        return getHandle().isIgnited();
+    }
+
+    public int getFuseTicks() {
+        return getHandle().fuseTicks;
+    }
+
+    public void explode() {
+        getHandle().explode();
+    }
+    // Paper end
 }
