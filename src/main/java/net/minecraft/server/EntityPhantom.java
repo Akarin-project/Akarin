@@ -127,6 +127,11 @@ public class EntityPhantom extends EntityFlying implements IMonster {
         }
 
         this.setSize(nbttagcompound.getInt("Size"));
+        // Paper start
+        if (nbttagcompound.hasUUID("Paper.SpawningEntity")) {
+            this.spawningEntity = nbttagcompound.getUUID("Paper.SpawningEntity");
+        }
+        // Paper end
     }
 
     public void b(NBTTagCompound nbttagcompound) {
@@ -135,6 +140,11 @@ public class EntityPhantom extends EntityFlying implements IMonster {
         nbttagcompound.setInt("AY", this.c.getY());
         nbttagcompound.setInt("AZ", this.c.getZ());
         nbttagcompound.setInt("Size", this.getSize());
+        // Paper start
+        if (this.spawningEntity != null) {
+            nbttagcompound.setUUID("Paper.SpawningEntity", this.spawningEntity);
+        }
+        // Paper end
     }
 
     public SoundCategory bV() {
@@ -169,6 +179,14 @@ public class EntityPhantom extends EntityFlying implements IMonster {
     public boolean b(Class<? extends EntityLiving> oclass) {
         return true;
     }
+
+    // Paper start
+    java.util.UUID spawningEntity;
+
+    public java.util.UUID getSpawningEntity() {
+        return spawningEntity;
+    }
+    // Paper end
 
     class b extends PathfinderGoal {
 
