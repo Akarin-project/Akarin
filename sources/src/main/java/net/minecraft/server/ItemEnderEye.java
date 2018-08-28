@@ -23,15 +23,15 @@ public class ItemEnderEye extends Item {
             } else {
                 IBlockData iblockdata1 = (IBlockData) iblockdata.set(BlockEnderPortalFrame.EYE, Boolean.valueOf(true));
 
-                Block.a(iblockdata, iblockdata1, (GeneratorAccess) world, blockposition);
+                Block.a(iblockdata, iblockdata1, world, blockposition);
                 world.setTypeAndData(blockposition, iblockdata1, 2);
                 world.updateAdjacentComparators(blockposition, Blocks.END_PORTAL_FRAME);
                 itemactioncontext.getItemStack().subtract(1);
 
                 for (int i = 0; i < 16; ++i) {
-                    double d0 = (double) ((float) blockposition.getX() + (5.0F + ItemEnderEye.k.nextFloat() * 6.0F) / 16.0F);
+                    double d0 = (double) ((float) blockposition.getX() + (5.0F + ItemEnderEye.i.nextFloat() * 6.0F) / 16.0F);
                     double d1 = (double) ((float) blockposition.getY() + 0.8125F);
-                    double d2 = (double) ((float) blockposition.getZ() + (5.0F + ItemEnderEye.k.nextFloat() * 6.0F) / 16.0F);
+                    double d2 = (double) ((float) blockposition.getZ() + (5.0F + ItemEnderEye.i.nextFloat() * 6.0F) / 16.0F);
                     double d3 = 0.0D;
                     double d4 = 0.0D;
                     double d5 = 0.0D;
@@ -71,7 +71,7 @@ public class ItemEnderEye extends Item {
         } else {
             entityhuman.c(enumhand);
             if (!world.isClientSide) {
-                BlockPosition blockposition = ((WorldServer) world).getChunkProviderServer().a(world, "Stronghold", new BlockPosition(entityhuman), 100);
+                BlockPosition blockposition = ((WorldServer) world).getChunkProviderServer().a(world, "Stronghold", new BlockPosition(entityhuman), 100, false);
 
                 if (blockposition != null) {
                     EntityEnderSignal entityendersignal = new EntityEnderSignal(world, entityhuman.locX, entityhuman.locY + (double) (entityhuman.length / 2.0F), entityhuman.locZ);
@@ -82,7 +82,7 @@ public class ItemEnderEye extends Item {
                         CriterionTriggers.m.a((EntityPlayer) entityhuman, blockposition);
                     }
 
-                    world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ENDER_EYE_LAUNCH, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderEye.k.nextFloat() * 0.4F + 0.8F));
+                    world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ENDER_EYE_LAUNCH, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemEnderEye.i.nextFloat() * 0.4F + 0.8F));
                     world.a((EntityHuman) null, 1003, new BlockPosition(entityhuman), 0);
                     if (!entityhuman.abilities.canInstantlyBuild) {
                         itemstack.subtract(1);

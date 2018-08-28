@@ -77,7 +77,7 @@ public class AkarinSlackScheduler extends Thread {
             
             // Force hardcore difficulty, from WorldServer#doTick
             if (AkarinGlobalConfig.forceHardcoreDifficulty)
-            for (WorldServer world : server.worlds) {
+            for (WorldServer world : server.getWorlds()) {
                 if (world.getWorldData().isHardcore() && world.getDifficulty() != EnumDifficulty.HARD) {
                     world.getWorldData().setDifficulty(EnumDifficulty.HARD);
                 }

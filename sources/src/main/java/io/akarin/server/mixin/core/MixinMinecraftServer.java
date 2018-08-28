@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.function.BooleanSupplier;
 
 import javax.activation.FileDataSource;
 
@@ -80,11 +81,11 @@ public abstract class MixinMinecraftServer {
      * Parallel world ticking
      */
     @Shadow public CraftServer server;
-    @Shadow @Mutable protected Queue<FutureTask<?>> g;
+    @Shadow @Mutable protected Queue<FutureTask<?>> f;
     @Shadow public Queue<Runnable> processQueue;
     @Shadow private int ticks;
     @Shadow public List<WorldServer> worlds;
-    @Shadow(aliases = "l") @Final private List<ITickable> tickables;
+    @Shadow(aliases = "k") @Final private List<ITickable> tickables;
     
     @Shadow public abstract CustomFunctionData getFunctionData();
     @Shadow public abstract ServerConnection getServerConnection();
@@ -109,10 +110,10 @@ public abstract class MixinMinecraftServer {
         return true;
     }
     
-    private void tickWorld(WorldServer world) {
+    private void tickWorld(WorldServer world, BooleanSupplier supplier) {
         try {
             world.timings.doTick.startTiming();
-            world.doTick();
+            world.doTick(supplier);
             world.timings.doTick.stopTiming();
         } catch (Throwable throwable) {
             CrashReport crashreport;
@@ -127,7 +128,7 @@ public abstract class MixinMinecraftServer {
     }
     
     @Overwrite
-    public void w() throws InterruptedException, ExecutionException {
+    public void b(BooleanSupplier supplier) throws InterruptedException, ExecutionException {
         Runnable runnable;
         MinecraftTimings.bukkitSchedulerTimer.startTiming();
         this.server.getScheduler().mainThreadHeartbeat(this.ticks);
@@ -135,8 +136,8 @@ public abstract class MixinMinecraftServer {
         
         MinecraftTimings.minecraftSchedulerTimer.startTiming();
         FutureTask<?> task;
-        int count = g.size();
-        while (count-- > 0 && (task = g.poll()) != null) {
+        int count = f.size();
+        while (count-- > 0 && (task = f.poll()) != null) {
             SystemUtils.a(task, MinecraftServer.LOGGER);
         }
         MinecraftTimings.minecraftSchedulerTimer.stopTiming();
@@ -176,7 +177,7 @@ public abstract class MixinMinecraftServer {
                         Akari.STAGE_TICK.submit(() -> {
                             WorldServer world = worlds.get(fi);
                             synchronized (((IMixinWorldServer) world).tickLock()) {
-                                tickWorld(world);
+                                tickWorld(world, supplier);
                             }
                         }, null);
                     }
@@ -187,7 +188,7 @@ public abstract class MixinMinecraftServer {
                     for (int i = 0; i < cachedWorldSize; i++) {
                         WorldServer world = worlds.get(i);
                         synchronized (((IMixinWorldServer) world).tickLock()) {
-                            tickWorld(world);
+                            tickWorld(world, supplier);
                         }
                     }
                 }, null);
@@ -218,7 +219,7 @@ public abstract class MixinMinecraftServer {
                     for (int i = 0; i < cachedWorldSize; ++i) {
                         WorldServer world = worlds.get(i);
                         synchronized (((IMixinWorldServer) world).tickLock()) {
-                            tickWorld(world);
+                            tickWorld(world, supplier);
                         }
                     }
                 }, null);
@@ -229,7 +230,7 @@ public abstract class MixinMinecraftServer {
             case -1:
                 for (int i = 0; i < cachedWorldSize; ++i) {
                     WorldServer world = worlds.get(i);
-                    tickWorld(world);
+                    tickWorld(world, supplier);
                     tickEntities(world);
                 }
                 break;

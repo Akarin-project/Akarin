@@ -247,10 +247,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setPlayerListHeaderFooter(BaseComponent[] header, BaseComponent[] footer) {
-        PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
-        packet.header = header;
-        packet.footer = footer;
-        getHandle().playerConnection.sendPacket(packet);
+        setPlayerListHeader(header == null ? null : net.md_5.bungee.chat.ComponentSerializer.toString(header));
+        setPlayerListFooter(footer == null ? null : net.md_5.bungee.chat.ComponentSerializer.toString(footer));
     }
 
     @Override
@@ -387,8 +385,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (getHandle().playerConnection == null) return;
 
         PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
-        packet.a = (this.playerListHeader == null) ? new ChatComponentText("") : this.playerListHeader;
-        packet.b = (this.playerListFooter == null) ? new ChatComponentText("") : this.playerListFooter;
+        packet.header = (this.playerListHeader == null) ? new ChatComponentText("") : this.playerListHeader;
+        packet.footer = (this.playerListFooter == null) ? new ChatComponentText("") : this.playerListFooter;
         getHandle().playerConnection.sendPacket(packet);
     }
 
@@ -1937,7 +1935,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         {
             if ( getHealth() <= 0 && isOnline() )
             {
-                server.getServer().getPlayerList().moveToWorld( getHandle(), 0, false );
+                server.getServer().getPlayerList().moveToWorld( getHandle(), net.minecraft.server.DimensionManager.OVERWORLD, false );
             }
         }
 

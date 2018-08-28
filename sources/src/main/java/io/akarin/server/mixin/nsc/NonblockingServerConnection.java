@@ -75,7 +75,7 @@ public abstract class NonblockingServerConnection {
         Class<? extends ServerChannel> channelClass;
         EventLoopGroup loopGroup;
         
-        if (Epoll.isAvailable() && this.server.X()) { // OBFHELPER: MinecraftServer::useNativeTransport
+        if (Epoll.isAvailable() && this.server.V()) { // OBFHELPER: MinecraftServer::useNativeTransport
             channelClass = EpollServerSocketChannel.class;
             loopGroup = ServerConnection.b.a();
             logger.info("Using epoll channel type");

@@ -25,6 +25,7 @@
         "core.MixinChunkIOExecutor",
         "core.MixinPlayerConnectionUtils",
         
+        "nsc.OptimisticNetworkManager",
         "nsc.NonblockingServerConnection",
         
         "optimization.MixinEntity",

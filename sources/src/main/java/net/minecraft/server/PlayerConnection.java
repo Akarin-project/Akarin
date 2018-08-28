@@ -2,7 +2,9 @@ package net.minecraft.server;
 
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
+import com.google.common.util.concurrent.Futures;
 import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestions;
 
 import io.akarin.api.internal.Akari;
@@ -10,16 +12,18 @@ import io.akarin.server.core.AkarinGlobalConfig;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+// CraftBukkit start
+import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -58,6 +62,7 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.util.NumberConversions;
+import com.destroystokyo.paper.event.player.IllegalPacketEvent; // Paper
 import com.destroystokyo.paper.event.player.PlayerJumpEvent; // Paper
 import co.aikar.timings.MinecraftTimings; // Paper
 // CraftBukkit end
@@ -109,7 +114,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     private int E;
     private int receivedMovePackets;
     private int processedMovePackets;
-    private static final long KEEPALIVE_LIMIT = /*Long.getLong("paper.playerconnection.keepalive", 30)*/ AkarinGlobalConfig.keepAliveTimeout * 1000; // Paper - provide property to set keepalive limit // Akarin - more accessible - keep changes
+    private static final long KEEPALIVE_LIMIT = /*Long.getLong("paper.playerconnection.keepalive", 30)*/ AkarinGlobalConfig.keepAliveTimeout * 1000; // Paper - provide property to set keepalive limit // Akarin - more accessible
 
     public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
         this.minecraftServer = minecraftserver;
@@ -351,7 +356,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 }
                 speed *= 2f; // TODO: Get the speed of the vehicle instead of the player
 
-                if (d10 - d9 > Math.max(100.0D, Math.pow((double) (org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed), 2)) && (!this.minecraftServer.J() || !this.minecraftServer.I().equals(entity.getDisplayName().getString()))) {
+                if (d10 - d9 > Math.max(100.0D, Math.pow((double) (org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed), 2)) && (!this.minecraftServer.H() || !this.minecraftServer.G().equals(entity.getDisplayName().getString()))) {
                 // CraftBukkit end
                     PlayerConnection.LOGGER.warn("{} (vehicle of {}) moved too quickly! {},{},{}", entity.getDisplayName().getString(), this.player.getDisplayName().getString(), Double.valueOf(d6), Double.valueOf(d7), Double.valueOf(d8));
                     this.networkManager.sendPacket(new PacketPlayOutVehicleMove(entity));
@@ -473,10 +478,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         PlayerConnectionUtils.ensureMainThread(packetplayinteleportaccept, this, this.player.getWorldServer());
         if (packetplayinteleportaccept.b() == this.teleportAwait && this.teleportPos != null) { // CraftBukkit
             this.player.setLocation(this.teleportPos.x, this.teleportPos.y, this.teleportPos.z, this.player.yaw, this.player.pitch);
+            this.o = this.teleportPos.x;
+            this.p = this.teleportPos.y;
+            this.q = this.teleportPos.z;
             if (this.player.H()) {
-                this.o = this.teleportPos.x;
-                this.p = this.teleportPos.y;
-                this.q = this.teleportPos.z;
                 this.player.I();
             }
 
@@ -523,6 +528,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             minecraftServer.postToMainThread(() -> this.disconnect(new ChatMessage("disconnect.spam", new Object[0]))); // Paper
             return;
         }
+        // CraftBukkit end
+        StringReader stringreader = new StringReader(packetplayintabcomplete.c());
+
+        if (stringreader.canRead() && stringreader.peek() == 47) {
+            stringreader.skip();
+        }
+
         // Paper start
         com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event;
         java.util.List<String> completions = new java.util.ArrayList<>();
@@ -770,12 +782,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             return;
         }
         this.lastBookTick = MinecraftServer.currentTick;
+        EnumItemSlot enumitemslot = packetplayinbedit.d() == EnumHand.MAIN_HAND ? EnumItemSlot.MAINHAND : EnumItemSlot.OFFHAND;
         // CraftBukkit end
         ItemStack itemstack = packetplayinbedit.b();
 
         if (!itemstack.isEmpty()) {
             if (ItemBookAndQuill.b(itemstack.getTag())) {
-                ItemStack itemstack1 = this.player.getItemInMainHand();
+                ItemStack itemstack1 = this.player.b(packetplayinbedit.d());
 
                 if (!itemstack1.isEmpty()) {
                     if (itemstack.getItem() == Items.WRITABLE_BOOK && itemstack1.getItem() == Items.WRITABLE_BOOK) {
@@ -795,10 +808,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                             }
 
                             itemstack2.a("pages", (NBTBase) nbttaglist);
-                            CraftEventFactory.handleEditBookEvent(player, itemstack2); // CraftBukkit
+                            // EnumItemSlot enumitemslot = packetplayinbedit.d() == EnumHand.MAIN_HAND ? EnumItemSlot.MAINHAND : EnumItemSlot.OFFHAND; // CraftBukkit - Moved up
+
+                            this.player.setSlot(enumitemslot, CraftEventFactory.handleEditBookEvent(player, enumitemslot, itemstack1, itemstack2)); // CraftBukkit
                         } else {
+                            ItemStack old = itemstack1.cloneItemStack(); // CraftBukkit
                             itemstack1.a("pages", (NBTBase) itemstack.getTag().getList("pages", 8));
-                            CraftEventFactory.handleEditBookEvent(player, itemstack1); // CraftBukkit
+                            CraftEventFactory.handleEditBookEvent(player, enumitemslot, old, itemstack1); // CraftBukkit
                         }
                     }
 
@@ -809,7 +825,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     public void a(PacketPlayInEntityNBTQuery packetplayinentitynbtquery) {
         PlayerConnectionUtils.ensureMainThread(packetplayinentitynbtquery, this, this.player.getWorldServer());
-        if (this.player.k(2)) {
+        if (this.player.j(2)) {
             Entity entity = this.player.getWorldServer().getEntity(packetplayinentitynbtquery.c());
 
             if (entity != null) {
@@ -823,7 +839,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     public void a(PacketPlayInTileNBTQuery packetplayintilenbtquery) {
         PlayerConnectionUtils.ensureMainThread(packetplayintilenbtquery, this, this.player.getWorldServer());
-        if (this.player.k(2)) {
+        if (this.player.j(2)) {
             TileEntity tileentity = this.player.getWorldServer().getTileEntity(packetplayintilenbtquery.c());
             NBTTagCompound nbttagcompound = tileentity != null ? tileentity.save(new NBTTagCompound()) : null;
 
@@ -912,7 +928,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                             if (!this.player.H() && (!this.player.getWorldServer().getGameRules().getBoolean("disableElytraMovementCheck") || !this.player.dc())) {
                                 float f2 = this.player.dc() ? 300.0F : 100.0F;
 
-                                if (d11 - d10 > Math.max(f2, Math.pow((double) (org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed), 2)) && (!this.minecraftServer.J() || !this.minecraftServer.I().equals(this.player.getProfile().getName()))) {
+                                if (d11 - d10 > Math.max(f2, Math.pow((double) (org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed), 2)) && (!this.minecraftServer.H() || !this.minecraftServer.G().equals(this.player.getProfile().getName()))) {
                                 // CraftBukkit end
                                     PlayerConnection.LOGGER.warn("{} moved too quickly! {},{},{}", this.player.getDisplayName().getString(), Double.valueOf(d7), Double.valueOf(d8), Double.valueOf(d9));
                                     this.a(this.player.locX, this.player.locY, this.player.locZ, this.player.yaw, this.player.pitch);
@@ -1158,6 +1174,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.A = this.e;
         this.player.setLocation(d0, d1, d2, f, f1);
         this.player.playerConnection.sendPacket(new PacketPlayOutPosition(d0 - d3, d1 - d4, d2 - d5, f - f2, f1 - f3, set, this.teleportAwait));
+        this.minecraftServer.getPlayerList().d(this.player); // CraftBukkit
     }
 
     public void a(PacketPlayInBlockDig packetplayinblockdig) {
@@ -1384,17 +1401,14 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         PlayerConnectionUtils.ensureMainThread(packetplayinspectate, this, this.player.getWorldServer());
         if (this.player.isSpectator()) {
             Entity entity = null;
-            WorldServer[] aworldserver = this.minecraftServer.worldServer;
-            int i = aworldserver.length;
+            Iterator iterator = this.minecraftServer.getWorlds().iterator();
 
-            // CraftBukkit - use the worlds array list
-            for (WorldServer worldserver : minecraftServer.worlds) {
+            while (iterator.hasNext()) {
+                WorldServer worldserver = (WorldServer) iterator.next();
 
-                if (worldserver != null) {
-                    entity = packetplayinspectate.a(worldserver);
-                    if (entity != null) {
-                        break;
-                    }
+                entity = packetplayinspectate.a(worldserver);
+                if (entity != null) {
+                    break;
                 }
             }
 
@@ -1433,7 +1447,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         PlayerConnection.LOGGER.info("{} lost connection: {}", this.player.getDisplayName().getString(), ichatbasecomponent.getString());
         // CraftBukkit start - Replace vanilla quit message handling with our own.
         /*
-        this.minecraftServer.av();
+        this.minecraftServer.at();
         this.minecraftServer.getPlayerList().sendMessage((new ChatMessage("multiplayer.player.left", new Object[] { this.player.getScoreboardDisplayName()})).a(EnumChatFormat.YELLOW));
         */
 
@@ -1443,7 +1457,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             this.minecraftServer.getPlayerList().sendMessage(CraftChatMessage.fromString(quitMessage));
         }
         // CraftBukkit end
-        if (this.minecraftServer.J() && this.player.getDisplayName().getString().equals(this.minecraftServer.I())) {
+        if (this.minecraftServer.H() && this.player.getDisplayName().getString().equals(this.minecraftServer.G())) {
             PlayerConnection.LOGGER.info("Stopping singleplayer server as player logged out");
             this.minecraftServer.safeShutdown();
         }
@@ -2030,15 +2044,15 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         case PERFORM_RESPAWN:
             if (this.player.viewingCredits) {
                 this.player.viewingCredits = false;
-                // this.player = this.minecraftServer.getPlayerList().moveToWorld(this.player, 0, true);
-                this.minecraftServer.getPlayerList().changeDimension(this.player, 0, PlayerTeleportEvent.TeleportCause.END_PORTAL); // CraftBukkit - reroute logic through custom portal management
+                // this.player = this.minecraftServer.getPlayerList().moveToWorld(this.player, DimensionManager.OVERWORLD, true);
+                this.minecraftServer.getPlayerList().changeDimension(this.player, DimensionManager.OVERWORLD, PlayerTeleportEvent.TeleportCause.END_PORTAL); // CraftBukkit - reroute logic through custom portal management
                 CriterionTriggers.v.a(this.player, DimensionManager.THE_END, DimensionManager.OVERWORLD);
             } else {
                 if (this.player.getHealth() > 0.0F) {
                     return;
                 }
 
-                this.player = this.minecraftServer.getPlayerList().moveToWorld(this.player, 0, false);
+                this.player = this.minecraftServer.getPlayerList().moveToWorld(this.player, DimensionManager.OVERWORLD, false);
                 if (this.minecraftServer.isHardcore()) {
                     this.player.a(EnumGamemode.SPECTATOR);
                     this.player.getWorldServer().getGameRules().set("spectatorsGenerateChunks", "false", this.minecraftServer);
@@ -2544,10 +2558,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
             this.player.ping = (this.player.ping * 3 + i) / 4;
             this.g = false;
-        } else if (!this.player.getDisplayName().getString().equals(this.minecraftServer.I())) {
+        } else if (!this.player.getDisplayName().getString().equals(this.minecraftServer.G())) {
             // Paper start - This needs to be handled on the main thread for plugins
             minecraftServer.postToMainThread(() -> {
-                    this.disconnect(new ChatMessage("disconnect.timeout", new Object[0]));
+                this.disconnect(new ChatMessage("disconnect.timeout", new Object[0]));
             });
             // Paper end
         }

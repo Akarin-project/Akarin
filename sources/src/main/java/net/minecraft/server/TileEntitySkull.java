@@ -87,7 +87,7 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
     // Spigot end
 
     public TileEntitySkull() {
-        super(TileEntityTypes.p);
+        super(TileEntityTypes.SKULL);
     }
 
     public static void a(UserCache usercache) {
@@ -113,12 +113,12 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
     public void load(NBTTagCompound nbttagcompound) {
         super.load(nbttagcompound);
         if (nbttagcompound.hasKeyOfType("Owner", 10)) {
-            this.a = GameProfileSerializer.deserialize(nbttagcompound.getCompound("Owner"));
+            this.setGameProfile(GameProfileSerializer.deserialize(nbttagcompound.getCompound("Owner")));
         } else if (nbttagcompound.hasKeyOfType("ExtraType", 8)) {
             String s = nbttagcompound.getString("ExtraType");
 
             if (!UtilColor.b(s)) {
-                this.a = new GameProfile((UUID) null, s);
+                this.setGameProfile(new GameProfile((UUID) null, s));
                 this.f();
             }
         }
@@ -143,7 +143,7 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
     public GameProfile getGameProfile() {
         return this.a;
     }
-    
+
     // Paper start
     static NBTTagCompound sanitizeTileEntityUUID(NBTTagCompound cmp) {
         NBTTagCompound owner = cmp.getCompound("Owner");

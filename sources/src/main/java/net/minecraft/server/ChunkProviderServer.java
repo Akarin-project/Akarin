@@ -1,8 +1,5 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Lists;
-
-import io.akarin.api.internal.Akari;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -10,15 +7,17 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import com.destroystokyo.paper.exception.ServerInternalException;
+
+import io.akarin.api.internal.Akari;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,22 +34,28 @@ public class ChunkProviderServer implements IChunkProvider {
     public final LongSet unloadQueue = new LongOpenHashSet();
     public final ChunkGenerator<?> chunkGenerator;
     private final IChunkLoader chunkLoader;
-    public final Long2ObjectMap<Chunk> chunks = Long2ObjectMaps.synchronize(new ChunkMap(8192));
-    private final ChunkTaskScheduler f;
-    private final SchedulerBatch<ChunkCoordIntPair, ChunkStatus, ProtoChunk> g;
     // Paper start - chunk save stats
     private long lastQueuedSaves = 0L; // Paper
     private long lastProcessedSaves = 0L; // Paper
     private long lastSaveStatPrinted = System.currentTimeMillis();
+    public boolean isChunkGenerated(int x, int z) {
+        return this.chunks.containsKey(ChunkCoordIntPair.asLong(x, z)) || ((ChunkRegionLoader) this.chunkLoader).chunkExists(x, z);
+    }
     // Paper end
+    public final Long2ObjectMap<Chunk> chunks = Long2ObjectMaps.synchronize(new ChunkMap(8192));
+    private Chunk lastChunk;
+    private final ChunkTaskScheduler chunkScheduler;
+    private final SchedulerBatch<ChunkCoordIntPair, ChunkStatus, ProtoChunk> batchScheduler;
     public final WorldServer world;
+    private final IAsyncTaskHandler asyncTaskHandler;
 
     public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, ChunkGenerator<?> chunkgenerator, IAsyncTaskHandler iasynctaskhandler) {
         this.world = worldserver;
         this.chunkLoader = ichunkloader;
         this.chunkGenerator = chunkgenerator;
-        this.f = new ChunkTaskScheduler(0, worldserver, chunkgenerator, ichunkloader, iasynctaskhandler); // CraftBukkit - very buggy, broken in lots of __subtle__ ways. Same goes for async chunk loading. Also Bukkit API / plugins can't handle async events at all anyway.
-        this.g = new SchedulerBatch(this.f);
+        this.asyncTaskHandler = iasynctaskhandler;
+        this.chunkScheduler = new ChunkTaskScheduler(0, worldserver, chunkgenerator, ichunkloader, iasynctaskhandler); // CraftBukkit - very buggy, broken in lots of __subtle__ ways. Same goes for async chunk loading. Also Bukkit API / plugins can't handle async events at all anyway.
+        this.batchScheduler = new SchedulerBatch(this.chunkScheduler);
     }
 
     public Collection<Chunk> a() {
@@ -60,7 +65,6 @@ public class ChunkProviderServer implements IChunkProvider {
     public void unload(Chunk chunk) {
         if (this.world.worldProvider.a(chunk.locX, chunk.locZ)) {
             this.unloadQueue.add(ChunkCoordIntPair.a(chunk.locX, chunk.locZ));
-            chunk.d = true;
         }
 
     }
@@ -76,119 +80,99 @@ public class ChunkProviderServer implements IChunkProvider {
 
     }
 
-    @Nullable
-    public Chunk getLoadedChunkAt(int i, int j) {
-        long k = ChunkCoordIntPair.a(i, j);
-        Chunk chunk = (Chunk) this.chunks.get(k);
-
-        if (chunk != null) {
-            chunk.d = false;
-        }
-
-        return chunk;
+    public void a(int i, int j) {
+        this.unloadQueue.remove(ChunkCoordIntPair.a(i, j));
     }
 
     @Nullable
-    private Chunk loadChunkAt(int i, int j) {
-        try {
-            // CraftBukkit - decompile error
-            Chunk chunk = this.chunkLoader.a(this.world, i, j, (chunk1) -> {
-                chunk1.setLastSaved(this.world.getTime());
-                this.chunks.put(ChunkCoordIntPair.a(i, j), chunk1);
-            });
+    public Chunk getChunkAt(int i, int j, boolean flag, boolean flag1) {
+        IChunkLoader ichunkloader = this.chunkLoader;
+        Chunk chunk;
 
+        synchronized (this.chunkLoader) {
+            // Paper start - remove vanilla lastChunk, we do it more accurately
+            /* if (this.lastChunk != null && this.lastChunk.locX == i && this.lastChunk.locZ == j) {
+                return this.lastChunk;
+            }*/ // Paper end
+
+            long k = ChunkCoordIntPair.a(i, j);
+
+            chunk = (Chunk) this.chunks.get(k);
             if (chunk != null) {
-                chunk.addEntities();
+                //this.lastChunk = chunk; // Paper remove vanilla lastChunk
+                return chunk;
             }
 
+            if (flag) {
+                try (co.aikar.timings.Timing timing = world.timings.syncChunkLoadTimer.startTiming()) { // Paper
+                    // CraftBukkit - decompile error
+                    chunk = this.chunkLoader.a(this.world, i, j, (chunk1) -> {
+                        chunk1.setLastSaved(this.world.getTime());
+                        this.chunks.put(ChunkCoordIntPair.a(i, j), chunk1);
+                    });
+                } catch (Exception exception) {
+                    ChunkProviderServer.a.error("Couldn\'t load chunk", exception);
+                }
+            }
+        }
+
+        if (chunk != null) {
+            this.asyncTaskHandler.postToMainThread(chunk::addEntities);
             return chunk;
-        } catch (Exception exception) {
-            ChunkProviderServer.a.error("Couldn\'t load chunk", exception);
+        } else if (flag1) {
+            try (co.aikar.timings.Timing timing = world.timings.chunkGeneration.startTiming()) { // Paper
+                this.batchScheduler.b();
+                this.batchScheduler.a(new ChunkCoordIntPair(i, j));
+                CompletableFuture<ProtoChunk> completablefuture = this.batchScheduler.c(); // CraftBukkit - decompile error
+
+                return (Chunk) completablefuture.thenApply(this::a).join();
+            } catch (RuntimeException runtimeexception) {
+                throw this.a(i, j, (Throwable) runtimeexception);
+            }
+            // finally { world.timings.syncChunkLoadTimer.stopTiming(); } // Spigot // Paper
+        } else {
             return null;
         }
     }
 
-    @Nullable
-    public Chunk getOrLoadChunkAt(int i, int j) {
-        Long2ObjectMap long2objectmap = this.chunks;
-
-        Akari.eventLock.lock(); // Akarin
-        try { // Akarin
-        synchronized (this.chunks) {
-            Chunk chunk = world.paperConfig.allowPermaChunkLoaders ? getLoadedChunkAt(i, j) : getChunkIfLoaded(i, j); // Paper - Configurable perma chunk loaders
-
-            return chunk != null ? chunk : this.loadChunkAt(i, j);
-        }
-        } finally { Akari.eventLock.unlock(); } // Akarin
-    }
-
     // CraftBukkit start
-    public Chunk getChunkIfLoaded(int x, int z) {
-        return chunks.get(ChunkCoordIntPair.a(x, z));
+    public Chunk generateChunk(int x, int z) {
+        try {
+            this.batchScheduler.b();
+            ChunkCoordIntPair pos = new ChunkCoordIntPair(x, z);
+            this.chunkScheduler.forcePolluteCache(pos);
+            this.batchScheduler.a(pos);
+            CompletableFuture<ProtoChunk> completablefuture = this.batchScheduler.c();
+
+            return (Chunk) completablefuture.thenApply(this::a).join();
+        } catch (RuntimeException runtimeexception) {
+            throw this.a(x, z, (Throwable) runtimeexception);
+        }
     }
     // CraftBukkit end
 
-    public Chunk getChunkAt(int i, int j) {
-        Chunk chunk = this.getOrLoadChunkAt(i, j);
+    public IChunkAccess a(int i, int j, boolean flag) {
+        Chunk chunk = this.getChunkAt(i, j, true, false);
 
-        if (chunk != null) {
-            return chunk;
-        } else {
-            try (co.aikar.timings.Timing timing = world.timings.chunkGeneration.startTiming()) {
-                ; // Spigot
-                chunk = (Chunk) this.generateChunk(i, j).get();
-                return chunk;
-            } catch (ExecutionException | InterruptedException interruptedexception) {
-                throw this.a(i, j, (Throwable) interruptedexception);
-            }
-        }
-    }
-
-    public IChunkAccess d(int i, int j) {
-        Long2ObjectMap long2objectmap = this.chunks;
-
-        synchronized (this.chunks) {
-            IChunkAccess ichunkaccess = (IChunkAccess) this.chunks.get(ChunkCoordIntPair.a(i, j));
-
-            return ichunkaccess != null ? ichunkaccess : (IChunkAccess) this.f.c((new ChunkCoordIntPair(i, j))); // CraftBukkit - decompile error
-        }
+        return (IChunkAccess) (chunk != null ? chunk : (IChunkAccess) this.chunkScheduler.b(new ChunkCoordIntPair(i, j), flag));
     }
 
     public CompletableFuture<ProtoChunk> a(Iterable<ChunkCoordIntPair> iterable, Consumer<Chunk> consumer) {
-        this.g.b();
+        this.batchScheduler.b();
         Iterator iterator = iterable.iterator();
 
         while (iterator.hasNext()) {
             ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator.next();
-            Chunk chunk = this.getOrLoadChunkAt(chunkcoordintpair.x, chunkcoordintpair.z);
+            Chunk chunk = this.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z, true, false);
 
             if (chunk != null) {
                 consumer.accept(chunk);
             } else {
-                this.g.a(chunkcoordintpair).thenApply(this::a).thenAccept(consumer);
+                this.batchScheduler.a(chunkcoordintpair).thenApply(this::a).thenAccept(consumer);
             }
         }
 
-        return this.g.c();
-    }
-
-    // CraftBukkit start
-    public CompletableFuture<Chunk> generateChunk(int i, int j) {
-        return this.generateChunk(i, j, false);
-    }
-
-    public CompletableFuture<Chunk> generateChunk(int i, int j, boolean force) {
-        this.g.b();
-
-        ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i, j);
-        if (force) {
-            this.f.forcePolluteCache(chunkcoordintpair);
-        }
-        this.g.a(chunkcoordintpair);
-        // CraftBukkit end
-        CompletableFuture<ProtoChunk> completablefuture = this.g.c(); // CraftBukkit - decompile error
-
-        return completablefuture.thenApply(this::a);
+        return this.batchScheduler.c();
     }
 
     private ReportedException a(int i, int j, Throwable throwable) {
@@ -229,24 +213,12 @@ public class ChunkProviderServer implements IChunkProvider {
             }
 
             this.chunks.put(k, chunk);
+            //this.lastChunk = chunk; // Paper
         }
         } finally { Akari.eventLock.unlock(); } // Akarin
 
-        chunk.addEntities();
+        this.asyncTaskHandler.postToMainThread(chunk::addEntities);
         return chunk;
-    }
-
-    public void saveChunkNOP(Chunk chunk) {
-        try {
-            // this.chunkLoader.a(this.world, chunk); // Spigot
-        } catch (Exception exception) {
-            // Paper start
-            String msg = "Couldn\'t save entities";
-            ChunkProviderServer.a.error(msg, exception);
-            ServerInternalException.reportInternalException(exception);
-            // Paper end
-        }
-
     }
 
     public void saveChunk(IChunkAccess ichunkaccess, boolean unloaded) { // Spigot
@@ -269,65 +241,64 @@ public class ChunkProviderServer implements IChunkProvider {
     public boolean a(boolean flag) {
         int i = 0;
 
-        this.f.a();
-        ArrayList arraylist = Lists.newArrayList(this.chunks.values());
-        Iterator iterator = arraylist.iterator();
+        this.chunkScheduler.a(() -> {
+            return true;
+        });
+        IChunkLoader ichunkloader = this.chunkLoader;
 
-        // Paper start
-        final ChunkRegionLoader chunkLoader = (ChunkRegionLoader) world.getChunkProviderServer().chunkLoader;
-        final int queueSize = chunkLoader.getQueueSize();
+        synchronized (this.chunkLoader) {
+            ObjectIterator objectiterator = this.chunks.values().iterator();
 
-        final long now = System.currentTimeMillis();
-        final long timeSince = (now - lastSaveStatPrinted) / 1000;
-        final Integer printRateSecs = Integer.getInteger("printSaveStats");
-        if (printRateSecs != null && timeSince >= printRateSecs) {
-            final String timeStr = "/" + timeSince  +"s";
-            final long queuedSaves = chunkLoader.getQueuedSaves();
-            long queuedDiff = queuedSaves - lastQueuedSaves;
-            lastQueuedSaves = queuedSaves;
+            // Paper start
+            final ChunkRegionLoader chunkLoader = (ChunkRegionLoader) world.getChunkProviderServer().chunkLoader;
+            final int queueSize = chunkLoader.getQueueSize();
 
-            final long processedSaves = chunkLoader.getProcessedSaves();
-            long processedDiff = processedSaves - lastProcessedSaves;
-            lastProcessedSaves = processedSaves;
+            final long now = System.currentTimeMillis();
+            final long timeSince = (now - lastSaveStatPrinted) / 1000;
+            final Integer printRateSecs = Integer.getInteger("printSaveStats");
+            if (printRateSecs != null && timeSince >= printRateSecs) {
+                final String timeStr = "/" + timeSince  +"s";
+                final long queuedSaves = chunkLoader.getQueuedSaves();
+                long queuedDiff = queuedSaves - lastQueuedSaves;
+                lastQueuedSaves = queuedSaves;
 
-            lastSaveStatPrinted = now;
-            if (processedDiff > 0 || queueSize > 0 || queuedDiff > 0) {
-                System.out.println("[Chunk Save Stats] " + world.worldData.getName() +
-                    " - Current: " + queueSize +
-                    " - Queued: " + queuedDiff + timeStr +
-                    " - Processed: " +processedDiff + timeStr
-                );
-            }
-        }
+                final long processedSaves = chunkLoader.getProcessedSaves();
+                long processedDiff = processedSaves - lastProcessedSaves;
+                lastProcessedSaves = processedSaves;
 
-        if (queueSize > world.paperConfig.queueSizeAutoSaveThreshold){
-            return false;
-        }
-        final int autoSaveLimit = world.paperConfig.maxAutoSaveChunksPerTick;
-        // Paper end
-        while (iterator.hasNext()) {
-            Chunk chunk = (Chunk) iterator.next();
-
-            if (flag) {
-                this.saveChunkNOP(chunk);
-            }
-
-            if (chunk.c(flag)) {
-                this.saveChunk(chunk, false); // Spigot
-                chunk.a(false);
-                ++i;
-                if (!flag && i >= autoSaveLimit) { // Spigot - // Paper - Incremental Auto Save - cap max per tick
-                    return false;
+                lastSaveStatPrinted = now;
+                if (processedDiff > 0 || queueSize > 0 || queuedDiff > 0) {
+                    System.out.println("[Chunk Save Stats] " + world.worldData.getName() +
+                        " - Current: " + queueSize +
+                        " - Queued: " + queuedDiff + timeStr +
+                        " - Processed: " +processedDiff + timeStr
+                    );
                 }
             }
-        }
+            if (queueSize > world.paperConfig.queueSizeAutoSaveThreshold){
+                return false;
+            }
+            // Paper end
+            while (objectiterator.hasNext()) {
+                Chunk chunk = (Chunk) objectiterator.next();
 
-        return true;
+                if (chunk.c(flag)) {
+                    this.saveChunk(chunk, false); // Spigot
+                    chunk.a(false);
+                    ++i;
+                    if (!flag && i >= world.paperConfig.maxAutoSaveChunksPerTick) { // Spigot - // Paper - Incremental Auto Save - cap max
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
     }
 
     public void close() {
         try {
-            this.g.a();
+            this.batchScheduler.a();
         } catch (InterruptedException interruptedexception) {
             ChunkProviderServer.a.error("Couldn\'t stop taskManager", interruptedexception);
         }
@@ -335,12 +306,16 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     public void c() {
-        this.chunkLoader.c();
+        IChunkLoader ichunkloader = this.chunkLoader;
+
+        synchronized (this.chunkLoader) {
+            this.chunkLoader.b();
+        }
     }
 
-    private static final double UNLOAD_QUEUE_RESIZE_FACTOR = 0.96;
+    private static final double UNLOAD_QUEUE_RESIZE_FACTOR = 0.96; // Spigot
 
-    public boolean unloadChunks() {
+    public boolean unloadChunks(BooleanSupplier booleansupplier) {
         if (!this.world.savingDisabled) {
             if (!this.unloadQueue.isEmpty()) {
                 // Spigot start
@@ -354,24 +329,26 @@ public class ChunkProviderServer implements IChunkProvider {
                 while (longiterator.hasNext()) { // Spigot
                     Long olong = (Long) longiterator.next();
                     longiterator.remove(); // Spigot
-                    Chunk chunk = (Chunk) this.chunks.get(olong);
+                    IChunkLoader ichunkloader = this.chunkLoader;
 
-                    if (chunk != null && chunk.d) {
-                        // CraftBukkit start - move unload logic to own method
-                        chunk.setShouldUnload(false); // Paper
-                        if (!unloadChunk(chunk, true)) {
-                            continue;
-                        }
-                        // CraftBukkit end
+                    synchronized (this.chunkLoader) {
+                        Chunk chunk = (Chunk) this.chunks.get(olong);
 
-                        // Spigot start
-                        if (this.unloadQueue.size() <= targetSize && activityAccountant.activityTimeIsExhausted()) {
-                            break;
+                        if (chunk != null) {
+                            // CraftBukkit start - move unload logic to own method
+                            if (!unloadChunk(chunk, true)) {
+                                continue;
+                            }
+                            // CraftBukkit end
+
+                            // Spigot start
+                            if (!booleansupplier.getAsBoolean() && this.unloadQueue.size() <= targetSize && activityAccountant.activityTimeIsExhausted()) {
+                                break;
+                            }
+                            // Spigot end
                         }
-                        // Spigot end
                     }
                 }
-
                 activityAccountant.endActivity(); // Spigot
             }
             // Paper start - delayed chunk unloads
@@ -388,8 +365,7 @@ public class ChunkProviderServer implements IChunkProvider {
             }
             // Paper end
 
-            this.f.a();
-            this.chunkLoader.b();
+            this.chunkScheduler.a(booleansupplier);
         }
 
         return false;
@@ -412,7 +388,7 @@ public class ChunkProviderServer implements IChunkProvider {
                     continue;
                 }
 
-                Chunk neighbor = this.getChunkIfLoaded(chunk.locX + x, chunk.locZ + z);
+                Chunk neighbor = this.getChunkAt(chunk.locX + x, chunk.locZ + z, false, false);
                 if (neighbor != null) {
                     neighbor.setNeighborUnloaded(-x, -z);
                     chunk.setNeighborUnloaded(x, z);
@@ -423,14 +399,14 @@ public class ChunkProviderServer implements IChunkProvider {
         chunk.removeEntities();
         if (save) {
             this.saveChunk(chunk, true); // Spigot
-            this.saveChunkNOP(chunk);
         }
         this.chunks.remove(chunk.chunkKey);
+        //this.lastChunk = null; // Paper
         return true;
     }
     // CraftBukkit end
 
-    public boolean e() {
+    public boolean d() {
         return !this.world.savingDisabled;
     }
 
@@ -447,23 +423,19 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     @Nullable
-    public BlockPosition a(World world, String s, BlockPosition blockposition, int i) {
-        return this.chunkGenerator.findNearestMapFeature(world, s, blockposition, i);
+    public BlockPosition a(World world, String s, BlockPosition blockposition, int i, boolean flag) {
+        return this.chunkGenerator.findNearestMapFeature(world, s, blockposition, i, flag);
     }
 
     public ChunkGenerator<?> getChunkGenerator() {
         return this.chunkGenerator;
     }
 
-    public int h() {
+    public int g() {
         return this.chunks.size();
     }
 
     public boolean isLoaded(int i, int j) {
         return this.chunks.containsKey(ChunkCoordIntPair.a(i, j));
-    }
-
-    public boolean f(int i, int j) {
-        return this.chunks.containsKey(ChunkCoordIntPair.a(i, j)) || this.chunkLoader.chunkExists(i, j);
     }
 }
