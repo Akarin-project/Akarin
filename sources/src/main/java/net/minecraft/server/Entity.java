@@ -65,7 +65,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
             }
         }
     };
-    Object entitySlice = null;
+    List<Entity> entitySlice = null;
     // Paper end
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
