@@ -105,7 +105,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
         packetdataserializer.writeInt(this.b);
         packetdataserializer.writeBoolean(this.f);
         packetdataserializer.d(this.c);
-        packetdataserializer.d(this.d.array().length); // Akarin
+        packetdataserializer.d(this.d.capacity()); // Akarin
         packetdataserializer.writeBytes(this.d.array()); // Akarin
         packetdataserializer.d(this.e.size());
         Iterator iterator = this.e.iterator();
@@ -122,9 +122,9 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
         packetlistenerplayout.a(this);
     }
 
-    private ByteBuf allocateBuffer(int expectedCapacity) { return g(expectedCapacity); } // Akarin - OBFHELPER
-    private ByteBuf g(int expectedCapacity) { // Akarin - added argument
-        ByteBuf bytebuf = Unpooled.buffer(expectedCapacity); // Akarin
+    private ByteBuf g() { return allocateBuffer(-1); } // Akarin
+    private ByteBuf allocateBuffer(int expectedCapacity) { // Akarin - added argument
+        ByteBuf bytebuf = expectedCapacity == -1 ? Unpooled.buffer() : Unpooled.buffer(expectedCapacity); // Akarin
 
         bytebuf.writerIndex(0);
         return bytebuf;

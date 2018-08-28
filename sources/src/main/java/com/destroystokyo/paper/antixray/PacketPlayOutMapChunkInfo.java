@@ -15,7 +15,7 @@ public class PacketPlayOutMapChunkInfo {
     private final PacketPlayOutMapChunk packetPlayOutMapChunk;
     private final Chunk chunk;
     private final int chunkSectionSelector;
-    private ByteBuf data; // Akarin - byte[] -> ByteBuf
+    private ByteBuf data; // Akarin
     private final int[] bitsPerValue = new int[16];
     private final DataPalette[] dataPalettes = new DataPalette[16];
     private final int[] dataBitsIndexes = new int[16];
@@ -39,11 +39,11 @@ public class PacketPlayOutMapChunkInfo {
         return chunkSectionSelector;
     }
 
-    public byte[] getData() {
-        return data.array(); // Akarin
+    public ByteBuf getData() { // Akarin
+        return data;
     }
 
-    public void setData(ByteBuf data) { // Akarin - byte[] -> ByteBuf
+    public void setData(ByteBuf data) { // Akarin
         this.data = data;
     }
 
