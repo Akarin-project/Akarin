@@ -9,8 +9,13 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
 import co.aikar.timings.Timing;
 import io.akarin.api.internal.Akari;
+import io.akarin.api.internal.Akari.AssignableThread;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
 
@@ -24,10 +29,16 @@ public abstract class MixinTimingHandler {
     @Shadow abstract void addDiff(long diff);
     @Shadow public abstract Timing startTiming();
     
-    @Overwrite
+    @Overwrite // Overwrite to avoid twice thread check
     public Timing startTimingIfSync() {
         startTiming();
         return (Timing) this;
+    }
+    
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @Inject(method = "startTiming", at = @At("HEAD"), cancellable = true)
+    public void onStartTiming(CallbackInfoReturnable ci) {
+        if (!Akari.isPrimaryThread(false)) ci.setReturnValue(this); // Avoid modify any field
     }
     
     @Overwrite
@@ -47,17 +58,21 @@ public abstract class MixinTimingHandler {
     }
     
     public void stopTiming(boolean alreadySync) {
-        if (!enabled || --timingDepth != 0 || start == 0) return;
+        if (!enabled) return;
         if (!alreadySync) {
             Thread curThread = Thread.currentThread();
+            if (curThread.getClass() == AssignableThread.class) return;
             if (curThread != MinecraftServer.getServer().primaryThread) {
-                start = 0;
-                return;
+                if (AkarinGlobalConfig.silentAsyncTimings) return;
+                Bukkit.getLogger().log(Level.SEVERE, "stopTiming called async for " + name);
+                Thread.dumpStack();
             }
         }
         
-        // Safety ensured
-        addDiff(System.nanoTime() - start);
-        start = 0;
+        // Main thread ensured
+        if (--timingDepth == 0 && start != 0) {
+            addDiff(System.nanoTime() - start);
+            start = 0;
+        }
     }
 }

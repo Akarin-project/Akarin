@@ -160,6 +160,11 @@ public class AkarinGlobalConfig {
         playersPerIOThread = getInt("core.players-per-chunk-io-thread", 50);
     }
     
+    public static boolean silentAsyncTimings;
+    private static void silentAsyncTimings() {
+        silentAsyncTimings = getBoolean("core.always-silent-async-timing", false);
+    }
+    
     public static long timeUpdateInterval;
     private static void timeUpdateInterval() {
         timeUpdateInterval = getSeconds(getString("core.tick-rate.world-time-update-interval", "1s")) * 10;
