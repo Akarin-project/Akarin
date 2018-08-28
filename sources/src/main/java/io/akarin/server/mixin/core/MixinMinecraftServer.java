@@ -2,13 +2,13 @@ package io.akarin.server.mixin.core;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.function.BooleanSupplier;
 
-import javax.activation.FileDataSource;
-
+import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -21,6 +21,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.google.common.collect.Maps;
+
 import co.aikar.timings.MinecraftTimings;
 import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.mixin.IMixinWorldServer;
@@ -28,6 +30,7 @@ import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.AkarinSlackScheduler;
 import net.minecraft.server.CrashReport;
 import net.minecraft.server.CustomFunctionData;
+import net.minecraft.server.DimensionManager;
 import net.minecraft.server.ITickable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.MojangStatisticsGenerator;
@@ -55,12 +58,11 @@ public abstract class MixinMinecraftServer {
     private void prerun(CallbackInfo info) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
         primaryThread.setPriority(AkarinGlobalConfig.primaryThreadPriority < Thread.NORM_PRIORITY ? Thread.NORM_PRIORITY :
             (AkarinGlobalConfig.primaryThreadPriority > Thread.MAX_PRIORITY ? 10 : AkarinGlobalConfig.primaryThreadPriority));
-        Akari.resizeTickExecutors((cachedWorldSize = worlds.size()));
+        Akari.resizeTickExecutors((cachedWorldSize = worldServer.size()));
         
         Field skipHopperEvents = TileEntityHopper.class.getDeclaredField("skipHopperEvents"); // No idea why static but check each world
         skipHopperEvents.setAccessible(true);
-        for (int i = 0; i < worlds.size(); ++i) {
-            WorldServer world = worlds.get(i);
+        for (WorldServer world : worldServer.values()) {
             skipHopperEvents.set(null, world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0);
         }
         AkarinSlackScheduler.get().boot();
@@ -84,7 +86,7 @@ public abstract class MixinMinecraftServer {
     @Shadow @Mutable protected Queue<FutureTask<?>> f;
     @Shadow public Queue<Runnable> processQueue;
     @Shadow private int ticks;
-    @Shadow public List<WorldServer> worlds;
+    @Shadow @Final public Map<DimensionManager, WorldServer> worldServer;
     @Shadow(aliases = "k") @Final private List<ITickable> tickables;
     
     @Shadow public abstract CustomFunctionData getFunctionData();
@@ -154,39 +156,42 @@ public abstract class MixinMinecraftServer {
         ChunkIOExecutor.tick();
         MinecraftTimings.chunkIOTickTimer.stopTiming();
         
-        if (cachedWorldSize != worlds.size()) Akari.resizeTickExecutors((cachedWorldSize = worlds.size()));
+        if (cachedWorldSize != worldServer.size()) Akari.resizeTickExecutors((cachedWorldSize = worldServer.size()));
         switch (AkarinGlobalConfig.parallelMode) {
             case 1:
             case 2:
             default:
                 // Never tick one world concurrently!
-                for (int i = 0; i < cachedWorldSize; i++) {
-                    // Impl Note:
-                    // Entities ticking: index 1 -> ... -> 0 (parallel)
-                    //   World  ticking: index 0 -> ... (parallel)
-                    int interlace = i + 1;
-                    WorldServer entityWorld = worlds.get(interlace < cachedWorldSize ? interlace : 0);
-                    Akari.STAGE_TICK.submit(() -> {
-                        synchronized (((IMixinWorldServer) entityWorld).tickLock()) {
-                            tickEntities(entityWorld);
-                        }
-                    }, null/*new TimingSignal(entityWorld, true)*/);
-                    
-                    if (AkarinGlobalConfig.parallelMode != 1) {
-                        int fi = i;
+                WorldServer interlacedWorld = null;
+                for (WorldServer world : worldServer.values()) {
+                    if (interlacedWorld == null) {
+                        interlacedWorld = world;
+                    } else {
                         Akari.STAGE_TICK.submit(() -> {
-                            WorldServer world = worlds.get(fi);
+                            synchronized (((IMixinWorldServer) world).tickLock()) {
+                                tickEntities(world);
+                            }
+                        }, null/*new TimingSignal(entityWorld, true)*/);
+                    }
+                    
+                    if (AkarinGlobalConfig.parallelMode != 1 /* >= 2 */) {
+                        Akari.STAGE_TICK.submit(() -> {
                             synchronized (((IMixinWorldServer) world).tickLock()) {
                                 tickWorld(world, supplier);
                             }
                         }, null);
                     }
                 }
+                WorldServer fInterlacedWorld = interlacedWorld;
+                Akari.STAGE_TICK.submit(() -> {
+                    synchronized (((IMixinWorldServer) fInterlacedWorld).tickLock()) {
+                        tickEntities(fInterlacedWorld);
+                    }
+                }, null);
                 
                 if (AkarinGlobalConfig.parallelMode == 1)
                 Akari.STAGE_TICK.submit(() -> {
-                    for (int i = 0; i < cachedWorldSize; i++) {
-                        WorldServer world = worlds.get(i);
+                    for (WorldServer world : worldServer.values()) {
                         synchronized (((IMixinWorldServer) world).tickLock()) {
                             tickWorld(world, supplier);
                         }
@@ -207,17 +212,23 @@ public abstract class MixinMinecraftServer {
                 break;
             case 0:
                 Akari.STAGE_TICK.submit(() -> {
-                    for (int i = 1; i <= cachedWorldSize; ++i) {
-                        WorldServer world = worlds.get(i < cachedWorldSize ? i : 0);
+                    WorldServer interlacedWorld_ = null;
+                    for (WorldServer world : worldServer.values()) {
+                        if (interlacedWorld_ == null) {
+                            interlacedWorld_ = world;
+                            continue;
+                        }
                         synchronized (((IMixinWorldServer) world).tickLock()) {
                             tickEntities(world);
                         }
                     }
+                    synchronized (((IMixinWorldServer) interlacedWorld_).tickLock()) {
+                        tickEntities(interlacedWorld_);
+                    }
                 }, null);
                 
                 Akari.STAGE_TICK.submit(() -> {
-                    for (int i = 0; i < cachedWorldSize; ++i) {
-                        WorldServer world = worlds.get(i);
+                    for (WorldServer world : worldServer.values()) {
                         synchronized (((IMixinWorldServer) world).tickLock()) {
                             tickWorld(world, supplier);
                         }
@@ -228,8 +239,7 @@ public abstract class MixinMinecraftServer {
                 Akari.STAGE_TICK.take();
                 break;
             case -1:
-                for (int i = 0; i < cachedWorldSize; ++i) {
-                    WorldServer world = worlds.get(i);
+                for (WorldServer world : worldServer.values()) {
                     tickWorld(world, supplier);
                     tickEntities(world);
                 }
