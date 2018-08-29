@@ -50,7 +50,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         return new DefaultEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Local Client IO #%d").setDaemon(true).build());
     });
     private final EnumProtocolDirection h;
-    private final Queue<NetworkManager.QueuedPacket> i = Queues.newConcurrentLinkedQueue(); private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.i; } // Paper - OBFHELPER
+    private final Queue<NetworkManager.QueuedPacket> i = new io.akarin.api.internal.utils.CheckedConcurrentLinkedQueue<>(); private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.i; } // Paper - OBFHELPER
     private final ReentrantReadWriteUpdateLock j = new ReentrantReadWriteUpdateLock(); // Akarin - use update lock
     public Channel channel;
     // Spigot Start // PAIL
