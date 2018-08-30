@@ -218,7 +218,7 @@ public class CraftWorld implements World {
             return false;
         }
 
-        net.minecraft.server.Chunk chunk = world.getChunkProvider().getChunkAt(x, z, false, false);
+        net.minecraft.server.Chunk chunk = world.getChunkIfLoaded(x, z); // Paper - optimize ifLaoded
         if (chunk != null) {
             world.getChunkProvider().unload(chunk);
         }
@@ -237,7 +237,7 @@ public class CraftWorld implements World {
 
     private boolean unloadChunk0(int x, int z, boolean save) {
         Boolean result = MCUtil.ensureMain("Unload Chunk", () -> { // Paper - Ensure never async
-        net.minecraft.server.Chunk chunk = world.getChunkProvider().getChunkAt(x, z, false, false);
+        net.minecraft.server.Chunk chunk = world.getChunkIfLoaded(x, z); // Paper - optimize ifLoaded
         if (chunk == null) {
             return true;
         }

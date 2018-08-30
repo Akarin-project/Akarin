@@ -379,7 +379,7 @@ public class ChunkProviderServer implements IChunkProvider {
                     continue;
                 }
 
-                Chunk neighbor = this.getChunkAt(chunk.locX + x, chunk.locZ + z, false, false);
+                Chunk neighbor = this.chunks.get(chunk.chunkKey); // Paper
                 if (neighbor != null) {
                     neighbor.setNeighborUnloaded(-x, -z);
                     chunk.setNeighborUnloaded(x, z);

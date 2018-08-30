@@ -162,7 +162,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public Chunk getChunkIfLoaded(int x, int z) {
-        return ((ChunkProviderServer) this.chunkProvider).getChunkAt(x, z, false, false);
+        return ((ChunkProviderServer) this.chunkProvider).chunks.get(ChunkCoordIntPair.a(x, z)); // Paper - optimize getChunkIfLoaded
     }
 
     protected World(IDataManager idatamanager, @Nullable PersistentCollection persistentcollection, WorldData worlddata, WorldProvider worldprovider, MethodProfiler methodprofiler, boolean flag, ChunkGenerator gen, org.bukkit.World.Environment env) {
@@ -724,7 +724,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             blockposition = new BlockPosition(blockposition.getX(), 0, blockposition.getZ());
         }
 
-        return !blockposition.isValidLocation() ? enumskyblock.c : (!this.isLoaded(blockposition) ? enumskyblock.c : this.getChunkAtWorldCoords(blockposition).getBrightness(enumskyblock, blockposition)); // Paper
+        Chunk chunk; // Paper
+        return !blockposition.isValidLocation() ? enumskyblock.c : ((chunk = this.getChunkIfLoaded(blockposition)) == null ? enumskyblock.c : chunk.getBrightness(enumskyblock, blockposition)); // Paper - optimize ifChunkLoaded
     }
 
     public void a(EnumSkyBlock enumskyblock, BlockPosition blockposition, int i) {
@@ -1967,7 +1968,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         if (blockposition.isInvalidYLocation()) { // Paper
             return false;
         } else {
-            Chunk chunk = this.chunkProvider.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4, false, false);
+            Chunk chunk = this.getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4); // Paper - optimize ifLoaded
 
             return chunk != null && !chunk.isEmpty();
         }
