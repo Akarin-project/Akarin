@@ -20,42 +20,12 @@ public abstract class MixinTimingHandler {
     @Shadow public abstract Timing startTiming();
     
     @Overwrite
-    public Timing startTimingIfSync() {
-        startTiming();
-        return (Timing) this;
-    }
-    
-    @Overwrite
-    public void stopTimingIfSync() {
-        //if (Akari.isPrimaryThread(false)) {
-            stopTiming(true); // Avoid twice thread check
-        //}
-    }
-    
-    @Overwrite
     public void stopTiming() {
         stopTiming(false);
     }
     
-    public void stopTiming(long start) {
-        if (enabled) addDiff(System.nanoTime() - start);
-    }
-    
     public void stopTiming(boolean alreadySync) {
-        if (!enabled || timingDepth.decrementAndGet() != 0 || start.get() == 0) return;
-        /*if (!alreadySync) {
-            Thread curThread = Thread.currentThread();
-            if (curThread != MinecraftServer.getServer().primaryThread) {
-                if (false && !AkarinGlobalConfig.silentAsyncTimings) {
-                    Bukkit.getLogger().log(Level.SEVERE, "stopTiming called async for " + name);
-                    Thread.dumpStack();
-                }
-                start = 0;
-                return;
-            }
-        }*/
-        
-        // Safety ensured
+        if (!enabled || start.get() == 0 || timingDepth.decrementAndGet() != 0) return;
         long prev = start.getAndSet(0); // Akarin
         addDiff(System.nanoTime() - prev); // Akarin
     }

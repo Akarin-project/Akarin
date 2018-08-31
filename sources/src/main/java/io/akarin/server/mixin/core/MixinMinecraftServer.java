@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.function.BooleanSupplier;
 
-import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -20,8 +19,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import com.google.common.collect.Maps;
 
 import co.aikar.timings.MinecraftTimings;
 import io.akarin.api.internal.Akari;
@@ -171,7 +168,7 @@ public abstract class MixinMinecraftServer {
                             synchronized (((IMixinWorldServer) world).tickLock()) {
                                 tickEntities(world);
                             }
-                        }, null/*new TimingSignal(entityWorld, true)*/);
+                        }, null);
                     }
                     
                     if (AkarinGlobalConfig.parallelMode != 1 /* >= 2 */) {
@@ -201,13 +198,6 @@ public abstract class MixinMinecraftServer {
                 for (int i = (AkarinGlobalConfig.parallelMode == 1 ? cachedWorldSize + 1 : cachedWorldSize * 2); i --> 0 ;) {
                     Akari.STAGE_TICK.take();
                 }
-                
-                /* for (int i = (AkarinGlobalConfig.parallelMode == 1 ? cachedWorldSize : cachedWorldSize * 2); i --> 0 ;) {
-                    long startTiming = System.nanoTime();
-                    TimingSignal signal = Akari.STAGE_TICK.take().get();
-                    IMixinTimingHandler timing = (IMixinTimingHandler) (signal.isEntities ? signal.tickedWorld.timings.tickEntities : signal.tickedWorld.timings.doTick);
-                    timing.stopTiming(startTiming); // The overlap will be ignored
-                } */
                 
                 break;
             case 0:

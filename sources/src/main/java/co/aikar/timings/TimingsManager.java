@@ -23,7 +23,6 @@
  */
 package co.aikar.timings;
 
-import com.google.common.base.Function;
 import com.google.common.collect.EvictingQueue;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
@@ -48,16 +47,8 @@ import java.util.logging.Level;
 public final class TimingsManager {
     static final Map<TimingIdentifier, TimingHandler> TIMING_MAP =
         Collections.synchronizedMap(LoadingMap.newHashMap(
-            new Function<TimingIdentifier, TimingHandler>() {
-                @Override
-                public TimingHandler apply(TimingIdentifier id) {
-                    return (id.protect ?
-                        new UnsafeTimingHandler(id) :
-                        new TimingHandler(id)
-                    );
-                }
-            },
-            256, .5F
+            TimingHandler::new,
+            4096, .5F
         ));
     public static final FullServerTickHandler FULL_SERVER_TICK = new FullServerTickHandler();
     public static final TimingHandler TIMINGS_TICK = Timings.ofSafe("Timings Tick", FULL_SERVER_TICK);
@@ -152,8 +143,8 @@ public final class TimingsManager {
         historyStart = System.currentTimeMillis();
     }
 
-    static TimingHandler getHandler(String group, String name, Timing parent, boolean protect) {
-        return TIMING_MAP.get(new TimingIdentifier(group, name, parent, protect));
+    static TimingHandler getHandler(String group, String name, Timing parent) {
+        return TIMING_MAP.get(new TimingIdentifier(group, name, parent));
     }
 
 

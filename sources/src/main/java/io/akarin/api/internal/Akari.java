@@ -19,7 +19,6 @@ import io.akarin.api.internal.utils.thread.SuspendableExecutorCompletionService;
 import io.akarin.api.internal.utils.thread.SuspendableThreadPoolExecutor;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.World;
 
 @SuppressWarnings("restriction")
 public abstract class Akari {
@@ -64,17 +63,7 @@ public abstract class Akari {
         }
     }
     
-    public static class TimingSignal {
-        public final World tickedWorld;
-        public final boolean isEntities;
-        
-        public TimingSignal(World world, boolean entities) {
-            tickedWorld = world;
-            isEntities = entities;
-        }
-    }
-    
-    public static SuspendableExecutorCompletionService<TimingSignal> STAGE_TICK;
+    public static SuspendableExecutorCompletionService<?> STAGE_TICK;
     
     static {
         resizeTickExecutors(3);

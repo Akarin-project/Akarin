@@ -31,7 +31,6 @@ import org.bukkit.Bukkit;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
 
 /**
  * Akarin Changes Note
@@ -39,8 +38,8 @@ import java.util.logging.Level;
  */
 class TimingHandler implements Timing {
 
-    private static int idPool = 1;
-    final int id = idPool++;
+    private static AtomicInteger idPool = new AtomicInteger(1);
+    final int id = idPool.getAndIncrement();
 
     final String name;
     private final boolean verbose;
@@ -94,21 +93,17 @@ class TimingHandler implements Timing {
 
     @Override
     public Timing startTimingIfSync() {
-        if (Bukkit.isPrimaryThread()) {
-            startTiming();
-        }
+        startTiming();
         return this;
     }
 
     @Override
     public void stopTimingIfSync() {
-        if (Bukkit.isPrimaryThread()) {
-            stopTiming();
-        }
+        stopTiming();
     }
 
     public Timing startTiming() {
-        if (enabled && timingDepth.incrementAndGet() == 1) {
+        if (enabled && Bukkit.isPrimaryThread() && timingDepth.incrementAndGet() == 1) {
             start.getAndSet(System.nanoTime());
             parent = TimingsManager.CURRENT;
             TimingsManager.CURRENT = this;
@@ -117,13 +112,7 @@ class TimingHandler implements Timing {
     }
 
     public void stopTiming() {
-        if (enabled && timingDepth.decrementAndGet() == 0 && start.get() != 0) {
-            if (!Bukkit.isPrimaryThread()) {
-                Bukkit.getLogger().log(Level.SEVERE, "stopTiming called async for " + name);
-                new Throwable().printStackTrace();
-                start.getAndSet(0);
-                return;
-            }
+        if (enabled && start.get() != 0 && Bukkit.isPrimaryThread() && timingDepth.decrementAndGet() == 0) { // Akarin - change order
             long prev = start.getAndSet(0); // Akarin
             addDiff(System.nanoTime() - prev); // Akarin
         }
