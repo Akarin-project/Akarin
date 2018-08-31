@@ -103,7 +103,7 @@ class TimingHandler implements Timing {
     }
 
     public Timing startTiming() {
-        if (enabled && Bukkit.isPrimaryThread() && timingDepth.incrementAndGet() == 1) {
+        if (enabled && /*Bukkit.isPrimaryThread() &&*/ timingDepth.incrementAndGet() == 1) { // Akarin
             start.getAndSet(System.nanoTime());
             parent = TimingsManager.CURRENT;
             TimingsManager.CURRENT = this;
@@ -112,7 +112,7 @@ class TimingHandler implements Timing {
     }
 
     public void stopTiming() {
-        if (enabled && start.get() != 0 && Bukkit.isPrimaryThread() && timingDepth.decrementAndGet() == 0) { // Akarin - change order
+        if (enabled && start.get() != 0 && /*Bukkit.isPrimaryThread() &&*/ timingDepth.decrementAndGet() == 0) { // Akarin
             long prev = start.getAndSet(0); // Akarin
             addDiff(System.nanoTime() - prev); // Akarin
         }
