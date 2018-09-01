@@ -368,20 +368,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setPlayerListHeader(String header) {
-        this.playerListHeader = CraftChatMessage.fromStringOrNull(header);
+        this.playerListHeader = CraftChatMessage.fromStringOrNull(header, true); // Paper - fix up spigot tab API
         updatePlayerListHeaderFooter();
     }
 
     @Override
     public void setPlayerListFooter(String footer) {
-        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer);
+        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer, true); // Paper - fix up spigot tab API
         updatePlayerListHeaderFooter();
     }
 
     @Override
     public void setPlayerListHeaderFooter(String header, String footer) {
-        this.playerListHeader = CraftChatMessage.fromStringOrNull(header);
-        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer);
+        this.playerListHeader = CraftChatMessage.fromStringOrNull(header, true); // Paper - fix up spigot tab API
+        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer, true); // Paper - fix up spigot tab API
         updatePlayerListHeaderFooter();
     }
 
