@@ -247,8 +247,21 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setPlayerListHeaderFooter(BaseComponent[] header, BaseComponent[] footer) {
-        setPlayerListHeader(header == null ? null : net.md_5.bungee.chat.ComponentSerializer.toString(header));
-        setPlayerListFooter(footer == null ? null : net.md_5.bungee.chat.ComponentSerializer.toString(footer));
+        if (header != null) {
+             String headerJson = net.md_5.bungee.chat.ComponentSerializer.toString(footer);
+             playerListHeader = net.minecraft.server.ChatBaseComponent.ChatSerializer.jsonToComponent(headerJson);
+         } else {
+             playerListHeader = null;
+         }
+
+        if (footer != null) {
+             String headerJson = net.md_5.bungee.chat.ComponentSerializer.toString(footer);
+             playerListFooter = net.minecraft.server.ChatBaseComponent.ChatSerializer.jsonToComponent(headerJson);
+         } else {
+             playerListFooter = null;
+         }
+
+         updatePlayerListHeaderFooter();
     }
 
     @Override
@@ -364,20 +377,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setPlayerListHeader(String header) {
-        this.playerListHeader = CraftChatMessage.fromStringOrNull(header);
+        this.playerListHeader = CraftChatMessage.fromStringOrNull(header, true); // Paper - fix up spigot tab API
         updatePlayerListHeaderFooter();
     }
 
     @Override
     public void setPlayerListFooter(String footer) {
-        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer);
+        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer, true); // Paper - fix up spigot tab API
         updatePlayerListHeaderFooter();
     }
 
     @Override
     public void setPlayerListHeaderFooter(String header, String footer) {
-        this.playerListHeader = CraftChatMessage.fromStringOrNull(header);
-        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer);
+        this.playerListHeader = CraftChatMessage.fromStringOrNull(header, true); // Paper - fix up spigot tab API
+        this.playerListFooter = CraftChatMessage.fromStringOrNull(footer, true); // Paper - fix up spigot tab API
         updatePlayerListHeaderFooter();
     }
 
