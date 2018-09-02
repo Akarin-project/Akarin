@@ -211,7 +211,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         this.length = 1.8F;
         this.aA = 1.0F;
         this.aB = 1.0F;
-        this.random = ((IMixinWorldServer) world).rand(); // Paper // Akarin
+        this.random = world == null ? SHARED_RANDOM : ((IMixinWorldServer) world).rand(); // Paper // Akarin
         this.fireTicks = -this.getMaxFireTicks();
         this.justCreated = true;
         this.uniqueID = MathHelper.a(this.random);
