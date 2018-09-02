@@ -27,6 +27,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Vehicle;
 import co.aikar.timings.MinecraftTimings; // Paper
 import co.aikar.timings.Timing; // Paper
+import io.akarin.api.internal.Akari;
 import io.akarin.api.internal.mixin.IMixinWorldServer;
 
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
@@ -210,7 +211,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
         this.length = 1.8F;
         this.ax = 1;
         this.ay = 1.0F;
-        this.random = ((IMixinWorldServer) world).rand(); // Paper // Akarin
+        this.random = world == null ? SHARED_RANDOM : ((IMixinWorldServer) world).rand(); // Paper // Akarin
         this.fireTicks = -this.getMaxFireTicks();
         this.justCreated = true;
         this.uniqueID = MathHelper.a(this.random);
