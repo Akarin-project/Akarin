@@ -171,6 +171,23 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return blocks.get(0);
     }
 
+    // Paper start
+    public Block getTargetBlock(int maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode fluidMode) {
+        net.minecraft.server.MovingObjectPosition rayTrace = getHandle().getRayTrace(maxDistance, net.minecraft.server.MCUtil.getNMSFluidCollisionOption(fluidMode));
+        return rayTrace == null ? null : org.bukkit.craftbukkit.block.CraftBlock.at(getHandle().world, rayTrace.getBlockPosition());
+    }
+
+    public org.bukkit.block.BlockFace getTargetBlockFace(int maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode fluidMode) {
+        net.minecraft.server.MovingObjectPosition rayTrace = getHandle().getRayTrace(maxDistance, net.minecraft.server.MCUtil.getNMSFluidCollisionOption(fluidMode));
+        return rayTrace == null ? null : net.minecraft.server.MCUtil.toBukkitBlockFace(rayTrace.direction);
+    }
+
+    public com.destroystokyo.paper.block.TargetBlockInfo getTargetBlockInfo(int maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode fluidMode) {
+        net.minecraft.server.MovingObjectPosition rayTrace = getHandle().getRayTrace(maxDistance, net.minecraft.server.MCUtil.getNMSFluidCollisionOption(fluidMode));
+        return rayTrace == null ? null : new com.destroystokyo.paper.block.TargetBlockInfo(org.bukkit.craftbukkit.block.CraftBlock.at(getHandle().world, rayTrace.getBlockPosition()), net.minecraft.server.MCUtil.toBukkitBlockFace(rayTrace.direction));
+    }
+    // Paper end
+
     public List<Block> getLastTwoTargetBlocks(Set<Material> transparent, int maxDistance) {
         return getLineOfSight(transparent, maxDistance, 2);
     }
