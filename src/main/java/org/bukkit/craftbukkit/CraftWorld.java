@@ -296,7 +296,7 @@ public class CraftWorld implements World {
     public boolean loadChunk(int x, int z, boolean generate) {
         org.spigotmc.AsyncCatcher.catchOp( "chunk load"); // Spigot
         chunkLoadCount++;
-        return world.getChunkProvider().getChunkAt(x, z, true, generate) != null;
+        return world.getChunkProvider().getChunkAt(x, z, true, generate || isChunkGenerated(x, z)) != null; // Paper
     }
 
     public boolean isChunkLoaded(Chunk chunk) {
