@@ -2057,14 +2057,17 @@ public abstract class EntityHuman extends EntityLiving {
         this.datawatcher.set(EntityHuman.bA, nbttagcompound);
     }
 
+    public float getCooldownPeriod() { return dG(); } // Paper - OBFHELPER
     public float dG() {
         return (float) (1.0D / this.getAttributeInstance(GenericAttributes.g).getValue() * 20.0D);
     }
 
+    public float getCooledAttackStrength(float adjustTicks) { return r(adjustTicks); } // Paper - OBFHELPER
     public float r(float f) {
         return MathHelper.a(((float) this.aH + f) / this.dG(), 0.0F, 1.0F);
     }
 
+    public void resetCooldown() { dH(); } // Paper - OBFHELPER
     public void dH() {
         this.aH = 0;
     }

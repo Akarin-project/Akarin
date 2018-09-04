@@ -1892,6 +1892,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         this.resourcePackStatus = status;
     }
 
+    //Paper start
+    public float getCooldownPeriod() {
+        return getHandle().getCooldownPeriod();
+    }
+
+    public float getCooledAttackStrength(float adjustTicks) {
+        return getHandle().getCooledAttackStrength(adjustTicks);
+    }
+
+    public void resetCooldown() {
+        getHandle().resetCooldown();
+    }
+    //Paper end
+
     // Spigot start
     private final Player.Spigot spigot = new Player.Spigot()
     {
