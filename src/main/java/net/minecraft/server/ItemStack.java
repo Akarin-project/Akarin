@@ -232,6 +232,15 @@ public final class ItemStack {
                     enuminteractionresult = EnumInteractionResult.FAIL; // cancel placement
                     // PAIL: Remove this when MC-99075 fixed
                     placeEvent.getPlayer().updateInventory();
+
+                    // Paper start
+                    for (Map.Entry<BlockPosition, TileEntity> e : world.capturedTileEntities.entrySet()) {
+                        if (e.getValue() instanceof TileEntityLootable) {
+                            ((TileEntityLootable) e.getValue()).setLootTable(null);
+                        }
+                    }
+                    // Paper end
+
                     // revert back all captured blocks
                     for (BlockState blockstate : blocks) {
                         blockstate.update(true, false);
