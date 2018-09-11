@@ -87,6 +87,7 @@ public class RandomPositionGenerator {
                 }
 
                 blockposition1 = new BlockPosition((double) k1 + entitycreature.locX, (double) l1 + entitycreature.locY, (double) i2 + entitycreature.locZ);
+                if (!entitycreature.world.isLoaded(blockposition1)) continue; // Paper
                 if ((!flag1 || entitycreature.f(blockposition1)) && navigationabstract.a(blockposition1)) {
                     if (!flag) {
                         blockposition1 = a(blockposition1, entitycreature);
@@ -155,6 +156,7 @@ public class RandomPositionGenerator {
     }
 
     private static boolean b(BlockPosition blockposition, EntityCreature entitycreature) {
-        return entitycreature.world.getFluid(blockposition).a(TagsFluid.WATER);
+        Fluid fluid = entitycreature.world.getFluidIfLoaded(blockposition); // Paper
+        return fluid != null && fluid.a(TagsFluid.WATER); // Paper
     }
 }

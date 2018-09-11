@@ -764,7 +764,17 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             return chunk.getType(blockposition);
         }
     }
+    // Paper start
+    public Fluid getFluidIfLoaded(BlockPosition blockposition) {
+        if (blockposition.isInvalidYLocation()) { // Paper
+            return getFluid(blockposition);
+        } else {
+            Chunk chunk = this.getChunkIfLoaded(blockposition);
 
+            return chunk != null ? chunk.getFluid(blockposition) : null;
+        }
+    }
+    // Paper end
     public Fluid getFluid(BlockPosition blockposition) {
         if (blockposition.isInvalidYLocation()) { // Paper
             return FluidTypes.EMPTY.i();
