@@ -84,4 +84,18 @@ public class CraftFurnace extends CraftContainer<TileEntityFurnace> implements F
             furnace.setCustomName(null);
         }
     }
+
+    // Paper start - cook speed multiplier API
+    @Override
+    public double getCookSpeedMultiplier() {
+        return this.getSnapshot().cookSpeedMultiplier;
+    }
+
+    @Override
+    public void setCookSpeedMultiplier(double multiplier) {
+        com.google.common.base.Preconditions.checkArgument(multiplier >= 0, "Furnace speed multiplier cannot be negative");
+        com.google.common.base.Preconditions.checkArgument(multiplier <= 200, "Furnace speed multiplier cannot more than 200");
+        this.getSnapshot().cookSpeedMultiplier = multiplier;
+    }
+    // Paper end
 }
