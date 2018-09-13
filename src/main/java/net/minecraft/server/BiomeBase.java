@@ -120,7 +120,7 @@ public abstract class BiomeBase {
     protected final Map<WorldGenStage.Decoration, List<WorldGenFeatureComposite<?, ?>>> aW = Maps.newHashMap();
     protected final List<WorldGenFeatureCompositeFlower<?>> aX = Lists.newArrayList();
     protected final Map<StructureGenerator<?>, WorldGenFeatureConfiguration> aY = Maps.newHashMap();
-    private final Map<EnumCreatureType, List<BiomeBase.BiomeMeta>> aZ = Maps.newHashMap();
+    private final java.util.EnumMap<EnumCreatureType, List<BiomeBase.BiomeMeta>> aZ = Maps.newEnumMap(EnumCreatureType.class); // Paper
 
     @Nullable
     public static BiomeBase a(BiomeBase biomebase) {
@@ -169,7 +169,7 @@ public abstract class BiomeBase {
             for (j = 0; j < i; ++j) {
                 EnumCreatureType enumcreaturetype = aenumcreaturetype[j];
 
-                this.aZ.put(enumcreaturetype, Lists.newArrayList());
+                this.aZ.put(enumcreaturetype, new MobList()); // Paper
             }
 
         } else {
@@ -472,6 +472,38 @@ public abstract class BiomeBase {
         }
 
     }
+
+    // Paper start - keep track of data in a pair set to give O(1) contains calls - we have to hook removals incase plugins mess with it
+    public static class MobList extends java.util.ArrayList<BiomeMeta> {
+        java.util.Set<BiomeMeta> biomes = new java.util.HashSet<>();
+
+        @Override
+        public boolean contains(Object o) {
+            return biomes.contains(o);
+        }
+
+        @Override
+        public boolean add(BiomeMeta biomeMeta) {
+            biomes.add(biomeMeta);
+            return super.add(biomeMeta);
+        }
+
+        @Override
+        public BiomeMeta remove(int index) {
+            BiomeMeta removed = super.remove(index);
+            if (removed != null) {
+                biomes.remove(removed);
+            }
+            return removed;
+        }
+
+        @Override
+        public void clear() {
+            biomes.clear();
+            super.clear();
+        }
+    }
+    // Paper end
 
     public static class a {
 
