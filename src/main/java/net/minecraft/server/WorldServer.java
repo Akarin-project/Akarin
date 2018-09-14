@@ -1064,7 +1064,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
         // CraftBukkit end
         if (super.strikeLightning(entity)) {
-            this.server.getPlayerList().sendPacketNearby((EntityHuman) null, entity.locX, entity.locY, entity.locZ, 512.0D, this, new PacketPlayOutSpawnEntityWeather(entity)); // CraftBukkit - Use dimension, // Paper - use world instead of dimension
+            this.server.getPlayerList().sendPacketNearby((EntityHuman) null, entity.locX, entity.locY, entity.locZ, this.paperConfig.maxLightningFlashDistance, this, new PacketPlayOutSpawnEntityWeather(entity)); // CraftBukkit - Use dimension, // Paper - use world instead of dimension, limit lightning strike effect distance
             return true;
         } else {
             return false;
