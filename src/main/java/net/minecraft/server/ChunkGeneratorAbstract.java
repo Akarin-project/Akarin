@@ -142,13 +142,13 @@ public abstract class ChunkGeneratorAbstract<C extends GeneratorSettings> implem
 
     public Long2ObjectMap<StructureStart> getStructureStartCache(StructureGenerator<? extends WorldGenFeatureConfiguration> structuregenerator) {
         return (Long2ObjectMap) this.d.computeIfAbsent(structuregenerator, (structuregenerator1) -> {
-            return Long2ObjectMaps.synchronize(new ExpiringMap<>(8192, 10000));
+            return new ExpiringMap<>(8192, 10000); // Paper - already synchronized
         });
     }
 
     public Long2ObjectMap<LongSet> getStructureCache(StructureGenerator<? extends WorldGenFeatureConfiguration> structuregenerator) {
         return (Long2ObjectMap) this.e.computeIfAbsent(structuregenerator, (structuregenerator1) -> {
-            return Long2ObjectMaps.synchronize(new ExpiringMap<>(8192, 10000));
+            return new ExpiringMap<>(8192, 10000); // Paper - already synchronized
         });
     }
 

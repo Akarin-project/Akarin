@@ -144,7 +144,7 @@ public class CustomChunkGenerator extends InternalChunkGenerator<GeneratorSettin
     @Override
     public Long2ObjectMap<StructureStart> getStructureStartCache(StructureGenerator<? extends WorldGenFeatureConfiguration> structuregenerator) {
         return (Long2ObjectMap) this.structureStartCache.computeIfAbsent(structuregenerator, (s) -> {
-            return Long2ObjectMaps.synchronize(new ExpiringMap(8192, 10000));
+            return new ExpiringMap(8192, 10000); // Paper - already synchronized
         });
     }
 
@@ -154,7 +154,7 @@ public class CustomChunkGenerator extends InternalChunkGenerator<GeneratorSettin
     @Override
     public Long2ObjectMap<LongSet> getStructureCache(StructureGenerator<? extends WorldGenFeatureConfiguration> structuregenerator) {
         return (Long2ObjectMap) this.structureCache.computeIfAbsent(structuregenerator, (s) -> {
-            return Long2ObjectMaps.synchronize(new ExpiringMap(8192, 10000));
+            return new ExpiringMap(8192, 10000); // Paper - already synchronized
         });
     }
 

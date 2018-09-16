@@ -150,6 +150,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public int autosavePeriod;
     public File bukkitDataPackFolder;
     public CommandDispatcher vanillaCommandDispatcher;
+    public List<ExpiringMap> expiringMaps = java.util.Collections.synchronizedList(new java.util.ArrayList<>()); // Paper
     // CraftBukkit end
     // Spigot start
     public static final int TPS = 20;
@@ -995,6 +996,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.methodProfiler.exit();
         org.spigotmc.WatchdogThread.tick(); // Spigot
         PaperLightingQueue.processQueue(startTime); // Paper
+        expiringMaps.removeIf(ExpiringMap::clean); // Paper
         this.slackActivityAccountant.tickEnded(l); // Spigot
         co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Paper
     }
