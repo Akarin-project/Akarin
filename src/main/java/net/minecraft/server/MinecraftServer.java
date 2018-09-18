@@ -345,7 +345,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             this.convertWorld(name); // Run conversion now
 
             org.bukkit.generator.ChunkGenerator gen = this.server.getGenerator(name);
-            WorldSettings worldsettings = new WorldSettings(i, this.getGamemode(), this.getGenerateStructures(), this.isHardcore(), worldtype);
+            WorldSettings worldsettings = new WorldSettings(com.destroystokyo.paper.PaperConfig.seedOverride.getOrDefault(name, i), this.getGamemode(), this.getGenerateStructures(), this.isHardcore(), worldtype); // Paper
             worldsettings.setGeneratorSettings(jsonelement);
 
             if (j == 0) {

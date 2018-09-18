@@ -110,7 +110,7 @@ public class WorldData {
             this.d = nbttagcompound2.getBoolean("Snapshot");
         }
 
-        this.e = nbttagcompound.getLong("RandomSeed");
+        this.e = com.destroystokyo.paper.PaperConfig.seedOverride.getOrDefault(nbttagcompound.getString("LevelName"), nbttagcompound.getLong("RandomSeed")); // Paper
         if (nbttagcompound.hasKeyOfType("generatorName", 8)) {
             String s = nbttagcompound.getString("generatorName");
 

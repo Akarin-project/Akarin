@@ -11,6 +11,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +21,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import co.aikar.timings.Timings;
@@ -354,5 +356,24 @@ public class PaperConfig {
             }
         }
         tabSpamLimit = getInt("settings.spam-limiter.tab-spam-limit", tabSpamLimit);
+    }
+
+    public static Map<String, Long> seedOverride = new java.util.HashMap<>();
+    private static void worldSeedOverrides() {
+        ConfigurationSection seeds = config.getConfigurationSection("seed-overrides");
+        if (seeds != null) {
+            TimingsManager.hiddenConfigs.add("seed-overrides");
+            for (String key : seeds.getKeys(false)) {
+                String seedString = seeds.getString(key);
+                long seed;
+                try {
+                    seed = Long.parseLong(seedString);
+                } catch (Exception e) {
+                    seed = (long) seedString.hashCode();
+                }
+                log("Seed Override: " + key + " => " + seed);
+                seedOverride.put(key, seed);
+            }
+        }
     }
 }
