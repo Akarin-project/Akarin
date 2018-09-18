@@ -82,7 +82,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public final DataFixer dataConverterManager;
     private String serverIp;
     private int q = -1;
-    public final Map<DimensionManager, WorldServer> worldServer = Maps.newLinkedHashMap(); // CraftBukkit - keep order, k+v already use identity methods
+    public final Map<DimensionManager, WorldServer> worldServer = new com.destroystokyo.paper.PaperWorldMap(); // Paper;
     private PlayerList playerList;
     private boolean isRunning = true;
     private boolean isRestarting = false; // Paper - flag to signify we're attempting to restart
@@ -546,7 +546,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             }
         }
 
-        for (WorldServer world : this.getWorlds()) {
+        for (WorldServer world : com.google.common.collect.Lists.newArrayList(this.getWorlds())) { // Paper - avoid como if 1 world triggers another world
             this.server.getPluginManager().callEvent(new org.bukkit.event.world.WorldLoadEvent(world.getWorld()));
         }
         // CraftBukkit end
