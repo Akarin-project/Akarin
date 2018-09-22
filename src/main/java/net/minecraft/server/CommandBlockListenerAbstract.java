@@ -56,7 +56,7 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
         this.g = nbttagcompound.getString("Command");
         this.d = nbttagcompound.getInt("SuccessCount");
         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-            this.h = IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName"));
+            this.h = MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound); // Paper - Catch ParseException
         }
 
         if (nbttagcompound.hasKeyOfType("TrackOutput", 1)) {

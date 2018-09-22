@@ -236,7 +236,7 @@ public class TileEntityBrewingStand extends TileEntityContainer implements IWorl
         ContainerUtil.b(nbttagcompound, this.items);
         this.brewTime = nbttagcompound.getShort("BrewTime");
         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-            this.k = IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName"));
+            this.k = MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound); // Paper - Catch ParseException
         }
 
         this.fuelLevel = nbttagcompound.getByte("Fuel");

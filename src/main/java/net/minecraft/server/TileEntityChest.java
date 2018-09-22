@@ -83,7 +83,7 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
         }
 
         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-            this.i = IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName"));
+            this.i = MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound); // Paper - Catch ParseException
         }
 
     }

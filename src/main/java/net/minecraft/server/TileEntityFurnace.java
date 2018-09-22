@@ -217,7 +217,7 @@ public class TileEntityFurnace extends TileEntityContainer implements IWorldInve
         }
 
         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-            this.l = IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName"));
+            this.l = MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound); // Paper - Catch ParseException
         }
 
         // Paper start - cook speed API

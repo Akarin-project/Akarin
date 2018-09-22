@@ -1748,7 +1748,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             this.setPosition(this.locX, this.locY, this.locZ);
             this.setYawPitch(this.yaw, this.pitch);
             if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-                this.setCustomName(IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName")));
+                this.setCustomName(MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound)); // Paper - Catch ParseException
             }
 
             this.setCustomNameVisible(nbttagcompound.getBoolean("CustomNameVisible"));

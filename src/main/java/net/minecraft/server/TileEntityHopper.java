@@ -60,7 +60,7 @@ public class TileEntityHopper extends TileEntityLootable implements IHopper, ITi
         }
 
         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-            this.setCustomName(IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName")));
+            this.setCustomName(MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound)); // Paper - Catch ParseException
         }
 
         this.f = nbttagcompound.getInt("TransferCooldown");

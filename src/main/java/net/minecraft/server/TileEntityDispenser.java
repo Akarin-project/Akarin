@@ -107,7 +107,7 @@ public class TileEntityDispenser extends TileEntityLootable {
         }
 
         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-            this.i = IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName"));
+            this.i = MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound); // Paper - Catch ParseException
         }
 
     }

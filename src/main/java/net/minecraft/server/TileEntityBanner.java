@@ -74,7 +74,7 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
     public void load(NBTTagCompound nbttagcompound) {
         super.load(nbttagcompound);
         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-            this.a = IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName"));
+            this.a = MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound); // Paper - Catch ParseException
         }
 
         if (this.hasWorld()) {
