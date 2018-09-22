@@ -3,6 +3,8 @@ package net.minecraft.server;
 import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
@@ -16,6 +18,8 @@ import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.bukkit.Location;
@@ -2861,6 +2865,36 @@ public abstract class EntityLiving extends Entity {
         Vec3D end = new Vec3D(start.x + dir.getX(), start.y + dir.getY(), start.z + dir.getZ());
 
         return world.rayTrace(start, end, fluidCollisionOption);
+    }
+
+    public MovingObjectPosition getTargetEntity(int maxDistance) {
+        if (maxDistance < 1 || maxDistance > 120) {
+            throw new IllegalArgumentException("maxDistance must be between 1-120");
+        }
+
+        Vec3D start = getEyePosition(1.0F);
+        Vec3D direction = getLookVec();
+        Vec3D end = start.add(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance);
+
+        List<Entity> entityList = world.getEntities(this, getBoundingBox().expand(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance).grow(1.0D, 1.0D, 1.0D), IEntitySelector.notSpectator().and(Entity::isInteractable));
+
+        double distance = 0.0D;
+        MovingObjectPosition rayTraceResult = null;
+
+        for (Entity entity : entityList) {
+            AxisAlignedBB aabb = entity.getBoundingBox().grow((double) entity.getCollisionBorderSize());
+            MovingObjectPosition rayTrace = aabb.calculateIntercept(start, end);
+
+            if (rayTrace != null) {
+                double distanceTo = start.distanceSquared(rayTrace.pos);
+                if (distanceTo < distance || distance == 0.0D) {
+                    rayTraceResult = new MovingObjectPosition(entity, rayTrace.pos);
+                    distance = distanceTo;
+                }
+            }
+        }
+
+        return rayTraceResult;
     }
 
     public int shieldBlockingDelay = world.paperConfig.shieldBlockingDelay;

@@ -186,6 +186,33 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         net.minecraft.server.MovingObjectPosition rayTrace = getHandle().getRayTrace(maxDistance, net.minecraft.server.MCUtil.getNMSFluidCollisionOption(fluidMode));
         return rayTrace == null ? null : new com.destroystokyo.paper.block.TargetBlockInfo(org.bukkit.craftbukkit.block.CraftBlock.at(getHandle().world, rayTrace.getBlockPosition()), net.minecraft.server.MCUtil.toBukkitBlockFace(rayTrace.direction));
     }
+
+    public Entity getTargetEntity(int maxDistance, boolean ignoreBlocks) {
+        net.minecraft.server.MovingObjectPosition rayTrace = rayTraceEntity(maxDistance, ignoreBlocks);
+        return rayTrace == null ? null : rayTrace.entity.getBukkitEntity();
+    }
+
+    public com.destroystokyo.paper.entity.TargetEntityInfo getTargetEntityInfo(int maxDistance, boolean ignoreBlocks) {
+        net.minecraft.server.MovingObjectPosition rayTrace = rayTraceEntity(maxDistance, ignoreBlocks);
+        return rayTrace == null ? null : new com.destroystokyo.paper.entity.TargetEntityInfo(rayTrace.entity.getBukkitEntity(), new org.bukkit.util.Vector(rayTrace.pos.x, rayTrace.pos.y, rayTrace.pos.z));
+    }
+
+    public net.minecraft.server.MovingObjectPosition rayTraceEntity(int maxDistance, boolean ignoreBlocks) {
+        net.minecraft.server.MovingObjectPosition rayTrace = getHandle().getTargetEntity(maxDistance);
+        if (rayTrace == null) {
+            return null;
+        }
+        if (!ignoreBlocks) {
+            net.minecraft.server.MovingObjectPosition rayTraceBlocks = getHandle().getRayTrace(maxDistance, net.minecraft.server.FluidCollisionOption.NEVER);
+            if (rayTraceBlocks != null) {
+                net.minecraft.server.Vec3D eye = getHandle().getEyePosition(1.0F);
+                if (eye.distanceSquared(rayTraceBlocks.pos) <= eye.distanceSquared(rayTrace.pos)) {
+                    return null;
+                }
+            }
+        }
+        return rayTrace;
+    }
     // Paper end
 
     public List<Block> getLastTwoTargetBlocks(Set<Material> transparent, int maxDistance) {

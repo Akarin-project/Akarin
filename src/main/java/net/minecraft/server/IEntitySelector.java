@@ -19,6 +19,7 @@ public final class IEntitySelector {
     public static final Predicate<Entity> e = (entity) -> {
         return !(entity instanceof EntityHuman) || !((EntityHuman) entity).isSpectator() && !((EntityHuman) entity).u();
     };
+    public static Predicate<Entity> notSpectator() { return f; } // Paper - OBFHELPER
     public static final Predicate<Entity> f = (entity) -> {
         return !(entity instanceof EntityHuman) || !((EntityHuman) entity).isSpectator();
     };
