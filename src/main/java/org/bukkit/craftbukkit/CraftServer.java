@@ -975,7 +975,7 @@ public final class CraftServer implements Server {
         boolean used = false;
         do {
             for (WorldServer server : console.getWorlds()) {
-                used = server.dimension.getDimensionID() == dimension;
+                used = server.dimension.getDimensionID() + 1 == dimension; // Paper - getDimensionID returns the dimension - 1, so we have to add 1
                 if (used) {
                     dimension++;
                     break;
