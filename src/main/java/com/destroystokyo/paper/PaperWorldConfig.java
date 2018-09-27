@@ -579,4 +579,14 @@ public class PaperWorldConfig {
     private void preventMovingIntoUnloadedChunks() {
         preventMovingIntoUnloadedChunks = getBoolean("prevent-moving-into-unloaded-chunks", false);
     }
+
+    public boolean useEigencraftRedstone = false;
+    private void useEigencraftRedstone() {
+        useEigencraftRedstone = this.getBoolean("use-faster-eigencraft-redstone", false);
+        if (useEigencraftRedstone) {
+            log("Using Eigencraft redstone algorithm by theosib.");
+        } else {
+            log("Using vanilla redstone algorithm.");
+        }
+    }
 }
