@@ -1735,7 +1735,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             this.setAirTicks(nbttagcompound.getShort("Air"));
             this.onGround = nbttagcompound.getBoolean("OnGround");
             if (nbttagcompound.hasKey("Dimension")) {
-                this.dimension = DimensionManager.a(nbttagcompound.getInt("Dimension"));
+                //this.dimension = DimensionManager.a(nbttagcompound.getInt("Dimension")); // Paper - always controlled by world
             }
 
             this.invulnerable = nbttagcompound.getBoolean("Invulnerable");
