@@ -1081,7 +1081,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
         int i = MathHelper.floor(entity.locX / 16.0D);
         int j = MathHelper.floor(entity.locZ / 16.0D);
-        boolean flag = entity.attachedToPlayer;
+        boolean flag = true; // Paper - always load chunks for entity adds
 
         // Paper start - Set origin location when the entity is being added to the world
         if (entity.origin == null) {
@@ -1585,7 +1585,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 this.getChunkAt(entity.chunkX, entity.chunkZ).a(entity, entity.chunkY);
             }
 
-            if (!entity.bN() && !this.isChunkLoaded(i, k, true)) {
+            if (!entity.valid && !entity.bN() && !this.isChunkLoaded(i, k, true)) { // Paper - always load chunks to register valid entities location
                 entity.inChunk = false;
             } else {
                 this.getChunkAt(i, k).a(entity);
