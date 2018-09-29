@@ -591,8 +591,9 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
 
         if (this.worldProvider.g()) {
-            for (i1 = k; i1 <= l; ++i1) {
-                this.c(EnumSkyBlock.SKY, new BlockPosition(i, i1, j));
+            Chunk chunk = getChunkIfLoaded(i >> 4, j >> 4); // Paper
+            for (i1 = k; chunk != null && i1 <= l; ++i1) { // Paper
+                this.updateBrightness(EnumSkyBlock.SKY, new BlockPosition(i, i1, j), chunk); // Paper
             }
         }
 
@@ -2228,6 +2229,11 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     public boolean c(EnumSkyBlock enumskyblock, BlockPosition blockposition) {
         // CraftBukkit start - Use neighbor cache instead of looking up
         Chunk chunk = this.getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+        // Paper start - optimize light updates where chunk is known
+        return updateBrightness(enumskyblock, blockposition, chunk);
+    }
+    public boolean updateBrightness(EnumSkyBlock enumskyblock, BlockPosition blockposition, Chunk chunk) {
+        // Paper end
         if (chunk == null || !chunk.areNeighborsLoaded(1) /*!this.areChunksLoaded(blockposition, 17, false)*/) {
             // CraftBukkit end
             return false;

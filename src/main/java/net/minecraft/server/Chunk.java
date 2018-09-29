@@ -353,7 +353,7 @@ public class Chunk implements IChunkAccess {
     private void a(int i, int j, int k, int l) {
         if (l > k && this.areNeighborsLoaded(1)) { // Paper
             for (int i1 = k; i1 < l; ++i1) {
-                this.world.c(EnumSkyBlock.SKY, new BlockPosition(i, i1, j));
+                this.world.updateBrightness(EnumSkyBlock.SKY, new BlockPosition(i, i1, j), this); // Paper
             }
 
             this.x = true;
@@ -563,7 +563,7 @@ public class Chunk implements IChunkAccess {
             } else {
                 if (flag1) {
                     this.initLighting();
-                } else {
+                } else if (block != block1) { // Paper - Optimize light recalculations
                     this.runOrQueueLightUpdate(() -> { // Paper - Queue light update
                     int i1 = iblockdata.b(this.world, blockposition);
                     int j1 = iblockdata1.b(this.world, blockposition);
