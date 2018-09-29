@@ -20,7 +20,7 @@ public class PlayerChunk {
     private int dirtyCount;
     private int h;
     private long i;
-    private boolean done;
+    boolean done; // Paper - package-private
     boolean chunkExists; // Paper
     // Paper start
     PaperAsyncChunkProvider.CancellableChunkRequest chunkRequest;
@@ -147,6 +147,7 @@ public class PlayerChunk {
         }
     }
 
+    public boolean sendAll() { return b(); } // Paper - OBFHELPER
     public boolean b() {
         if (this.done) {
             return true;

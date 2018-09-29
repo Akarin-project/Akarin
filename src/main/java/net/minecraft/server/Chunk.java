@@ -1189,7 +1189,7 @@ public class Chunk implements IChunkAccess {
     }
 
     public boolean isReady() {
-        return this.C.a(ChunkStatus.POSTPROCESSED);
+        return true; // Paper - Always send chunks
     }
 
     public boolean v() {
@@ -1427,6 +1427,13 @@ public class Chunk implements IChunkAccess {
             this.h.clear();
             this.a(ChunkStatus.POSTPROCESSED);
             this.m.a(this);
+            // Paper start - resend chunk after post process
+            PlayerChunk playerChunk = ((WorldServer) world).getPlayerChunkMap().getChunk(locX, locZ);
+            if (playerChunk != null) {
+                playerChunk.done = false;
+                playerChunk.sendAll();
+            }
+            // Paper end
         }
     }
 
