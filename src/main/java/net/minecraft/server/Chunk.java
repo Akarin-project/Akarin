@@ -558,7 +558,7 @@ public class Chunk implements IChunkAccess {
                 this.world.n(blockposition);
             }
 
-            if (chunksection.getType(i, j & 15, k).getBlock() != block) {
+            if (false && chunksection.getType(i, j & 15, k).getBlock() != block) { // Paper - don't need to recheck this - this would only fail due to non main thread writes which are not supported
                 return null;
             } else {
                 if (flag1) {
