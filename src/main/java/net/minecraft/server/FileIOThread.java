@@ -10,7 +10,7 @@ public class FileIOThread implements Runnable {
 
     private static final Logger a = LogManager.getLogger();
     private static final FileIOThread b = new FileIOThread();
-    private final List<IAsyncChunkSaver> c = Collections.synchronizedList(Lists.newArrayList());
+    private final List<IAsyncChunkSaver> c = Collections.synchronizedList(Lists.newArrayList()); private List<IAsyncChunkSaver> getThreadedIOQueue() { return c; } // Paper - OBFHELPER
     private volatile long d;
     private volatile long e;
     private volatile boolean f;
@@ -75,7 +75,7 @@ public class FileIOThread implements Runnable {
     public void b() throws InterruptedException {
         this.f = true;
 
-        while (this.d != this.e) {
+        while(!this.getThreadedIOQueue().isEmpty()) { // Paper - check actual list size
             Thread.sleep(10L);
         }
 
