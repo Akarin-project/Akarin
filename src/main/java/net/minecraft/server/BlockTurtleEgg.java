@@ -94,7 +94,7 @@ public class BlockTurtleEgg extends Block {
                 if (!world.isClientSide) {
                     for (int j = 0; j < (Integer) iblockdata.get(BlockTurtleEgg.b); ++j) {
                         world.triggerEffect(2001, blockposition, Block.getCombinedId(iblockdata));
-                        EntityTurtle entityturtle = new EntityTurtle(world);
+                        EntityTurtle entityturtle = EntityTypes.TURTLE.create(world); // Paper
 
                         entityturtle.setAgeRaw(-24000);
                         entityturtle.g(blockposition);

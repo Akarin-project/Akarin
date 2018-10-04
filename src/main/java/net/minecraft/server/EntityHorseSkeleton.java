@@ -134,7 +134,7 @@ public class EntityHorseSkeleton extends EntityHorseAbstract {
 
     @Nullable
     public EntityAgeable createChild(EntityAgeable entityageable) {
-        return new EntityHorseSkeleton(this.world);
+        return EntityTypes.SKELETON_HORSE.create(world); // Paper
     }
 
     public boolean a(EntityHuman entityhuman, EnumHand enumhand) {

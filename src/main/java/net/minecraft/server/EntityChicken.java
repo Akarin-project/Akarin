@@ -96,7 +96,7 @@ public class EntityChicken extends EntityAnimal {
     }
 
     public EntityChicken createChild(EntityAgeable entityageable) {
-        return new EntityChicken(this.world);
+        return EntityTypes.CHICKEN.create(world); // Paper
     }
 
     public boolean f(ItemStack itemstack) {

@@ -34,7 +34,7 @@ public class ItemArmorStand extends Item {
                     if (!world.isClientSide) {
                         world.setAir(blockposition);
                         world.setAir(blockposition1);
-                        EntityArmorStand entityarmorstand = new EntityArmorStand(world, d0 + 0.5D, d1, d2 + 0.5D);
+                        EntityArmorStand entityarmorstand = EntityTypes.ARMOR_STAND.create(world); // Paper
                         float f = (float) MathHelper.d((MathHelper.g(itemactioncontext.h() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
 
                         entityarmorstand.setPositionRotation(d0 + 0.5D, d1, d2 + 0.5D, f, 0.0F);

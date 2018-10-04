@@ -88,7 +88,7 @@ public class EntityCow extends EntityAnimal {
     }
 
     public EntityCow createChild(EntityAgeable entityageable) {
-        return new EntityCow(this.world);
+        return EntityTypes.COW.create(world); // Paper
     }
 
     public float getHeadHeight() {

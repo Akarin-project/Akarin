@@ -154,8 +154,7 @@ public class WorldGenFeatureOceanRuinPieces {
                     ((TileEntityChest) tileentity).setLootTable(this.h ? LootTables.q : LootTables.p, random.nextLong());
                 }
             } else if ("drowned".equals(s)) {
-                EntityDrowned entitydrowned = new EntityDrowned(generatoraccess.getMinecraftWorld());
-
+                EntityDrowned entitydrowned = EntityTypes.DROWNED.create(generatoraccess.getMinecraftWorld()); // Paper
                 entitydrowned.di();
                 entitydrowned.setPositionRotation(blockposition, 0.0F, 0.0F);
                 entitydrowned.prepare(generatoraccess.getDamageScaler(blockposition), (GroupDataEntity) null, (NBTTagCompound) null);

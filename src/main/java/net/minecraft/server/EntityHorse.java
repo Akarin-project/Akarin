@@ -208,11 +208,11 @@ public class EntityHorse extends EntityHorseAbstract {
         Object object;
 
         if (entityageable instanceof EntityHorseDonkey) {
-            object = new EntityHorseMule(this.world);
+            object = EntityTypes.MULE.create(world); // Paper
         } else {
             EntityHorse entityhorse = (EntityHorse) entityageable;
 
-            object = new EntityHorse(this.world);
+            object = EntityTypes.HORSE.create(world); // Paper
             int i = this.random.nextInt(9);
             int j;
 

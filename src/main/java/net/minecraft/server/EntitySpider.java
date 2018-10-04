@@ -111,7 +111,7 @@ public class EntitySpider extends EntityMonster {
         Object object = super.prepare(difficultydamagescaler, groupdataentity, nbttagcompound);
 
         if (this.world.random.nextInt(100) == 0) {
-            EntitySkeleton entityskeleton = new EntitySkeleton(this.world);
+            EntitySkeleton entityskeleton = EntityTypes.SKELETON.create(world); // Paper
 
             entityskeleton.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, 0.0F);
             entityskeleton.prepare(difficultydamagescaler, (GroupDataEntity) null, (NBTTagCompound) null);

@@ -54,7 +54,7 @@ public class EntityZombieHusk extends EntityZombie {
     }
 
     protected void dE() {
-        this.a(new EntityZombie(this.world));
+        this.a(EntityTypes.ZOMBIE.create(world)); // Paper
         this.world.a((EntityHuman) null, 1041, new BlockPosition((int) this.locX, (int) this.locY, (int) this.locZ), 0);
     }
 

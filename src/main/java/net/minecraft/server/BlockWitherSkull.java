@@ -52,7 +52,7 @@ public class BlockWitherSkull extends BlockSkull {
                 }
 
                 BlockPosition blockposition1 = shapedetector_shapedetectorcollection.a(1, 0, 0).getPosition();
-                EntityWither entitywither = new EntityWither(world);
+                EntityWither entitywither = EntityTypes.WITHER.create(world); // Paper
                 BlockPosition blockposition2 = shapedetector_shapedetectorcollection.a(1, 2, 0).getPosition();
 
                 entitywither.setPositionRotation((double) blockposition2.getX() + 0.5D, (double) blockposition2.getY() + 0.55D, (double) blockposition2.getZ() + 0.5D, shapedetector_shapedetectorcollection.getFacing().k() == EnumDirection.EnumAxis.X ? 0.0F : 90.0F, 0.0F);

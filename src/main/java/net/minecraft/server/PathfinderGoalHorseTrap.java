@@ -36,7 +36,7 @@ public class PathfinderGoalHorseTrap extends PathfinderGoal {
     }
 
     private EntityHorseAbstract a(DifficultyDamageScaler difficultydamagescaler) {
-        EntityHorseSkeleton entityhorseskeleton = new EntityHorseSkeleton(this.a.world);
+        EntityHorseSkeleton entityhorseskeleton = EntityTypes.SKELETON_HORSE.create(a.world); // Paper
 
         entityhorseskeleton.prepare(difficultydamagescaler, (GroupDataEntity) null, (NBTTagCompound) null);
         entityhorseskeleton.setPosition(this.a.locX, this.a.locY, this.a.locZ);
@@ -49,7 +49,7 @@ public class PathfinderGoalHorseTrap extends PathfinderGoal {
     }
 
     private EntitySkeleton a(DifficultyDamageScaler difficultydamagescaler, EntityHorseAbstract entityhorseabstract) {
-        EntitySkeleton entityskeleton = new EntitySkeleton(entityhorseabstract.world);
+        EntitySkeleton entityskeleton = EntityTypes.SKELETON.create(entityhorseabstract.world); // Paper
 
         entityskeleton.prepare(difficultydamagescaler, (GroupDataEntity) null, (NBTTagCompound) null);
         entityskeleton.setPosition(entityhorseabstract.locX, entityhorseabstract.locY, entityhorseabstract.locZ);

@@ -134,7 +134,7 @@ public class VillageSiege {
             EntityZombie entityzombie;
 
             try {
-                entityzombie = new EntityZombie(this.a);
+                entityzombie = EntityTypes.ZOMBIE.create(this.a); // Paper
                 entityzombie.prepare(this.a.getDamageScaler(new BlockPosition(entityzombie)), (GroupDataEntity) null, (NBTTagCompound) null);
             } catch (Exception exception) {
                 exception.printStackTrace();

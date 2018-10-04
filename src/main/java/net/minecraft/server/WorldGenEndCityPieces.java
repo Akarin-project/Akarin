@@ -270,7 +270,7 @@ public class WorldGenEndCityPieces {
                     TileEntityLootable.a(generatoraccess, random, blockposition1, LootTables.c);
                 }
             } else if (s.startsWith("Sentry")) {
-                EntityShulker entityshulker = new EntityShulker(generatoraccess.getMinecraftWorld());
+                EntityShulker entityshulker = EntityTypes.SHULKER.create(generatoraccess.getMinecraftWorld()); // Paper
 
                 entityshulker.setPosition((double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D);
                 entityshulker.g(blockposition);

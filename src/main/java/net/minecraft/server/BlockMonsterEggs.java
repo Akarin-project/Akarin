@@ -35,7 +35,7 @@ public class BlockMonsterEggs extends Block {
 
     public void dropNaturally(IBlockData iblockdata, World world, BlockPosition blockposition, float f, int i) {
         if (!world.isClientSide && world.getGameRules().getBoolean("doTileDrops")) {
-            EntitySilverfish entitysilverfish = new EntitySilverfish(world);
+            EntitySilverfish entitysilverfish = EntityTypes.SILVERFISH.create(world); // Paper
 
             entitysilverfish.setPositionRotation((double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D, 0.0F, 0.0F);
             world.addEntity(entitysilverfish, SpawnReason.SILVERFISH_BLOCK); // CraftBukkit - add SpawnReason

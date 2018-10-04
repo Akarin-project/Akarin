@@ -33,7 +33,7 @@ public class EntityHorseDonkey extends EntityHorseChestedAbstract {
     }
 
     public EntityAgeable createChild(EntityAgeable entityageable) {
-        Object object = entityageable instanceof EntityHorse ? new EntityHorseMule(this.world) : new EntityHorseDonkey(this.world);
+        Object object = entityageable instanceof EntityHorse ? EntityTypes.MULE.create(world) : EntityTypes.DONKEY.create(world); // Paper
 
         this.a(entityageable, (EntityHorseAbstract) object);
         return (EntityAgeable) object;

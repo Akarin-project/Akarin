@@ -412,7 +412,7 @@ public class EnderDragonBattle {
 
     private EntityEnderDragon n() {
         this.d.getChunkAtWorldCoords(new BlockPosition(0, 128, 0));
-        EntityEnderDragon entityenderdragon = new EntityEnderDragon(this.d);
+        EntityEnderDragon entityenderdragon = EntityTypes.ENDER_DRAGON.create(this.d); // Paper
 
         entityenderdragon.getDragonControllerManager().setControllerPhase(DragonControllerPhase.HOLDING_PATTERN);
         entityenderdragon.setPositionRotation(0.0D, 128.0D, 0.0D, this.d.random.nextFloat() * 360.0F, 0.0F);

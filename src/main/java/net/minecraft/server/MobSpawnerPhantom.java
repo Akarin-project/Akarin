@@ -59,7 +59,7 @@ public class MobSpawnerPhantom {
                                                     continue;
                                                 }
                                                 // Paper end
-                                                EntityPhantom entityphantom = new EntityPhantom(world);
+                                                EntityPhantom entityphantom = EntityTypes.PHANTOM.create(world); // Paper
                                                 entityphantom.spawningEntity = entityhuman.uniqueID; // Paper
                                                 entityphantom.setPositionRotation(blockposition1, 0.0F, 0.0F);
                                                 groupdataentity = entityphantom.prepare(difficultydamagescaler, groupdataentity, (NBTTagCompound) null);

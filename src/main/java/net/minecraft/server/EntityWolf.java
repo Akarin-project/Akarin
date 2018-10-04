@@ -342,7 +342,7 @@ public class EntityWolf extends EntityTameableAnimal {
     }
 
     public EntityWolf createChild(EntityAgeable entityageable) {
-        EntityWolf entitywolf = new EntityWolf(this.world);
+        EntityWolf entitywolf = EntityTypes.WOLF.create(world); // Paper
         UUID uuid = this.getOwnerUUID();
 
         if (uuid != null) {

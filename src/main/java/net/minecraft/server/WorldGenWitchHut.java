@@ -81,7 +81,7 @@ public class WorldGenWitchHut extends WorldGenScatteredPiece {
 
                 if (structureboundingbox.b((BaseBlockPosition) (new BlockPosition(j, i, k)))) {
                     this.e = true;
-                    EntityWitch entitywitch = new EntityWitch(generatoraccess.getMinecraftWorld());
+                    EntityWitch entitywitch = EntityTypes.WITCH.create(generatoraccess.getMinecraftWorld()); // Paper
 
                     entitywitch.di();
                     entitywitch.setPositionRotation((double) j + 0.5D, (double) i, (double) k + 0.5D, 0.0F, 0.0F);

@@ -218,7 +218,7 @@ public class EntityTurtle extends EntityAnimal {
 
     @Nullable
     public EntityAgeable createChild(EntityAgeable entityageable) {
-        return new EntityTurtle(this.world);
+        return EntityTypes.TURTLE.create(world); // Paper
     }
 
     public boolean f(ItemStack itemstack) {

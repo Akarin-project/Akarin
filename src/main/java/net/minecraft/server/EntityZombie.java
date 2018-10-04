@@ -208,7 +208,7 @@ public class EntityZombie extends EntityMonster {
     }
 
     protected void dE() {
-        this.a((EntityZombie) (new EntityDrowned(this.world)));
+        this.a((EntityZombie) EntityTypes.DROWNED.create(world)); // Paper
         this.world.a((EntityHuman) null, 1040, new BlockPosition((int) this.locX, (int) this.locY, (int) this.locZ), 0);
     }
 
@@ -261,7 +261,7 @@ public class EntityZombie extends EntityMonster {
                 int i = MathHelper.floor(this.locX);
                 int j = MathHelper.floor(this.locY);
                 int k = MathHelper.floor(this.locZ);
-                EntityZombie entityzombie = new EntityZombie(this.world);
+                EntityZombie entityzombie = EntityTypes.ZOMBIE.create(world); // Paper
 
                 for (int l = 0; l < 50; ++l) {
                     int i1 = i + MathHelper.nextInt(this.random, 7, 40) * MathHelper.nextInt(this.random, -1, 1);
@@ -385,7 +385,7 @@ public class EntityZombie extends EntityMonster {
             }
 
             EntityVillager entityvillager = (EntityVillager) entityliving;
-            EntityZombieVillager entityzombievillager = new EntityZombieVillager(this.world);
+            EntityZombieVillager entityzombievillager = EntityTypes.ZOMBIE_VILLAGER.create(world); // Paper
 
             entityzombievillager.u(entityvillager);
             // this.world.kill(entityvillager); // CraftBukkit - moved down
@@ -450,7 +450,7 @@ public class EntityZombie extends EntityMonster {
                         this.startRiding(entitychicken);
                     }
                 } else if ((double) this.world.random.nextFloat() < 0.05D) {
-                    EntityChicken entitychicken1 = new EntityChicken(this.world);
+                    EntityChicken entitychicken1 = EntityTypes.CHICKEN.create(world); // Paper
 
                     entitychicken1.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, 0.0F);
                     entitychicken1.prepare(difficultydamagescaler, (GroupDataEntity) null, (NBTTagCompound) null);

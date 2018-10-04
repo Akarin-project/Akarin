@@ -251,7 +251,7 @@ public class EntityRabbit extends EntityAnimal {
     }
 
     public EntityRabbit createChild(EntityAgeable entityageable) {
-        EntityRabbit entityrabbit = new EntityRabbit(this.world);
+        EntityRabbit entityrabbit = EntityTypes.RABBIT.create(world); // Paper
         int i = this.dJ();
 
         if (this.random.nextInt(20) != 0) {

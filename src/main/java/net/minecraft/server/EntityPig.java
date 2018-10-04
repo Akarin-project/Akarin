@@ -153,7 +153,7 @@ public class EntityPig extends EntityAnimal {
 
     public void onLightningStrike(EntityLightning entitylightning) {
         if (!this.world.isClientSide && !this.dead) {
-            EntityPigZombie entitypigzombie = new EntityPigZombie(this.world);
+            EntityPigZombie entitypigzombie = EntityTypes.ZOMBIE_PIGMAN.create(world); // Paper
 
             entitypigzombie.setSlot(EnumItemSlot.MAINHAND, new ItemStack(Items.GOLDEN_SWORD));
             entitypigzombie.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
@@ -242,7 +242,7 @@ public class EntityPig extends EntityAnimal {
     }
 
     public EntityPig createChild(EntityAgeable entityageable) {
-        return new EntityPig(this.world);
+        return EntityTypes.PIG.create(world); // Paper
     }
 
     public boolean f(ItemStack itemstack) {

@@ -118,7 +118,7 @@ public class EntityZombieVillager extends EntityZombie {
     }
 
     protected void dJ() {
-        EntityVillager entityvillager = new EntityVillager(this.world);
+        EntityVillager entityvillager = EntityTypes.VILLAGER.create(world); // Paper
 
         entityvillager.u(this);
         entityvillager.setProfession(this.getProfession());

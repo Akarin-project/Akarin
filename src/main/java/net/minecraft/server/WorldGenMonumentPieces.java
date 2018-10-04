@@ -1800,7 +1800,7 @@ public class WorldGenMonumentPieces {
         protected static final IBlockData d = WorldGenMonumentPieces.WorldGenMonumentPiece.b;
         protected static final IBlockData e = Blocks.SEA_LANTERN.getBlockData();
         protected static final IBlockData f = Blocks.WATER.getBlockData();
-        protected static final Set<Block> g = ImmutableSet.builder().add(Blocks.ICE).add(Blocks.PACKED_ICE).add(Blocks.BLUE_ICE).add(WorldGenMonumentPieces.WorldGenMonumentPiece.f.getBlock()).build();
+        protected static final Set<Block> g = ImmutableSet.<Block>builder().add(Blocks.ICE).add(Blocks.PACKED_ICE).add(Blocks.BLUE_ICE).add(WorldGenMonumentPieces.WorldGenMonumentPiece.f.getBlock()).build(); // Paper - decompile fix
         protected static final int h = b(2, 0, 0);
         protected static final int i = b(2, 2, 0);
         protected static final int j = b(0, 1, 0);
@@ -1923,7 +1923,7 @@ public class WorldGenMonumentPieces {
             int j1 = this.b(i, k);
 
             if (structureboundingbox.b((BaseBlockPosition) (new BlockPosition(l, i1, j1)))) {
-                EntityGuardianElder entityguardianelder = new EntityGuardianElder(generatoraccess.getMinecraftWorld());
+                EntityGuardianElder entityguardianelder = EntityTypes.ELDER_GUARDIAN.create(generatoraccess.getMinecraftWorld()); // Paper
 
                 entityguardianelder.heal(entityguardianelder.getMaxHealth());
                 entityguardianelder.setPositionRotation((double) l + 0.5D, (double) i1, (double) j1 + 0.5D, 0.0F, 0.0F);

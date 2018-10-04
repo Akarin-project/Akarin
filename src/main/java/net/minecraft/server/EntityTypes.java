@@ -269,6 +269,7 @@ public class EntityTypes<T extends Entity> {
         return this.aX;
     }
 
+    @Nullable public T create(World world) { return a(world); } // Paper - OBFHELPER
     @Nullable
     public T a(World world) {
         return this.aT.apply(world); // CraftBukkit - decompile error

@@ -154,7 +154,7 @@ public class EntityOcelot extends EntityTameableAnimal {
     }
 
     public EntityOcelot createChild(EntityAgeable entityageable) {
-        EntityOcelot entityocelot = new EntityOcelot(this.world);
+        EntityOcelot entityocelot = EntityTypes.OCELOT.create(world); // Paper
 
         if (this.isTamed()) {
             entityocelot.setOwnerUUID(this.getOwnerUUID());
@@ -237,7 +237,7 @@ public class EntityOcelot extends EntityTameableAnimal {
         groupdataentity = super.prepare(difficultydamagescaler, groupdataentity, nbttagcompound);
         if (spawnBonus && this.getCatType() == 0 && this.world.random.nextInt(7) == 0) { // Spigot
             for (int i = 0; i < 2; ++i) {
-                EntityOcelot entityocelot = new EntityOcelot(this.world);
+                EntityOcelot entityocelot = EntityTypes.OCELOT.create(world); // Paper
 
                 entityocelot.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, 0.0F);
                 entityocelot.setAgeRaw(-24000);

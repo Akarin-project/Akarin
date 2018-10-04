@@ -41,7 +41,7 @@ public class EntityHorseZombie extends EntityHorseAbstract {
 
     @Nullable
     public EntityAgeable createChild(EntityAgeable entityageable) {
-        return new EntityHorseZombie(this.world);
+        return EntityTypes.ZOMBIE_HORSE.create(world); // Paper
     }
 
     public boolean a(EntityHuman entityhuman, EnumHand enumhand) {

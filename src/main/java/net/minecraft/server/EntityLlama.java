@@ -285,7 +285,7 @@ public class EntityLlama extends EntityHorseChestedAbstract implements IRangedEn
     }
 
     public EntityLlama createChild(EntityAgeable entityageable) {
-        EntityLlama entityllama = new EntityLlama(this.world);
+        EntityLlama entityllama = EntityTypes.LLAMA.create(world); // Paper
 
         this.a(entityageable, (EntityHorseAbstract) entityllama);
         EntityLlama entityllama1 = (EntityLlama) entityageable;

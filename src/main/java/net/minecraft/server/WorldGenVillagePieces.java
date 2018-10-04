@@ -1640,7 +1640,7 @@ public class WorldGenVillagePieces {
 
                     ++this.a;
                     if (this.h) {
-                        EntityZombieVillager entityzombievillager = new EntityZombieVillager(generatoraccess.getMinecraftWorld());
+                        EntityZombieVillager entityzombievillager = EntityTypes.ZOMBIE_VILLAGER.create(generatoraccess.getMinecraftWorld()); // Paper
 
                         entityzombievillager.setPositionRotation((double) j1 + 0.5D, (double) k1, (double) l1 + 0.5D, 0.0F, 0.0F);
                         entityzombievillager.prepare(generatoraccess.getDamageScaler(new BlockPosition(entityzombievillager)), (GroupDataEntity) null, (NBTTagCompound) null);
@@ -1648,7 +1648,7 @@ public class WorldGenVillagePieces {
                         entityzombievillager.di();
                         generatoraccess.addEntity(entityzombievillager, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CHUNK_GEN); // CraftBukkit - add SpawnReason
                     } else {
-                        EntityVillager entityvillager = new EntityVillager(generatoraccess.getMinecraftWorld());
+                        EntityVillager entityvillager = EntityTypes.VILLAGER.create(generatoraccess.getMinecraftWorld()); // Paper
 
                         entityvillager.setPositionRotation((double) j1 + 0.5D, (double) k1, (double) l1 + 0.5D, 0.0F, 0.0F);
                         entityvillager.setProfession(this.c(i1, generatoraccess.m().nextInt(6)));

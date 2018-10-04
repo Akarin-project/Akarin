@@ -18,7 +18,7 @@ public class EntityPolarBear extends EntityAnimal {
     }
 
     public EntityAgeable createChild(EntityAgeable entityageable) {
-        return new EntityPolarBear(this.world);
+        return EntityTypes.POLAR_BEAR.create(world); // Paper
     }
 
     public boolean f(ItemStack itemstack) {

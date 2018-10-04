@@ -247,7 +247,7 @@ public class EntitySheep extends EntityAnimal {
 
     public EntitySheep createChild(EntityAgeable entityageable) {
         EntitySheep entitysheep = (EntitySheep) entityageable;
-        EntitySheep entitysheep1 = new EntitySheep(this.world);
+        EntitySheep entitysheep1 = EntityTypes.SHEEP.create(world); // Paper
 
         entitysheep1.setColor(this.a((EntityAnimal) this, (EntityAnimal) entitysheep));
         return entitysheep1;

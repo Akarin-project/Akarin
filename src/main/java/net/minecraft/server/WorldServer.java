@@ -494,7 +494,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                         boolean flag2 = this.getGameRules().getBoolean("doMobSpawning") && this.random.nextDouble() < (double) difficultydamagescaler.b() * paperConfig.skeleHorseSpawnChance; // Paper
 
                         if (flag2) {
-                            EntityHorseSkeleton entityhorseskeleton = new EntityHorseSkeleton(this);
+                            EntityHorseSkeleton entityhorseskeleton = EntityTypes.SKELETON_HORSE.create(this); // Paper
 
                             entityhorseskeleton.s(true);
                             entityhorseskeleton.setAgeRaw(0);

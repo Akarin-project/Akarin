@@ -40,7 +40,7 @@ public class EntityMushroomCow extends EntityCow {
             this.world.addParticle(Particles.u, this.locX, this.locY + (double) (this.length / 2.0F), this.locZ, 0.0D, 0.0D, 0.0D);
             if (!this.world.isClientSide) {
                 // this.die(); // CraftBukkit - moved down
-                EntityCow entitycow = new EntityCow(this.world);
+                EntityCow entitycow = EntityTypes.COW.create(world); // Paper
 
                 entitycow.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, this.pitch);
                 entitycow.setHealth(this.getHealth());
@@ -74,7 +74,7 @@ public class EntityMushroomCow extends EntityCow {
     }
 
     public EntityMushroomCow createChild(EntityAgeable entityageable) {
-        return new EntityMushroomCow(this.world);
+        return EntityTypes.MOOSHROOM.create(world); // Paper
     }
 
     @Nullable

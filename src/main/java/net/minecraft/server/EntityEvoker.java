@@ -188,8 +188,7 @@ public class EntityEvoker extends EntityIllagerWizard {
         protected void j() {
             for (int i = 0; i < 3; ++i) {
                 BlockPosition blockposition = (new BlockPosition(EntityEvoker.this)).a(-2 + EntityEvoker.this.random.nextInt(5), 1, -2 + EntityEvoker.this.random.nextInt(5));
-                EntityVex entityvex = new EntityVex(EntityEvoker.this.world);
-
+                EntityVex entityvex = EntityTypes.VEX.create(EntityEvoker.this.world); // Paper
                 entityvex.setPositionRotation(blockposition, 0.0F, 0.0F);
                 entityvex.prepare(EntityEvoker.this.world.getDamageScaler(blockposition), (GroupDataEntity) null, (NBTTagCompound) null);
                 entityvex.a((EntityInsentient) EntityEvoker.this);

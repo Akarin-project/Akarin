@@ -1181,153 +1181,153 @@ public class CraftWorld implements World {
             entity.setPositionRotation(x, y, z, 0, 0);
         } else if (LivingEntity.class.isAssignableFrom(clazz)) {
             if (Chicken.class.isAssignableFrom(clazz)) {
-                entity = new EntityChicken(world);
+                entity = EntityTypes.CHICKEN.create(world); // Paper
             } else if (Cow.class.isAssignableFrom(clazz)) {
                 if (MushroomCow.class.isAssignableFrom(clazz)) {
-                    entity = new EntityMushroomCow(world);
+                    entity = EntityTypes.MOOSHROOM.create(world); // Paper
                 } else {
-                    entity = new EntityCow(world);
+                    entity = EntityTypes.COW.create(world); // Paper
                 }
             } else if (Golem.class.isAssignableFrom(clazz)) {
                 if (Snowman.class.isAssignableFrom(clazz)) {
-                    entity = new EntitySnowman(world);
+                    entity = EntityTypes.SNOW_GOLEM.create(world); // Paper
                 } else if (IronGolem.class.isAssignableFrom(clazz)) {
-                    entity = new EntityIronGolem(world);
+                    entity = EntityTypes.IRON_GOLEM.create(world); // Paper
                 } else if (Shulker.class.isAssignableFrom(clazz)) {
-                    entity = new EntityShulker(world);
+                    entity = EntityTypes.SHULKER.create(world); // Paper
                 }
             } else if (Creeper.class.isAssignableFrom(clazz)) {
-                entity = new EntityCreeper(world);
+                entity = EntityTypes.CREEPER.create(world); // Paper
             } else if (Ghast.class.isAssignableFrom(clazz)) {
-                entity = new EntityGhast(world);
+                entity = EntityTypes.GHAST.create(world); // Paper
             } else if (Pig.class.isAssignableFrom(clazz)) {
-                entity = new EntityPig(world);
+                entity = EntityTypes.PIG.create(world); // Paper
             } else if (Player.class.isAssignableFrom(clazz)) {
                 // need a net server handler for this one
             } else if (Sheep.class.isAssignableFrom(clazz)) {
-                entity = new EntitySheep(world);
+                entity = EntityTypes.SHEEP.create(world); // Paper
             } else if (AbstractHorse.class.isAssignableFrom(clazz)) {
                 if (ChestedHorse.class.isAssignableFrom(clazz)) {
                     if (Donkey.class.isAssignableFrom(clazz)) {
-                        entity = new EntityHorseDonkey(world);
+                        entity = EntityTypes.DONKEY.create(world); // Paper
                     } else if (Mule.class.isAssignableFrom(clazz)) {
-                        entity = new EntityHorseMule(world);
+                        entity = EntityTypes.MULE.create(world); // Paper
                     } else if (Llama.class.isAssignableFrom(clazz)) {
-                        entity = new EntityLlama(world);
+                        entity = EntityTypes.LLAMA.create(world); // Paper
                     }
                 } else if (SkeletonHorse.class.isAssignableFrom(clazz)) {
-                    entity = new EntityHorseSkeleton(world);
+                    entity = EntityTypes.SKELETON_HORSE.create(world); // Paper
                 } else if (ZombieHorse.class.isAssignableFrom(clazz)) {
-                    entity = new EntityHorseZombie(world);
+                    entity = EntityTypes.ZOMBIE_HORSE.create(world); // Paper
                 } else {
-                    entity = new EntityHorse(world);
+                    entity = EntityTypes.HORSE.create(world); // Paper
                 }
             } else if (Skeleton.class.isAssignableFrom(clazz)) {
                 if (Stray.class.isAssignableFrom(clazz)){
-                    entity = new EntitySkeletonStray(world);
+                    entity = EntityTypes.STRAY.create(world); // Paper
                 } else if (WitherSkeleton.class.isAssignableFrom(clazz)) {
-                    entity = new EntitySkeletonWither(world);
+                    entity = EntityTypes.WITHER_SKELETON.create(world); // Paper
                 } else {
-                    entity = new EntitySkeleton(world);
+                    entity = EntityTypes.SKELETON.create(world); // Paper
                 }
             } else if (Slime.class.isAssignableFrom(clazz)) {
                 if (MagmaCube.class.isAssignableFrom(clazz)) {
-                    entity = new EntityMagmaCube(world);
+                    entity = EntityTypes.MAGMA_CUBE.create(world); // Paper
                 } else {
-                    entity = new EntitySlime(world);
+                    entity = EntityTypes.SLIME.create(world); // Paper
                 }
             } else if (Spider.class.isAssignableFrom(clazz)) {
                 if (CaveSpider.class.isAssignableFrom(clazz)) {
-                    entity = new EntityCaveSpider(world);
+                    entity = EntityTypes.CAVE_SPIDER.create(world); // Paper
                 } else {
-                    entity = new EntitySpider(world);
+                    entity = EntityTypes.SPIDER.create(world); // Paper
                 }
             } else if (Squid.class.isAssignableFrom(clazz)) {
-                entity = new EntitySquid(world);
+                entity = EntityTypes.SQUID.create(world); // Paper
             } else if (Tameable.class.isAssignableFrom(clazz)) {
                 if (Wolf.class.isAssignableFrom(clazz)) {
-                    entity = new EntityWolf(world);
+                    entity = EntityTypes.WOLF.create(world); // Paper
                 } else if (Ocelot.class.isAssignableFrom(clazz)) {
-                    entity = new EntityOcelot(world);
+                    entity = EntityTypes.OCELOT.create(world); // Paper
                 } else if (Parrot.class.isAssignableFrom(clazz)) {
-                    entity = new EntityParrot(world);
+                    entity = EntityTypes.PARROT.create(world); // Paper
                 }
             } else if (PigZombie.class.isAssignableFrom(clazz)) {
-                entity = new EntityPigZombie(world);
+                entity = EntityTypes.ZOMBIE_PIGMAN.create(world); // Paper
             } else if (Zombie.class.isAssignableFrom(clazz)) {
                 if (Husk.class.isAssignableFrom(clazz)) {
-                    entity = new EntityZombieHusk(world);
+                    entity = EntityTypes.HUSK.create(world); // Paper
                 } else if (ZombieVillager.class.isAssignableFrom(clazz)) {
-                    entity = new EntityZombieVillager(world);
+                    entity = EntityTypes.ZOMBIE_VILLAGER.create(world); // Paper
                 } else if (Drowned.class.isAssignableFrom(clazz)) {
-                    entity = new EntityDrowned(world);
+                    entity = EntityTypes.DROWNED.create(world); // Paper
                 } else {
-                    entity = new EntityZombie(world);
+                    entity = EntityTypes.ZOMBIE.create(world); // Paper
                 }
             } else if (Giant.class.isAssignableFrom(clazz)) {
-                entity = new EntityGiantZombie(world);
+                entity = EntityTypes.GIANT.create(world); // Paper
             } else if (Silverfish.class.isAssignableFrom(clazz)) {
-                entity = new EntitySilverfish(world);
+                entity = EntityTypes.SILVERFISH.create(world); // Paper
             } else if (Enderman.class.isAssignableFrom(clazz)) {
-                entity = new EntityEnderman(world);
+                entity = EntityTypes.ENDERMAN.create(world); // Paper
             } else if (Blaze.class.isAssignableFrom(clazz)) {
-                entity = new EntityBlaze(world);
+                entity = EntityTypes.BLAZE.create(world); // Paper
             } else if (Villager.class.isAssignableFrom(clazz)) {
-                entity = new EntityVillager(world);
+                entity = EntityTypes.VILLAGER.create(world); // Paper
             } else if (Witch.class.isAssignableFrom(clazz)) {
-                entity = new EntityWitch(world);
+                entity = EntityTypes.WITCH.create(world); // Paper
             } else if (Wither.class.isAssignableFrom(clazz)) {
-                entity = new EntityWither(world);
+                entity = EntityTypes.WITHER.create(world); // Paper
             } else if (ComplexLivingEntity.class.isAssignableFrom(clazz)) {
                 if (EnderDragon.class.isAssignableFrom(clazz)) {
-                    entity = new EntityEnderDragon(world);
+                    entity = EntityTypes.ENDER_DRAGON.create(world); // Paper
                 }
             } else if (Ambient.class.isAssignableFrom(clazz)) {
                 if (Bat.class.isAssignableFrom(clazz)) {
-                    entity = new EntityBat(world);
+                    entity = EntityTypes.BAT.create(world); // Paper
                 }
             } else if (Rabbit.class.isAssignableFrom(clazz)) {
-                entity = new EntityRabbit(world);
+                entity = EntityTypes.RABBIT.create(world); // Paper
             } else if (Endermite.class.isAssignableFrom(clazz)) {
-                entity = new EntityEndermite(world);
+                entity = EntityTypes.ENDERMITE.create(world); // Paper
             } else if (Guardian.class.isAssignableFrom(clazz)) {
                 if (ElderGuardian.class.isAssignableFrom(clazz)){
-                    entity = new EntityGuardianElder(world);
+                    entity = EntityTypes.ELDER_GUARDIAN.create(world); // Paper
                 } else {
-                    entity = new EntityGuardian(world);
+                    entity = EntityTypes.GUARDIAN.create(world); // Paper
                 }
             } else if (ArmorStand.class.isAssignableFrom(clazz)) {
-                entity = new EntityArmorStand(world, x, y, z);
+                entity = EntityTypes.ARMOR_STAND.create(world); // Paper
             } else if (PolarBear.class.isAssignableFrom(clazz)) {
-                entity = new EntityPolarBear(world);
+                entity = EntityTypes.POLAR_BEAR.create(world); // Paper
             } else if (Vex.class.isAssignableFrom(clazz)) {
-                entity = new EntityVex(world);
+                entity = EntityTypes.VEX.create(world); // Paper
             } else if (Illager.class.isAssignableFrom(clazz)) {
                 if (Spellcaster.class.isAssignableFrom(clazz)) {
                     if (Evoker.class.isAssignableFrom(clazz)) {
-                        entity = new EntityEvoker(world);
+                        entity = EntityTypes.EVOKER.create(world); // Paper
                     } else if (Illusioner.class.isAssignableFrom(clazz)) {
-                        entity = new EntityIllagerIllusioner(world);
+                        entity = EntityTypes.ILLUSIONER.create(world); // Paper
                     }
                 } else if (Vindicator.class.isAssignableFrom(clazz)) {
-                    entity = new EntityVindicator(world);
+                    entity = EntityTypes.VINDICATOR.create(world); // Paper
                 }
             } else if (Turtle.class.isAssignableFrom(clazz)) {
-                entity = new EntityTurtle(world);
+                entity = EntityTypes.TURTLE.create(world); // Paper
             } else if (Phantom.class.isAssignableFrom(clazz)) {
-                entity = new EntityPhantom(world);
+                entity = EntityTypes.PHANTOM.create(world); // Paper
             } else if (Fish.class.isAssignableFrom(clazz)) {
                 if (Cod.class.isAssignableFrom(clazz)) {
-                    entity = new EntityCod(world);
+                    entity = EntityTypes.COD.create(world); // Paper
                 } else if (PufferFish.class.isAssignableFrom(clazz)) {
-                    entity = new EntityPufferFish(world);
+                    entity = EntityTypes.PUFFERFISH.create(world); // Paper
                 } else if (Salmon.class.isAssignableFrom(clazz)) {
-                    entity = new EntitySalmon(world);
+                    entity = EntityTypes.SALMON.create(world); // Paper
                 } else if (TropicalFish.class.isAssignableFrom(clazz)) {
-                    entity = new EntityTropicalFish(world);
+                    entity = EntityTypes.TROPICAL_FISH.create(world); // Paper
                 }
             } else if (Dolphin.class.isAssignableFrom(clazz)) {
-                entity = new EntityDolphin(world);
+                entity = EntityTypes.DOLPHIN.create(world); // Paper
             }
 
             if (entity != null) {

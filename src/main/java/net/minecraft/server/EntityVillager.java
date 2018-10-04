@@ -592,7 +592,7 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
     }
 
     public EntityVillager createChild(EntityAgeable entityageable) {
-        EntityVillager entityvillager = new EntityVillager(this.world);
+        EntityVillager entityvillager = EntityTypes.VILLAGER.create(world); // Paper
 
         entityvillager.prepare(this.world.getDamageScaler(new BlockPosition(entityvillager)), (GroupDataEntity) null, (NBTTagCompound) null);
         return entityvillager;
@@ -604,7 +604,7 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
 
     public void onLightningStrike(EntityLightning entitylightning) {
         if (!this.world.isClientSide && !this.dead) {
-            EntityWitch entitywitch = new EntityWitch(this.world);
+            EntityWitch entitywitch = EntityTypes.WITCH.create(world); // Paper
 
             // Paper start
             if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityZapEvent(this, entitylightning, entitywitch).isCancelled()) {
