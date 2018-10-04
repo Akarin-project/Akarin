@@ -1478,6 +1478,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
         return false;
     }
 
+    public void runKillTrigger(Entity entity, int kills, DamageSource damageSource) { this.a(entity, kills, damageSource); } // Paper - OBFHELPER
     public void a(Entity entity, int i, DamageSource damagesource) {
         if (entity instanceof EntityPlayer) {
             CriterionTriggers.c.a((EntityPlayer) entity, this, damagesource);
@@ -2274,6 +2275,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
 
     }
 
+    public void onKill(EntityLiving entityLiving) { this.b(entityLiving); } // Paper - OBFHELPER
     public void b(EntityLiving entityliving) {}
 
     protected boolean i(double d0, double d1, double d2) {
@@ -2972,6 +2974,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
         return EnumPistonReaction.NORMAL;
     }
 
+    public SoundCategory getDeathSoundCategory() { return bK();} // Paper - OBFHELPER
     public SoundCategory bK() {
         return SoundCategory.NEUTRAL;
     }

@@ -1184,7 +1184,7 @@ public abstract class World implements IBlockAccess {
 
         int i = MathHelper.floor(entity.locX / 16.0D);
         int j = MathHelper.floor(entity.locZ / 16.0D);
-        boolean flag = entity.attachedToPlayer;
+        boolean flag = true; // Paper - always load chunks
 
         // Paper start - Set origin location when the entity is being added to the world
         if (entity.origin == null) {
@@ -1831,7 +1831,7 @@ public abstract class World implements IBlockAccess {
                 this.getChunkAt(entity.ab, entity.ad).a(entity, entity.ac);
             }
 
-            if (false && !entity.bD() && !this.isChunkLoaded(i, k, true)) { // Paper - Always send entities into a new chunk, never lose them
+            if (!entity.valid && !entity.bD() && !this.isChunkLoaded(i, k, true)) { // Paper - always load to new chunk if valid
                 entity.aa = false;
             } else {
                 this.getChunkAt(i, k).a(entity);

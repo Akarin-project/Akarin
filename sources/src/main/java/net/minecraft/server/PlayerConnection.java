@@ -1,7 +1,9 @@
 package net.minecraft.server;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
+import com.google.common.util.concurrent.Futures;
 
 import io.akarin.api.internal.Akari;
 import io.akarin.server.core.AkarinGlobalConfig;
@@ -10,6 +12,8 @@ import io.netty.util.concurrent.GenericFutureListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -382,10 +386,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 }
 
                 entity.setLocation(d3, d4, d5, f, f1);
+                Location curPos = getPlayer().getLocation(); // Paper
+                player.setLocation(d3, d4, d5, f, f1); // Paper
                 boolean flag2 = worldserver.getCubes(entity, entity.getBoundingBox().shrink(0.0625D)).isEmpty();
 
                 if (flag && (flag1 || !flag2)) {
                     entity.setLocation(d0, d1, d2, f, f1);
+                    player.setLocation(d0, d1, d2, f, f1); // Paper
                     this.networkManager.sendPacket(new PacketPlayOutVehicleMove(entity));
                     return;
                 }
@@ -395,7 +402,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 // Spigot Start
                 if ( !hasMoved )
                 {
-                    Location curPos = player.getLocation();
+                    //Location curPos = player.getLocation(); // Paper - move up
                     lastPosX = curPos.getX();
                     lastPosY = curPos.getY();
                     lastPosZ = curPos.getZ();
@@ -2310,32 +2317,26 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             buffer, isCommand, blockpos != null ? MCUtil.toLocation(player.world, blockpos) : null);
         event.callEvent();
         completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.getCompletions();
-        if (event.isCancelled() || event.isHandled()) {
-            // Still fire sync event with the provided completions, if someone is listening
-            if (!event.isCancelled() && org.bukkit.event.server.TabCompleteEvent.getHandlerList().getRegisteredListeners().length > 0) {
-                java.util.List<String> finalCompletions = completions;
-                Waitable<java.util.List<String>> syncCompletions = new Waitable<java.util.List<String>>() {
-                    @Override
-                    protected java.util.List<String> evaluate() {
-                        org.bukkit.event.server.TabCompleteEvent syncEvent = new org.bukkit.event.server.TabCompleteEvent(PlayerConnection.this.getPlayer(), buffer, finalCompletions, isCommand, blockpos != null ? MCUtil.toLocation(player.world, blockpos) : null);
-                        return syncEvent.callEvent() ? syncEvent.getCompletions() : com.google.common.collect.ImmutableList.of();
-                    }
-                };
-                server.getServer().processQueue.add(syncCompletions);
-                try {
-                    completions = syncCompletions.get();
-                } catch (InterruptedException | ExecutionException e1) {
-                    e1.printStackTrace();
+        if (!event.isHandled()) {
+            // If the event isn't handled, we can assume that we have no completions, and so we'll ask the server
+
+            Waitable<java.util.List<String>> syncCompletions = new Waitable<java.util.List<String>>() {
+                @Override
+                protected java.util.List<String> evaluate() {
+                    return minecraftServer.tabCompleteCommand(player, buffer, blockpos, isCommand);
                 }
+            };
+            server.getServer().processQueue.add(syncCompletions);
+            try {
+                completions = syncCompletions.get();
+            } catch (InterruptedException | ExecutionException e1) {
+                e1.printStackTrace();
             }
 
             this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete(completions.toArray(new String[completions.size()])));
-            return;
+        } else if (!event.isCancelled()) {
+            this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete(completions.toArray(new String[completions.size()])));
         }
-        minecraftServer.postToMainThread(() -> {
-            java.util.List<String> syncCompletions = this.minecraftServer.tabCompleteCommand(this.player, buffer, blockpos, isCommand);
-            this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete(syncCompletions.toArray(new String[syncCompletions.size()])));
-        });
         // Paper end
     }
 
@@ -2377,7 +2378,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 }
 
                 if (itemstack.getItem() == Items.WRITABLE_BOOK && itemstack.getItem() == itemstack1.getItem()) {
-                    itemstack1 = new ItemStack(Items.WRITABLE_BOOK); // CraftBukkit
                     itemstack1.a("pages", (NBTBase) itemstack.getTag().getList("pages", 8));
                     CraftEventFactory.handleEditBookEvent(player, itemstack1); // CraftBukkit
                 }
