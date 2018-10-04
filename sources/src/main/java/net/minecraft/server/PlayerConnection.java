@@ -2,7 +2,6 @@ package net.minecraft.server;
 
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
-import com.google.common.util.concurrent.Futures;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -15,14 +14,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-// CraftBukkit start
-import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import org.bukkit.Location;
@@ -63,7 +59,6 @@ import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.util.NumberConversions;
-import com.destroystokyo.paper.event.player.IllegalPacketEvent; // Paper
 import com.destroystokyo.paper.event.player.PlayerJumpEvent; // Paper
 import co.aikar.timings.MinecraftTimings; // Paper
 // CraftBukkit end
@@ -386,12 +381,15 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                     flag1 = true;
                     PlayerConnection.LOGGER.warn(entity.getName() + " (vehicle of " + this.player.getName() + ") moved wrongly!"); // Paper - More informative
                 }
+                Location curPos = this.getPlayer().getLocation(); // Spigot
 
                 entity.setLocation(d3, d4, d5, f, f1);
+                player.setLocation(d3, d4, d5, f, f1); // CraftBukkit
                 boolean flag2 = worldserver.getCubes(entity, entity.getBoundingBox().shrink(0.0625D));
 
                 if (flag && (flag1 || !flag2)) {
                     entity.setLocation(d0, d1, d2, f, f1);
+                    player.setLocation(d0, d1, d2, f, f1); // CraftBukkit
                     this.networkManager.sendPacket(new PacketPlayOutVehicleMove(entity));
                     return;
                 }
@@ -401,7 +399,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 // Spigot Start
                 if ( !hasMoved )
                 {
-                    Location curPos = player.getLocation();
                     lastPosX = curPos.getX();
                     lastPosY = curPos.getY();
                     lastPosZ = curPos.getZ();
@@ -487,6 +484,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             }
 
             this.teleportPos = null;
+            this.minecraftServer.getPlayerList().d(this.player); // CraftBukkit
         }
 
     }
@@ -525,7 +523,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         // PlayerConnectionUtils.ensureMainThread(packetplayintabcomplete, this, this.player.getWorldServer()); // Paper - run this async
         // CraftBukkit start
         if (tabSpamLimiter.addAndGet(com.destroystokyo.paper.PaperConfig.tabSpamIncrement) > com.destroystokyo.paper.PaperConfig.tabSpamLimit && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) { // Paper start - split and make configurable
-            this.disconnect(new ChatMessage("disconnect.spam", new Object[0]));
             minecraftServer.postToMainThread(() -> this.disconnect(new ChatMessage("disconnect.spam", new Object[0]))); // Paper
             return;
         }
@@ -566,7 +563,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             minecraftServer.postToMainThread(() -> sendSuggestions(packetplayintabcomplete, stringreader, otherSuggestions));
             return;
         } else if (!completions.isEmpty()) {
-            com.mojang.brigadier.suggestion.SuggestionsBuilder suggestionsBuilder = new com.mojang.brigadier.suggestion.SuggestionsBuilder(packetplayintabcomplete.c(), packetplayintabcomplete.b());
+            com.mojang.brigadier.suggestion.SuggestionsBuilder suggestionsBuilder = new com.mojang.brigadier.suggestion.SuggestionsBuilder(packetplayintabcomplete.c(), stringreader.getTotalLength());
             completions.forEach(suggestionsBuilder::suggest);
 
             player.playerConnection.sendPacket(new PacketPlayOutTabComplete(packetplayintabcomplete.b(), suggestionsBuilder.build()));
@@ -580,7 +577,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         java.util.concurrent.CompletableFuture<Suggestions> completionSuggestions = this.minecraftServer.getCommandDispatcher().a().getCompletionSuggestions(parseresults);
         completionSuggestions.thenAccept((Suggestions suggestions) -> {
             if (otherSuggestions != null && !otherSuggestions.isEmpty()) {
-                com.mojang.brigadier.suggestion.SuggestionsBuilder builder = new com.mojang.brigadier.suggestion.SuggestionsBuilder(packetplayintabcomplete.c(), packetplayintabcomplete.b());
+                com.mojang.brigadier.suggestion.SuggestionsBuilder builder = new com.mojang.brigadier.suggestion.SuggestionsBuilder(packetplayintabcomplete.c(), reader.getTotalLength());
                 otherSuggestions.forEach(builder::suggest);
                 suggestions.getList().addAll(builder.build().getList());
             }
@@ -1172,14 +1169,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.lastPosX = this.teleportPos.x;
         this.lastPosY = this.teleportPos.y;
         this.lastPosZ = this.teleportPos.z;
-        this.lastYaw = f2;
-        this.lastPitch = f3;
+        this.lastYaw = f;
+        this.lastPitch = f1;
         // CraftBukkit end
 
         this.A = this.e;
         this.player.setLocation(d0, d1, d2, f, f1);
         this.player.playerConnection.sendPacket(new PacketPlayOutPosition(d0 - d3, d1 - d4, d2 - d5, f - f2, f1 - f3, set, this.teleportAwait));
-        this.minecraftServer.getPlayerList().d(this.player); // CraftBukkit
     }
 
     public void a(PacketPlayInBlockDig packetplayinblockdig) {

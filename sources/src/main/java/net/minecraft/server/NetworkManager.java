@@ -1,6 +1,5 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock;
 
@@ -20,8 +19,6 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import java.net.SocketAddress;
 import java.util.Queue;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import org.apache.commons.lang3.Validate;
@@ -50,7 +47,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         return new DefaultEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Local Client IO #%d").setDaemon(true).build());
     });
     private final EnumProtocolDirection h;
-    private final Queue<NetworkManager.QueuedPacket> i = new io.akarin.api.internal.utils.CheckedConcurrentLinkedQueue<>(); private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.i; } // Paper - OBFHELPER
+    private final Queue<NetworkManager.QueuedPacket> i = new io.akarin.api.internal.utils.CheckedConcurrentLinkedQueue<>(); private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.i; } // Paper - OBFHELPER // Akarin
     private final ReentrantReadWriteUpdateLock j = new ReentrantReadWriteUpdateLock(); // Akarin - use update lock
     public Channel channel;
     // Spigot Start // PAIL

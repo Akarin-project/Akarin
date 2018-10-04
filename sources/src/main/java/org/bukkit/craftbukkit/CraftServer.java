@@ -37,6 +37,7 @@ import org.bukkit.Server;
 import org.bukkit.UnsafeValues;
 import org.bukkit.Warning.WarningState;
 import org.bukkit.World;
+import org.bukkit.StructureType;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.boss.BarColor;
@@ -59,6 +60,7 @@ import org.bukkit.craftbukkit.generator.CraftChunkData;
 import org.bukkit.craftbukkit.help.SimpleHelpMap;
 import org.bukkit.craftbukkit.inventory.CraftFurnaceRecipe;
 import org.bukkit.craftbukkit.inventory.CraftInventoryCustom;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
 import org.bukkit.craftbukkit.inventory.CraftRecipe;
@@ -97,6 +99,7 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.loot.LootTable;
+import org.bukkit.map.MapView;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.Plugin;
@@ -152,11 +155,13 @@ import org.bukkit.craftbukkit.inventory.util.CraftInventoryCreator;
 import org.bukkit.craftbukkit.tag.CraftBlockTag;
 import org.bukkit.craftbukkit.tag.CraftItemTag;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.event.server.TabCompleteEvent;
 import net.md_5.bungee.api.chat.BaseComponent;
 
 import javax.annotation.Nullable; // Paper
 import javax.annotation.Nonnull; // Paper
+
 
 /**
  * Akarin Changes Note
@@ -850,6 +855,7 @@ public final class CraftServer implements Server {
         loadPlugins();
         enablePlugins(PluginLoadOrder.STARTUP);
         enablePlugins(PluginLoadOrder.POSTWORLD);
+        getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.RELOAD));
     }
 
     @Override
@@ -966,7 +972,7 @@ public final class CraftServer implements Server {
         boolean used = false;
         do {
             for (WorldServer server : console.getWorlds()) {
-                used = server.dimension.getDimensionID() == dimension;
+                used = server.dimension.getDimensionID() + 1 == dimension; // Paper - getDimensionID returns the dimension - 1, so we have to add 1
                 if (used) {
                     dimension++;
                     break;
@@ -980,7 +986,7 @@ public final class CraftServer implements Server {
         WorldData worlddata = sdm.getWorldData();
         WorldSettings worldSettings = null;
         if (worlddata == null) {
-            worldSettings = new WorldSettings(creator.seed(), EnumGamemode.getById(getDefaultGameMode().getValue()), generateStructures, hardcore, type);
+            worldSettings = new WorldSettings(com.destroystokyo.paper.PaperConfig.seedOverride.getOrDefault(name, creator.seed()), EnumGamemode.getById(getDefaultGameMode().getValue()), generateStructures, hardcore, type); // Paper
             JsonElement parsedSettings = new JsonParser().parse(creator.generatorSettings());
             if (parsedSettings.isJsonObject()) {
                 worldSettings.setGeneratorSettings(parsedSettings.getAsJsonObject());
@@ -1012,8 +1018,12 @@ public final class CraftServer implements Server {
         if (internal.getWorld().getKeepSpawnInMemory()) {
             short short1 = internal.paperConfig.keepLoadedRange; // Paper
             long i = System.currentTimeMillis();
-            for (int j = -short1; j <= short1; j += 16) {
-                for (int k = -short1; k <= short1; k += 16) {
+            // Paper start
+            for (ChunkCoordIntPair coords : internal.getChunkProviderServer().getSpiralOutChunks(internal.getSpawn(), short1 >> 4)) {{
+                    int j = coords.x;
+                    int k = coords.z;
+                // Paper end
+
                     long l = System.currentTimeMillis();
 
                     if (l < i) {
@@ -1029,7 +1039,7 @@ public final class CraftServer implements Server {
                     }
 
                     BlockPosition chunkcoordinates = internal.getSpawn();
-                    internal.getChunkProviderServer().getChunkAt(chunkcoordinates.getX() + j >> 4, chunkcoordinates.getZ() + k >> 4, true, true);
+                    internal.getChunkProviderServer().getChunkAt(chunkcoordinates.getX() + j >> 4, chunkcoordinates.getZ() + k >> 4, true, true, c -> {}); // Paper
                 }
             }
         }
@@ -1354,6 +1364,30 @@ public final class CraftServer implements Server {
         net.minecraft.server.ItemStack stack = new net.minecraft.server.ItemStack(Items.MAP, 1);
         WorldMap worldmap = ItemWorldMap.getSavedMap(stack, ((CraftWorld) world).getHandle());
         return worldmap.mapView;
+    }
+
+    @Override
+    public ItemStack createExplorerMap(World world, Location location, StructureType structureType) {
+        return this.createExplorerMap(world, location, structureType, 100, true);
+    }
+
+    @Override
+    public ItemStack createExplorerMap(World world, Location location, StructureType structureType, int radius, boolean findUnexplored) {
+        Validate.notNull(world, "World cannot be null");
+        Validate.notNull(structureType, "StructureType cannot be null");
+        Validate.notNull(structureType.getMapIcon(), "Cannot create explorer maps for StructureType " + structureType.getName());
+
+        WorldServer worldServer = ((CraftWorld) world).getHandle();
+        Location structureLocation = world.locateNearestStructure(location, structureType, radius, findUnexplored);
+        BlockPosition structurePosition = new BlockPosition(structureLocation.getBlockX(), structureLocation.getBlockY(), structureLocation.getBlockZ());
+
+        // Create map with trackPlayer = true, unlimitedTracking = true
+        net.minecraft.server.ItemStack stack = ItemWorldMap.a(worldServer, structurePosition.getX(), structurePosition.getZ(), MapView.Scale.NORMAL.getValue(), true, true); //PAIL rename setFilledMapView
+        ItemWorldMap.a(worldServer, stack); // PAIL rename sepiaMapFilter
+        // "+" map ID taken from EntityVillager
+        ItemWorldMap.getSavedMap(stack, worldServer).a(stack, structurePosition, "+", MapIcon.Type.a(structureType.getMapIcon().getValue())); // PAIL rename decorateMap
+
+        return CraftItemStack.asBukkitCopy(stack);
     }
 
     @Override

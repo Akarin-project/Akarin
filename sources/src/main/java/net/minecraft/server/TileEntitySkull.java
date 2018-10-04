@@ -119,7 +119,6 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
 
             if (!UtilColor.b(s)) {
                 this.setGameProfile(new GameProfile((UUID) null, s));
-                this.f();
             }
         }
 

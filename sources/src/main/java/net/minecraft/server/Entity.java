@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -214,7 +215,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         this.random = world == null ? SHARED_RANDOM : ((IMixinWorldServer) world).rand(); // Paper // Akarin
         this.fireTicks = -this.getMaxFireTicks();
         this.justCreated = true;
-        this.uniqueID = MathHelper.a(this.random);
+        this.uniqueID = MathHelper.a(java.util.concurrent.ThreadLocalRandom.current()); // Paper
         this.au = this.uniqueID.toString();
         this.aJ = Sets.newHashSet();
         this.aL = new double[] { 0.0D, 0.0D, 0.0D};
@@ -347,11 +348,11 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         this.locX = d0;
         this.locY = d1;
         this.locZ = d2;
-        if (valid) world.entityJoinedWorld(this, false); // Paper - ensure Entity is moved to its proper chunk
         float f = this.width / 2.0F;
         float f1 = this.length;
 
         this.a(new AxisAlignedBB(d0 - (double) f, d1, d2 - (double) f, d0 + (double) f, d1 + (double) f1, d2 + (double) f));
+        if (valid) world.entityJoinedWorld(this, false); // CraftBukkit
     }
 
     public void tick() {
@@ -942,7 +943,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         this.locX = (axisalignedbb.a + axisalignedbb.d) / 2.0D;
         this.locY = axisalignedbb.b;
         this.locZ = (axisalignedbb.c + axisalignedbb.f) / 2.0D;
-        if (valid) world.entityJoinedWorld(this, false); // Paper - ensure Entity is moved to its proper chunk
+        if (valid) world.entityJoinedWorld(this, false); // CraftBukkit
     }
 
     protected SoundEffect ad() {
@@ -1370,7 +1371,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             this.lastYaw -= 360.0F;
         }
 
-        world.getChunkAt((int) Math.floor(this.locX) >> 4, (int) Math.floor(this.locZ) >> 4); // Paper - ensure chunk is always loaded
+        world.getChunkAt((int) Math.floor(this.locX) >> 4, (int) Math.floor(this.locZ) >> 4); // CraftBukkit
         this.setPosition(this.locX, this.locY, this.locZ);
         this.setYawPitch(f, f1);
     }
@@ -1543,6 +1544,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         return false;
     }
 
+    public void runKillTrigger(Entity entity, int kills, DamageSource damageSource) { this.a(entity, kills, damageSource); } // Paper - OBFHELPER
     public void a(Entity entity, int i, DamageSource damagesource) {
         if (entity instanceof EntityPlayer) {
             CriterionTriggers.c.a((EntityPlayer) entity, this, damagesource);
@@ -1587,7 +1589,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             nbttagcompound.setShort("Fire", (short) this.fireTicks);
             nbttagcompound.setShort("Air", (short) this.getAirTicks());
             nbttagcompound.setBoolean("OnGround", this.onGround);
-            nbttagcompound.setInt("Dimension", this.dimension.getDimensionID());
+            //nbttagcompound.setInt("Dimension", this.dimension.getDimensionID()); // Paper - always controlled by world
             nbttagcompound.setBoolean("Invulnerable", this.invulnerable);
             nbttagcompound.setInt("PortalCooldown", this.portalCooldown);
             nbttagcompound.a("UUID", this.getUniqueID());
@@ -1663,6 +1665,12 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             if (spawnedViaMobSpawner) {
                 nbttagcompound.setBoolean("Paper.FromMobSpawner", true);
             }
+            // Paper start - MC-2025 fix - Save entity AABB and load it, floating point issues recalculating AABB can result in wobble
+            AxisAlignedBB boundingBox = this.getBoundingBox();
+            nbttagcompound.set("Paper.AAAB", this.createList(
+                boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(),
+                boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ()
+            ));
             // Paper end
             return nbttagcompound;
         } catch (Throwable throwable) {
@@ -1718,7 +1726,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             this.setAirTicks(nbttagcompound.getShort("Air"));
             this.onGround = nbttagcompound.getBoolean("OnGround");
             if (nbttagcompound.hasKey("Dimension")) {
-                this.dimension = DimensionManager.a(nbttagcompound.getInt("Dimension"));
+                //this.dimension = DimensionManager.a(nbttagcompound.getInt("Dimension")); // Paper - always controlled by world
             }
 
             this.invulnerable = nbttagcompound.getBoolean("Invulnerable");
@@ -1731,7 +1739,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             this.setPosition(this.locX, this.locY, this.locZ);
             this.setYawPitch(this.yaw, this.pitch);
             if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-                this.setCustomName(IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("CustomName")));
+                this.setCustomName(MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound)); // Paper - Catch ParseException
             }
 
             this.setCustomNameVisible(nbttagcompound.getBoolean("CustomNameVisible"));
@@ -1752,6 +1760,16 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             if (this.aD()) {
                 this.setPosition(this.locX, this.locY, this.locZ);
             }
+            // Paper start - MC-2025 fix - Save entity AABB and load it, floating point issues recalculating AABB can result in wobble
+            // Placement is important, always after the setPosition call above
+            if (nbttagcompound.hasKey("Paper.AABB")) {
+                NBTTagList savedBB = nbttagcompound.getList("Paper.AABB", 6);
+                this.setBoundingBox(new AxisAlignedBB(
+                    savedBB.getDoubleAt(0), savedBB.getDoubleAt(1), savedBB.getDoubleAt(2),
+                    savedBB.getDoubleAt(3), savedBB.getDoubleAt(4), savedBB.getDoubleAt(5)
+                ));
+            }
+            // Paper end
 
             // CraftBukkit start
             if (this instanceof EntityLiving) {
@@ -2066,7 +2084,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             }
 
             this.vehicle = entity;
-            this.vehicle.o(this);
+            if (!this.vehicle.o(this)) this.vehicle = null; // CraftBukkit
             return true;
         }
     }
@@ -2092,7 +2110,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
     }
 
-    protected void o(Entity entity) {
+    protected boolean o(Entity entity) { // CraftBukkit
         if (entity == this) throw new IllegalArgumentException("Entities cannot become a passenger of themselves"); // Paper - issue 572
         if (entity.getVehicle() != this) {
             throw new IllegalStateException("Use x.startRiding(y), not y.addPassenger(x)");
@@ -2111,7 +2129,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                 CraftEntity craftn = (CraftEntity) entity.getBukkitEntity().getVehicle();
                 Entity n = craftn == null ? null : craftn.getHandle();
                 if (event.isCancelled() || n != orig) {
-                    return;
+                    return false;
                 }
             }
             // CraftBukkit end
@@ -2119,7 +2137,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             org.spigotmc.event.entity.EntityMountEvent event = new org.spigotmc.event.entity.EntityMountEvent(entity.getBukkitEntity(), this.getBukkitEntity());
             Bukkit.getPluginManager().callEvent(event);
             if (event.isCancelled()) {
-                return;
+                return false;
             }
             // Spigot end
             if (!this.world.isClientSide && entity instanceof EntityHuman && !(this.bO() instanceof EntityHuman)) {
@@ -2129,6 +2147,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             }
 
         }
+        return true; // CraftBukkit
     }
 
     protected boolean removePassenger(Entity entity) { // CraftBukkit
@@ -2395,6 +2414,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         this.fallDistance = 0.0F;
     }
 
+    public void onKill(EntityLiving entityLiving) { this.b(entityLiving); } // Paper - OBFHELPER
     public void b(EntityLiving entityliving) {}
 
     protected boolean i(double d0, double d1, double d2) {
@@ -2820,6 +2840,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         return this.boundingBox;
     }
 
+    public void setBoundingBox(AxisAlignedBB axisAlignedBB) { this.a(axisAlignedBB); } // Paper - OBFHELPER
     public void a(AxisAlignedBB axisalignedbb) {
         // CraftBukkit start - block invalid bounding boxes
         double a = axisalignedbb.a,
@@ -3064,6 +3085,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         return EnumPistonReaction.NORMAL;
     }
 
+    public SoundCategory getDeathSoundCategory() { return bV();} // Paper - OBFHELPER
     public SoundCategory bV() {
         return SoundCategory.NEUTRAL;
     }

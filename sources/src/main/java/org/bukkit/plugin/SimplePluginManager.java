@@ -40,10 +40,6 @@ import com.google.common.collect.ImmutableSet;
 import io.akarin.api.internal.Akari;
 
 /**
- * Akarin Changes Note
- * 1) Lock for event (safety issue)
- */
-/**
  * Handles all plugin management from the Server
  */
 public final class SimplePluginManager implements PluginManager {
@@ -391,7 +387,7 @@ public final class SimplePluginManager implements PluginManager {
      * @param plugin Plugin to check
      * @return true if the plugin is enabled, otherwise false
      */
-    public boolean isPluginEnabled(Plugin plugin) {
+    public synchronized boolean isPluginEnabled(Plugin plugin) { // Paper - synchronize
         if ((plugin != null) && (plugins.contains(plugin))) {
             return plugin.isEnabled();
         } else {
@@ -399,7 +395,7 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
-    public void enablePlugin(final Plugin plugin) {
+    public synchronized void enablePlugin(final Plugin plugin) { // Paper - synchronize
         if (!plugin.isEnabled()) {
             List<Command> pluginCommands = PluginCommandYamlParser.parse(plugin);
 
@@ -436,7 +432,7 @@ public final class SimplePluginManager implements PluginManager {
         disablePlugin(plugin, false);
     }
 
-    public void disablePlugin(final Plugin plugin, boolean closeClassloader) {
+    public synchronized void disablePlugin(final Plugin plugin, boolean closeClassloader) { // Paper - synchronize
         // Paper end - close Classloader on disable
         if (plugin.isEnabled()) {
             try {

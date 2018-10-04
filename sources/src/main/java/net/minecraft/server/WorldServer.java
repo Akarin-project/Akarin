@@ -273,13 +273,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     public void doTick(BooleanSupplier booleansupplier) {
         this.P = true;
         super.doTick(booleansupplier);
-        // Akarin start - goes to slack service
-        /*
+        /* // Akarin start - goes to slack service
         if (this.getWorldData().isHardcore() && this.getDifficulty() != EnumDifficulty.HARD) {
             this.getWorldData().setDifficulty(EnumDifficulty.HARD);
         }
-        */
-        // Akarin end
+        */ // Akarin end
 
         this.chunkProvider.getChunkGenerator().getWorldChunkManager().Y_();
         if (this.everyoneDeeplySleeping()) {
@@ -529,7 +527,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                             this.addEntity(entityhorseskeleton, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING); // CraftBukkit
                         }
 
-                        this.strikeLightning(new EntityLightning(this, (double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D, flag2));
+                        this.strikeLightning(new EntityLightning(this, (double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D, flag2), org.bukkit.event.weather.LightningStrikeEvent.Cause.WEATHER); // CraftBukkit
                     }
                 }
 
@@ -741,7 +739,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             gen = new org.bukkit.craftbukkit.generator.NormalChunkGenerator(this, this.getSeed());
         }
 
-        return new ChunkProviderServer(this, ichunkloader, gen, this.server);
+        return com.destroystokyo.paper.PaperConfig.asyncChunks ? new PaperAsyncChunkProvider(this, ichunkloader, gen, this.server) : new ChunkProviderServer(this, ichunkloader, gen, this.server); // Paper - async chunks
         // CraftBukkit end
     }
 
@@ -987,8 +985,12 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     private boolean j(Entity entity) {
         if (entity.dead) {
-            WorldServer.a.warn("Tried to add entity {} but it was marked as removed already: " + entity); // CraftBukkit // Paper
-            if (DEBUG_ENTITIES) getAddToWorldStackTrace(entity).printStackTrace();
+            // Paper start
+            if (DEBUG_ENTITIES) {
+                new Throwable("Tried to add entity " + entity + " but it was marked as removed already").printStackTrace(); // CraftBukkit
+                getAddToWorldStackTrace(entity).printStackTrace();
+            }
+            // Paper end
             return false;
         } else {
             UUID uuid = entity.getUniqueID();
@@ -1081,9 +1083,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     }
 
+    // CraftBukkit start
     public boolean strikeLightning(Entity entity) {
-        // CraftBukkit start
-        LightningStrikeEvent lightning = new LightningStrikeEvent(this.getWorld(), (org.bukkit.entity.LightningStrike) entity.getBukkitEntity());
+        return this.strikeLightning(entity, LightningStrikeEvent.Cause.UNKNOWN);
+    }
+
+    public boolean strikeLightning(Entity entity, LightningStrikeEvent.Cause cause) {
+        LightningStrikeEvent lightning = new LightningStrikeEvent(this.getWorld(), (org.bukkit.entity.LightningStrike) entity.getBukkitEntity(), cause);
         this.getServer().getPluginManager().callEvent(lightning);
 
         if (lightning.isCancelled()) {

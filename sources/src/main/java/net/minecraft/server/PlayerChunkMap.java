@@ -25,9 +25,8 @@ import java.util.LinkedList;
 
 /**
  * Akarin Changes Note
- * 1) Make whole class thread-safe (safety issue)
+ * 1) Add synchronizations (safety issue)
  */
-@ThreadSafe // Akarin - idk why we need do so!!
 public class PlayerChunkMap {
 
     private static final Predicate<EntityPlayer> a = (entityplayer) -> {
@@ -346,8 +345,7 @@ public class PlayerChunkMap {
         if (d2 >= 64.0D) {
             int k = (int) entityplayer.d >> 4;
             int l = (int) entityplayer.e >> 4;
-            final int viewDistance = entityplayer.getViewDistance(); // Paper - Player view distance API
-            int i1 = Math.max(getViewDistance(), viewDistance); // Paper - Player view distance API
+            int i1 = entityplayer.getViewDistance(); // Paper - Player view distance API
 
             int j1 = i - k;
             int k1 = j - l;
@@ -357,7 +355,7 @@ public class PlayerChunkMap {
             if (j1 != 0 || k1 != 0) {
                 for (int l1 = i - i1; l1 <= i + i1; ++l1) {
                     for (int i2 = j - i1; i2 <= j + i1; ++i2) {
-                        if (!this.a(l1, i2, k, l, viewDistance)) { // Paper - Player view distance API
+                        if (!this.a(l1, i2, k, l, i1)) {
                             // this.c(l1, i2).a(entityplayer);
                             chunksToLoad.add(new ChunkCoordIntPair(l1, i2)); // CraftBukkit
                         }
@@ -368,7 +366,13 @@ public class PlayerChunkMap {
                             if (playerchunk != null) {
                                 playerchunk.b(entityplayer);
                             }
+                        } else { // Paper start
+                            PlayerChunk playerchunk = this.getChunk(l1 - j1, i2 - k1);
+                            if (playerchunk != null) {
+                                playerchunk.checkHighPriority(entityplayer); // Paper
+                            }
                         }
+                        // Paper end
                     }
                 }
 
@@ -380,7 +384,11 @@ public class PlayerChunkMap {
                 Collections.sort(chunksToLoad, new ChunkCoordComparator(entityplayer));
                 synchronized (((IMixinWorldServer) world).trackLock()) { // Akarin
                 for (ChunkCoordIntPair pair : chunksToLoad) {
-                    this.c(pair.x, pair.z).a(entityplayer);
+                    // Paper start
+                    PlayerChunk c = this.c(pair.x, pair.z);
+                    c.checkHighPriority(entityplayer);
+                    c.a(entityplayer);
+                    // Paper end
                 }
                 } // Akarin
                 // CraftBukkit end
@@ -571,6 +579,9 @@ public class PlayerChunkMap {
             // Order matters
             this.setViewDistance(player, toSet);
             player.setViewDistance(playerViewDistance);
+            
+            //Force update entity trackers
+            this.getWorld().getTracker().updatePlayer(player);
         }
     }
     // Paper end

@@ -15,9 +15,8 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Akarin Changes Note
- * 1) Made collections and entry access thread-safe (safety issue)
+ * 1) Made collections and entry accesses thread-safe (safety issue)
  */
-@ThreadSafe // Akarin
 public class EntityTracker {
 
     private static final Logger a = LogManager.getLogger();
@@ -218,6 +217,7 @@ public class EntityTracker {
 
     }
 
+    public void updatePlayer(EntityPlayer entityplayer) { a(entityplayer); } // Paper - OBFHELPER
     public void a(EntityPlayer entityplayer) {
         Iterator iterator = this.c.iterator();
         synchronized (((IMixinWorldServer) world).trackLock()) { // Akarin

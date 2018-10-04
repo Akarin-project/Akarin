@@ -247,7 +247,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void setPlayerListHeaderFooter(BaseComponent[] header, BaseComponent[] footer) {
-        if (header != null) {
+         if (header != null) {
              String headerJson = net.md_5.bungee.chat.ComponentSerializer.toString(footer);
              playerListHeader = net.minecraft.server.ChatBaseComponent.ChatSerializer.jsonToComponent(headerJson);
          } else {
@@ -1722,7 +1722,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void sendHealthUpdate() {
-        getHandle().playerConnection.sendPacket(new PacketPlayOutUpdateHealth(getScaledHealth(), getHandle().getFoodData().getFoodLevel(), getHandle().getFoodData().getSaturationLevel()));
+        // Paper start - cancellable death event
+        //getHandle().playerConnection.sendPacket(new PacketPlayOutUpdateHealth(getScaledHealth(), getHandle().getFoodData().getFoodLevel(), getHandle().getFoodData().getSaturationLevel()));
+        PacketPlayOutUpdateHealth packet = new PacketPlayOutUpdateHealth(getScaledHealth(), getHandle().getFoodData().getFoodLevel(), getHandle().getFoodData().getSaturationLevel());
+        if (this.getHandle().queueHealthUpdatePacket) {
+            this.getHandle().queuedHealthUpdatePacket = packet;
+        } else {
+            this.getHandle().playerConnection.sendPacket(packet);
+        }
+        // Paper end
     }
 
     public void injectScaledMaxHealth(Collection<AttributeInstance> collection, boolean force) {
@@ -1923,6 +1931,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         this.resourcePackStatus = status;
     }
 
+    //Paper start
+    public float getCooldownPeriod() {
+        return getHandle().getCooldownPeriod();
+    }
+
+    public float getCooledAttackStrength(float adjustTicks) {
+        return getHandle().getCooledAttackStrength(adjustTicks);
+    }
+
+    public void resetCooldown() {
+        getHandle().resetCooldown();
+    }
+    //Paper end
+
     // Spigot start
     private final Player.Spigot spigot = new Player.Spigot()
     {
@@ -2002,11 +2024,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             getHandle().playerConnection.sendPacket(packet);
         }
 
+        // Paper start
         @Override
         public int getPing()
         {
             return getHandle().ping;
         }
+        // Paper end
     };
 
     public Player.Spigot spigot()
