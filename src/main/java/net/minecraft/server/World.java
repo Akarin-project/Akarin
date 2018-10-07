@@ -829,6 +829,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
     }
 
+    public boolean isDayTime() { return L(); } // Paper - OBFHELPER
     public boolean L() {
         return this.G < 4;
     }

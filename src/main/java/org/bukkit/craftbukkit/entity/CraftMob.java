@@ -68,4 +68,10 @@ public abstract class CraftMob extends CraftLivingEntity implements Mob {
     public long getSeed() {
         return getHandle().lootTableSeed;
     }
+
+    // Paper start
+    public boolean isInDaylight() {
+        return getHandle().isInDaylight();
+    }
+    // Paper end
 }

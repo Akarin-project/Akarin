@@ -538,6 +538,12 @@ public class CraftWorld implements World {
         }
     }
 
+    // Paper start
+    public boolean isDayTime() {
+        return getHandle().isDayTime();
+    }
+    // Paper end
+
     public boolean createExplosion(double x, double y, double z, float power) {
         return createExplosion(x, y, z, power, false, true);
     }
