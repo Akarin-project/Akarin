@@ -35,9 +35,9 @@ public class LoginListener implements PacketLoginInListener, ITickable {
     private final byte[] e = new byte[4];
     private final MinecraftServer server;
     public final NetworkManager networkManager;
-    private LoginListener.EnumProtocolState g;
+    private LoginListener.EnumProtocolState g; public final LoginListener.EnumProtocolState getLoginState() { return this.g; }; // Paper - OBFHELPER
     private int h;
-    private GameProfile i; private void setGameProfile(GameProfile profile) { i = profile; } private GameProfile getGameProfile() { return i; } // Paper - OBFHELPER
+    private GameProfile i; private void setGameProfile(GameProfile profile) { i = profile; } public final GameProfile getGameProfile() { return i; } // Paper - OBFHELPER
     private final String j;
     private SecretKey loginKey;
     private EntityPlayer l;
