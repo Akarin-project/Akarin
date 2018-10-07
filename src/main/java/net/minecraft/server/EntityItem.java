@@ -411,20 +411,22 @@ public class EntityItem extends Entity {
         this.getDataWatcher().markDirty(EntityItem.b); // CraftBukkit - SPIGOT-4591, must mark dirty
     }
 
-    @Nullable
-    public UUID k() {
+    @Nullable public UUID getOwner() { return k(); } // Paper - OBFHELPER
+    @Nullable public UUID k() { // Paper
         return this.g;
     }
 
+    public void setOwner(@Nullable UUID owner) { b(owner); } // Paper - OBFHELPER
     public void b(@Nullable UUID uuid) {
         this.g = uuid;
     }
 
-    @Nullable
-    public UUID l() {
+    @Nullable public UUID getThrower() { return l(); } // Paper - OBFHELPER
+    @Nullable public UUID l() { // Paper
         return this.f;
     }
 
+    public void setThrower(@Nullable UUID thrower) { c(thrower); } // Paper - OBFHELPER
     public void c(@Nullable UUID uuid) {
         this.f = uuid;
     }
