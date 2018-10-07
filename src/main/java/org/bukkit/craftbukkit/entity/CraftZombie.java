@@ -77,4 +77,34 @@ public class CraftZombie extends CraftMonster implements Zombie {
             getHandle().startDrownedConversion(time);
         }
     }
+
+    // Paper start
+    public boolean isDrowning() {
+        return getHandle().isDrowning();
+    }
+
+    public void startDrowning(int drownedConversionTime) {
+        getHandle().startDrownedConversion(drownedConversionTime);
+    }
+
+    public void stopDrowning() {
+        getHandle().stopDrowning();
+    }
+
+    public void setArmsRaised(boolean raised) {
+        getHandle().setArmsRaised(raised);
+    }
+
+    public boolean isArmsRaised() {
+        return getHandle().isArmsRaised();
+    }
+
+    public boolean shouldBurnInDay() {
+        return getHandle().shouldBurnInDay();
+    }
+
+    public void setShouldBurnInDay(boolean shouldBurnInDay) {
+        getHandle().setShouldBurnInDay(shouldBurnInDay);
+    }
+    // Paper end
 }
