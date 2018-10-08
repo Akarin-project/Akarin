@@ -140,6 +140,7 @@ public class PacketDataSerializer extends ByteBuf {
         return this.d(oenum.ordinal());
     }
 
+    public int readVarInt() { return this.g(); } // Paper - OBFHELPER
     public int g() {
         int i = 0;
         int j = 0;
@@ -180,6 +181,7 @@ public class PacketDataSerializer extends ByteBuf {
         return this;
     }
 
+    public UUID readUUID() { return this.i(); } // Paper - OBFHELPER
     public UUID i() {
         return new UUID(this.readLong(), this.readLong());
     }
@@ -298,6 +300,7 @@ public class PacketDataSerializer extends ByteBuf {
         }
     }
 
+    public String readUTF(int maxLength) { return this.e(maxLength); } // Paper - OBFHELPER
     public String e(int i) {
         int j = this.g();
 

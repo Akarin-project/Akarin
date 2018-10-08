@@ -10,6 +10,14 @@ public class PacketLoginOutCustomPayload implements Packet<PacketLoginOutListene
 
     public PacketLoginOutCustomPayload() {}
 
+    // Paper start
+    public PacketLoginOutCustomPayload(int id, MinecraftKey channel, PacketDataSerializer buf) {
+        this.a = id;
+        this.b = channel;
+        this.c = buf;
+    }
+    // Paper end
+
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
         this.a = packetdataserializer.g();
         this.b = packetdataserializer.l();

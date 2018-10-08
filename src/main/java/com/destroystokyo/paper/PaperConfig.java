@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -256,7 +257,7 @@ public class PaperConfig {
     }
 
     public static boolean isProxyOnlineMode() {
-        return Bukkit.getOnlineMode() || (SpigotConfig.bungee && bungeeOnlineMode);
+        return Bukkit.getOnlineMode() || (SpigotConfig.bungee && bungeeOnlineMode) || (velocitySupport && velocityOnlineMode);
     }
 
     public static int packetInSpamThreshold = 300;
@@ -432,6 +433,20 @@ public class PaperConfig {
             } else {
                 log("Async Chunks - Generation: Enabled (Single Thread) - Chunks will be generated much faster, without lag.");
             }
+        }
+    }
+
+    public static boolean velocitySupport;
+    public static boolean velocityOnlineMode;
+    public static byte[] velocitySecretKey;
+    private static void velocitySupport() {
+        velocitySupport = getBoolean("settings.velocity-support.enabled", false);
+        velocityOnlineMode = getBoolean("settings.velocity-support.online-mode", false);
+        String secret = getString("settings.velocity-support.secret", "");
+        if (velocitySupport && secret.isEmpty()) {
+            fatal("Velocity support is enabled, but no secret key was specified. A secret key is required!");
+        } else {
+            velocitySecretKey = secret.getBytes(StandardCharsets.UTF_8);
         }
     }
 }

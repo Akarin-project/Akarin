@@ -46,7 +46,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     private final Queue<NetworkManager.QueuedPacket> packetQueue = Queues.newConcurrentLinkedQueue();  private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.packetQueue; } // Paper - OBFHELPER
     private final ReentrantReadWriteLock j = new ReentrantReadWriteLock();
     public Channel channel;
-    public SocketAddress socketAddress;
+    public SocketAddress socketAddress; public void setSpoofedRemoteAddress(SocketAddress address) { this.socketAddress = address; } // Paper - OBFHELPER
     // Spigot Start
     public java.util.UUID spoofedUUID;
     public com.mojang.authlib.properties.Property[] spoofedProfile;
