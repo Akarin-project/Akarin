@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 
 public class EntityVindicator extends EntityIllagerAbstract {
 
-    private boolean b;
+    private boolean b; public boolean isJohnny() { return b; } public void setJohnny(boolean johnny) { b = johnny; } // Paper - OBFHELPER
     private static final Predicate<Entity> c = (entity) -> {
         return entity instanceof EntityLiving && ((EntityLiving) entity).df();
     };
