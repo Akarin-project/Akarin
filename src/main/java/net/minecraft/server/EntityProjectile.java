@@ -250,11 +250,21 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
     public EntityLiving getShooter() {
         if (this.shooter == null && this.shooterId != null && this.world instanceof WorldServer) {
             Entity entity = ((WorldServer) this.world).getEntity(this.shooterId);
+            // Paper start - MC-50319 - shooter might be in another world (arrows through portals)
+            if (entity == null) {
+                for (WorldServer world : world.getMinecraftServer().getWorlds()) {
+                    entity = world.getEntity(this.shooterId);
+                    if (entity != null) {
+                        break;
+                    }
+                }
+            }
+            // Paper end
 
             if (entity instanceof EntityLiving) {
                 this.shooter = (EntityLiving) entity;
             } else {
-                this.shooterId = null;
+                //this.shooterId = null; // Paper - don't unset shooterId
             }
         }
 
