@@ -27,7 +27,7 @@ public class WorldProviderTheEnd extends WorldProvider {
     }
 
     public float a(long i, float f) {
-        return 0.0F;
+        return 0.5F; // Paper - fix MC-93764
     }
 
     public boolean canRespawn() {
