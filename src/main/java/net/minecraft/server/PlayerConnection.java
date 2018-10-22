@@ -341,6 +341,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 }
                 speed *= 2f; // TODO: Get the speed of the vehicle instead of the player
 
+                // Paper start - Prevent moving into unloaded chunks
+                if (player.world.paperConfig.preventMovingIntoUnloadedChunks && !worldserver.isChunkLoaded((int) Math.floor(packetplayinvehiclemove.getX()) >> 4, (int) Math.floor(packetplayinvehiclemove.getZ()) >> 4, false)) {
+                    this.networkManager.sendPacket(new PacketPlayOutVehicleMove(entity));
+                    return;
+                }
+                // Paper end
+
                 if (d10 - d9 > Math.max(100.0D, Math.pow((double) (org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed), 2)) && (!this.minecraftServer.H() || !this.minecraftServer.G().equals(entity.getDisplayName().getString()))) {
                 // CraftBukkit end
                     PlayerConnection.LOGGER.warn("{} (vehicle of {}) moved too quickly! {},{},{}", entity.getDisplayName().getString(), this.player.getDisplayName().getString(), d6, d7, d8);
@@ -849,9 +856,9 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                         double d1 = this.player.locY;
                         double d2 = this.player.locZ;
                         double d3 = this.player.locY;
-                        double d4 = packetplayinflying.a(this.player.locX);
+                        double d4 = packetplayinflying.a(this.player.locX);double toX = d4; // Paper - OBFHELPER
                         double d5 = packetplayinflying.b(this.player.locY);
-                        double d6 = packetplayinflying.c(this.player.locZ);
+                        double d6 = packetplayinflying.c(this.player.locZ);double toZ = d6; // Paper - OBFHELPER
                         float f = packetplayinflying.a(this.player.yaw);
                         float f1 = packetplayinflying.b(this.player.pitch);
                         double d7 = d4 - this.l;
@@ -890,6 +897,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                             } else {
                                 speed = player.abilities.walkSpeed * 10f;
                             }
+
+                            // Paper start - Prevent moving into unloaded chunks
+                            if (player.world.paperConfig.preventMovingIntoUnloadedChunks && (this.player.locX != toX || this.player.locZ != toZ) && !worldserver.isChunkLoaded((int) Math.floor(toX) >> 4, (int) Math.floor(toZ) >> 4, false)) {
+                                this.internalTeleport(this.player.locX, this.player.locY, this.player.locZ, this.player.yaw, this.player.pitch, Collections.emptySet());
+                                return;
+                            }
+                            // Paper end
 
                             if (!this.player.H() && (!this.player.getWorldServer().getGameRules().getBoolean("disableElytraMovementCheck") || !this.player.dc())) {
                                 float f2 = this.player.dc() ? 300.0F : 100.0F;

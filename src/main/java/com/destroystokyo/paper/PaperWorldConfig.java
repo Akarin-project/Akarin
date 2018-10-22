@@ -574,4 +574,9 @@ public class PaperWorldConfig {
         replacementBlocks = getList("anti-xray.replacement-blocks", Arrays.asList("stone", "planks"));
         log("Anti-Xray: " + (antiXray ? "enabled" : "disabled") + " / Engine Mode: " + engineMode.getDescription() + " / Chunk Edge Mode: " + chunkEdgeMode.getDescription() + " / Up to " + ((maxChunkSectionIndex + 1) * 16) + " blocks / Update Radius: " + updateRadius);
     }
+
+    public boolean preventMovingIntoUnloadedChunks = false;
+    private void preventMovingIntoUnloadedChunks() {
+        preventMovingIntoUnloadedChunks = getBoolean("prevent-moving-into-unloaded-chunks", false);
+    }
 }
