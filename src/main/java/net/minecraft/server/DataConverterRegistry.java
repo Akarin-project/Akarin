@@ -21,7 +21,7 @@ public class DataConverterRegistry {
 
         a(datafixerbuilder);
         // CraftBukkit start
-        ForkJoinPool pool = new ForkJoinPool(Integer.getInteger("net.minecraft.server.DataConverterRegistry.bootstrapThreads", Math.min(Runtime.getRuntime().availableProcessors(), 2)));
+        ForkJoinPool pool = new ForkJoinPool(Integer.getInteger("net.minecraft.server.DataConverterRegistry.bootstrapThreads", Math.min(6, Math.max(Runtime.getRuntime().availableProcessors() - 2, 2)))); // Paper - use more reasonable default - 2 is hard minimum to avoid using unlimited threads
         DataFixer fixer = datafixerbuilder.build(pool);
         pool.shutdown();
         return fixer;
