@@ -11,6 +11,11 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
     private EntityHuman g;
     private final String[] h = new String[4];
 
+    // Paper start - Strip invalid unicode from signs on load
+    private static final boolean keepInvalidUnicode = Boolean.getBoolean("Paper.keepInvalidUnicode"); // Allow people to keep their bad unicode if they really want it
+    private boolean privateUnicodeRemoved = false;
+    // Paper end
+
     public TileEntitySign() {
         super(TileEntityTypes.SIGN);
     }
@@ -30,12 +35,23 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
         }
         // CraftBukkit end
 
+        // Paper start - Only remove private area unicode once
+        if (this.privateUnicodeRemoved) {
+            nbttagcompound.setBoolean("Paper.RemovedPrivateUnicode", true);
+        }
+        // Paper end
+
         return nbttagcompound;
     }
 
     public void load(NBTTagCompound nbttagcompound) {
         this.isEditable = false;
         super.load(nbttagcompound);
+
+        // Paper start - Keep track, only do it once per sign
+        this.privateUnicodeRemoved = nbttagcompound.getBoolean("Paper.RemovedPrivateUnicode");
+        boolean ranUnicodeRemoval = false;
+        // Paper end
 
         // CraftBukkit start - Add an option to convert signs correctly
         // This is done with a flag instead of all the time because
@@ -48,6 +64,19 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
             if (s != null && s.length() > 2048) {
                 s = "\"\"";
             }
+
+            // Paper start - Strip private use area unicode from signs
+            if (s != null && !keepInvalidUnicode && !this.privateUnicodeRemoved) {
+                StringBuilder builder = new StringBuilder();
+                for (char character : s.toCharArray()) {
+                    if (Character.UnicodeBlock.of(character) != Character.UnicodeBlock.PRIVATE_USE_AREA) {
+                        builder.append(character);
+                    }
+                }
+                s = builder.toString();
+                ranUnicodeRemoval = true;
+            }
+            // Paper end
 
             try {
                 //IChatBaseComponent ichatbasecomponent = IChatBaseComponent.ChatSerializer.a(s); // Paper - move down - the old format might throw a json error
@@ -75,6 +104,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
             this.h[i] = null;
         }
 
+        if (ranUnicodeRemoval) this.privateUnicodeRemoved = true; // Paper - Flag to write NBT
     }
 
     public void a(int i, IChatBaseComponent ichatbasecomponent) {
