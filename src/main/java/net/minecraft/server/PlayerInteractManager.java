@@ -380,10 +380,11 @@ public class PlayerInteractManager {
                     ItemStack itemstack1 = this.player.getItemInMainHand();
                     boolean flag1 = this.player.hasBlock(iblockdata);
 
+                    ItemStack itemstack2 = flag && flag1 && event.isDropItems() && !itemstack1.isEmpty() ? itemstack1.cloneItemStack() : ItemStack.a; // Paper - MC-136865 - clone before use
                     itemstack1.a(this.world, iblockdata, blockposition, this.player);
                     // CraftBukkit start - Check if block should drop items
                     if (flag && flag1 && event.isDropItems()) {
-                        ItemStack itemstack2 = itemstack1.isEmpty() ? ItemStack.a : itemstack1.cloneItemStack();
+                        //ItemStack itemstack2 = itemstack1.isEmpty() ? ItemStack.a : itemstack1.cloneItemStack(); // Paper - MC-136865 - move up
 
                         iblockdata.getBlock().a(this.world, this.player, blockposition, iblockdata, tileentity, itemstack2);
                     }
