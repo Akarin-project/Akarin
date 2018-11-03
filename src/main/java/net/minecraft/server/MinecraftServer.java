@@ -1033,12 +1033,24 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
         MinecraftTimings.timeUpdateTimer.startTiming(); // Spigot
         // Send time updates to everyone, it will get the right time from the world the player is in.
-        if (this.ticks % 20 == 0) {
-            for (int i = 0; i < this.getPlayerList().players.size(); ++i) {
-                EntityPlayer entityplayer = (EntityPlayer) this.getPlayerList().players.get(i);
-                entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(entityplayer.world.getTime(), entityplayer.getPlayerTime(), entityplayer.world.getGameRules().getBoolean("doDaylightCycle"))); // Add support for per player time
+        // Paper start - optimize time updates
+        for (final WorldServer world : this.getWorlds()) {
+            final boolean doDaylight = world.getGameRules().getBoolean("doDaylightCycle");
+            final long dayTime = world.getDayTime();
+            long worldTime = world.getTime();
+            final PacketPlayOutUpdateTime worldPacket = new PacketPlayOutUpdateTime(worldTime, dayTime, doDaylight);
+            for (EntityHuman entityhuman : world.players) {
+                if (!(entityhuman instanceof EntityPlayer) || (ticks + entityhuman.getId()) % 20 != 0) {
+                    continue;
+                }
+                EntityPlayer entityplayer = (EntityPlayer) entityhuman;
+                long playerTime = entityplayer.getPlayerTime();
+                PacketPlayOutUpdateTime packet = (playerTime == dayTime) ? worldPacket :
+                    new PacketPlayOutUpdateTime(worldTime, playerTime, doDaylight);
+                entityplayer.playerConnection.sendPacket(packet); // Add support for per player time
             }
         }
+        // Paper end
         MinecraftTimings.timeUpdateTimer.stopTiming(); // Spigot
 
         // WorldServer worldserver; // CraftBukkit - dropped down
