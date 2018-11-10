@@ -236,6 +236,7 @@ public interface IBlockData extends IBlockDataHolder<IBlockData> {
         this.getBlock().a(this, world, blockposition, entity);
     }
 
+    default void dropNaturally(World world, BlockPosition blockPosition, int i) { a(world, blockPosition, i);} // Paper - OBFHELPER
     default void a(World world, BlockPosition blockposition, int i) {
         this.dropNaturally(world, blockposition, 1.0F, i);
     }

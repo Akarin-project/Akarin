@@ -106,7 +106,11 @@ public class BlockSponge extends Block {
                     } else if (iblockdata.getBlock() instanceof BlockFluids) {
                         // NOP
                     } else if (material == Material.WATER_PLANT || material == Material.REPLACEABLE_WATER_PLANT) {
-                        iblockdata.a(world, blockposition2, 0);
+                        // Paper start
+                        if (block.getHandle().getMaterial() == Material.AIR) {
+                            iblockdata.dropNaturally(world, blockposition2, 0);
+                        }
+                        // Paper end
                     }
                 }
                 world.setTypeAndData(blockposition2, block.getHandle(), block.getFlag());
@@ -117,3 +121,4 @@ public class BlockSponge extends Block {
         return i > 0;
     }
 }
+
