@@ -2729,8 +2729,13 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         for (int i = 0; i < this.players.size(); ++i) {
             EntityHuman entityhuman1 = (EntityHuman) this.players.get(i);
 
+            // Paper start
+            // move distance check up, if set, check distance^2 is less than XZlimit^2, continue
+            // 4th method param is XZlimit (at least at the time of commit)
+            double d6 = entityhuman1.d(d0, entityhuman1.locY, d2);
+            if (d3 < 0.0D || d6 < d3 * d3)
             if (!entityhuman1.abilities.isInvulnerable && entityhuman1.isAlive() && !entityhuman1.isSpectator() && (predicate == null || predicate.test(entityhuman1))) {
-                double d6 = entityhuman1.d(d0, entityhuman1.locY, d2);
+                // Paper end
                 double d7 = d3;
 
                 if (entityhuman1.isSneaking()) {
