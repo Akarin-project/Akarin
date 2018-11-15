@@ -2110,12 +2110,15 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
     }
 
-    public void stopRiding() {
+    // Paper start
+    public void stopRiding() { stopRiding(false); }
+    public void stopRiding(boolean suppressCancellation) {
+    // Paper end
         if (this.vehicle != null) {
             Entity entity = this.vehicle;
 
             this.vehicle = null;
-            if (!entity.removePassenger(this)) this.vehicle = entity; // CraftBukkit
+            if (!entity.removePassenger(this, suppressCancellation)) this.vehicle = entity; // CraftBukkit // Paper
         }
 
     }
@@ -2160,7 +2163,10 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         return true; // CraftBukkit
     }
 
-    protected boolean removePassenger(Entity entity) { // CraftBukkit
+    // Paper start
+    protected boolean removePassenger(Entity entity) { return removePassenger(entity, false);}
+    protected boolean removePassenger(Entity entity, boolean suppressCancellation) { // CraftBukkit
+        // Paper end
         if (entity.getVehicle() == this) {
             throw new IllegalStateException("Use x.stopRiding(y), not y.removePassenger(x)");
         } else {
@@ -2170,7 +2176,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             if (getBukkitEntity() instanceof Vehicle && entity.getBukkitEntity() instanceof LivingEntity) {
                 VehicleExitEvent event = new VehicleExitEvent(
                         (Vehicle) getBukkitEntity(),
-                        (LivingEntity) entity.getBukkitEntity()
+                        (LivingEntity) entity.getBukkitEntity(), !suppressCancellation // Paper
                 );
                 Bukkit.getPluginManager().callEvent(event);
                 CraftEntity craftn = (CraftEntity) entity.getBukkitEntity().getVehicle();
@@ -2181,7 +2187,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             }
             // CraftBukkit end
             // Spigot start
-            org.spigotmc.event.entity.EntityDismountEvent event = new org.spigotmc.event.entity.EntityDismountEvent(entity.getBukkitEntity(), this.getBukkitEntity());
+            org.spigotmc.event.entity.EntityDismountEvent event = new org.spigotmc.event.entity.EntityDismountEvent(entity.getBukkitEntity(), this.getBukkitEntity(), !suppressCancellation); // Paper
             Bukkit.getPluginManager().callEvent(event);
             if (event.isCancelled()) {
                 return false;

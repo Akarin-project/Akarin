@@ -2479,10 +2479,13 @@ public abstract class EntityLiving extends Entity {
         return ((Byte) this.datawatcher.get(EntityLiving.aw) & 4) != 0;
     }
 
-    public void stopRiding() {
+    // Paper start
+    public void stopRiding() { stopRiding(false); }
+    public void stopRiding(boolean suppressCancellation) {
+        // Paper end
         Entity entity = this.getVehicle();
 
-        super.stopRiding();
+        super.stopRiding(suppressCancellation); // Paper - suppress
         if (entity != null && entity != this.getVehicle() && !this.world.isClientSide) {
             this.A(entity);
         }

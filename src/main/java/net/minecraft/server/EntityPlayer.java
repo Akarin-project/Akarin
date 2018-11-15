@@ -778,10 +778,13 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         }
     }
 
-    public void stopRiding() {
+    // Paper start
+    public void stopRiding() { stopRiding(false); }
+    public void stopRiding(boolean suppressCancellation) {
+    // paper end
         Entity entity = this.getVehicle();
 
-        super.stopRiding();
+        super.stopRiding(suppressCancellation); // Paper
         Entity entity1 = this.getVehicle();
 
         if (entity1 != entity && this.playerConnection != null) {
