@@ -2187,6 +2187,10 @@ public final class CraftServer implements Server {
         return com.destroystokyo.paper.PaperConfig.suggestPlayersWhenNullTabCompletions;
     }
 
+    public String getPermissionMessage() {
+        return com.destroystokyo.paper.PaperConfig.noPermissionMessage;
+    }
+
     public com.destroystokyo.paper.profile.PlayerProfile createProfile(@Nonnull UUID uuid) {
         return createProfile(uuid, null);
     }
