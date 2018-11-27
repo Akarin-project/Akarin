@@ -860,7 +860,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 int i1 = MathHelper.floor(d1);
                 int j1 = MathHelper.floor(d2);
                 BlockPosition blockposition = new BlockPosition(l, i1, j1);
-                IBlockData iblockdata = this.getType(blockposition);
+                IBlockData iblockdata = this.getTypeIfLoaded(blockposition); // Paper
+                if (iblockdata == null) return null; // Paper
                 Fluid fluid = this.getFluid(blockposition);
                 boolean flag2;
                 boolean flag3;
@@ -982,7 +983,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                     i1 = MathHelper.floor(d1) - (enumdirection == EnumDirection.UP ? 1 : 0);
                     j1 = MathHelper.floor(d2) - (enumdirection == EnumDirection.SOUTH ? 1 : 0);
                     blockposition = new BlockPosition(l, i1, j1);
-                    IBlockData iblockdata1 = this.getType(blockposition);
+                    IBlockData iblockdata1 = this.getTypeIfLoaded(blockposition); // Paper
+                    if (iblockdata1 == null) return null; // Paper
                     Fluid fluid1 = this.getFluid(blockposition);
 
                     if (!flag || iblockdata1.getMaterial() == Material.PORTAL || !iblockdata1.getCollisionShape(this, blockposition).isEmpty()) {
