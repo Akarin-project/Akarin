@@ -99,6 +99,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public void exceptionCaught(ChannelHandlerContext channelhandlercontext, Throwable throwable) {
+        // Paper start
+        if (throwable instanceof io.netty.handler.codec.EncoderException && throwable.getCause() instanceof PacketEncoder.PacketTooLargeException) {
+            if (((PacketEncoder.PacketTooLargeException) throwable.getCause()).getPacket().packetTooLarge(this)) {
+                return;
+            } else {
+                throwable = throwable.getCause();
+            }
+        }
+        // Paper end
         if (throwable instanceof SkipEncodeException) {
             NetworkManager.g.debug("Skipping packet due to errors", throwable.getCause());
         } else {
