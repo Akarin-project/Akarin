@@ -27,12 +27,12 @@ import org.bukkit.plugin.Plugin;
 public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializable {
     private final GameProfile profile;
     private final CraftServer server;
-    private final WorldNBTStorage storage;
+    private WorldNBTStorage storage; // Paper - lazy init
 
     protected CraftOfflinePlayer(CraftServer server, GameProfile profile) {
         this.server = server;
         this.profile = profile;
-        this.storage = (WorldNBTStorage) (server.console.getWorldServer(DimensionManager.OVERWORLD).getDataManager());
+        //this.storage = (WorldNBTStorage) (server.console.getWorldServer(DimensionManager.OVERWORLD).getDataManager()); // Paper - lazy init
 
     }
 
@@ -169,8 +169,23 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         return hash;
     }
 
+    // Paper - lazy
+    private WorldNBTStorage getStorageLazy() {
+        if (this.storage == null) {
+            net.minecraft.server.WorldServer worldServer = server.console.getWorldServer(DimensionManager.OVERWORLD);
+            if (worldServer == null) {
+                throw new IllegalStateException("Cannot get world storage when there are no worlds loaded!");
+            } else {
+                this.storage = (WorldNBTStorage) worldServer.getDataManager();
+            }
+        }
+
+        return this.storage;
+    }
+    // Paper end
+
     private NBTTagCompound getData() {
-        return storage.getPlayerData(getUniqueId().toString());
+        return getStorageLazy().getPlayerData(getUniqueId().toString());
     }
 
     private NBTTagCompound getBukkitData() {
@@ -187,7 +202,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     private File getDataFile() {
-        return new File(storage.getPlayerDir(), getUniqueId() + ".dat");
+        return new File(getStorageLazy().getPlayerDir(), getUniqueId() + ".dat");
     }
 
     public long getFirstPlayed() {
