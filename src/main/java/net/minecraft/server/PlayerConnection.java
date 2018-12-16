@@ -823,10 +823,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
                             this.player.setSlot(enumitemslot, CraftEventFactory.handleEditBookEvent(player, enumitemslot, itemstack1, itemstack2)); // CraftBukkit
                         } else {
-                            ItemStack old = itemstack1.cloneItemStack(); // CraftBukkit
-                            itemstack1.a("pages", (NBTBase) itemstack.getTag().getList("pages", 8));
-                            CraftEventFactory.handleEditBookEvent(player, enumitemslot, old, itemstack1); // CraftBukkit
+                            // Paper start - dont mutate players current item, set it from the event
+                            ItemStack newBook = itemstack1.cloneItemStack();
+                            newBook.getOrCreateTagAndSet("pages", (NBTBase) itemstack.getTag().getList("pages", 8));
+                            this.player.setSlot(enumitemslot, CraftEventFactory.handleEditBookEvent(player, enumitemslot, itemstack1, newBook));
+                            // Paper end
                         }
+                        player.getBukkitEntity().updateInventory(); // Paper - fix client desync when event is cancelled
                     }
 
                 }
