@@ -1219,9 +1219,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         ItemStack itemstack = this.player.b(enumhand);
         BlockPosition blockposition = packetplayinuseitem.b();
         EnumDirection enumdirection = packetplayinuseitem.c();
+        IBlockData clickedBlock = worldserver.getType(blockposition); // Spigot
 
         this.player.resetIdleTimer();
-        if (blockposition.getY() >= this.minecraftServer.getMaxBuildHeight() - 1 && (enumdirection == EnumDirection.UP || blockposition.getY() >= this.minecraftServer.getMaxBuildHeight())) {
+        if (blockposition.getY() >= this.minecraftServer.getMaxBuildHeight() - 1 && ((enumdirection == EnumDirection.UP && !(clickedBlock.getBlock() instanceof BlockStepAbstract && clickedBlock.get(BlockStepAbstract.a) == BlockPropertySlabType.BOTTOM)) || blockposition.getY() >= this.minecraftServer.getMaxBuildHeight())) { // Spigot
             IChatBaseComponent ichatbasecomponent = (new ChatMessage("build.tooHigh", new Object[] { this.minecraftServer.getMaxBuildHeight()})).a(EnumChatFormat.RED);
 
             this.player.playerConnection.sendPacket(new PacketPlayOutChat(ichatbasecomponent, ChatMessageType.GAME_INFO));
