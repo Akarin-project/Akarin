@@ -78,6 +78,7 @@ public class RegionFile {
             }
             header.clear();
             java.nio.IntBuffer headerAsInts = header.asIntBuffer();
+            initOversizedState();
             // Paper End
 
             for (j = 0; j < 1024; ++j) {
@@ -93,7 +94,7 @@ public class RegionFile {
                         this.c.seek(j * 4 + 4); // Go back to where we were
                     }
                 }
-                if (k > 0 && (k >> 8) > 1 && (k >> 8) + (k & 255) <= this.f.size()) { // Paper >= 1 as 0/1 are the headers, and negative isnt valid
+                if (k > 0 && (k >> 8) > 1 && (k >> 8) + (length) <= this.f.size()) { // Paper >= 1 as 0/1 are the headers, and negative isnt valid
                     for (int l = 0; l < (length); ++l) {
                         // Spigot end
                         this.f.set((k >> 8) + l, false);
@@ -119,7 +120,7 @@ public class RegionFile {
     }
 
     @Nullable
-    public synchronized DataInputStream a(int i, int j) {
+    public synchronized DataInputStream getReadStream(int i, int j) { return a(i, j); } @Nullable public synchronized DataInputStream a(int i, int j) { // Paper - OBFHELPER
         if (this.e(i, j)) {
             return null;
         } else {
@@ -203,8 +204,8 @@ public class RegionFile {
     }
 
     @Nullable
-    public DataOutputStream c(int i, int j) {
-        return this.e(i, j) ? null : new DataOutputStream(new BufferedOutputStream(new DeflaterOutputStream(new RegionFile.ChunkBuffer(i, j))));
+    public DataOutputStream getWriteStream(int i, int j) { return c(i, j); } @Nullable public DataOutputStream c(int i, int j) { // Paper - OBFHELPER
+        return this.e(i, j) ? null : new DataOutputStream(new RegionFile.ChunkBuffer(i, j)); // Paper - remove middleware, move deflate to .close() for dynamic levels
     }
 
     protected synchronized void a(int i, int j, byte[] abyte, int k) {
@@ -222,8 +223,9 @@ public class RegionFile {
 
             if (k1 >= 256) {
                 // Spigot start
-                if (!ENABLE_EXTENDED_SAVE) return;
+                if (!USE_SPIGOT_OVERSIZED_METHOD) throw new ChunkTooLargeException(i, j, k1); // Paper - throw error instead
                 org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING,"Large Chunk Detected: ({0}, {1}) Size: {2} {3}", new Object[]{i, j, k1, this.b});
+                if (!ENABLE_EXTENDED_SAVE) return;
                 // Spigot end
             }
 
@@ -374,6 +376,109 @@ public class RegionFile {
             logger.error("Error backing up corrupt file" + file.getAbsolutePath(), e);
         }
     }
+
+    private final byte[] oversized = new byte[1024];
+    private int oversizedCount = 0;
+
+    private synchronized void initOversizedState() throws IOException {
+        File metaFile = getOversizedMetaFile();
+        if (metaFile.exists()) {
+            final byte[] read = java.nio.file.Files.readAllBytes(metaFile.toPath());
+            System.arraycopy(read, 0, oversized, 0, oversized.length);
+            for (byte temp : oversized) {
+                oversizedCount += temp;
+            }
+        }
+    }
+
+    private static int getChunkIndex(int x, int z) {
+        return (x & 31) + (z & 31) * 32;
+    }
+    synchronized boolean isOversized(int x, int z) {
+        return this.oversized[getChunkIndex(x, z)] == 1;
+    }
+    synchronized void setOversized(int x, int z, boolean oversized) throws IOException {
+        final int offset = getChunkIndex(x, z);
+        boolean previous = this.oversized[offset] == 1;
+        this.oversized[offset] = (byte) (oversized ? 1 : 0);
+        if (!previous && oversized) {
+            oversizedCount++;
+        } else if (!oversized && previous) {
+            oversizedCount--;
+        }
+        if (previous && !oversized) {
+            File oversizedFile = getOversizedFile(x, z);
+            if (oversizedFile.exists()) {
+                oversizedFile.delete();
+            }
+        }
+        if (oversizedCount > 0) {
+            if (previous != oversized) {
+                writeOversizedMeta();
+            }
+        } else if (previous) {
+            File oversizedMetaFile = getOversizedMetaFile();
+            if (oversizedMetaFile.exists()) {
+                oversizedMetaFile.delete();
+            }
+        }
+    }
+
+    private void writeOversizedMeta() throws IOException {
+        java.nio.file.Files.write(getOversizedMetaFile().toPath(), oversized);
+    }
+
+    private File getOversizedMetaFile() {
+        return new File(getFile().getParentFile(), getFile().getName().replaceAll("\\.mca$", "") + ".oversized.nbt");
+    }
+
+    private File getOversizedFile(int x, int z) {
+        return new File(this.getFile().getParentFile(), this.getFile().getName().replaceAll("\\.mca$", "") + "_oversized_" + x + "_" + z + ".nbt");
+    }
+
+    void writeOversizedData(int x, int z, NBTTagCompound oversizedData) throws IOException {
+        File file = getOversizedFile(x, z);
+        try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new DeflaterOutputStream(new java.io.FileOutputStream(file), new java.util.zip.Deflater(java.util.zip.Deflater.BEST_COMPRESSION), 32 * 1024), 32 * 1024))) {
+            NBTCompressedStreamTools.writeNBT(oversizedData, out);
+        }
+        this.setOversized(x, z, true);
+
+    }
+
+    synchronized NBTTagCompound getOversizedData(int x, int z) throws IOException {
+        File file = getOversizedFile(x, z);
+        try (DataInputStream out = new DataInputStream(new BufferedInputStream(new InflaterInputStream(new java.io.FileInputStream(file))))) {
+            return NBTCompressedStreamTools.readNBT(out);
+        }
+
+    }
+
+    private static final boolean USE_SPIGOT_OVERSIZED_METHOD = Boolean.getBoolean("Paper.useSpigotExtendedSaveMethod"); // Paper
+    static {
+        if (USE_SPIGOT_OVERSIZED_METHOD) {
+            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.SEVERE, "====================================");
+            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.SEVERE, "Using Spigot Oversized Chunk save method. Warning this will result in extremely fragmented chunks, as well as making the entire region file unable to be to used in any other software but Forge or Spigot (not usable in Vanilla or CraftBukkit). Paper's method is highly recommended.");
+            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.SEVERE, "====================================");
+        }
+    }
+    public class ChunkTooLargeException extends RuntimeException {
+        public ChunkTooLargeException(int x, int z, int sectors) {
+            super("Chunk " + x + "," + z + " of " + getFile().toString() + " is too large (" + sectors + "/256)");
+        }
+    }
+    private static class DirectByteArrayOutputStream extends ByteArrayOutputStream {
+        public DirectByteArrayOutputStream() {
+            super();
+        }
+
+        public DirectByteArrayOutputStream(int size) {
+            super(size);
+        }
+
+        public byte[] getBuffer() {
+            return this.buf;
+        }
+    }
     // Paper end
 
     class ChunkBuffer extends ByteArrayOutputStream {
@@ -387,8 +492,40 @@ public class RegionFile {
             this.c = j;
         }
 
-        public void close() {
-            RegionFile.this.a(this.b, this.c, this.buf, this.count);
+        public void close() throws IOException {
+            // Paper start - apply dynamic compression
+            int origLength = this.count;
+            byte[] buf = this.buf;
+            DirectByteArrayOutputStream out = compressData(buf, origLength);
+            byte[] bytes = out.getBuffer();
+            int length = out.size();
+
+            RegionFile.this.a(this.b, this.c, bytes, length); // Paper - change to bytes/length
+            // Paper end
         }
+    }
+
+    private static DirectByteArrayOutputStream compressData(byte[] buf, int length) throws IOException {
+        final java.util.zip.Deflater deflater;
+        if (length > 1024 * 512) {
+            deflater = new java.util.zip.Deflater(9);
+        } else if (length > 1024 * 128) {
+            deflater = new java.util.zip.Deflater(8);
+        } else {
+            deflater = new java.util.zip.Deflater(6);
+        }
+
+
+        deflater.setInput(buf, 0, length);
+        deflater.finish();
+
+        DirectByteArrayOutputStream out = new DirectByteArrayOutputStream(length);
+        byte[] buffer = new byte[1024 * (length > 1024 * 124 ? 32 : 16)];
+        while (!deflater.finished()) {
+            out.write(buffer, 0, deflater.deflate(buffer));
+        }
+        out.close();
+        deflater.end();
+        return out;
     }
 }

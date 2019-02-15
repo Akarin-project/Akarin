@@ -39,6 +39,7 @@ public class NBTCompressedStreamTools {
 
     }
 
+    public static NBTTagCompound readNBT(DataInputStream datainputstream) throws IOException { return a(datainputstream); } // Paper - OBFHELPER
     public static NBTTagCompound a(DataInputStream datainputstream) throws IOException {
         return a((DataInput) datainputstream, NBTReadLimiter.a);
     }
@@ -59,6 +60,7 @@ public class NBTCompressedStreamTools {
         }
     }
 
+    public static void writeNBT(NBTTagCompound nbttagcompound, DataOutput dataoutput) throws IOException { a(nbttagcompound, dataoutput); } // Paper - OBFHELPER
     public static void a(NBTTagCompound nbttagcompound, DataOutput dataoutput) throws IOException {
         a((NBTBase) nbttagcompound, dataoutput);
     }
