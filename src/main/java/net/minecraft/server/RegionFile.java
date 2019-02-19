@@ -18,6 +18,11 @@ import javax.annotation.Nullable;
 
 public class RegionFile {
 
+    // Spigot start
+    // Minecraft is limited to 256 sections per chunk. So 1MB. This can easily be overriden.
+    // So we extend this to use the REAL size when the count is maxed by seeking to that section and reading the length.
+    private static final boolean ENABLE_EXTENDED_SAVE = Boolean.parseBoolean(System.getProperty("net.minecraft.server.RegionFile.enableExtendedSave", "true"));
+    // Spigot end
     private static final byte[] a = new byte[4096];
     private final File b;
     private RandomAccessFile c;
@@ -69,11 +74,27 @@ public class RegionFile {
             for (j = 0; j < 1024; ++j) {
                 k = this.c.readInt();
                 this.d[j] = k;
-                if (k != 0 && (k >> 8) + (k & 255) <= this.f.size()) {
-                    for (int l = 0; l < (k & 255); ++l) {
+                // Spigot start
+                int length = k & 255;
+                if (length == 255) {
+                    if ((k >> 8) <= this.f.size()) {
+                         // We're maxed out, so we need to read the proper length from the section
+                        this.c.seek((k >> 8) * 4096);
+                        length = (this.c.readInt() + 4) / 4096 + 1;
+                        this.c.seek(j * 4 + 4); // Go back to where we were
+                    }
+                }
+                if (k != 0 && (k >> 8) + (length) <= this.f.size()) {
+                    for (int l = 0; l < (length); ++l) {
+                        // Spigot end
                         this.f.set((k >> 8) + l, false);
                     }
                 }
+                // Spigot start
+                else if (length > 0) {
+                    org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "Invalid chunk: ({0}, {1}) Offset: {2} Length: {3} runs off end file. {4}", new Object[]{j % 32, (int) (j / 32), k >> 8, length, file});
+                }
+                // Spigot end
             }
 
             for (j = 0; j < 1024; ++j) {
@@ -99,6 +120,12 @@ public class RegionFile {
                 } else {
                     int l = k >> 8;
                     int i1 = k & 255;
+                    // Spigot start
+                    if (i1 == 255) {
+                        this.c.seek(l * 4096);
+                        i1 = (this.c.readInt() + 4) / 4096 + 1;
+                    }
+                    // Spigot end
 
                     if (l + i1 > this.f.size()) {
                         return null;
@@ -107,8 +134,10 @@ public class RegionFile {
                         int j1 = this.c.readInt();
 
                         if (j1 > 4096 * i1) {
+                            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "Invalid chunk: ({0}, {1}) Offset: {2} Invalid Size: {3}>{4} {5}", new Object[]{i, j, l, j1, i1 * 4096, this.b}); // Spigot
                             return null;
                         } else if (j1 <= 0) {
+                            org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "Invalid chunk: ({0}, {1}) Offset: {2} Invalid Size: {3} {4}", new Object[]{i, j, l, j1, this.b}); // Spigot
                             return null;
                         } else {
                             byte b0 = this.c.readByte();
@@ -172,10 +201,19 @@ public class RegionFile {
             int l = this.getOffset(i, j);
             int i1 = l >> 8;
             int j1 = l & 255;
+            // Spigot start
+            if (j1 == 255) {
+                this.c.seek(i1 * 4096);
+                j1 = (this.c.readInt() + 4) / 4096 + 1;
+            }
+            // Spigot end
             int k1 = (k + 5) / 4096 + 1;
 
             if (k1 >= 256) {
-                return;
+                // Spigot start
+                if (!ENABLE_EXTENDED_SAVE) return;
+                org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING,"Large Chunk Detected: ({0}, {1}) Size: {2} {3}", new Object[]{i, j, k1, this.b});
+                // Spigot end
             }
 
             if (i1 != 0 && j1 == k1) {
@@ -212,7 +250,7 @@ public class RegionFile {
 
                 if (i2 >= k1) {
                     i1 = l1;
-                    this.a(i, j, l1 << 8 | k1);
+                    this.a(i, j, l1 << 8 | (k1 > 255 ? 255 : k1)); // Spigot
 
                     for (j2 = 0; j2 < k1; ++j2) {
                         this.f.set(i1 + j2, false);
@@ -230,7 +268,7 @@ public class RegionFile {
 
                     this.g += 4096 * k1;
                     this.a(i1, abyte, k);
-                    this.a(i, j, i1 << 8 | k1);
+                    this.a(i, j, i1 << 8 | (k1 > 255 ? 255 : k1)); // Spigot
                 }
             }
 
