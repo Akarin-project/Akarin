@@ -1,3 +1,6 @@
+---
+> The project is only used to update the upstream projects and should not be modified by non-upstream.
+
 CraftBukkit
 ======
 An implementation of the [Bukkit](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/bukkit) plugin API for [Minecraft](https://minecraft.net/) servers, currently maintained by [SpigotMC](http://www.spigotmc.org/).
