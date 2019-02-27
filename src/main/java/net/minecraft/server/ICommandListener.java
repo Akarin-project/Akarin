@@ -9,4 +9,6 @@ public interface ICommandListener {
     boolean b();
 
     boolean B_();
+
+    org.bukkit.command.CommandSender getBukkitSender(CommandListenerWrapper wrapper); // CraftBukkit
 }

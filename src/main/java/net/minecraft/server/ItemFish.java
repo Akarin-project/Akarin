@@ -25,9 +25,11 @@ public class ItemFish extends ItemFood {
         ItemFish.EnumFish itemfish_enumfish = ItemFish.EnumFish.a(itemstack);
 
         if (itemfish_enumfish == ItemFish.EnumFish.PUFFERFISH) {
-            entityhuman.addEffect(new MobEffect(MobEffects.POISON, 1200, 3));
-            entityhuman.addEffect(new MobEffect(MobEffects.HUNGER, 300, 2));
-            entityhuman.addEffect(new MobEffect(MobEffects.CONFUSION, 300, 1));
+            // CraftBukkit start
+            entityhuman.addEffect(new MobEffect(MobEffects.POISON, 1200, 3), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.FOOD);
+            entityhuman.addEffect(new MobEffect(MobEffects.HUNGER, 300, 2), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.FOOD);
+            entityhuman.addEffect(new MobEffect(MobEffects.CONFUSION, 300, 1), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.FOOD);
+            // CraftBukkit end
         }
 
         super.a(itemstack, world, entityhuman);

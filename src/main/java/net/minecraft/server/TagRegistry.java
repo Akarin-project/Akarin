@@ -38,6 +38,11 @@ public class TagRegistry implements IResourcePackListener {
         TagsBlock.a((Tags) this.a);
         TagsItem.a((Tags) this.b);
         TagsFluid.a((Tags) this.c);
+        // CraftBukkit start
+        this.a.version++;
+        this.b.version++;
+        this.c.version++;
+        // CraftBukkit end
     }
 
     public void a(PacketDataSerializer packetdataserializer) {

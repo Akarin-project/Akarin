@@ -62,7 +62,7 @@ public class PathfinderGoalNearestAttackableTargetInsentient extends PathfinderG
     }
 
     public void c() {
-        this.b.setGoalTarget(this.e);
+        this.b.setGoalTarget(this.e, org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_ENTITY, true); // CraftBukkit - reason
         super.c();
     }
 

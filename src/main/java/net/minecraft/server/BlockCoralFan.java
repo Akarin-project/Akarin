@@ -17,6 +17,11 @@ public class BlockCoralFan extends BlockCoralFanAbstract {
 
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (!b_(iblockdata, world, blockposition)) {
+            // CraftBukkit start
+            if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockFadeEvent(world, blockposition, this.a.getBlockData().set(BlockCoralFan.b, false)).isCancelled()) {
+                return;
+            }
+            // CraftBukkit end
             world.setTypeAndData(blockposition, (IBlockData) this.a.getBlockData().set(BlockCoralFan.b, false), 2);
         }
 

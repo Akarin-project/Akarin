@@ -1,14 +1,16 @@
 package net.minecraft.server;
 
-public class RecipeFireworks extends IRecipeComplex {
+public class RecipeFireworks extends ShapelessRecipes implements IRecipe { // CraftBukkit - added extends
 
     private static final RecipeItemStack a = RecipeItemStack.a(Items.PAPER);
     private static final RecipeItemStack b = RecipeItemStack.a(Items.GUNPOWDER);
     private static final RecipeItemStack c = RecipeItemStack.a(Items.FIREWORK_STAR);
 
+    // CraftBukkit start - Delegate to new parent class with bogus info
     public RecipeFireworks(MinecraftKey minecraftkey) {
-        super(minecraftkey);
+        super(minecraftkey, "", new ItemStack(Items.FIREWORK_ROCKET, 0), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.GUNPOWDER)));
     }
+    // CraftBukkit end
 
     public boolean a(IInventory iinventory, World world) {
         if (!(iinventory instanceof InventoryCrafting)) {

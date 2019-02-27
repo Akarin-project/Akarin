@@ -33,6 +33,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         this(entitytypes, entityliving.locX, entityliving.locY + (double) entityliving.getHeadHeight() - 0.10000000149011612D, entityliving.locZ, world);
         this.shooter = entityliving;
         this.shooterId = entityliving.getUniqueID();
+        this.projectileSource = (org.bukkit.entity.LivingEntity) entityliving.getBukkitEntity(); // CraftBukkit
     }
 
     protected void x_() {}
@@ -111,7 +112,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
             if (entity1.isInteractable()) {
                 if (entity1 == this.d) {
                     flag = true;
-                } else if (this.shooter != null && this.ticksLived < 2 && this.d == null) {
+                } else if (this.shooter != null && this.ticksLived < 2 && this.d == null && this.shooter == entity1) { // CraftBukkit - MC-88491
                     this.d = entity1;
                     flag = true;
                 } else {
@@ -148,6 +149,11 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
                 this.e(movingobjectposition.getBlockPosition());
             } else {
                 this.a(movingobjectposition);
+                // CraftBukkit start
+                if (this.dead) {
+                    org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition);
+                }
+                // CraftBukkit end
             }
         }
 

@@ -7,6 +7,15 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import java.util.UUID;
+
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.map.CraftMapView;
+import org.bukkit.craftbukkit.util.CraftChatMessage;
+// CraftBukkit end
+
 public class WorldMap extends PersistentBase {
 
     public int centerX;
@@ -22,8 +31,18 @@ public class WorldMap extends PersistentBase {
     public Map<String, MapIcon> decorations = Maps.newLinkedHashMap();
     private final Map<String, WorldMapFrame> l = Maps.newHashMap();
 
+    // CraftBukkit start
+    public final CraftMapView mapView;
+    private CraftServer server;
+    private UUID uniqueId = null;
+    // CraftBukkit end
+
     public WorldMap(String s) {
         super(s);
+        // CraftBukkit start
+        mapView = new CraftMapView(this);
+        server = (CraftServer) org.bukkit.Bukkit.getServer();
+        // CraftBukkit end
     }
 
     public void a(int i, int j, int k, boolean flag, boolean flag1, DimensionManager dimensionmanager) {
@@ -45,7 +64,31 @@ public class WorldMap extends PersistentBase {
     }
 
     public void a(NBTTagCompound nbttagcompound) {
-        this.map = DimensionManager.a(nbttagcompound.getInt("dimension"));
+        // CraftBukkit start
+        int dimension = nbttagcompound.getInt("dimension");
+
+        if (dimension >= CraftWorld.CUSTOM_DIMENSION_OFFSET) {
+            long least = nbttagcompound.getLong("UUIDLeast");
+            long most = nbttagcompound.getLong("UUIDMost");
+
+            if (least != 0L && most != 0L) {
+                this.uniqueId = new UUID(most, least);
+
+                CraftWorld world = (CraftWorld) server.getWorld(this.uniqueId);
+                // Check if the stored world details are correct.
+                if (world == null) {
+                    /* All Maps which do not have their valid world loaded are set to a dimension which hopefully won't be reached.
+                       This is to prevent them being corrupted with the wrong map data. */
+                    this.map = new DimensionManager(127, null, null, null);
+                } else {
+                    this.map = world.getHandle().dimension;
+                }
+            }
+        } else {
+            this.map = DimensionManager.a(dimension);
+        }
+
+        // CraftBukkit end
         this.centerX = nbttagcompound.getInt("xCenter");
         this.centerZ = nbttagcompound.getInt("zCenter");
         this.scale = (byte) MathHelper.clamp(nbttagcompound.getByte("scale"), 0, 4);
@@ -77,6 +120,25 @@ public class WorldMap extends PersistentBase {
     }
 
     public NBTTagCompound b(NBTTagCompound nbttagcompound) {
+        // CraftBukkit start
+        if (this.map.getDimensionID() >= CraftWorld.CUSTOM_DIMENSION_OFFSET) {
+            if (this.uniqueId == null) {
+                for (org.bukkit.World world : server.getWorlds()) {
+                    CraftWorld cWorld = (CraftWorld) world;
+                    if (cWorld.getHandle().dimension == this.map) {
+                        this.uniqueId = cWorld.getUID();
+                        break;
+                    }
+                }
+            }
+            /* Perform a second check to see if a matching world was found, this is a necessary
+               change incase Maps are forcefully unlinked from a World and lack a UID.*/
+            if (this.uniqueId != null) {
+                nbttagcompound.setLong("UUIDLeast", this.uniqueId.getLeastSignificantBits());
+                nbttagcompound.setLong("UUIDMost", this.uniqueId.getMostSignificantBits());
+            }
+        }
+        // CraftBukkit end
         nbttagcompound.setInt("dimension", this.map.getDimensionID());
         nbttagcompound.setInt("xCenter", this.centerX);
         nbttagcompound.setInt("zCenter", this.centerZ);
@@ -357,12 +419,25 @@ public class WorldMap extends PersistentBase {
 
         @Nullable
         public Packet<?> a(ItemStack itemstack) {
+            // CraftBukkit start
+            org.bukkit.craftbukkit.map.RenderData render = WorldMap.this.mapView.render((org.bukkit.craftbukkit.entity.CraftPlayer) this.trackee.getBukkitEntity()); // CraftBukkit
+
+            java.util.Collection<MapIcon> icons = new java.util.ArrayList<MapIcon>();
+
+            for ( org.bukkit.map.MapCursor cursor : render.cursors) {
+
+                if (cursor.isVisible()) {
+                    icons.add(new MapIcon(MapIcon.Type.a(cursor.getRawType()), cursor.getX(), cursor.getY(), cursor.getDirection(), CraftChatMessage.fromStringOrNull(cursor.getCaption())));
+                }
+            }
+
             if (this.d) {
                 this.d = false;
-                return new PacketPlayOutMap(ItemWorldMap.e(itemstack), WorldMap.this.scale, WorldMap.this.track, WorldMap.this.decorations.values(), WorldMap.this.colors, this.e, this.f, this.g + 1 - this.e, this.h + 1 - this.f);
+                return new PacketPlayOutMap(ItemWorldMap.e(itemstack), WorldMap.this.scale, WorldMap.this.track, icons, render.buffer, this.e, this.f, this.g + 1 - this.e, this.h + 1 - this.f);
             } else {
-                return this.i++ % 5 == 0 ? new PacketPlayOutMap(ItemWorldMap.e(itemstack), WorldMap.this.scale, WorldMap.this.track, WorldMap.this.decorations.values(), WorldMap.this.colors, 0, 0, 0, 0) : null;
+                return this.i++ % 5 == 0 ? new PacketPlayOutMap(ItemWorldMap.e(itemstack), WorldMap.this.scale, WorldMap.this.track, icons, render.buffer, 0, 0, 0, 0) : null;
             }
+            // CraftBukkit end
         }
 
         public void a(int i, int j) {

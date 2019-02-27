@@ -58,7 +58,7 @@ public class CommandSpreadPlayers {
             if (entity instanceof EntityHuman) {
                 set.add(entity.getScoreboardTeam());
             } else {
-                set.add((Object) null);
+                set.add((ScoreboardTeamBase) null); // CraftBukkit - decompile error
             }
         }
 
@@ -266,7 +266,7 @@ public class CommandSpreadPlayers {
                 }
 
                 blockposition = blockposition.down();
-            } while (iblockaccess.getType(blockposition).isAir());
+            } while (getType(iblockaccess, blockposition).isAir()); // CraftBukkit
 
             return blockposition.getY() + 1;
         }
@@ -282,7 +282,7 @@ public class CommandSpreadPlayers {
                 }
 
                 blockposition = blockposition.down();
-                iblockdata = iblockaccess.getType(blockposition);
+                iblockdata = getType(iblockaccess, blockposition); // CraftBukkit
             } while (iblockdata.isAir());
 
             Material material = iblockdata.getMaterial();
@@ -294,5 +294,12 @@ public class CommandSpreadPlayers {
             this.a = MathHelper.a(random, d0, d2);
             this.b = MathHelper.a(random, d1, d3);
         }
+
+        // CraftBukkit start - add a version of getType which force loads chunks
+        private static IBlockData getType(IBlockAccess iblockaccess, BlockPosition position) {
+            ((ChunkProviderServer) ((World) iblockaccess).chunkProvider).getChunkAt(position.getX() >> 4, position.getZ() >> 4, true, true);
+            return iblockaccess.getType(position);
+        }
+        // CraftBukkit end
     }
 }

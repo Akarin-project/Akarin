@@ -116,14 +116,20 @@ public class BlockFluids extends Block implements IFluidSource {
                 Fluid fluid = world.getFluid(blockposition);
 
                 if (fluid.d()) {
-                    world.setTypeUpdate(blockposition, Blocks.OBSIDIAN.getBlockData());
-                    this.fizz(world, blockposition);
+                    // CraftBukkit start
+                    if (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world, blockposition, Blocks.OBSIDIAN.getBlockData())) {
+                        this.fizz(world, blockposition);
+                    }
+                    // CraftBukkit end
                     return false;
                 }
 
                 if (fluid.getHeight() >= 0.44444445F) {
-                    world.setTypeUpdate(blockposition, Blocks.COBBLESTONE.getBlockData());
-                    this.fizz(world, blockposition);
+                    // CraftBukkit start
+                    if (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world, blockposition, Blocks.COBBLESTONE.getBlockData())) {
+                        this.fizz(world, blockposition);
+                    }
+                    // CraftBukkit end
                     return false;
                 }
             }

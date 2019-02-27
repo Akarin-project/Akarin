@@ -6,6 +6,15 @@ import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import java.util.ArrayList;
+import java.util.List;
+import org.bukkit.Location;
+
+import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.entity.HumanEntity;
+// CraftBukkit end
+
 public class PlayerInventory implements IInventory {
 
     public final NonNullList<ItemStack> items;
@@ -16,6 +25,49 @@ public class PlayerInventory implements IInventory {
     public EntityHuman player;
     private ItemStack carried;
     private int h;
+
+    // CraftBukkit start - add fields and methods
+    public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
+    private int maxStack = MAX_STACK;
+
+    public List<ItemStack> getContents() {
+        List<ItemStack> combined = new ArrayList<ItemStack>(items.size() + armor.size() + extraSlots.size());
+        for (List<net.minecraft.server.ItemStack> sub : this.f) {
+            combined.addAll(sub);
+        }
+
+        return combined;
+    }
+
+    public List<ItemStack> getArmorContents() {
+        return this.armor;
+    }
+
+    public void onOpen(CraftHumanEntity who) {
+        transaction.add(who);
+    }
+
+    public void onClose(CraftHumanEntity who) {
+        transaction.remove(who);
+    }
+
+    public List<HumanEntity> getViewers() {
+        return transaction;
+    }
+
+    public org.bukkit.inventory.InventoryHolder getOwner() {
+        return this.player.getBukkitEntity();
+    }
+
+    public void setMaxStackSize(int size) {
+        maxStack = size;
+    }
+
+    @Override
+    public Location getLocation() {
+        return player.getBukkitEntity().getLocation();
+    }
+    // CraftBukkit end
 
     public PlayerInventory(EntityHuman entityhuman) {
         this.items = NonNullList.a(36, ItemStack.a);
@@ -41,6 +93,22 @@ public class PlayerInventory implements IInventory {
     private boolean b(ItemStack itemstack, ItemStack itemstack1) {
         return itemstack.getItem() == itemstack1.getItem() && ItemStack.equals(itemstack, itemstack1);
     }
+
+    // CraftBukkit start - Watch method above! :D
+    public int canHold(ItemStack itemstack) {
+        int remains = itemstack.getCount();
+        for (int i = 0; i < this.items.size(); ++i) {
+            ItemStack itemstack1 = this.getItem(i);
+            if (itemstack1.isEmpty()) return itemstack.getCount();
+
+            if (this.a(itemstack1, itemstack)) { // PAIL rename isSimilarAndNotFull
+                remains -= (itemstack1.getMaxStackSize() < this.getMaxStackSize() ? itemstack1.getMaxStackSize() : this.getMaxStackSize()) - itemstack1.getCount();
+            }
+            if (remains <= 0) return itemstack.getCount();
+        }
+        return itemstack.getCount() - remains;
+    }
+    // CraftBukkit end
 
     public int getFirstEmptySlotIndex() {
         for (int i = 0; i < this.items.size(); ++i) {
@@ -502,7 +570,7 @@ public class PlayerInventory implements IInventory {
     }
 
     public int getMaxStackSize() {
-        return 64;
+        return maxStack; // CraftBukkit
     }
 
     public boolean b(IBlockData iblockdata) {
@@ -554,6 +622,11 @@ public class PlayerInventory implements IInventory {
     }
 
     public ItemStack getCarried() {
+        // CraftBukkit start
+        if (this.carried.isEmpty()) {
+            this.setCarried(ItemStack.a);
+        }
+        // CraftBukkit end
         return this.carried;
     }
 

@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import javax.annotation.Nullable;
+import org.bukkit.event.entity.ExplosionPrimeEvent; // CraftBukkit
 
 public class EntityTNTPrimed extends Entity {
 
@@ -8,6 +9,8 @@ public class EntityTNTPrimed extends Entity {
     @Nullable
     private EntityLiving source;
     private int c;
+    public float yield = 4; // CraftBukkit - add field
+    public boolean isIncendiary = false; // CraftBukkit - add field
 
     public EntityTNTPrimed(World world) {
         super(EntityTypes.TNT, world);
@@ -64,10 +67,13 @@ public class EntityTNTPrimed extends Entity {
 
         --this.c;
         if (this.c <= 0) {
-            this.die();
+            // CraftBukkit start - Need to reverse the order of the explosion and the entity death so we have a location for the event
+            // this.die();
             if (!this.world.isClientSide) {
                 this.explode();
             }
+            this.die();
+            // CraftBukkit end
         } else {
             this.at();
             this.world.addParticle(Particles.M, this.locX, this.locY + 0.5D, this.locZ, 0.0D, 0.0D, 0.0D);
@@ -76,9 +82,17 @@ public class EntityTNTPrimed extends Entity {
     }
 
     private void explode() {
-        float f = 4.0F;
+        // CraftBukkit start
+        // float f = 4.0F;
 
-        this.world.explode(this, this.locX, this.locY + (double) (this.length / 16.0F), this.locZ, 4.0F, true);
+        org.bukkit.craftbukkit.CraftServer server = this.world.getServer();
+        ExplosionPrimeEvent event = new ExplosionPrimeEvent((org.bukkit.entity.Explosive) org.bukkit.craftbukkit.entity.CraftEntity.getEntity(server, this));
+        server.getPluginManager().callEvent(event);
+
+        if (!event.isCancelled()) {
+            this.world.createExplosion(this, this.locX, this.locY + (double) (this.length / 16.0F), this.locZ, event.getRadius(), event.getFire(), true);
+        }
+        // CraftBukkit end
     }
 
     protected void b(NBTTagCompound nbttagcompound) {

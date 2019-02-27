@@ -9,11 +9,17 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.util.LongHash;
+import org.bukkit.craftbukkit.util.LongHashSet;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+// CraftBukkit end
+
 public final class SpawnerCreature {
 
     private static final Logger a = LogManager.getLogger();
     private static final int b = (int) Math.pow(17.0D, 2.0D);
-    private final Set<ChunkCoordIntPair> c = Sets.newHashSet();
+    private final LongHashSet c = new LongHashSet(); // CraftBukkit
 
     public SpawnerCreature() {}
 
@@ -42,13 +48,16 @@ public final class SpawnerCreature {
                             boolean flag4 = i1 == -8 || i1 == 8 || k == -8 || k == 8;
                             ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i1 + l, k + j);
 
-                            if (!this.c.contains(chunkcoordintpair)) {
+                            // CraftBukkit start - use LongHash and LongHashSet
+                            long chunkCoords = LongHash.toLong(chunkcoordintpair.x, chunkcoordintpair.z);
+                            if (!this.c.contains(chunkCoords)) {
                                 ++i;
                                 if (!flag4 && worldserver.getWorldBorder().isInBounds(chunkcoordintpair)) {
                                     PlayerChunk playerchunk = worldserver.getPlayerChunkMap().getChunk(chunkcoordintpair.x, chunkcoordintpair.z);
 
                                     if (playerchunk != null && playerchunk.e()) {
-                                        this.c.add(chunkcoordintpair);
+                                        this.c.add(chunkCoords);
+                                        // CraftBukkit end
                                     }
                                 }
                             }
@@ -66,8 +75,30 @@ public final class SpawnerCreature {
             for (int k1 = 0; k1 < j; ++k1) {
                 EnumCreatureType enumcreaturetype = aenumcreaturetype[k1];
 
+               // CraftBukkit start - Use per-world spawn limits
+                int limit = enumcreaturetype.b();
+                switch (enumcreaturetype) {
+                    case MONSTER:
+                        limit = worldserver.getWorld().getMonsterSpawnLimit();
+                        break;
+                    case CREATURE:
+                        limit = worldserver.getWorld().getAnimalSpawnLimit();
+                        break;
+                    case WATER_CREATURE:
+                        limit = worldserver.getWorld().getWaterAnimalSpawnLimit();
+                        break;
+                    case AMBIENT:
+                        limit = worldserver.getWorld().getAmbientSpawnLimit();
+                        break;
+                }
+
+                if (limit == 0) {
+                    continue;
+                }
+                // CraftBukkit end
+
                 if ((!enumcreaturetype.c() || flag1) && (enumcreaturetype.c() || flag) && (!enumcreaturetype.d() || flag2)) {
-                    k = enumcreaturetype.b() * i / SpawnerCreature.b;
+                    k = limit * i / SpawnerCreature.b; // CraftBukkit - use per-world limits
                     int l1 = worldserver.a(enumcreaturetype.a(), k);
 
                     if (l1 <= k) {
@@ -76,8 +107,10 @@ public final class SpawnerCreature {
 
                         label137:
                         while (iterator1.hasNext()) {
-                            ChunkCoordIntPair chunkcoordintpair1 = (ChunkCoordIntPair) iterator1.next();
-                            BlockPosition blockposition1 = getRandomPosition(worldserver, chunkcoordintpair1.x, chunkcoordintpair1.z);
+                            // CraftBukkit start = use LongHash and LongObjectHashMap
+                            long key = ((Long) iterator1.next()).longValue();
+                            BlockPosition blockposition1 = getRandomPosition(worldserver, LongHash.msw(key), LongHash.lsw(key));
+                            // CraftBukkit
                             int i2 = blockposition1.getX();
                             int j2 = blockposition1.getY();
                             int k2 = blockposition1.getZ();
@@ -140,9 +173,12 @@ public final class SpawnerCreature {
                                                                 if ((d0 <= 16384.0D || !entityinsentient.isTypeNotPersistent()) && entityinsentient.a((GeneratorAccess) worldserver, false) && entityinsentient.a((IWorldReader) worldserver)) {
                                                                     groupdataentity = entityinsentient.prepare(worldserver.getDamageScaler(new BlockPosition(entityinsentient)), groupdataentity, (NBTTagCompound) null);
                                                                     if (entityinsentient.a((IWorldReader) worldserver)) {
-                                                                        ++l2;
-                                                                        ++j4;
-                                                                        worldserver.addEntity(entityinsentient);
+                                                                        // CraftBukkit start
+                                                                        if (worldserver.addEntity(entityinsentient, SpawnReason.NATURAL)) {
+                                                                            ++l2;
+                                                                            ++j4;
+                                                                        }
+                                                                        // CraftBukkit end
                                                                     } else {
                                                                         entityinsentient.die();
                                                                     }
@@ -259,7 +295,7 @@ public final class SpawnerCreature {
                             entityinsentient.setPositionRotation(d0, (double) blockposition.getY(), d1, random.nextFloat() * 360.0F, 0.0F);
                             if (entityinsentient.a(generatoraccess, false) && entityinsentient.a((IWorldReader) generatoraccess)) {
                                 groupdataentity = entityinsentient.prepare(generatoraccess.getDamageScaler(new BlockPosition(entityinsentient)), groupdataentity, (NBTTagCompound) null);
-                                generatoraccess.addEntity(entityinsentient);
+                                generatoraccess.addEntity(entityinsentient, SpawnReason.CHUNK_GEN); // CraftBukkit
                                 flag = true;
                             }
                         }

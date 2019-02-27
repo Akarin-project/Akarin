@@ -30,6 +30,11 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
 
         if (nbttagcompound != null && nbttagcompound.hasKeyOfType("Patterns", 9)) {
             this.patterns = nbttagcompound.getList("Patterns", 10).clone();
+            // CraftBukkit start
+            while (this.patterns.size() > 20) {
+                this.patterns.remove(20);
+            }
+            // CraftBukkit end
         }
 
         this.color = enumcolor;
@@ -79,6 +84,11 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
         }
 
         this.patterns = nbttagcompound.getList("Patterns", 10);
+        // CraftBukkit start
+        while (this.patterns.size() > 20) {
+            this.patterns.remove(20);
+        }
+        // CraftBukkit end
         this.h = null;
         this.i = null;
         this.j = null;

@@ -412,7 +412,7 @@ public class EntityDolphin extends EntityWaterAnimal {
         }
 
         public void c() {
-            this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100));
+            this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DOLPHIN); // CraftBukkit
         }
 
         public void d() {
@@ -429,7 +429,7 @@ public class EntityDolphin extends EntityWaterAnimal {
             }
 
             if (this.c.isSwimming() && this.c.world.random.nextInt(6) == 0) {
-                this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100));
+                this.c.addEffect(new MobEffect(MobEffects.DOLPHINS_GRACE, 100), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DOLPHIN); // CraftBukkit
             }
 
         }

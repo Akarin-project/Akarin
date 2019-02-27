@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import org.bukkit.event.entity.ExplosionPrimeEvent; // CraftBukkit
+
 public class EntityWitherSkull extends EntityFireball {
 
     private static final DataWatcherObject<Boolean> e = DataWatcher.a(EntityWitherSkull.class, DataWatcherRegistry.i);
@@ -28,11 +30,11 @@ public class EntityWitherSkull extends EntityFireball {
         if (!this.world.isClientSide) {
             if (movingobjectposition.entity != null) {
                 if (this.shooter != null) {
-                    if (movingobjectposition.entity.damageEntity(DamageSource.mobAttack(this.shooter), 8.0F)) {
+                    if (movingobjectposition.entity.damageEntity(DamageSource.projectile(this, shooter), 8.0F)) { // CraftBukkit
                         if (movingobjectposition.entity.isAlive()) {
                             this.a(this.shooter, movingobjectposition.entity);
                         } else {
-                            this.shooter.heal(5.0F);
+                            this.shooter.heal(5.0F, org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason.WITHER); // CraftBukkit
                         }
                     }
                 } else {
@@ -49,12 +51,20 @@ public class EntityWitherSkull extends EntityFireball {
                     }
 
                     if (b0 > 0) {
-                        ((EntityLiving) movingobjectposition.entity).addEffect(new MobEffect(MobEffects.WITHER, 20 * b0, 1));
+                        ((EntityLiving) movingobjectposition.entity).addEffect(new MobEffect(MobEffects.WITHER, 20 * b0, 1), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ATTACK); // CraftBukkit
                     }
                 }
             }
 
-            this.world.createExplosion(this, this.locX, this.locY, this.locZ, 1.0F, false, this.world.getGameRules().getBoolean("mobGriefing"));
+            // CraftBukkit start
+            // this.world.createExplosion(this, this.locX, this.locY, this.locZ, 1.0F, false, this.world.getGameRules().getBoolean("mobGriefing"));
+            ExplosionPrimeEvent event = new ExplosionPrimeEvent(this.getBukkitEntity(), 1.0F, false);
+            this.world.getServer().getPluginManager().callEvent(event);
+
+            if (!event.isCancelled()) {
+                this.world.createExplosion(this, this.locX, this.locY, this.locZ, event.getRadius(), event.getFire(), this.world.getGameRules().getBoolean("mobGriefing"));
+            }
+            // CraftBukkit end
             this.die();
         }
 

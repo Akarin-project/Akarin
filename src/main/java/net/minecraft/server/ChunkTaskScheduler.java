@@ -37,6 +37,12 @@ public class ChunkTaskScheduler extends Scheduler<ChunkCoordIntPair, ChunkStatus
         this.f = iasynctaskhandler;
     }
 
+    // CraftBukkit start
+    public void forcePolluteCache(ChunkCoordIntPair chunkcoordintpair) {
+        this.progressCache.put(chunkcoordintpair.a(), new Scheduler.a(chunkcoordintpair, new ProtoChunk(chunkcoordintpair, ChunkConverter.a), ChunkStatus.EMPTY));
+    }
+    // CraftBukkit end
+
     @Nullable
     protected Scheduler<ChunkCoordIntPair, ChunkStatus, ProtoChunk>.a a(ChunkCoordIntPair chunkcoordintpair, boolean flag) {
         IChunkLoader ichunkloader = this.e;

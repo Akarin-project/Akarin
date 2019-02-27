@@ -84,9 +84,15 @@ public class ArgumentEntity implements ArgumentType<EntitySelector> {
     }
 
     public EntitySelector parse(StringReader stringreader) throws CommandSyntaxException {
+        // CraftBukkit start
+        return parse(stringreader, false);
+    }
+
+    public EntitySelector parse(StringReader stringreader, boolean overridePermissions) throws CommandSyntaxException {
+        // CraftBukkit end
         boolean flag = false;
         ArgumentParserSelector argumentparserselector = new ArgumentParserSelector(stringreader);
-        EntitySelector entityselector = argumentparserselector.s();
+        EntitySelector entityselector = argumentparserselector.s(overridePermissions); // CraftBukkit
 
         if (entityselector.a() > 1 && this.h) {
             if (this.i) {

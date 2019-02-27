@@ -1,15 +1,48 @@
 package net.minecraft.server;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.inventory.CraftInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+// CraftBukkit end
+
 public class ContainerChest extends Container {
 
     private final IInventory container;
     private final int f;
+    // CraftBukkit start
+    private CraftInventoryView bukkitEntity = null;
+    private PlayerInventory player;
+
+    @Override
+    public CraftInventoryView getBukkitView() {
+        if (bukkitEntity != null) {
+            return bukkitEntity;
+        }
+
+        CraftInventory inventory;
+        if (this.container instanceof PlayerInventory) {
+            inventory = new org.bukkit.craftbukkit.inventory.CraftInventoryPlayer((PlayerInventory) this.container);
+        } else if (this.container instanceof InventoryLargeChest) {
+            inventory = new org.bukkit.craftbukkit.inventory.CraftInventoryDoubleChest((InventoryLargeChest) this.container);
+        } else {
+            inventory = new CraftInventory(this.container);
+        }
+
+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
+        return bukkitEntity;
+    }
+    // CraftBukkit end
 
     public ContainerChest(IInventory iinventory, IInventory iinventory1, EntityHuman entityhuman) {
         this.container = iinventory1;
         this.f = iinventory1.getSize() / 9;
         iinventory1.startOpen(entityhuman);
         int i = (this.f - 4) * 18;
+
+        // CraftBukkit start - Save player
+        // TODO: Should we check to make sure it really is an InventoryPlayer?
+        this.player = (PlayerInventory) iinventory;
+        // CraftBukkit end
 
         int j;
         int k;
@@ -33,6 +66,7 @@ public class ContainerChest extends Container {
     }
 
     public boolean canUse(EntityHuman entityhuman) {
+        if (!this.checkReachable) return true; // CraftBukkit
         return this.container.a(entityhuman);
     }
 

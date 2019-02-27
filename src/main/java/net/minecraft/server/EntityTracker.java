@@ -91,7 +91,7 @@ public class EntityTracker {
         } else if (entity instanceof EntityExperienceOrb) {
             this.addEntity(entity, 160, 20, true);
         } else if (entity instanceof EntityAreaEffectCloud) {
-            this.addEntity(entity, 160, Integer.MAX_VALUE, true);
+            this.addEntity(entity, 160, 10, true); // CraftBukkit
         } else if (entity instanceof EntityEnderCrystal) {
             this.addEntity(entity, 256, Integer.MAX_VALUE, false);
         } else if (entity instanceof EntityEvokerFangs) {

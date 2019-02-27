@@ -2,11 +2,17 @@ package net.minecraft.server;
 
 import java.util.Collection;
 
-public class RecipeTippedArrow extends IRecipeComplex {
+public class RecipeTippedArrow extends ShapedRecipes implements IRecipe { // CraftBukkit
 
+    // CraftBukkit start
     public RecipeTippedArrow(MinecraftKey minecraftkey) {
-        super(minecraftkey);
+        super(minecraftkey, "", 3, 3, NonNullList.a(RecipeItemStack.a,
+                RecipeItemStack.a(Items.ARROW), RecipeItemStack.a(Items.ARROW), RecipeItemStack.a(Items.ARROW),
+                RecipeItemStack.a(Items.ARROW), RecipeItemStack.a(Items.LINGERING_POTION), RecipeItemStack.a(Items.ARROW),
+                RecipeItemStack.a(Items.ARROW), RecipeItemStack.a(Items.ARROW), RecipeItemStack.a(Items.ARROW)),
+                new ItemStack(Items.TIPPED_ARROW, 8));
     }
+    // CraftBukkit end
 
     public boolean a(IInventory iinventory, World world) {
         if (iinventory.U_() == 3 && iinventory.n() == 3) {

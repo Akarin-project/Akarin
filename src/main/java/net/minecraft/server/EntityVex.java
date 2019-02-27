@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import javax.annotation.Nullable;
+import org.bukkit.event.entity.EntityTargetEvent;
 
 public class EntityVex extends EntityMonster {
 
@@ -178,7 +179,7 @@ public class EntityVex extends EntityMonster {
         }
 
         public void c() {
-            EntityVex.this.setGoalTarget(EntityVex.this.b.getGoalTarget());
+            EntityVex.this.setGoalTarget(EntityVex.this.b.getGoalTarget(), EntityTargetEvent.TargetReason.OWNER_ATTACKED_TARGET, true); // CraftBukkit
             super.c();
         }
     }

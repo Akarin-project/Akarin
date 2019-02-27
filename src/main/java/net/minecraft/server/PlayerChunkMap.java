@@ -13,6 +13,10 @@ import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import java.util.LinkedList;
+// CraftBukkit end
+
 public class PlayerChunkMap {
 
     private static final Predicate<EntityPlayer> a = (entityplayer) -> {
@@ -32,6 +36,7 @@ public class PlayerChunkMap {
     private long k;
     private boolean l = true;
     private boolean m = true;
+    private boolean wasNotEmpty; // CraftBukkit - add field
 
     public PlayerChunkMap(WorldServer worldserver) {
         this.world = worldserver;
@@ -135,7 +140,11 @@ public class PlayerChunkMap {
                             break;
                         }
                     }
+                // CraftBukkit start - SPIGOT-2891: remove once chunk has been provided
+                } else {
+                    iterator1.remove();
                 }
+                // CraftBukkit end
             }
         }
 
@@ -197,6 +206,16 @@ public class PlayerChunkMap {
         return playerchunk;
     }
 
+    // CraftBukkit start - add method
+    public final boolean isChunkInUse(int x, int z) {
+        PlayerChunk pi = getChunk(x, z);
+        if (pi != null) {
+            return (pi.players.size() > 0);
+        }
+        return false;
+    }
+    // CraftBukkit end
+
     public void flagDirty(BlockPosition blockposition) {
         int i = blockposition.getX() >> 4;
         int j = blockposition.getZ() >> 4;
@@ -215,11 +234,21 @@ public class PlayerChunkMap {
         entityplayer.d = entityplayer.locX;
         entityplayer.e = entityplayer.locZ;
 
+
+        // CraftBukkit start - Load nearby chunks first
+        List<ChunkCoordIntPair> chunkList = new LinkedList<ChunkCoordIntPair>();
+
         for (int k = i - this.j; k <= i + this.j; ++k) {
             for (int l = j - this.j; l <= j + this.j; ++l) {
-                this.c(k, l).a(entityplayer);
+                chunkList.add(new ChunkCoordIntPair(k, l));
             }
         }
+
+        Collections.sort(chunkList, new ChunkCoordComparator(entityplayer));
+        for (ChunkCoordIntPair pair : chunkList) {
+            this.c(pair.x, pair.z).a(entityplayer);
+        }
+        // CraftBukkit end
 
         this.managedPlayers.add(entityplayer);
         this.e();
@@ -264,11 +293,14 @@ public class PlayerChunkMap {
             int j1 = i - k;
             int k1 = j - l;
 
+            List<ChunkCoordIntPair> chunksToLoad = new LinkedList<ChunkCoordIntPair>(); // CraftBukkit
+
             if (j1 != 0 || k1 != 0) {
                 for (int l1 = i - i1; l1 <= i + i1; ++l1) {
                     for (int i2 = j - i1; i2 <= j + i1; ++i2) {
                         if (!this.a(l1, i2, k, l, i1)) {
-                            this.c(l1, i2).a(entityplayer);
+                            // this.c(l1, i2).a(entityplayer);
+                            chunksToLoad.add(new ChunkCoordIntPair(l1, i2)); // CraftBukkit
                         }
 
                         if (!this.a(l1 - j1, i2 - k1, i, j, i1)) {
@@ -284,6 +316,13 @@ public class PlayerChunkMap {
                 entityplayer.d = entityplayer.locX;
                 entityplayer.e = entityplayer.locZ;
                 this.e();
+
+                // CraftBukkit start - send nearest chunks first
+                Collections.sort(chunksToLoad, new ChunkCoordComparator(entityplayer));
+                for (ChunkCoordIntPair pair : chunksToLoad) {
+                    this.c(pair.x, pair.z).a(entityplayer);
+                }
+                // CraftBukkit end
             }
         }
     }
@@ -368,4 +407,47 @@ public class PlayerChunkMap {
         }
 
     }
+
+    // CraftBukkit start - Sorter to load nearby chunks first
+    private static class ChunkCoordComparator implements java.util.Comparator<ChunkCoordIntPair> {
+        private int x;
+        private int z;
+
+        public ChunkCoordComparator (EntityPlayer entityplayer) {
+            x = (int) entityplayer.locX >> 4;
+            z = (int) entityplayer.locZ >> 4;
+        }
+
+        public int compare(ChunkCoordIntPair a, ChunkCoordIntPair b) {
+            if (a.equals(b)) {
+                return 0;
+            }
+
+            // Subtract current position to set center point
+            int ax = a.x - this.x;
+            int az = a.z - this.z;
+            int bx = b.x - this.x;
+            int bz = b.z - this.z;
+
+            int result = ((ax - bx) * (ax + bx)) + ((az - bz) * (az + bz));
+            if (result != 0) {
+                return result;
+            }
+
+            if (ax < 0) {
+                if (bx < 0) {
+                    return bz - az;
+                } else {
+                    return -1;
+                }
+            } else {
+                if (bx < 0) {
+                    return 1;
+                } else {
+                    return az - bz;
+                }
+            }
+        }
+    }
+    // CraftBukkit end
 }

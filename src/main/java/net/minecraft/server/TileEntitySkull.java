@@ -118,13 +118,19 @@ public class TileEntitySkull extends TileEntity implements ITickable {
         }
     }
 
+    // CraftBukkit start
     public static void a(IBlockAccess iblockaccess, BlockPosition blockposition) {
+        setShouldDrop(iblockaccess, blockposition, false);
+    }
+
+    public static void setShouldDrop(IBlockAccess iblockaccess, BlockPosition blockposition, boolean flag) {
+        // CraftBukkit end
         TileEntity tileentity = iblockaccess.getTileEntity(blockposition);
 
         if (tileentity instanceof TileEntitySkull) {
             TileEntitySkull tileentityskull = (TileEntitySkull) tileentity;
 
-            tileentityskull.drop = false;
+            tileentityskull.drop = flag; // CraftBukkit
         }
 
     }

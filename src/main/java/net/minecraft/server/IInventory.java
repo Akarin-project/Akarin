@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import org.bukkit.craftbukkit.entity.CraftHumanEntity; // CraftBukkit
+
 public interface IInventory extends INamableTileEntity {
 
     int getSize();
@@ -41,4 +43,29 @@ public interface IInventory extends INamableTileEntity {
     default int U_() {
         return 0;
     }
+
+    // CraftBukkit start
+    java.util.List<ItemStack> getContents();
+
+    void onOpen(CraftHumanEntity who);
+
+    void onClose(CraftHumanEntity who);
+
+    java.util.List<org.bukkit.entity.HumanEntity> getViewers();
+
+    org.bukkit.inventory.InventoryHolder getOwner();
+
+    void setMaxStackSize(int size);
+
+    org.bukkit.Location getLocation();
+
+    default IRecipe getCurrentRecipe() {
+        return null;
+    }
+
+    default void setCurrentRecipe(IRecipe recipe) {
+    }
+
+    int MAX_STACK = 64;
+    // CraftBukkit end
 }

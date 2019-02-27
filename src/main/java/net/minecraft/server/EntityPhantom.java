@@ -197,7 +197,7 @@ public class EntityPhantom extends EntityFlying implements IMonster {
                         EntityHuman entityhuman = (EntityHuman) iterator.next();
 
                         if (PathfinderGoalTarget.a(EntityPhantom.this, entityhuman, false, false)) {
-                            EntityPhantom.this.setGoalTarget(entityhuman);
+                            EntityPhantom.this.setGoalTarget(entityhuman, org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER, true); // CraftBukkit - reason
                             return true;
                         }
                     }

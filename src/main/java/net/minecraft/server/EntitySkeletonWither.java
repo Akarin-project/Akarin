@@ -32,7 +32,7 @@ public class EntitySkeletonWither extends EntitySkeletonAbstract {
     }
 
     public void die(DamageSource damagesource) {
-        super.die(damagesource);
+        // super.die(damagesource); // CraftBukkit
         if (damagesource.getEntity() instanceof EntityCreeper) {
             EntityCreeper entitycreeper = (EntityCreeper) damagesource.getEntity();
 
@@ -41,6 +41,7 @@ public class EntitySkeletonWither extends EntitySkeletonAbstract {
                 this.a((IMaterial) Items.WITHER_SKELETON_SKULL);
             }
         }
+        super.die(damagesource); // CraftBukkit - moved from above
 
     }
 
@@ -68,7 +69,7 @@ public class EntitySkeletonWither extends EntitySkeletonAbstract {
             return false;
         } else {
             if (entity instanceof EntityLiving) {
-                ((EntityLiving) entity).addEffect(new MobEffect(MobEffects.WITHER, 200));
+                ((EntityLiving) entity).addEffect(new MobEffect(MobEffects.WITHER, 200), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ATTACK); // CraftBukkit
             }
 
             return true;

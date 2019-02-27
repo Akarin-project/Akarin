@@ -29,7 +29,7 @@ public abstract class EntityFish extends EntityWaterAnimal implements IAnimal {
     }
 
     public boolean isTypeNotPersistent() {
-        return !this.isFromBucket() && !this.hasCustomName();
+        return true; // CraftBukkit
     }
 
     public int dg() {
@@ -47,6 +47,7 @@ public abstract class EntityFish extends EntityWaterAnimal implements IAnimal {
 
     public void setFromBucket(boolean flag) {
         this.datawatcher.set(EntityFish.a, flag);
+        this.persistent = this.isPersistent(); // CraftBukkit - SPIGOT-4106 update persistence
     }
 
     public void b(NBTTagCompound nbttagcompound) {

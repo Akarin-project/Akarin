@@ -1,11 +1,24 @@
 package net.minecraft.server;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.inventory.CraftInventory;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+// CraftBukkit end
+
 public class ContainerDispenser extends Container {
 
     public final IInventory items;
+    // CraftBukkit start
+    private CraftInventoryView bukkitEntity = null;
+    private PlayerInventory player;
+    // CraftBukkit end
 
     public ContainerDispenser(IInventory iinventory, IInventory iinventory1) {
         this.items = iinventory1;
+        // CraftBukkit start - Save player
+        // TODO: Should we check to make sure it really is an InventoryPlayer?
+        this.player = (PlayerInventory)iinventory;
+        // CraftBukkit end
 
         int i;
         int j;
@@ -29,6 +42,7 @@ public class ContainerDispenser extends Container {
     }
 
     public boolean canUse(EntityHuman entityhuman) {
+        if (!this.checkReachable) return true; // CraftBukkit
         return this.items.a(entityhuman);
     }
 
@@ -63,4 +77,17 @@ public class ContainerDispenser extends Container {
 
         return itemstack;
     }
+
+    // CraftBukkit start
+    @Override
+    public CraftInventoryView getBukkitView() {
+        if (bukkitEntity != null) {
+            return bukkitEntity;
+        }
+
+        CraftInventory inventory = new CraftInventory(this.items);
+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
+        return bukkitEntity;
+    }
+    // CraftBukkit end
 }

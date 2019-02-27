@@ -6,6 +6,8 @@ import java.util.Random;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
+import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
+
 public class BlockMinecartDetector extends BlockMinecartTrackAbstract {
 
     public static final BlockStateEnum<BlockPropertyTrackPosition> SHAPE = BlockProperties.S;
@@ -54,6 +56,17 @@ public class BlockMinecartDetector extends BlockMinecartTrackAbstract {
         if (!list.isEmpty()) {
             flag1 = true;
         }
+
+        // CraftBukkit start
+        if (flag != flag1) {
+            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+
+            BlockRedstoneEvent eventRedstone = new BlockRedstoneEvent(block, flag ? 15 : 0, flag1 ? 15 : 0);
+            world.getServer().getPluginManager().callEvent(eventRedstone);
+
+            flag1 = eventRedstone.getNewCurrent() > 0;
+        }
+        // CraftBukkit end
 
         if (flag1 && !flag) {
             world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockMinecartDetector.POWERED, true), 3);

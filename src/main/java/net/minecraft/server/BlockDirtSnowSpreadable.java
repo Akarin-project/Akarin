@@ -23,6 +23,11 @@ public abstract class BlockDirtSnowSpreadable extends BlockDirtSnow {
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (!world.isClientSide) {
             if (!a((IWorldReader) world, blockposition)) {
+                // CraftBukkit start
+                if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockFadeEvent(world, blockposition, Blocks.DIRT.getBlockData()).isCancelled()) {
+                    return;
+                }
+                // CraftBukkit end
                 world.setTypeUpdate(blockposition, Blocks.DIRT.getBlockData());
             } else {
                 if (world.getLightLevel(blockposition.up()) >= 9) {
@@ -34,7 +39,7 @@ public abstract class BlockDirtSnowSpreadable extends BlockDirtSnow {
                         }
 
                         if (world.getType(blockposition1).getBlock() == Blocks.DIRT && b(world, blockposition1)) {
-                            world.setTypeUpdate(blockposition1, this.getBlockData());
+                            org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(world, blockposition, blockposition1, this.getBlockData()); // CraftBukkit
                         }
                     }
                 }

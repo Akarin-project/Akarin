@@ -6,6 +6,8 @@ public interface IWorldWriter {
 
     boolean addEntity(Entity entity);
 
+    boolean addEntity(Entity entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason); // CraftBukkit
+
     boolean setAir(BlockPosition blockposition);
 
     void a(EnumSkyBlock enumskyblock, BlockPosition blockposition, int i);

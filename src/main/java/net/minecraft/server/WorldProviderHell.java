@@ -56,11 +56,11 @@ public class WorldProviderHell extends WorldProvider {
     public WorldBorder getWorldBorder() {
         return new WorldBorder() {
             public double getCenterX() {
-                return super.getCenterX() / 8.0D;
+                return super.getCenterX(); // CraftBukkit
             }
 
             public double getCenterZ() {
-                return super.getCenterZ() / 8.0D;
+                return super.getCenterZ(); // CraftBukkit
             }
         };
     }

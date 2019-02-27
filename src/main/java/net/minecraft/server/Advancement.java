@@ -27,6 +27,7 @@ public class Advancement {
     private final String[][] f;
     private final Set<Advancement> g = Sets.newLinkedHashSet();
     private final IChatBaseComponent h;
+    public final org.bukkit.advancement.Advancement bukkit = new org.bukkit.craftbukkit.advancement.CraftAdvancement(this); // CraftBukkit
 
     public Advancement(MinecraftKey minecraftkey, @Nullable Advancement advancement, @Nullable AdvancementDisplay advancementdisplay, AdvancementRewards advancementrewards, Map<String, Criterion> map, String[][] astring) {
         this.d = minecraftkey;
@@ -206,7 +207,7 @@ public class Advancement {
         }
 
         public Advancement b(MinecraftKey minecraftkey) {
-            if (!this.a((minecraftkey1) -> {
+            if (!this.a((Function<MinecraftKey, Advancement>) (minecraftkey1) -> { // CraftBukkit - decompile error
                 return null;
             })) {
                 throw new IllegalStateException("Tried to build incomplete advancement!");

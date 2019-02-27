@@ -121,7 +121,7 @@ public class EntityTypes<T extends Entity> {
     public static <T extends Entity> EntityTypes<T> a(String s, EntityTypes.a<T> entitytypes_a) {
         EntityTypes<T> entitytypes = entitytypes_a.a(s);
 
-        IRegistry.ENTITY_TYPE.a(new MinecraftKey(s), (Object) entitytypes);
+        IRegistry.ENTITY_TYPE.a(new MinecraftKey(s), entitytypes); // CraftBukkit - decompile error
         return entitytypes;
     }
 
@@ -150,10 +150,16 @@ public class EntityTypes<T extends Entity> {
 
     @Nullable
     public T a(World world, @Nullable NBTTagCompound nbttagcompound, @Nullable IChatBaseComponent ichatbasecomponent, @Nullable EntityHuman entityhuman, BlockPosition blockposition, boolean flag, boolean flag1) {
+        // CraftBukkit start
+        return spawnCreature(world, nbttagcompound, ichatbasecomponent, entityhuman, blockposition, flag, flag1, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER_EGG);
+    }
+
+    @Nullable
+    public T spawnCreature(World world, @Nullable NBTTagCompound nbttagcompound, @Nullable IChatBaseComponent ichatbasecomponent, @Nullable EntityHuman entityhuman, BlockPosition blockposition, boolean flag, boolean flag1, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason) {
         T t0 = this.b(world, nbttagcompound, ichatbasecomponent, entityhuman, blockposition, flag, flag1);
 
-        world.addEntity(t0);
-        return t0;
+        return world.addEntity(t0, spawnReason) ? t0 : null; // Don't return an entity when CreatureSpawnEvent is canceled
+        // CraftBukkit end
     }
 
     @Nullable
@@ -250,7 +256,7 @@ public class EntityTypes<T extends Entity> {
 
     @Nullable
     public T a(World world) {
-        return (Entity) this.aT.apply(world);
+        return this.aT.apply(world); // CraftBukkit - decompile error
     }
 
     @Nullable

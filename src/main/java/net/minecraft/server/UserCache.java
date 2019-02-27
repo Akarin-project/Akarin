@@ -45,7 +45,7 @@ public class UserCache {
     private static boolean c;
     private final Map<String, UserCache.UserCacheEntry> d = Maps.newHashMap();
     private final Map<UUID, UserCache.UserCacheEntry> e = Maps.newHashMap();
-    private final Deque<GameProfile> f = Lists.newLinkedList();
+    private final Deque<GameProfile> f = new java.util.concurrent.LinkedBlockingDeque<GameProfile>(); // CraftBukkit
     private final GameProfileRepository g;
     protected final Gson b;
     private final File h;

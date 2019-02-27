@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+// CraftBukkit start
+import org.bukkit.Location;
+import org.bukkit.event.entity.EntityTeleportEvent;
+// CraftBukkit end
 
 public class EntityShulker extends EntityGolem implements IMonster {
 
@@ -320,8 +324,17 @@ public class EntityShulker extends EntityGolem implements IMonster {
                         EnumDirection enumdirection = aenumdirection[k];
 
                         if (this.world.q(blockposition1.shift(enumdirection))) {
-                            this.datawatcher.set(EntityShulker.a, enumdirection);
-                            flag = true;
+                            // CraftBukkit start
+                            EntityTeleportEvent teleport = new EntityTeleportEvent(this.getBukkitEntity(), this.getBukkitEntity().getLocation(), new Location(this.world.getWorld(), blockposition1.getX(), blockposition1.getY(), blockposition1.getZ()));
+                            this.world.getServer().getPluginManager().callEvent(teleport);
+                            if (!teleport.isCancelled()) {
+                                Location to = teleport.getTo();
+                                blockposition1 = new BlockPosition(to.getX(), to.getY(), to.getZ());
+
+                                this.datawatcher.set(EntityShulker.a, enumdirection);
+                                flag = true;
+                            }
+                            // CraftBukkit end
                             break;
                         }
                     }
@@ -366,6 +379,7 @@ public class EntityShulker extends EntityGolem implements IMonster {
                 this.locX = (double) blockposition.getX() + 0.5D;
                 this.locY = (double) blockposition.getY();
                 this.locZ = (double) blockposition.getZ() + 0.5D;
+                if (valid) world.entityJoinedWorld(this, false); // CraftBukkit
                 this.lastX = this.locX;
                 this.lastY = this.locY;
                 this.lastZ = this.locZ;

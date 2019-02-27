@@ -3,6 +3,11 @@ package net.minecraft.server;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
+// CraftBukkit end
+
 public class EntityEnderCrystal extends Entity {
 
     private static final DataWatcherObject<Optional<BlockPosition>> b = DataWatcher.a(EntityEnderCrystal.class, DataWatcherRegistry.m);
@@ -39,7 +44,11 @@ public class EntityEnderCrystal extends Entity {
             BlockPosition blockposition = new BlockPosition(this);
 
             if (this.world.worldProvider instanceof WorldProviderTheEnd && this.world.getType(blockposition).isAir()) {
-                this.world.setTypeUpdate(blockposition, Blocks.FIRE.getBlockData());
+                // CraftBukkit start
+                if (!CraftEventFactory.callBlockIgniteEvent(this.world, blockposition, this).isCancelled()) {
+                    this.world.setTypeUpdate(blockposition, Blocks.FIRE.getBlockData());
+                }
+                // CraftBukkit end
             }
         }
 
@@ -75,10 +84,23 @@ public class EntityEnderCrystal extends Entity {
             return false;
         } else {
             if (!this.dead && !this.world.isClientSide) {
+                // CraftBukkit start - All non-living entities need this
+                if (CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f)) {
+                    return false;
+                }
+                // CraftBukkit end
                 this.die();
                 if (!this.world.isClientSide) {
                     if (!damagesource.isExplosion()) {
-                        this.world.explode((Entity) null, this.locX, this.locY, this.locZ, 6.0F, true);
+                        // CraftBukkit start
+                        ExplosionPrimeEvent event = new ExplosionPrimeEvent(this.getBukkitEntity(), 6.0F, true);
+                        this.world.getServer().getPluginManager().callEvent(event);
+                        if (event.isCancelled()) {
+                            this.dead = false;
+                            return false;
+                        }
+                        this.world.explode(this, this.locX, this.locY, this.locZ, event.getRadius(), event.getFire());
+                        // CraftBukkit end
                     }
 
                     this.a(damagesource);

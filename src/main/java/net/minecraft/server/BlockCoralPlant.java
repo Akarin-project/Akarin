@@ -18,6 +18,11 @@ public class BlockCoralPlant extends BlockCoralBase {
 
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (!b_(iblockdata, world, blockposition)) {
+            // CraftBukkit start
+            if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockFadeEvent(world, blockposition, this.c.getBlockData().set(BlockCoralPlant.b, false)).isCancelled()) {
+                return;
+            }
+            // CraftBukkit end
             world.setTypeAndData(blockposition, (IBlockData) this.c.getBlockData().set(BlockCoralPlant.b, false), 2);
         }
 

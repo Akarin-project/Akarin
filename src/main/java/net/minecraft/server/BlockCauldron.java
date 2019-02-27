@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import org.bukkit.event.block.CauldronLevelChangeEvent; // CraftBukkit
+
 public class BlockCauldron extends Block {
 
     public static final BlockStateInteger LEVEL = BlockProperties.af;
@@ -32,8 +34,13 @@ public class BlockCauldron extends Block {
         float f = (float) blockposition.getY() + (6.0F + (float) (3 * i)) / 16.0F;
 
         if (!world.isClientSide && entity.isBurning() && i > 0 && entity.getBoundingBox().minY <= (double) f) {
+            // CraftBukkit start
+            if (!this.changeLevel(world, blockposition, iblockdata, i - 1, entity, CauldronLevelChangeEvent.ChangeReason.EXTINGUISH)) {
+                return;
+            }
             entity.extinguish();
-            this.a(world, blockposition, iblockdata, i - 1);
+            // this.a(world, blockposition, iblockdata, i - 1);
+            // CraftBukkit end
         }
 
     }
@@ -49,18 +56,27 @@ public class BlockCauldron extends Block {
 
             if (item == Items.WATER_BUCKET) {
                 if (i < 3 && !world.isClientSide) {
+                    // CraftBukkit start
+                    if (!this.changeLevel(world, blockposition, iblockdata, 3, entityhuman, CauldronLevelChangeEvent.ChangeReason.BUCKET_EMPTY)) {
+                        return true;
+                    }
                     if (!entityhuman.abilities.canInstantlyBuild) {
                         entityhuman.a(enumhand, new ItemStack(Items.BUCKET));
                     }
 
                     entityhuman.a(StatisticList.FILL_CAULDRON);
-                    this.a(world, blockposition, iblockdata, 3);
+                    // this.a(world, blockposition, iblockdata, 3);
+                    // CraftBukkit end
                     world.a((EntityHuman) null, blockposition, SoundEffects.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 }
 
                 return true;
             } else if (item == Items.BUCKET) {
                 if (i == 3 && !world.isClientSide) {
+                    // CraftBukkit start
+                    if (!this.changeLevel(world, blockposition, iblockdata, 0, entityhuman, CauldronLevelChangeEvent.ChangeReason.BUCKET_FILL)) {
+                        return true;
+                    }
                     if (!entityhuman.abilities.canInstantlyBuild) {
                         itemstack.subtract(1);
                         if (itemstack.isEmpty()) {
@@ -71,7 +87,8 @@ public class BlockCauldron extends Block {
                     }
 
                     entityhuman.a(StatisticList.USE_CAULDRON);
-                    this.a(world, blockposition, iblockdata, 0);
+                    // this.a(world, blockposition, iblockdata, 0);
+                    // CraftBukkit end
                     world.a((EntityHuman) null, blockposition, SoundEffects.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 }
 
@@ -81,6 +98,10 @@ public class BlockCauldron extends Block {
 
                 if (item == Items.GLASS_BOTTLE) {
                     if (i > 0 && !world.isClientSide) {
+                        // CraftBukkit start
+                        if (!this.changeLevel(world, blockposition, iblockdata, i - 1, entityhuman, CauldronLevelChangeEvent.ChangeReason.BOTTLE_FILL)) {
+                            return true;
+                        }
                         if (!entityhuman.abilities.canInstantlyBuild) {
                             itemstack1 = PotionUtil.a(new ItemStack(Items.POTION), Potions.b);
                             entityhuman.a(StatisticList.USE_CAULDRON);
@@ -95,12 +116,17 @@ public class BlockCauldron extends Block {
                         }
 
                         world.a((EntityHuman) null, blockposition, SoundEffects.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                        this.a(world, blockposition, iblockdata, i - 1);
+                        // this.a(world, blockposition, iblockdata, i - 1);
+                        // CraftBukkit end
                     }
 
                     return true;
                 } else if (item == Items.POTION && PotionUtil.d(itemstack) == Potions.b) {
                     if (i < 3 && !world.isClientSide) {
+                        // CraftBukkit start
+                        if (!this.changeLevel(world, blockposition, iblockdata, i + 1, entityhuman, CauldronLevelChangeEvent.ChangeReason.BOTTLE_EMPTY)) {
+                            return true;
+                        }
                         if (!entityhuman.abilities.canInstantlyBuild) {
                             itemstack1 = new ItemStack(Items.GLASS_BOTTLE);
                             entityhuman.a(StatisticList.USE_CAULDRON);
@@ -111,7 +137,8 @@ public class BlockCauldron extends Block {
                         }
 
                         world.a((EntityHuman) null, blockposition, SoundEffects.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                        this.a(world, blockposition, iblockdata, i + 1);
+                        // this.a(world, blockposition, iblockdata, i + 1);
+                        // CraftBukkit end
                     }
 
                     return true;
@@ -120,8 +147,13 @@ public class BlockCauldron extends Block {
                         ItemArmorColorable itemarmorcolorable = (ItemArmorColorable) item;
 
                         if (itemarmorcolorable.e(itemstack) && !world.isClientSide) {
+                            // CraftBukkit start
+                            if (!this.changeLevel(world, blockposition, iblockdata, i - 1, entityhuman, CauldronLevelChangeEvent.ChangeReason.ARMOR_WASH)) {
+                                return true;
+                            }
                             itemarmorcolorable.g(itemstack);
-                            this.a(world, blockposition, iblockdata, i - 1);
+                            // this.a(world, blockposition, iblockdata, i - 1);
+                            // CraftBukkit end
                             entityhuman.a(StatisticList.CLEAN_ARMOR);
                             return true;
                         }
@@ -129,13 +161,18 @@ public class BlockCauldron extends Block {
 
                     if (i > 0 && item instanceof ItemBanner) {
                         if (TileEntityBanner.a(itemstack) > 0 && !world.isClientSide) {
+                            // CraftBukkit start
+                            if (!this.changeLevel(world, blockposition, iblockdata, i - 1, entityhuman, CauldronLevelChangeEvent.ChangeReason.BANNER_WASH)) {
+                                return true;
+                            }
                             itemstack1 = itemstack.cloneItemStack();
                             itemstack1.setCount(1);
                             TileEntityBanner.b(itemstack1);
                             entityhuman.a(StatisticList.CLEAN_BANNER);
                             if (!entityhuman.abilities.canInstantlyBuild) {
                                 itemstack.subtract(1);
-                                this.a(world, blockposition, iblockdata, i - 1);
+                                // this.a(world, blockposition, iblockdata, i - 1);
+                                // CraftBukkit end
                             }
 
                             if (itemstack.isEmpty()) {
@@ -172,9 +209,25 @@ public class BlockCauldron extends Block {
         }
     }
 
+    // CraftBukkit start
     public void a(World world, BlockPosition blockposition, IBlockData iblockdata, int i) {
-        world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockCauldron.LEVEL, MathHelper.clamp(i, 0, 3)), 2);
+        this.changeLevel(world, blockposition, iblockdata, i, null, CauldronLevelChangeEvent.ChangeReason.UNKNOWN);
+    }
+
+    private boolean changeLevel(World world, BlockPosition blockposition, IBlockData iblockdata, int i, Entity entity, CauldronLevelChangeEvent.ChangeReason reason) {
+        int newLevel = Integer.valueOf(MathHelper.clamp(i, 0, 3));
+        CauldronLevelChangeEvent event = new CauldronLevelChangeEvent(
+                world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()),
+                (entity == null) ? null : entity.getBukkitEntity(), reason, iblockdata.get(BlockCauldron.LEVEL), newLevel
+        );
+        world.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return false;
+        }
+        world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockCauldron.LEVEL, event.getNewLevel()), 2);
         world.updateAdjacentComparators(blockposition, this);
+        return true;
+        // CraftBukkit end
     }
 
     public void c(World world, BlockPosition blockposition) {
@@ -185,7 +238,7 @@ public class BlockCauldron extends Block {
                 IBlockData iblockdata = world.getType(blockposition);
 
                 if ((Integer) iblockdata.get(BlockCauldron.LEVEL) < 3) {
-                    world.setTypeAndData(blockposition, (IBlockData) iblockdata.a((IBlockState) BlockCauldron.LEVEL), 2);
+                    this.a(world, blockposition, (IBlockData) iblockdata.a((IBlockState) BlockCauldron.LEVEL), 2); // CraftBukkit
                 }
 
             }

@@ -140,7 +140,7 @@ public class VillageSiege {
             }
 
             entityzombie.setPositionRotation(vec3d.x, vec3d.y, vec3d.z, this.a.random.nextFloat() * 360.0F, 0.0F);
-            this.a.addEntity(entityzombie);
+            this.a.addEntity(entityzombie, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.VILLAGE_INVASION); // CraftBukkit
             BlockPosition blockposition = this.f.a();
 
             entityzombie.a(blockposition, this.f.b());

@@ -4,6 +4,7 @@ import com.mojang.brigadier.context.CommandContext;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.annotation.Nullable;
+import org.bukkit.command.CommandSender;
 
 public abstract class CommandBlockListenerAbstract implements ICommandListener {
 
@@ -15,6 +16,10 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
     private IChatBaseComponent f;
     private String g = "";
     private IChatBaseComponent h = new ChatComponentText("@");
+    // CraftBukkit start
+    @Override
+    public abstract CommandSender getBukkitSender(CommandListenerWrapper wrapper);
+    // CraftBukkit end
 
     public CommandBlockListenerAbstract() {}
 
@@ -102,14 +107,7 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
                 if (minecraftserver != null && minecraftserver.D() && minecraftserver.getEnableCommandBlock() && !UtilColor.b(this.g)) {
                     try {
                         this.f = null;
-                        CommandListenerWrapper commandlistenerwrapper = this.getWrapper().a((commandcontext, flag, i) -> {
-                            if (flag) {
-                                ++this.d;
-                            }
-
-                        });
-
-                        minecraftserver.getCommandDispatcher().a(commandlistenerwrapper, this.g);
+                        this.d = minecraftserver.getCommandDispatcher().dispatchServerCommand(this.getWrapper(), this.g); // CraftBukkit
                     } catch (Throwable throwable) {
                         CrashReport crashreport = CrashReport.a(throwable, "Executing command block");
                         CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Command to be executed");
@@ -140,6 +138,11 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
     }
 
     public void setName(IChatBaseComponent ichatbasecomponent) {
+        // CraftBukkit start
+        if (ichatbasecomponent == null) {
+            ichatbasecomponent = new ChatComponentText("@");
+        }
+        // CraftBukkit end
         this.h = ichatbasecomponent;
     }
 

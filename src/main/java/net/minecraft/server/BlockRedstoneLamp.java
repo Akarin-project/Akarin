@@ -3,6 +3,8 @@ package net.minecraft.server;
 import java.util.Random;
 import javax.annotation.Nullable;
 
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+
 public class BlockRedstoneLamp extends Block {
 
     public static final BlockStateBoolean a = BlockRedstoneTorch.LIT;
@@ -33,6 +35,11 @@ public class BlockRedstoneLamp extends Block {
                 if (flag) {
                     world.getBlockTickList().a(blockposition, this, 4);
                 } else {
+                    // CraftBukkit start
+                    if (CraftEventFactory.callRedstoneChange(world, blockposition, 0, 15).getNewCurrent() != 15) {
+                        return;
+                    }
+                    // CraftBukkit end
                     world.setTypeAndData(blockposition, (IBlockData) iblockdata.a((IBlockState) BlockRedstoneLamp.a), 2);
                 }
             }
@@ -43,6 +50,11 @@ public class BlockRedstoneLamp extends Block {
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (!world.isClientSide) {
             if ((Boolean) iblockdata.get(BlockRedstoneLamp.a) && !world.isBlockIndirectlyPowered(blockposition)) {
+                // CraftBukkit start
+                if (CraftEventFactory.callRedstoneChange(world, blockposition, 15, 0).getNewCurrent() != 0) {
+                    return;
+                }
+                // CraftBukkit end
                 world.setTypeAndData(blockposition, (IBlockData) iblockdata.a((IBlockState) BlockRedstoneLamp.a), 2);
             }
 

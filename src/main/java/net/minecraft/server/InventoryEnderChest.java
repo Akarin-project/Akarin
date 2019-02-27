@@ -1,11 +1,27 @@
 package net.minecraft.server;
 
+import org.bukkit.Location;
+import org.bukkit.inventory.InventoryHolder;
+
 public class InventoryEnderChest extends InventorySubcontainer {
 
     private TileEntityEnderChest a;
+    // CraftBukkit start
+    private final EntityHuman owner;
 
-    public InventoryEnderChest() {
+    public InventoryHolder getBukkitOwner() {
+        return owner.getBukkitEntity();
+    }
+
+    @Override
+    public Location getLocation() {
+        return new Location(this.a.getWorld().getWorld(), this.a.getPosition().getX(), this.a.getPosition().getY(), this.a.getPosition().getZ());
+    }
+
+    public InventoryEnderChest(EntityHuman owner) {
         super(new ChatMessage("container.enderchest", new Object[0]), 27);
+        this.owner = owner;
+        // CraftBukkit end
     }
 
     public void a(TileEntityEnderChest tileentityenderchest) {

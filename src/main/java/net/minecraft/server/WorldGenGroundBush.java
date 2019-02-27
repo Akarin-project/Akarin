@@ -46,7 +46,12 @@ public class WorldGenGroundBush extends WorldGenTreeAbstract<WorldGenFeatureEmpt
                     }
                 }
             }
+        // CraftBukkit start - Return false if gen was unsuccessful
+        } else {
+            return false;
         }
+        // CraftBukkit end
+
 
         return true;
     }

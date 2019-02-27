@@ -2,6 +2,10 @@ package net.minecraft.server;
 
 import java.util.function.Predicate;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+// CraftBukkit end
+
 public class PathfinderGoalEatTile extends PathfinderGoal {
 
     private static final Predicate<IBlockData> a = BlockStatePredicate.a(Blocks.GRASS);
@@ -49,7 +53,8 @@ public class PathfinderGoalEatTile extends PathfinderGoal {
             BlockPosition blockposition = new BlockPosition(this.b.locX, this.b.locY, this.b.locZ);
 
             if (PathfinderGoalEatTile.a.test(this.c.getType(blockposition))) {
-                if (this.c.getGameRules().getBoolean("mobGriefing")) {
+                // CraftBukkit
+                if (!CraftEventFactory.callEntityChangeBlockEvent(this.b, blockposition, Blocks.AIR.getBlockData(), !this.c.getGameRules().getBoolean("mobGriefing")).isCancelled()) {
                     this.c.setAir(blockposition, false);
                 }
 
@@ -58,7 +63,8 @@ public class PathfinderGoalEatTile extends PathfinderGoal {
                 BlockPosition blockposition1 = blockposition.down();
 
                 if (this.c.getType(blockposition1).getBlock() == Blocks.GRASS_BLOCK) {
-                    if (this.c.getGameRules().getBoolean("mobGriefing")) {
+                    // CraftBukkit
+                    if (!CraftEventFactory.callEntityChangeBlockEvent(this.b, blockposition, Blocks.AIR.getBlockData(), !this.c.getGameRules().getBoolean("mobGriefing")).isCancelled()) {
                         this.c.triggerEffect(2001, blockposition1, Block.getCombinedId(Blocks.GRASS_BLOCK.getBlockData()));
                         this.c.setTypeAndData(blockposition1, Blocks.DIRT.getBlockData(), 2);
                     }

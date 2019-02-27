@@ -1,6 +1,10 @@
 package net.minecraft.server;
 
 import java.util.Iterator;
+// CraftBukkit start
+import org.bukkit.craftbukkit.inventory.CraftInventoryFurnace;
+import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+// CraftBukkit end
 
 public class ContainerFurnace extends ContainerRecipeBook {
 
@@ -11,12 +15,29 @@ public class ContainerFurnace extends ContainerRecipeBook {
     private int i;
     private int j;
 
+    // CraftBukkit start
+    private CraftInventoryView bukkitEntity = null;
+    private PlayerInventory player;
+
+    @Override
+    public CraftInventoryView getBukkitView() {
+        if (bukkitEntity != null) {
+            return bukkitEntity;
+        }
+
+        CraftInventoryFurnace inventory = new CraftInventoryFurnace((TileEntityFurnace) this.furnace);
+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
+        return bukkitEntity;
+    }
+    // CraftBukkit end
+
     public ContainerFurnace(PlayerInventory playerinventory, IInventory iinventory) {
         this.furnace = iinventory;
         this.f = playerinventory.player.world;
         this.a(new Slot(iinventory, 0, 56, 17));
         this.a((Slot) (new SlotFurnaceFuel(iinventory, 1, 56, 53)));
         this.a((Slot) (new SlotFurnaceResult(playerinventory.player, iinventory, 2, 116, 35)));
+        this.player = playerinventory; // CraftBukkit - save player
 
         int i;
 
@@ -95,6 +116,7 @@ public class ContainerFurnace extends ContainerRecipeBook {
     }
 
     public boolean canUse(EntityHuman entityhuman) {
+        if (!this.checkReachable) return true; // CraftBukkit
         return this.furnace.a(entityhuman);
     }
 

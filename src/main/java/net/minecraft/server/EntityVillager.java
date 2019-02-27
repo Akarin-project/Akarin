@@ -6,6 +6,16 @@ import java.util.Random;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+// CraftBukkit start
+import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.entity.CraftVillager;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.craftbukkit.inventory.CraftMerchantRecipe;
+import org.bukkit.entity.Villager;
+import org.bukkit.event.entity.EntityTransformEvent;
+import org.bukkit.event.entity.VillagerAcquireTradeEvent;
+import org.bukkit.event.entity.VillagerReplenishTradeEvent;
+// CraftBukkit end
 
 public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
 
@@ -37,7 +47,7 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
 
     public EntityVillager(World world, int i) {
         super(EntityTypes.VILLAGER, world);
-        this.inventory = new InventorySubcontainer(new ChatComponentText("Items"), 8);
+        this.inventory = new InventorySubcontainer(new ChatComponentText("Items"), 8, (CraftVillager) this.getBukkitEntity()); // CraftBukkit add argument
         this.setProfession(i);
         this.setSize(0.6F, 1.95F);
         ((Navigation) this.getNavigation()).a(true);
@@ -119,7 +129,14 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
                         MerchantRecipe merchantrecipe = (MerchantRecipe) iterator.next();
 
                         if (merchantrecipe.h()) {
-                            merchantrecipe.a(this.random.nextInt(6) + this.random.nextInt(6) + 2);
+                            // CraftBukkit start
+                            int bonus = this.random.nextInt(6) + this.random.nextInt(6) + 2;
+                            VillagerReplenishTradeEvent event = new VillagerReplenishTradeEvent((Villager) this.getBukkitEntity(), merchantrecipe.asBukkit(), bonus);
+                            Bukkit.getPluginManager().callEvent(event);
+                            if (!event.isCancelled()) {
+                                merchantrecipe.a(event.getBonus());
+                            }
+                            // CraftBukkit end
                         }
                     }
 
@@ -131,7 +148,7 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
                     }
                 }
 
-                this.addEffect(new MobEffect(MobEffects.REGENERATION, 200, 0));
+                this.addEffect(new MobEffect(MobEffects.REGENERATION, 200, 0), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.VILLAGER_TRADE); // CraftBukkit
             }
         }
 
@@ -433,7 +450,20 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
                 for (int l = 0; l < k; ++l) {
                     EntityVillager.IMerchantRecipeOption entityvillager_imerchantrecipeoption = aentityvillager_imerchantrecipeoption3[l];
 
-                    entityvillager_imerchantrecipeoption.a(this, this.trades, this.random);
+                    // CraftBukkit start
+                    // this is a hack. this must be done because otherwise, if
+                    // mojang adds a new type of villager merchant option, it will need to
+                    // have event handling added manually. this is better than having to do that.
+                    MerchantRecipeList list = new MerchantRecipeList();
+                    entityvillager_imerchantrecipeoption.a(this, list, this.random);
+                    for (MerchantRecipe recipe : list) {
+                        VillagerAcquireTradeEvent event = new VillagerAcquireTradeEvent((Villager) getBukkitEntity(), recipe.asBukkit());
+                        Bukkit.getPluginManager().callEvent(event);
+                        if (!event.isCancelled()) {
+                            this.trades.add(CraftMerchantRecipe.fromBukkit(event.getRecipe()).toMinecraft());
+                        }
+                    }
+                    // CraftBukkit end
                 }
             }
 
@@ -568,7 +598,12 @@ public class EntityVillager extends EntityAgeable implements NPC, IMerchant {
                 entitywitch.setCustomNameVisible(this.getCustomNameVisible());
             }
 
-            this.world.addEntity(entitywitch);
+            // CraftBukkit start
+            if (CraftEventFactory.callEntityTransformEvent(this, entitywitch, EntityTransformEvent.TransformReason.LIGHTNING).isCancelled()) {
+                return;
+            }
+            this.world.addEntity(entitywitch, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING);
+            // CraftBukkit end
             this.die();
         }
     }

@@ -37,6 +37,14 @@ public abstract class PathfinderGoalDoorInteract extends PathfinderGoal {
             IBlockData iblockdata = this.a.world.getType(this.b);
 
             if (iblockdata.getBlock() instanceof BlockDoor) {
+                // CraftBukkit start - entities opening doors
+                org.bukkit.event.entity.EntityInteractEvent event = new org.bukkit.event.entity.EntityInteractEvent(this.a.getBukkitEntity(), org.bukkit.craftbukkit.block.CraftBlock.at(this.a.world, this.b));
+                this.a.world.getServer().getPluginManager().callEvent(event);
+                if (event.isCancelled()) {
+                    return;
+                }
+                // CaftBukkit end
+
                 ((BlockDoor) iblockdata.getBlock()).setDoor(this.a.world, this.b, flag);
             }
         }

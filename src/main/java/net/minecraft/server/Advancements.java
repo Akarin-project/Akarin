@@ -72,7 +72,7 @@ public class Advancements {
             }
         }
 
-        Advancements.a.info("Loaded {} advancements", this.advancements.size());
+        // Advancements.a.info("Loaded {} advancements", this.advancements.size()); // CraftBukkit - moved to AdvancementDataWorld#reload
     }
 
     public void a() {

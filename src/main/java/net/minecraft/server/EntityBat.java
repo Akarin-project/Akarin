@@ -3,6 +3,7 @@ package net.minecraft.server;
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
 import javax.annotation.Nullable;
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 
 public class EntityBat extends EntityAmbient {
 
@@ -94,12 +95,20 @@ public class EntityBat extends EntityAmbient {
                 }
 
                 if (this.world.b(this, 4.0D) != null) {
+                    // CraftBukkit Start - Call BatToggleSleepEvent
+                    if (CraftEventFactory.handleBatToggleSleepEvent(this, true)) {
+                        this.setAsleep(false);
+                        this.world.a((EntityHuman) null, 1025, blockposition, 0);
+                    }
+                    // CraftBukkit End
+                }
+            } else {
+                // CraftBukkit Start - Call BatToggleSleepEvent
+                if (CraftEventFactory.handleBatToggleSleepEvent(this, true)) {
                     this.setAsleep(false);
                     this.world.a((EntityHuman) null, 1025, blockposition, 0);
                 }
-            } else {
-                this.setAsleep(false);
-                this.world.a((EntityHuman) null, 1025, blockposition, 0);
+                // CraftBukkit End - Call BatToggleSleepEvent
             }
         } else {
             if (this.b != null && (!this.world.isEmpty(this.b) || this.b.getY() < 1)) {
@@ -123,7 +132,11 @@ public class EntityBat extends EntityAmbient {
             this.bj = 0.5F;
             this.yaw += f1;
             if (this.random.nextInt(100) == 0 && this.world.getType(blockposition1).isOccluding()) {
-                this.setAsleep(true);
+                // CraftBukkit Start - Call BatToggleSleepEvent
+                if (CraftEventFactory.handleBatToggleSleepEvent(this, false)) {
+                    this.setAsleep(true);
+                }
+                // CraftBukkit End
             }
         }
 
@@ -146,7 +159,11 @@ public class EntityBat extends EntityAmbient {
             return false;
         } else {
             if (!this.world.isClientSide && this.isAsleep()) {
-                this.setAsleep(false);
+                // CraftBukkit Start - Call BatToggleSleepEvent
+                if (CraftEventFactory.handleBatToggleSleepEvent(this, true)) {
+                    this.setAsleep(false);
+                }
+                // CraftBukkit End - Call BatToggleSleepEvent
             }
 
             return super.damageEntity(damagesource, f);

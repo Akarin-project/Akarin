@@ -85,7 +85,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
     @Nullable
     public V get(K k0) {
         this.h();
-        return (JsonListEntry) this.d.get(this.a(k0));
+        return (V) this.d.get(this.a(k0)); // CraftBukkit - fix decompile error
     }
 
     public void remove(K k0) {
@@ -107,6 +107,12 @@ public class JsonList<K, V extends JsonListEntry<K>> {
         return (String[]) this.d.keySet().toArray(new String[this.d.size()]);
     }
 
+    // CraftBukkit start
+    public Collection<V> getValues() {
+        return this.d.values();
+    }
+    // CraftBukkit end
+
     public boolean isEmpty() {
         return this.d.size() < 1;
     }
@@ -124,7 +130,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
         Iterator iterator = this.d.values().iterator();
 
         while (iterator.hasNext()) {
-            V v0 = (JsonListEntry) iterator.next();
+            V v0 = (V) iterator.next(); // CraftBukkit - decompile error
 
             if (v0.hasExpired()) {
                 list.add(v0.getKey());
@@ -134,7 +140,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
         iterator = list.iterator();
 
         while (iterator.hasNext()) {
-            K k0 = iterator.next();
+            K k0 = (K) iterator.next(); // CraftBukkit - decompile error
 
             this.d.remove(this.a(k0));
         }
@@ -142,7 +148,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
     }
 
     protected JsonListEntry<K> a(JsonObject jsonobject) {
-        return new JsonListEntry<>((Object) null, jsonobject);
+        return new JsonListEntry<>((K) null, jsonobject); // CraftBukkit - decompile error
     }
 
     public Collection<V> e() {
@@ -179,7 +185,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
                         JsonListEntry<K> jsonlistentry = (JsonListEntry) iterator.next();
 
                         if (jsonlistentry.getKey() != null) {
-                            this.d.put(this.a(jsonlistentry.getKey()), jsonlistentry);
+                            this.d.put(this.a((K) jsonlistentry.getKey()), (V) jsonlistentry); // CraftBukkit - fix decompile error
                         }
                     }
                 }

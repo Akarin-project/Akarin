@@ -6,9 +6,17 @@ public class FoodMetaData {
     public float saturationLevel = 5.0F;
     public float exhaustionLevel;
     private int foodTickTimer;
+    private EntityHuman entityhuman; // CraftBukkit
     private int e = 20;
 
-    public FoodMetaData() {}
+    public FoodMetaData() { throw new AssertionError("Whoopsie, we missed the bukkit."); } // CraftBukkit start - throw an error
+
+    // CraftBukkit start - added EntityHuman constructor
+    public FoodMetaData(EntityHuman entityhuman) {
+        org.apache.commons.lang.Validate.notNull(entityhuman);
+        this.entityhuman = entityhuman;
+    }
+    // CraftBukkit end
 
     public void eat(int i, float f) {
         this.foodLevel = Math.min(i + this.foodLevel, 20);
@@ -16,7 +24,17 @@ public class FoodMetaData {
     }
 
     public void a(ItemFood itemfood, ItemStack itemstack) {
-        this.eat(itemfood.getNutrition(itemstack), itemfood.getSaturationModifier(itemstack));
+        // CraftBukkit start
+        int oldFoodLevel = foodLevel;
+
+        org.bukkit.event.entity.FoodLevelChangeEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callFoodLevelChangeEvent(entityhuman, itemfood.getNutrition(itemstack) + oldFoodLevel);
+
+        if (!event.isCancelled()) {
+            this.eat(event.getFoodLevel() - oldFoodLevel, itemfood.getSaturationModifier(itemstack));
+        }
+
+        ((EntityPlayer) entityhuman).getBukkitEntity().sendHealthUpdate();
+        // CraftBukkit end
     }
 
     public void a(EntityHuman entityhuman) {
@@ -28,7 +46,15 @@ public class FoodMetaData {
             if (this.saturationLevel > 0.0F) {
                 this.saturationLevel = Math.max(this.saturationLevel - 1.0F, 0.0F);
             } else if (enumdifficulty != EnumDifficulty.PEACEFUL) {
-                this.foodLevel = Math.max(this.foodLevel - 1, 0);
+                // CraftBukkit start
+                org.bukkit.event.entity.FoodLevelChangeEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callFoodLevelChangeEvent(entityhuman, Math.max(this.foodLevel - 1, 0));
+
+                if (!event.isCancelled()) {
+                    this.foodLevel = event.getFoodLevel();
+                }
+
+                ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutUpdateHealth(((EntityPlayer) entityhuman).getBukkitEntity().getScaledHealth(), this.foodLevel, this.saturationLevel));
+                // CraftBukkit end
             }
         }
 
@@ -39,14 +65,14 @@ public class FoodMetaData {
             if (this.foodTickTimer >= 10) {
                 float f = Math.min(this.saturationLevel, 6.0F);
 
-                entityhuman.heal(f / 6.0F);
+                entityhuman.heal(f / 6.0F, org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason.SATIATED); // CraftBukkit - added RegainReason
                 this.a(f);
                 this.foodTickTimer = 0;
             }
         } else if (flag && this.foodLevel >= 18 && entityhuman.dx()) {
             ++this.foodTickTimer;
             if (this.foodTickTimer >= 80) {
-                entityhuman.heal(1.0F);
+                entityhuman.heal(1.0F, org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason.SATIATED); // CraftBukkit - added RegainReason
                 this.a(6.0F);
                 this.foodTickTimer = 0;
             }

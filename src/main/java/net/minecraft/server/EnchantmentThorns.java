@@ -28,7 +28,7 @@ public class EnchantmentThorns extends Enchantment {
         Random random = entityliving.getRandom();
         ItemStack itemstack = EnchantmentManager.b(Enchantments.THORNS, entityliving);
 
-        if (a(i, random)) {
+        if (entity != null && a(i, random)) { // CraftBukkit
             if (entity != null) {
                 entity.damageEntity(DamageSource.a(entityliving), (float) b(i, random));
             }

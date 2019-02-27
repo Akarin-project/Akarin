@@ -2,6 +2,7 @@ package net.minecraft.server;
 
 import java.util.Iterator;
 import java.util.List;
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 
 public class EntityFireworks extends Entity {
 
@@ -114,8 +115,12 @@ public class EntityFireworks extends Entity {
         }
 
         if (!this.world.isClientSide && this.ticksFlown > this.expectedLifespan) {
-            this.world.broadcastEntityEffect(this, (byte) 17);
-            this.i();
+            // CraftBukkit start
+            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callFireworkExplodeEvent(this).isCancelled()) {
+                this.world.broadcastEntityEffect(this, (byte) 17);
+                this.i();
+            }
+            // CraftBukkit end
             this.die();
         }
 
@@ -133,7 +138,9 @@ public class EntityFireworks extends Entity {
 
         if (f > 0.0F) {
             if (this.e != null) {
+                CraftEventFactory.entityDamage = this; // CraftBukkit
                 this.e.damageEntity(DamageSource.FIREWORKS, (float) (5 + nbttaglist.size() * 2));
+                CraftEventFactory.entityDamage = null; // CraftBukkit
             }
 
             double d0 = 5.0D;
@@ -159,7 +166,9 @@ public class EntityFireworks extends Entity {
                     if (flag) {
                         float f1 = f * (float) Math.sqrt((5.0D - (double) this.g(entityliving)) / 5.0D);
 
+                        CraftEventFactory.entityDamage = this; // CraftBukkit
                         entityliving.damageEntity(DamageSource.FIREWORKS, f1);
+                        CraftEventFactory.entityDamage = null; // CraftBukkit
                     }
                 }
             }

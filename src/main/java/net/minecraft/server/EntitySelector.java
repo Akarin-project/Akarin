@@ -63,7 +63,7 @@ public class EntitySelector {
     }
 
     private void e(CommandListenerWrapper commandlistenerwrapper) throws CommandSyntaxException {
-        if (this.m && !commandlistenerwrapper.hasPermission(2)) {
+        if (this.m && !commandlistenerwrapper.hasPermission(2, "minecraft.command.selector")) { // CraftBukkit
             throw ArgumentEntity.f.create();
         }
     }
@@ -139,7 +139,7 @@ public class EntitySelector {
             AxisAlignedBB axisalignedbb = this.g.a(vec3d);
 
             predicate.getClass();
-            list.addAll(worldserver.a(oclass, axisalignedbb, predicate::test));
+            list.addAll(worldserver.a(oclass, axisalignedbb, (java.util.function.Predicate<Entity>) predicate::test)); // CraftBukkit - decompile error
         } else {
             oclass = this.l;
             predicate.getClass();

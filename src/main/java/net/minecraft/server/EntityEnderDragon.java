@@ -5,7 +5,12 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+// CraftBukkit start
+import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
+// CraftBukkit end
 
+// PAIL: Fixme
 public class EntityEnderDragon extends EntityInsentient implements IComplex, IMonster {
 
     private static final Logger bQ = LogManager.getLogger();
@@ -33,6 +38,7 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
     private final PathPoint[] bV = new PathPoint[24];
     private final int[] bW = new int[24];
     private final Path bX = new Path();
+    private Explosion explosionSource = new Explosion(null, this, Double.NaN, Double.NaN, Double.NaN, Float.NaN, true, true); // CraftBukkit - reusable source for CraftTNTPrimed.getSource()
 
     public EntityEnderDragon(World world) {
         super(EntityTypes.ENDER_DRAGON, world);
@@ -170,7 +176,7 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
 
                     Vec3D vec3d = idragoncontroller.g();
 
-                    if (vec3d != null) {
+                    if (vec3d != null && idragoncontroller.getControllerPhase() != DragonControllerPhase.HOVER) { // CraftBukkit - Don't move when hovering
                         d0 = vec3d.x - this.locX;
                         d1 = vec3d.y - this.locY;
                         d2 = vec3d.z - this.locZ;
@@ -326,7 +332,14 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
             if (this.currentEnderCrystal.dead) {
                 this.currentEnderCrystal = null;
             } else if (this.ticksLived % 10 == 0 && this.getHealth() < this.getMaxHealth()) {
-                this.setHealth(this.getHealth() + 1.0F);
+                // CraftBukkit start
+                EntityRegainHealthEvent event = new EntityRegainHealthEvent(this.getBukkitEntity(), 1.0F, EntityRegainHealthEvent.RegainReason.ENDER_CRYSTAL);
+                this.world.getServer().getPluginManager().callEvent(event);
+
+                if (!event.isCancelled()) {
+                    this.setHealth((float) (this.getHealth() + event.getAmount()));
+                }
+                // CraftBukkit end
             }
         }
 
@@ -399,6 +412,10 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
         int j1 = MathHelper.floor(axisalignedbb.maxZ);
         boolean flag = false;
         boolean flag1 = false;
+        // CraftBukkit start - Create a list to hold all the destroyed blocks
+        List<org.bukkit.block.Block> destroyedBlocks = new java.util.ArrayList<org.bukkit.block.Block>();
+        org.bukkit.craftbukkit.CraftWorld craftWorld = this.world.getWorld();
+        // CraftBukkit end
 
         for (int k1 = i; k1 <= l; ++k1) {
             for (int l1 = j; l1 <= i1; ++l1) {
@@ -412,7 +429,11 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
                             flag = true;
                         } else if (block != Blocks.BARRIER && block != Blocks.OBSIDIAN && block != Blocks.END_STONE && block != Blocks.BEDROCK && block != Blocks.END_PORTAL && block != Blocks.END_PORTAL_FRAME) {
                             if (block != Blocks.COMMAND_BLOCK && block != Blocks.REPEATING_COMMAND_BLOCK && block != Blocks.CHAIN_COMMAND_BLOCK && block != Blocks.IRON_BARS && block != Blocks.END_GATEWAY) {
-                                flag1 = this.world.setAir(blockposition) || flag1;
+                                // CraftBukkit start - Add blocks to list rather than destroying them
+                                // flag1 = this.world.setAir(blockposition) || flag1;
+                                flag1 = true;
+                                destroyedBlocks.add(craftWorld.getBlockAt(k1, l1, i2));
+                                // CraftBukkit end
                             } else {
                                 flag = true;
                             }
@@ -423,6 +444,42 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
                 }
             }
         }
+
+        // CraftBukkit start - Set off an EntityExplodeEvent for the dragon exploding all these blocks
+        org.bukkit.entity.Entity bukkitEntity = this.getBukkitEntity();
+        EntityExplodeEvent event = new EntityExplodeEvent(bukkitEntity, bukkitEntity.getLocation(), destroyedBlocks, 0F);
+        bukkitEntity.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            // This flag literally means 'Dragon hit something hard' (Obsidian, White Stone or Bedrock) and will cause the dragon to slow down.
+            // We should consider adding an event extension for it, or perhaps returning true if the event is cancelled.
+            return flag;
+        } else if (event.getYield() == 0F) {
+            // Yield zero ==> no drops
+            for (org.bukkit.block.Block block : event.blockList()) {
+                this.world.setAir(new BlockPosition(block.getX(), block.getY(), block.getZ()));
+            }
+        } else {
+            for (org.bukkit.block.Block block : event.blockList()) {
+                org.bukkit.Material blockId = block.getType();
+                if (blockId == org.bukkit.Material.AIR) {
+                    continue;
+                }
+
+                int blockX = block.getX();
+                int blockY = block.getY();
+                int blockZ = block.getZ();
+
+                Block nmsBlock = org.bukkit.craftbukkit.util.CraftMagicNumbers.getBlock(blockId);
+                if (nmsBlock.a(explosionSource)) {
+                    BlockPosition pos = new BlockPosition(blockX, blockY, blockZ);
+                    nmsBlock.dropNaturally(world.getType(pos), world, pos, event.getYield(), 0);
+                }
+                nmsBlock.wasExploded(world, new BlockPosition(blockX, blockY, blockZ), explosionSource);
+
+                this.world.setAir(new BlockPosition(blockX, blockY, blockZ));
+            }
+        }
+        // CraftBukkit end
 
         if (flag1) {
             double d0 = axisalignedbb.minX + (axisalignedbb.maxX - axisalignedbb.minX) * (double) this.random.nextFloat();

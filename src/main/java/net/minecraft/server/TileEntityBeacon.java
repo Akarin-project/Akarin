@@ -8,6 +8,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.potion.CraftPotionUtil;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.potion.PotionEffect;
+// CraftBukkit end
+
 public class TileEntityBeacon extends TileEntityContainer implements IWorldInventory, ITickable {
 
     public static final MobEffectList[][] a = new MobEffectList[][] { { MobEffects.FASTER_MOVEMENT, MobEffects.FASTER_DIG}, { MobEffects.RESISTANCE, MobEffects.JUMP}, { MobEffects.INCREASE_DAMAGE}, { MobEffects.REGENERATION}};
@@ -22,6 +29,38 @@ public class TileEntityBeacon extends TileEntityContainer implements IWorldInven
     public MobEffectList secondaryEffect;
     private ItemStack inventorySlot;
     private IChatBaseComponent o;
+    // CraftBukkit start - add fields and methods
+    public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
+    private int maxStack = MAX_STACK;
+
+    public List<ItemStack> getContents() {
+        return Arrays.asList(this.inventorySlot);
+    }
+
+    public void onOpen(CraftHumanEntity who) {
+        transaction.add(who);
+    }
+
+    public void onClose(CraftHumanEntity who) {
+        transaction.remove(who);
+    }
+
+    public List<HumanEntity> getViewers() {
+        return transaction;
+    }
+
+    public void setMaxStackSize(int size) {
+        maxStack = size;
+    }
+
+    public PotionEffect getPrimaryEffect() {
+        return (this.primaryEffect != null) ? CraftPotionUtil.toBukkit(new MobEffect(this.primaryEffect, getLevel(), getAmplification(), true, true)) : null;
+    }
+
+    public PotionEffect getSecondaryEffect() {
+        return (hasSecondaryEffect()) ? CraftPotionUtil.toBukkit(new MobEffect(this.secondaryEffect, getLevel(), getAmplification(), true, true)) : null;
+    }
+    // CraftBukkit end
 
     public TileEntityBeacon() {
         super(TileEntityTypes.BEACON);
@@ -55,41 +94,79 @@ public class TileEntityBeacon extends TileEntityContainer implements IWorldInven
         this.world.a((EntityHuman) null, this.position, soundeffect, SoundCategory.BLOCKS, 1.0F, 1.0F);
     }
 
-    private void applyEffects() {
-        if (this.i && this.levels > 0 && !this.world.isClientSide && this.primaryEffect != null) {
-            double d0 = (double) (this.levels * 10 + 10);
+    // CraftBukkit start - split into components
+    private byte getAmplification() {
+        {
             byte b0 = 0;
 
             if (this.levels >= 4 && this.primaryEffect == this.secondaryEffect) {
                 b0 = 1;
             }
 
+            return b0;
+        }
+    }
+
+    private int getLevel() {
+        {
             int i = (9 + this.levels * 2) * 20;
+            return i;
+        }
+    }
+
+    public List getHumansInRange() {
+        {
+            double d0 = (double) (this.levels * 10 + 10);
+
             int j = this.position.getX();
             int k = this.position.getY();
             int l = this.position.getZ();
             AxisAlignedBB axisalignedbb = (new AxisAlignedBB((double) j, (double) k, (double) l, (double) (j + 1), (double) (k + 1), (double) (l + 1))).g(d0).b(0.0D, (double) this.world.getHeight(), 0.0D);
             List<EntityHuman> list = this.world.a(EntityHuman.class, axisalignedbb);
+
+            return list;
+        }
+    }
+
+    private void applyEffect(List list, MobEffectList effects, int i, int b0) {
+        {
             Iterator iterator = list.iterator();
 
             EntityHuman entityhuman;
 
             while (iterator.hasNext()) {
                 entityhuman = (EntityHuman) iterator.next();
-                entityhuman.addEffect(new MobEffect(this.primaryEffect, i, b0, true, true));
+                entityhuman.addEffect(new MobEffect(effects, i, b0, true, true), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.BEACON);
+            }
+        }
+    }
+
+    private boolean hasSecondaryEffect() {
+        {
+            if (this.levels >= 4 && this.primaryEffect != this.secondaryEffect && this.secondaryEffect != null) {
+                return true;
             }
 
-            if (this.levels >= 4 && this.primaryEffect != this.secondaryEffect && this.secondaryEffect != null) {
-                iterator = list.iterator();
+            return false;
+        }
+    }
 
-                while (iterator.hasNext()) {
-                    entityhuman = (EntityHuman) iterator.next();
-                    entityhuman.addEffect(new MobEffect(this.secondaryEffect, i, 0, true, true));
-                }
+    private void applyEffects() {
+        if (this.i && this.levels > 0 && !this.world.isClientSide && this.primaryEffect != null) {
+            byte b0 = getAmplification();
+
+            int i = getLevel();
+            List list = getHumansInRange();
+
+            applyEffect(list, this.primaryEffect, i, b0);
+
+            if (hasSecondaryEffect()) {
+                applyEffect(list, this.secondaryEffect, i, 0);
             }
         }
 
     }
+    // CraftBukkit end
 
     private void E() {
         int i = this.position.getX();
@@ -209,8 +286,10 @@ public class TileEntityBeacon extends TileEntityContainer implements IWorldInven
 
     public void load(NBTTagCompound nbttagcompound) {
         super.load(nbttagcompound);
-        this.primaryEffect = e(nbttagcompound.getInt("Primary"));
-        this.secondaryEffect = e(nbttagcompound.getInt("Secondary"));
+        // Craftbukkit start - persist manually set non-default beacon effects (SPIGOT-3598)
+        this.primaryEffect = MobEffectList.fromId(nbttagcompound.getInt("Primary"));
+        this.secondaryEffect = MobEffectList.fromId(nbttagcompound.getInt("Secondary"));
+        // Craftbukkit end
         this.levels = nbttagcompound.getInt("Levels");
     }
 

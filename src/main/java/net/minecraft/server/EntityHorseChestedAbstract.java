@@ -43,14 +43,18 @@ public abstract class EntityHorseChestedAbstract extends EntityHorseAbstract {
     }
 
     public void die(DamageSource damagesource) {
-        super.die(damagesource);
+        // super.die(damagesource); // CraftBukkit - moved down
         if (this.isCarryingChest()) {
             if (!this.world.isClientSide) {
                 this.a((IMaterial) Blocks.CHEST);
             }
 
-            this.setCarryingChest(false);
+            // this.setCarryingChest(false); // CraftBukkit - moved down
         }
+        // CraftBukkit start
+        super.die(damagesource);
+        this.setCarryingChest(false);
+        // CraftBukkit end
 
     }
 

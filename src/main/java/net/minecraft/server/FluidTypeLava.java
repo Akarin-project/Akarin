@@ -35,6 +35,13 @@ public abstract class FluidTypeLava extends FluidTypeFlowing {
 
                     if (iblockdata.isAir()) {
                         if (this.a((IWorldReader) world, blockposition1)) {
+                            // CraftBukkit start - Prevent lava putting something on fire
+                            if (world.getType(blockposition1) != Blocks.FIRE) {
+                                if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockIgniteEvent(world, blockposition1, blockposition).isCancelled()) {
+                                    continue;
+                                }
+                            }
+                            // CraftBukkit end
                             world.setTypeUpdate(blockposition1, Blocks.FIRE.getBlockData());
                             return;
                         }
@@ -51,6 +58,14 @@ public abstract class FluidTypeLava extends FluidTypeFlowing {
                     }
 
                     if (world.isEmpty(blockposition2.up()) && this.b(world, blockposition2)) {
+                        // CraftBukkit start - Prevent lava putting something on fire
+                        BlockPosition up = blockposition2.up();
+                        if (world.getType(up) != Blocks.FIRE) {
+                            if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockIgniteEvent(world, up, blockposition).isCancelled()) {
+                                continue;
+                            }
+                        }
+                        // CraftBukkit end
                         world.setTypeUpdate(blockposition2.up(), Blocks.FIRE.getBlockData());
                     }
                 }
@@ -139,7 +154,11 @@ public abstract class FluidTypeLava extends FluidTypeFlowing {
 
             if (this.a(TagsFluid.LAVA) && fluid1.a(TagsFluid.WATER)) {
                 if (iblockdata.getBlock() instanceof BlockFluids) {
-                    generatoraccess.setTypeAndData(blockposition, Blocks.STONE.getBlockData(), 3);
+                    // CraftBukkit start
+                    if (!org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(generatoraccess.getMinecraftWorld(), blockposition, Blocks.STONE.getBlockData(), 3)) {
+                        return;
+                    }
+                    // CraftBukkit end
                 }
 
                 this.a(generatoraccess, blockposition);

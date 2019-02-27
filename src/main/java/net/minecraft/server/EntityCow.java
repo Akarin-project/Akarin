@@ -1,6 +1,10 @@
 package net.minecraft.server;
 
 import javax.annotation.Nullable;
+// CraftBukkit start
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+// CraftBukkit end
 
 public class EntityCow extends EntityAnimal {
 
@@ -59,13 +63,23 @@ public class EntityCow extends EntityAnimal {
         ItemStack itemstack = entityhuman.b(enumhand);
 
         if (itemstack.getItem() == Items.BUCKET && !entityhuman.abilities.canInstantlyBuild && !this.isBaby()) {
+            // CraftBukkit start - Got milk?
+            org.bukkit.Location loc = this.getBukkitEntity().getLocation();
+            org.bukkit.event.player.PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(entityhuman, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), null, itemstack, Items.MILK_BUCKET);
+
+            if (event.isCancelled()) {
+                return false;
+            }
+
+            ItemStack result = CraftItemStack.asNMSCopy(event.getItemStack());
             entityhuman.a(SoundEffects.ENTITY_COW_MILK, 1.0F, 1.0F);
             itemstack.subtract(1);
             if (itemstack.isEmpty()) {
-                entityhuman.a(enumhand, new ItemStack(Items.MILK_BUCKET));
-            } else if (!entityhuman.inventory.pickup(new ItemStack(Items.MILK_BUCKET))) {
-                entityhuman.drop(new ItemStack(Items.MILK_BUCKET), false);
+                entityhuman.a(enumhand, result);
+            } else if (!entityhuman.inventory.pickup(result)) {
+                entityhuman.drop(result, false);
             }
+            // CraftBukkit end
 
             return true;
         } else {

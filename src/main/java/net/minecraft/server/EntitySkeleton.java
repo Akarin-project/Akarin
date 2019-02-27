@@ -30,7 +30,7 @@ public class EntitySkeleton extends EntitySkeletonAbstract {
     }
 
     public void die(DamageSource damagesource) {
-        super.die(damagesource);
+        // super.die(damagesource); // CraftBukkit
         if (damagesource.getEntity() instanceof EntityCreeper) {
             EntityCreeper entitycreeper = (EntityCreeper) damagesource.getEntity();
 
@@ -39,6 +39,7 @@ public class EntitySkeleton extends EntitySkeletonAbstract {
                 this.a((IMaterial) Items.SKELETON_SKULL);
             }
         }
+        super.die(damagesource); // CraftBukkit - moved from above
 
     }
 

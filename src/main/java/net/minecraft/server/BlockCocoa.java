@@ -3,6 +3,8 @@ package net.minecraft.server;
 import java.util.Random;
 import javax.annotation.Nullable;
 
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+
 public class BlockCocoa extends BlockFacingHorizontal implements IBlockFragilePlantElement {
 
     public static final BlockStateInteger AGE = BlockProperties.T;
@@ -21,7 +23,7 @@ public class BlockCocoa extends BlockFacingHorizontal implements IBlockFragilePl
             int i = (Integer) iblockdata.get(BlockCocoa.AGE);
 
             if (i < 2) {
-                world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockCocoa.AGE, i + 1), 2);
+                CraftEventFactory.handleBlockGrowEvent(world, blockposition, (IBlockData) iblockdata.set(BlockCocoa.AGE, i + 1), 2); // CraftBukkkit
             }
         }
 
@@ -106,7 +108,7 @@ public class BlockCocoa extends BlockFacingHorizontal implements IBlockFragilePl
     }
 
     public void b(World world, Random random, BlockPosition blockposition, IBlockData iblockdata) {
-        world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockCocoa.AGE, (Integer) iblockdata.get(BlockCocoa.AGE) + 1), 2);
+        CraftEventFactory.handleBlockGrowEvent(world, blockposition, (IBlockData) iblockdata.set(BlockCocoa.AGE, (Integer) iblockdata.get(BlockCocoa.AGE) + 1), 2); // CraftBukkit
     }
 
     public TextureType c() {

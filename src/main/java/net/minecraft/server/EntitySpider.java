@@ -115,7 +115,7 @@ public class EntitySpider extends EntityMonster {
 
             entityskeleton.setPositionRotation(this.locX, this.locY, this.locZ, this.yaw, 0.0F);
             entityskeleton.prepare(difficultydamagescaler, (GroupDataEntity) null, (NBTTagCompound) null);
-            this.world.addEntity(entityskeleton);
+            this.world.addEntity(entityskeleton, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.JOCKEY); // CraftBukkit - add SpawnReason
             entityskeleton.startRiding(this);
         }
 
@@ -130,7 +130,7 @@ public class EntitySpider extends EntityMonster {
             MobEffectList mobeffectlist = ((EntitySpider.GroupDataSpider) object).a;
 
             if (mobeffectlist != null) {
-                this.addEffect(new MobEffect(mobeffectlist, Integer.MAX_VALUE));
+                this.addEffect(new MobEffect(mobeffectlist, Integer.MAX_VALUE), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.SPIDER_SPAWN); // CraftBukkit
             }
         }
 

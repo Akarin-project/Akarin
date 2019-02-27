@@ -20,7 +20,12 @@ public class DataConverterRegistry {
         DataFixerBuilder datafixerbuilder = new DataFixerBuilder(1631);
 
         a(datafixerbuilder);
-        return datafixerbuilder.build(ForkJoinPool.commonPool());
+        // CraftBukkit start
+        ForkJoinPool pool = new ForkJoinPool(Integer.getInteger("net.minecraft.server.DataConverterRegistry.bootstrapThreads", Math.min(Runtime.getRuntime().availableProcessors(), 2)));
+        DataFixer fixer = datafixerbuilder.build(pool);
+        pool.shutdown();
+        return fixer;
+        // CraftBukkit end
     }
 
     public static DataFixer a() {
@@ -184,6 +189,18 @@ public class DataConverterRegistry {
         datafixerbuilder.addFixer(new DataConverterItemFrame(schema46, false));
         Schema schema47 = datafixerbuilder.addSchema(1458, DataConverterRegistry.b);
 
+        // CraftBukkit start
+        datafixerbuilder.addFixer(new com.mojang.datafixers.DataFix(schema47, false) {
+            @Override
+            protected com.mojang.datafixers.TypeRewriteRule makeRule() {
+                return this.fixTypeEverywhereTyped("Player CustomName", this.getInputSchema().getType(DataConverterTypes.PLAYER), (typed) -> {
+                    return typed.update(DSL.remainderFinder(), (dynamic) -> {
+                        return DataConverterCustomNameEntity.a(dynamic);
+                    });
+                });
+            }
+        });
+        // CraftBukkit end
         datafixerbuilder.addFixer(new DataConverterCustomNameEntity(schema47, false));
         datafixerbuilder.addFixer(new DataConverterCustomNameItem(schema47, false));
         datafixerbuilder.addFixer(new DataConverterCustomNameTile(schema47, false));

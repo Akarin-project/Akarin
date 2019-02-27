@@ -6,9 +6,13 @@ public class ItemTrident extends Item {
 
     public ItemTrident(Item.Info item_info) {
         super(item_info);
+        // CraftBukkit start - obfuscator went a little crazy
+        /*
         this.a(new MinecraftKey("throwing"), (itemstack, world, entityliving) -> {
             return entityliving != null && entityliving.isHandRaised() && entityliving.cW() == itemstack ? 1.0F : 0.0F;
         });
+         */
+        // CraftBukkit end
     }
 
     public boolean a(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman) {
@@ -33,7 +37,7 @@ public class ItemTrident extends Item {
 
                 if (k <= 0 || entityhuman.ao()) {
                     if (!world.isClientSide) {
-                        itemstack.damage(1, entityhuman);
+                        // itemstack.damage(1, entityhuman); // CraftBukkit - moved down
                         if (k == 0) {
                             EntityThrownTrident entitythrowntrident = new EntityThrownTrident(world, entityhuman, itemstack);
 
@@ -42,7 +46,18 @@ public class ItemTrident extends Item {
                                 entitythrowntrident.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                             }
 
-                            world.addEntity(entitythrowntrident);
+                            // CraftBukkit start
+                            if (!world.addEntity(entitythrowntrident)) {
+                                if (entityhuman instanceof EntityPlayer) {
+                                    ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
+                                }
+                                return;
+                            }
+
+                            itemstack.damage(1, entityhuman);
+                            entitythrowntrident.trident = itemstack.cloneItemStack(); // SPIGOT-4511 update since damage call moved
+                            // CraftBukkit end
+
                             if (!entityhuman.abilities.canInstantlyBuild) {
                                 entityhuman.inventory.f(itemstack);
                             }
@@ -53,6 +68,10 @@ public class ItemTrident extends Item {
                     SoundEffect soundeffect = SoundEffects.ITEM_TRIDENT_THROW;
 
                     if (k > 0) {
+                        // CraftBukkit start
+                        org.bukkit.event.player.PlayerRiptideEvent event = new org.bukkit.event.player.PlayerRiptideEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack));
+                        event.getPlayer().getServer().getPluginManager().callEvent(event);
+                        // CraftBukkit end
                         float f = entityhuman.yaw;
                         float f1 = entityhuman.pitch;
                         float f2 = -MathHelper.sin(f * 0.017453292F) * MathHelper.cos(f1 * 0.017453292F);

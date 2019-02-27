@@ -113,16 +113,27 @@ public class EntityPigZombie extends EntityZombie {
         } else {
             Entity entity = damagesource.getEntity();
 
-            if (entity instanceof EntityHuman && !((EntityHuman) entity).u()) {
+            // CraftBukkit start
+            boolean result = super.damageEntity(damagesource, f);
+
+            if (result && entity instanceof EntityHuman && !((EntityHuman) entity).u()) {
                 this.a(entity);
             }
 
-            return super.damageEntity(damagesource, f);
+            return result;
+            // CraftBukkit end
         }
     }
 
     private void a(Entity entity) {
-        this.angerLevel = 400 + this.random.nextInt(400);
+        // CraftBukkit start
+        org.bukkit.event.entity.PigZombieAngerEvent event = new org.bukkit.event.entity.PigZombieAngerEvent((org.bukkit.entity.PigZombie) this.getBukkitEntity(), (entity == null) ? null : entity.getBukkitEntity(), 400 + this.random.nextInt(400));
+        this.world.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+        this.angerLevel = event.getNewAnger();
+        // CraftBukkit end
         this.soundDelay = this.random.nextInt(40);
         if (entity instanceof EntityLiving) {
             this.setLastDamager((EntityLiving) entity);

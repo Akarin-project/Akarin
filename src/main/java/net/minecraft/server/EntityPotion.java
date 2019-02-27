@@ -5,6 +5,12 @@ import java.util.List;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+// CraftBukkit start
+import java.util.HashMap;
+import java.util.Map;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
+import org.bukkit.entity.LivingEntity;
+// CraftBukkit end
 
 public class EntityPotion extends EntityProjectile {
 
@@ -77,7 +83,7 @@ public class EntityPotion extends EntityProjectile {
 
             if (flag) {
                 this.l();
-            } else if (!list.isEmpty()) {
+            } else if (true || !list.isEmpty()) { // CraftBukkit - Call event even if no effects to apply
                 if (this.isLingering()) {
                     this.a(itemstack, potionregistry);
                 } else {
@@ -114,6 +120,7 @@ public class EntityPotion extends EntityProjectile {
     private void a(MovingObjectPosition movingobjectposition, List<MobEffect> list) {
         AxisAlignedBB axisalignedbb = this.getBoundingBox().grow(4.0D, 2.0D, 4.0D);
         List<EntityLiving> list1 = this.world.a(EntityLiving.class, axisalignedbb);
+        Map<LivingEntity, Double> affected = new HashMap<LivingEntity, Double>(); // CraftBukkit
 
         if (!list1.isEmpty()) {
             Iterator iterator = list1.iterator();
@@ -131,21 +138,46 @@ public class EntityPotion extends EntityProjectile {
                             d1 = 1.0D;
                         }
 
-                        Iterator iterator1 = list.iterator();
+                        // CraftBukkit start
+                        affected.put((LivingEntity) entityliving.getBukkitEntity(), d1);
+                    }
+                }
+            }
+        }
 
-                        while (iterator1.hasNext()) {
-                            MobEffect mobeffect = (MobEffect) iterator1.next();
-                            MobEffectList mobeffectlist = mobeffect.getMobEffect();
+        org.bukkit.event.entity.PotionSplashEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPotionSplashEvent(this, affected);
+        if (!event.isCancelled() && list != null && !list.isEmpty()) { // do not process effects if there are no effects to process
+            for (LivingEntity victim : event.getAffectedEntities()) {
+                if (!(victim instanceof CraftLivingEntity)) {
+                    continue;
+                }
 
-                            if (mobeffectlist.isInstant()) {
-                                mobeffectlist.applyInstantEffect(this, this.getShooter(), entityliving, mobeffect.getAmplifier(), d1);
-                            } else {
-                                int i = (int) (d1 * (double) mobeffect.getDuration() + 0.5D);
+                EntityLiving entityliving = ((CraftLivingEntity) victim).getHandle();
+                double d1 = event.getIntensity(victim);
+                // CraftBukkit end
 
-                                if (i > 20) {
-                                    entityliving.addEffect(new MobEffect(mobeffectlist, i, mobeffect.getAmplifier(), mobeffect.isAmbient(), mobeffect.isShowParticles()));
-                                }
-                            }
+                Iterator iterator1 = list.iterator();
+
+                while (iterator1.hasNext()) {
+                    MobEffect mobeffect = (MobEffect) iterator1.next();
+                    MobEffectList mobeffectlist = mobeffect.getMobEffect();
+                    // CraftBukkit start - Abide by PVP settings - for players only!
+                    if (!this.world.pvpMode && this.getShooter() instanceof EntityPlayer && entityliving instanceof EntityPlayer && entityliving != this.getShooter()) {
+                        int i = MobEffectList.getId(mobeffectlist);
+                        // Block SLOWER_MOVEMENT, SLOWER_DIG, HARM, BLINDNESS, HUNGER, WEAKNESS and POISON potions
+                        if (i == 2 || i == 4 || i == 7 || i == 15 || i == 17 || i == 18 || i == 19) {
+                            continue;
+                        }
+                    }
+                    // CraftBukkit end
+
+                    if (mobeffectlist.isInstant()) {
+                        mobeffectlist.applyInstantEffect(this, this.getShooter(), entityliving, mobeffect.getAmplifier(), d1);
+                    } else {
+                        int i = (int) (d1 * (double) mobeffect.getDuration() + 0.5D);
+
+                        if (i > 20) {
+                            entityliving.addEffect(new MobEffect(mobeffectlist, i, mobeffect.getAmplifier(), mobeffect.isAmbient(), mobeffect.isShowParticles()), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.POTION_SPLASH); // CraftBukkit
                         }
                     }
                 }
@@ -177,7 +209,14 @@ public class EntityPotion extends EntityProjectile {
             entityareaeffectcloud.setColor(nbttagcompound.getInt("CustomPotionColor"));
         }
 
-        this.world.addEntity(entityareaeffectcloud);
+        // CraftBukkit start
+        org.bukkit.event.entity.LingeringPotionSplashEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLingeringPotionSplashEvent(this, entityareaeffectcloud);
+        if (!(event.isCancelled() || entityareaeffectcloud.dead)) {
+            this.world.addEntity(entityareaeffectcloud);
+        } else {
+            entityareaeffectcloud.dead = true;
+        }
+        // CraftBukkit end
     }
 
     public boolean isLingering() {

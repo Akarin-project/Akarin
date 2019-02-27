@@ -115,6 +115,25 @@ public class EntityTippedArrow extends EntityArrow {
         }
     }
 
+    // CraftBukkit start accessor methods
+    public void refreshEffects() {
+        this.getDataWatcher().set(EntityTippedArrow.g, Integer.valueOf(PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects))));
+    }
+
+    public String getType() {
+        return IRegistry.POTION.getKey(this.potionRegistry).toString();
+    }
+
+    public void setType(String string) {
+        this.potionRegistry = IRegistry.POTION.get(new MinecraftKey(string));
+        this.datawatcher.set(EntityTippedArrow.g, Integer.valueOf(PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects))));
+    }
+
+    public boolean isTipped() {
+        return !(this.effects.isEmpty() && this.potionRegistry == Potions.EMPTY);
+    }
+    // CraftBukkit end
+
     public int getColor() {
         return (Integer) this.datawatcher.get(EntityTippedArrow.g);
     }
@@ -179,7 +198,7 @@ public class EntityTippedArrow extends EntityArrow {
 
         while (iterator.hasNext()) {
             mobeffect = (MobEffect) iterator.next();
-            entityliving.addEffect(new MobEffect(mobeffect.getMobEffect(), Math.max(mobeffect.getDuration() / 8, 1), mobeffect.getAmplifier(), mobeffect.isAmbient(), mobeffect.isShowParticles()));
+            entityliving.addEffect(new MobEffect(mobeffect.getMobEffect(), Math.max(mobeffect.getDuration() / 8, 1), mobeffect.getAmplifier(), mobeffect.isAmbient(), mobeffect.isShowParticles()), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ARROW); // CraftBukkit
         }
 
         if (!this.effects.isEmpty()) {
@@ -187,7 +206,7 @@ public class EntityTippedArrow extends EntityArrow {
 
             while (iterator.hasNext()) {
                 mobeffect = (MobEffect) iterator.next();
-                entityliving.addEffect(mobeffect);
+                entityliving.addEffect(mobeffect, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ARROW); // CraftBukkit
             }
         }
 

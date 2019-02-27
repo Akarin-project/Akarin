@@ -29,4 +29,6 @@ public interface IDataManager {
     DefinedStructureManager h();
 
     DataFixer i();
+
+    java.util.UUID getUUID(); // CraftBukkit
 }

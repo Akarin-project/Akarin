@@ -4,6 +4,8 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.bukkit.inventory.InventoryHolder; // CraftBukkit
+
 public abstract class TileEntity {
 
     private static final Logger a = LogManager.getLogger();
@@ -54,8 +56,15 @@ public abstract class TileEntity {
         }
     }
 
+    // CraftBukkit start
     @Nullable
     public static TileEntity create(NBTTagCompound nbttagcompound) {
+        return create(nbttagcompound, null);
+    }
+
+    @Nullable
+    public static TileEntity create(NBTTagCompound nbttagcompound, @Nullable World world) {
+        // CraftBukkit end
         TileEntity tileentity = null;
         String s = nbttagcompound.getString("id");
 
@@ -67,6 +76,7 @@ public abstract class TileEntity {
 
         if (tileentity != null) {
             try {
+                tileentity.setWorld(world); // CraftBukkit
                 tileentity.load(nbttagcompound);
             } catch (Throwable throwable1) {
                 TileEntity.a.error("Failed to load data for block entity {}", s, throwable1);
@@ -156,4 +166,13 @@ public abstract class TileEntity {
     public TileEntityTypes<?> C() {
         return this.e;
     }
+
+    // CraftBukkit start - add method
+    public InventoryHolder getOwner() {
+        if (world == null) return null;
+        org.bukkit.block.BlockState state = world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ()).getState();
+        if (state instanceof InventoryHolder) return (InventoryHolder) state;
+        return null;
+    }
+    // CraftBukkit end
 }

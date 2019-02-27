@@ -85,7 +85,7 @@ public class PathfinderGoalTargetNearestPlayer extends PathfinderGoal {
     }
 
     public void c() {
-        this.b.setGoalTarget(this.e);
+        this.b.setGoalTarget(this.e, org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER, true); // CraftBukkit - added reason
         super.c();
     }
 

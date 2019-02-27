@@ -81,21 +81,10 @@ public class BlockShulkerBox extends BlockTileEntity {
         super.a(world, blockposition, iblockdata, entityhuman);
     }
 
-    public void dropNaturally(IBlockData iblockdata, World world, BlockPosition blockposition, float f, int i) {}
-
-    public void postPlace(World world, BlockPosition blockposition, IBlockData iblockdata, EntityLiving entityliving, ItemStack itemstack) {
-        if (itemstack.hasName()) {
-            TileEntity tileentity = world.getTileEntity(blockposition);
-
-            if (tileentity instanceof TileEntityShulkerBox) {
-                ((TileEntityShulkerBox) tileentity).setCustomName(itemstack.getName());
-            }
-        }
-
-    }
-
-    public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
-        if (iblockdata.getBlock() != iblockdata1.getBlock()) {
+    // CraftBukkit start - override to prevent duplication when dropping
+    @Override
+    public void dropNaturally(IBlockData iblockdata, World world, BlockPosition blockposition, float f, int i) {
+        if (true) {
             TileEntity tileentity = world.getTileEntity(blockposition);
 
             if (tileentity instanceof TileEntityShulkerBox) {
@@ -112,9 +101,44 @@ public class BlockShulkerBox extends BlockTileEntity {
 
                     a(world, blockposition, itemstack);
                 }
-
-                world.updateAdjacentComparators(blockposition, iblockdata.getBlock());
             }
+            world.updateAdjacentComparators(blockposition, iblockdata.getBlock());
+        }
+    }
+    // CraftBukkit end
+
+    public void postPlace(World world, BlockPosition blockposition, IBlockData iblockdata, EntityLiving entityliving, ItemStack itemstack) {
+        if (itemstack.hasName()) {
+            TileEntity tileentity = world.getTileEntity(blockposition);
+
+            if (tileentity instanceof TileEntityShulkerBox) {
+                ((TileEntityShulkerBox) tileentity).setCustomName(itemstack.getName());
+            }
+        }
+
+    }
+
+    public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
+        if (iblockdata.getBlock() != iblockdata1.getBlock()) {
+            TileEntity tileentity = world.getTileEntity(blockposition);
+
+            if (false && tileentity instanceof TileEntityShulkerBox) { // CraftBukkit - moved up
+                TileEntityShulkerBox tileentityshulkerbox = (TileEntityShulkerBox) tileentity;
+
+                if (!tileentityshulkerbox.s() && tileentityshulkerbox.G()) {
+                    ItemStack itemstack = new ItemStack(this);
+
+                    itemstack.getOrCreateTag().set("BlockEntityTag", ((TileEntityShulkerBox) tileentity).g(new NBTTagCompound()));
+                    if (tileentityshulkerbox.hasCustomName()) {
+                        itemstack.a(tileentityshulkerbox.getCustomName());
+                        tileentityshulkerbox.setCustomName((IChatBaseComponent) null);
+                    }
+
+                    a(world, blockposition, itemstack);
+                }
+
+            }
+            world.updateAdjacentComparators(blockposition, iblockdata.getBlock()); // CraftBukkit - moved down
 
             super.remove(iblockdata, world, blockposition, iblockdata1, flag);
         }

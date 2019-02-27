@@ -55,7 +55,7 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
     }
 
     public com.mojang.brigadier.CommandDispatcher<CommandListenerWrapper> d() {
-        return this.server.getCommandDispatcher().a();
+        return this.server.vanillaCommandDispatcher.a(); // CraftBukkit
     }
 
     public void tick() {

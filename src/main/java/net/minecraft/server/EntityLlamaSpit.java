@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 public class EntityLlamaSpit extends Entity implements IProjectile {
 
-    public EntityLlama shooter;
+    public EntityLiving shooter; // CraftBukkit - type
     private NBTTagCompound b;
 
     public EntityLlamaSpit(World world) {
@@ -143,6 +143,7 @@ public class EntityLlamaSpit extends Entity implements IProjectile {
     }
 
     public void a(MovingObjectPosition movingobjectposition) {
+        org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // Craftbukkit - Call event
         if (movingobjectposition.entity != null && this.shooter != null) {
             movingobjectposition.entity.damageEntity(DamageSource.a(this, (EntityLiving) this.shooter).c(), 1.0F);
         }

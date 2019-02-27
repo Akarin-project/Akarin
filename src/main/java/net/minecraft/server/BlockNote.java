@@ -24,7 +24,7 @@ public class BlockNote extends Block {
 
         if (flag != (Boolean) iblockdata.get(BlockNote.POWERED)) {
             if (flag) {
-                this.play(world, blockposition);
+                this.play(world, blockposition, iblockdata); // CraftBukkit
             }
 
             world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockNote.POWERED, flag), 3);
@@ -32,9 +32,14 @@ public class BlockNote extends Block {
 
     }
 
-    private void play(World world, BlockPosition blockposition) {
+    private void play(World world, BlockPosition blockposition, IBlockData data) { // CraftBukkit
         if (world.getType(blockposition.up()).isAir()) {
-            world.playBlockAction(blockposition, this, 0, 0);
+            // CraftBukkit start
+            org.bukkit.event.block.NotePlayEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callNotePlayEvent(world, blockposition, data.get(BlockNote.INSTRUMENT), data.get(BlockNote.NOTE));
+            if (!event.isCancelled()) {
+                world.playBlockAction(blockposition, this, 0, 0);
+            }
+            // CraftBukkit end
         }
 
     }
@@ -45,7 +50,7 @@ public class BlockNote extends Block {
         } else {
             iblockdata = (IBlockData) iblockdata.a((IBlockState) BlockNote.NOTE);
             world.setTypeAndData(blockposition, iblockdata, 3);
-            this.play(world, blockposition);
+            this.play(world, blockposition, iblockdata); // CraftBukkit
             entityhuman.a(StatisticList.TUNE_NOTEBLOCK);
             return true;
         }
@@ -53,7 +58,7 @@ public class BlockNote extends Block {
 
     public void attack(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman) {
         if (!world.isClientSide) {
-            this.play(world, blockposition);
+            this.play(world, blockposition, iblockdata); // CraftBukkit
             entityhuman.a(StatisticList.PLAY_NOTEBLOCK);
         }
     }

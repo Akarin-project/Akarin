@@ -3,11 +3,13 @@ package net.minecraft.server;
 import com.google.common.collect.Lists;
 import java.util.List;
 
-public class RecipeArmorDye extends IRecipeComplex {
+public class RecipeArmorDye extends ShapelessRecipes implements IRecipe { // CraftBukkit - added extends
 
+    // CraftBukkit start - Delegate to new parent class with bogus info
     public RecipeArmorDye(MinecraftKey minecraftkey) {
-        super(minecraftkey);
+        super(minecraftkey, "", new ItemStack(Items.LEATHER_HELMET, 0), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.BONE_MEAL)));
     }
+    // CraftBukkit end
 
     public boolean a(IInventory iinventory, World world) {
         if (!(iinventory instanceof InventoryCrafting)) {

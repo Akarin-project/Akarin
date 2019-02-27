@@ -4,6 +4,8 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Random;
 
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason; // CraftBukkit
+
 public class BlockMonsterEggs extends Block {
 
     private final Block a;
@@ -36,7 +38,7 @@ public class BlockMonsterEggs extends Block {
             EntitySilverfish entitysilverfish = new EntitySilverfish(world);
 
             entitysilverfish.setPositionRotation((double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D, 0.0F, 0.0F);
-            world.addEntity(entitysilverfish);
+            world.addEntity(entitysilverfish, SpawnReason.SILVERFISH_BLOCK); // CraftBukkit - add SpawnReason
             entitysilverfish.doSpawnEffect();
         }
 

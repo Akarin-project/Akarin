@@ -17,6 +17,18 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+// CraftBukkit start
+import java.util.logging.Level;
+
+import org.bukkit.WeatherType;
+import org.bukkit.block.BlockState;
+import org.bukkit.craftbukkit.util.HashTreeSet;
+
+import org.bukkit.event.block.BlockFormEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.bukkit.event.weather.LightningStrikeEvent;
+// CraftBukkit end
+
 public class WorldServer extends World implements IAsyncTaskHandler {
 
     private static final Logger a = LogManager.getLogger();
@@ -35,8 +47,16 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     ObjectLinkedOpenHashSet<BlockActionData> d;
     private boolean P;
 
-    public WorldServer(MinecraftServer minecraftserver, IDataManager idatamanager, PersistentCollection persistentcollection, WorldData worlddata, DimensionManager dimensionmanager, MethodProfiler methodprofiler) {
-        super(idatamanager, persistentcollection, worlddata, dimensionmanager.e(), methodprofiler, false);
+    // CraftBukkit start
+    public final DimensionManager dimension;
+
+    // Add env and gen to constructor
+    public WorldServer(MinecraftServer minecraftserver, IDataManager idatamanager, PersistentCollection persistentcollection, WorldData worlddata, DimensionManager dimensionmanager, MethodProfiler methodprofiler, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {
+        super(idatamanager, persistentcollection, worlddata, DimensionManager.a(env.getId()).e(), methodprofiler, false, gen, env);
+        this.dimension = dimensionmanager;
+        this.pvpMode = minecraftserver.getPVP();
+        worlddata.world = this;
+        // CraftBukkit end
         this.nextTickListBlock = new TickListServer<>(this, (block) -> {
             return block == null || block.getBlockData().isAir();
         }, IRegistry.BLOCK::getKey, IRegistry.BLOCK::getOrDefault, this::b);
@@ -50,7 +70,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.manager = new PlayerChunkMap(this);
         this.worldProvider.a((World) this);
         this.chunkProvider = this.r();
-        this.portalTravelAgent = new PortalTravelAgent(this);
+        this.portalTravelAgent = new org.bukkit.craftbukkit.CraftTravelAgent(this); // CraftBukkit
         this.P();
         this.Q();
         this.getWorldBorder().a(minecraftserver.au());
@@ -68,6 +88,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             this.villages.a((World) this);
         }
 
+        if (getServer().getScoreboardManager() == null) { // CraftBukkit
         PersistentScoreboard persistentscoreboard = (PersistentScoreboard) this.a(DimensionManager.OVERWORLD, PersistentScoreboard::new, "scoreboard");
 
         if (persistentscoreboard == null) {
@@ -77,6 +98,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
         persistentscoreboard.a((Scoreboard) this.server.getScoreboard());
         this.server.getScoreboard().a((Runnable) (new RunnableSaveScoreboard(persistentscoreboard)));
+        } // CraftBukkit
         this.getWorldBorder().setCenter(this.worldData.B(), this.worldData.C());
         this.getWorldBorder().setDamageAmount(this.worldData.H());
         this.getWorldBorder().setDamageBuffer(this.worldData.G());
@@ -88,8 +110,129 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             this.getWorldBorder().setSize(this.worldData.D());
         }
 
+        // CraftBukkit start
+        if (generator != null) {
+            getWorld().getPopulators().addAll(generator.getDefaultPopulators(getWorld()));
+        }
+        // CraftBukkit end
+
         return this;
     }
+
+    // CraftBukkit start
+    @Override
+    public TileEntity getTileEntity(BlockPosition pos) {
+        TileEntity result = super.getTileEntity(pos);
+        Block type = getType(pos).getBlock();
+
+        if (type == Blocks.CHEST) {
+            if (!(result instanceof TileEntityChest)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.FURNACE) {
+            if (!(result instanceof TileEntityFurnace)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.DROPPER) {
+            if (!(result instanceof TileEntityDropper)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.DISPENSER) {
+            if (!(result instanceof TileEntityDispenser)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.JUKEBOX) {
+            if (!(result instanceof TileEntityJukeBox)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.SPAWNER) {
+            if (!(result instanceof TileEntityMobSpawner)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if ((type == Blocks.SIGN) || (type == Blocks.WALL_SIGN)) {
+            if (!(result instanceof TileEntitySign)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.ENDER_CHEST) {
+            if (!(result instanceof TileEntityEnderChest)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.BREWING_STAND) {
+            if (!(result instanceof TileEntityBrewingStand)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.BEACON) {
+            if (!(result instanceof TileEntityBeacon)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.HOPPER) {
+            if (!(result instanceof TileEntityHopper)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.ENCHANTING_TABLE) {
+            if (!(result instanceof TileEntityEnchantTable)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.END_PORTAL) {
+            if (!(result instanceof TileEntityEnderPortal)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type instanceof BlockSkullAbstract) {
+            if (!(result instanceof TileEntitySkull)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.DAYLIGHT_DETECTOR) {
+            if (!(result instanceof TileEntityLightDetector)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.COMPARATOR) {
+            if (!(result instanceof TileEntityComparator)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        }else if (type instanceof BlockBannerAbstract) {
+            if (!(result instanceof TileEntityBanner)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.STRUCTURE_BLOCK) {
+            if (!(result instanceof TileEntityStructure)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.END_GATEWAY) {
+            if (!(result instanceof TileEntityEndGateway)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.COMMAND_BLOCK) {
+            if (!(result instanceof TileEntityCommand)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type == Blocks.STRUCTURE_BLOCK) {
+            if (!(result instanceof TileEntityStructure)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        } else if (type instanceof BlockBed) {
+            if (!(result instanceof TileEntityBed)) {
+                result = fixTileEntity(pos, type, result);
+            }
+        }
+
+        return result;
+    }
+
+    private TileEntity fixTileEntity(BlockPosition pos, Block type, TileEntity found) {
+        this.getServer().getLogger().log(Level.SEVERE, "Block at {0},{1},{2} is {3} but has {4}" + ". "
+                + "Bukkit will attempt to fix this, but there may be additional damage that we cannot recover.", new Object[]{pos.getX(), pos.getY(), pos.getZ(), type, found});
+
+        if (type instanceof ITileEntity) {
+            TileEntity replacement = ((ITileEntity) type).a(this);
+            replacement.world = this;
+            this.setTileEntity(pos, replacement);
+            return replacement;
+        } else {
+            this.getServer().getLogger().severe("Don't know how to fix for this type... Can't do anything! :(");
+            return found;
+        }
+    }
+    // CraftBukkit end
 
     public void doTick(BooleanSupplier booleansupplier) {
         this.P = true;
@@ -110,9 +253,12 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
 
         this.methodProfiler.enter("spawner");
-        if (this.getGameRules().getBoolean("doMobSpawning") && this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES) {
-            this.spawnerCreature.a(this, this.allowMonsters, this.allowAnimals, this.worldData.getTime() % 400L == 0L);
-            this.getChunkProvider().a(this, this.allowMonsters, this.allowAnimals);
+        // CraftBukkit start - Only call spawner if we have players online and the world allows for mobs or animals
+        long time = this.worldData.getTime();
+        if (this.getGameRules().getBoolean("doMobSpawning") && this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES && (this.allowMonsters || this.allowAnimals) && (this instanceof WorldServer && this.players.size() > 0)) {
+            this.spawnerCreature.a(this, this.allowMonsters && (this.ticksPerMonsterSpawns != 0 && time % this.ticksPerMonsterSpawns == 0L), this.allowAnimals && (this.ticksPerAnimalSpawns != 0 && time % this.ticksPerAnimalSpawns == 0L), this.worldData.getTime() % 400L == 0L);
+            this.getChunkProvider().a(this, this.allowMonsters && (this.ticksPerMonsterSpawns != 0 && time % this.ticksPerMonsterSpawns == 0L), this.allowAnimals && (this.ticksPerAnimalSpawns != 0 && time % this.ticksPerAnimalSpawns == 0L));
+            // CraftBukkit end
         }
 
         this.methodProfiler.exitEnter("chunkSource");
@@ -142,6 +288,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.methodProfiler.exit();
         this.an();
         this.P = false;
+
+        this.getWorld().processChunkGC(); // CraftBukkit
     }
 
     public boolean j_() {
@@ -173,7 +321,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
                 if (entityhuman.isSpectator()) {
                     ++i;
-                } else if (entityhuman.isSleeping()) {
+                } else if (entityhuman.isSleeping() || entityhuman.fauxSleeping) {
                     ++j;
                 }
             }
@@ -205,25 +353,46 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
 
     private void b() {
-        this.worldData.setWeatherDuration(0);
+        // CraftBukkit start
         this.worldData.setStorm(false);
-        this.worldData.setThunderDuration(0);
+        // If we stop due to everyone sleeping we should reset the weather duration to some other random value.
+        // Not that everyone ever manages to get the whole server to sleep at the same time....
+        if (!this.worldData.hasStorm()) {
+            this.worldData.setWeatherDuration(0);
+        }
+        // CraftBukkit end
         this.worldData.setThundering(false);
+        // CraftBukkit start
+        // If we stop due to everyone sleeping we should reset the weather duration to some other random value.
+        // Not that everyone ever manages to get the whole server to sleep at the same time....
+        if (!this.worldData.isThundering()) {
+            this.worldData.setThunderDuration(0);
+        }
+        // CraftBukkit end
     }
 
     public boolean everyoneDeeplySleeping() {
         if (this.J && !this.isClientSide) {
             Iterator iterator = this.players.iterator();
 
+            // CraftBukkit - This allows us to assume that some people are in bed but not really, allowing time to pass in spite of AFKers
+            boolean foundActualSleepers = false;
+
             EntityHuman entityhuman;
 
             do {
                 if (!iterator.hasNext()) {
-                    return true;
+                    return foundActualSleepers;
                 }
 
                 entityhuman = (EntityHuman) iterator.next();
-            } while (entityhuman.isSpectator() || entityhuman.isDeeplySleeping());
+
+                // CraftBukkit start
+                if (entityhuman.isDeeplySleeping()) {
+                    foundActualSleepers = true;
+                }
+            } while (!entityhuman.isSpectator() || entityhuman.isDeeplySleeping() || entityhuman.fauxSleeping);
+            // CraftBukkit end
 
             return false;
         } else {
@@ -298,10 +467,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                             entityhorseskeleton.s(true);
                             entityhorseskeleton.setAgeRaw(0);
                             entityhorseskeleton.setPosition((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ());
-                            this.addEntity(entityhorseskeleton);
+                            this.addEntity(entityhorseskeleton, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING); // CraftBukkit
                         }
 
-                        this.strikeLightning(new EntityLightning(this, (double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D, flag2));
+                        this.strikeLightning(new EntityLightning(this, (double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D, flag2), org.bukkit.event.weather.LightningStrikeEvent.Cause.WEATHER); // CraftBukkit
                     }
                 }
 
@@ -314,11 +483,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     BiomeBase biomebase = this.getBiome(blockposition);
 
                     if (biomebase.a((IWorldReader) this, blockposition1)) {
-                        this.setTypeUpdate(blockposition1, Blocks.ICE.getBlockData());
+                        org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(this, blockposition1, Blocks.ICE.getBlockData(), null); // CraftBukkit
                     }
 
                     if (flag && biomebase.b(this, blockposition)) {
-                        this.setTypeUpdate(blockposition, Blocks.SNOW.getBlockData());
+                        org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(this, blockposition, Blocks.SNOW.getBlockData(), null); // CraftBukkit
                     }
 
                     if (flag && this.getBiome(blockposition1).c() == BiomeBase.Precipitation.RAIN) {
@@ -367,7 +536,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     protected BlockPosition a(BlockPosition blockposition) {
         BlockPosition blockposition1 = this.getHighestBlockYAt(HeightMap.Type.MOTION_BLOCKING, blockposition);
         AxisAlignedBB axisalignedbb = (new AxisAlignedBB(blockposition1, new BlockPosition(blockposition1.getX(), this.getHeight(), blockposition1.getZ()))).g(3.0D);
-        List<EntityLiving> list = this.a(EntityLiving.class, axisalignedbb, (entityliving) -> {
+        List<EntityLiving> list = this.a(EntityLiving.class, axisalignedbb, (java.util.function.Predicate<EntityLiving>) (entityliving) -> { // CraftBukkit - decompile error
             return entityliving != null && entityliving.isAlive() && this.e(entityliving.getChunkCoordinates());
         });
 
@@ -383,7 +552,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
 
     public void tickEntities() {
-        if (this.players.isEmpty()) {
+        if (false && this.players.isEmpty()) { // CraftBukkit - this prevents entity cleanup, other issues on servers with no players
             if (this.emptyTime++ >= 300) {
                 return;
             }
@@ -472,6 +641,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     }
 
+    /* CraftBukkit start - We prevent spawning in general, so this butchering is not needed
     public void entityJoinedWorld(Entity entity, boolean flag) {
         if (!this.getSpawnAnimals() && (entity instanceof EntityAnimal || entity instanceof EntityWaterAnimal)) {
             entity.die();
@@ -483,6 +653,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
         super.entityJoinedWorld(entity, flag);
     }
+    // CraftBukkit end */
 
     private boolean getSpawnNPCs() {
         return this.server.getSpawnNPCs();
@@ -495,7 +666,21 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     protected IChunkProvider r() {
         IChunkLoader ichunkloader = this.dataManager.createChunkLoader(this.worldProvider);
 
-        return new ChunkProviderServer(this, ichunkloader, this.worldProvider.getChunkGenerator(), this.server);
+        // CraftBukkit start
+        org.bukkit.craftbukkit.generator.InternalChunkGenerator gen;
+
+        if (this.generator != null) {
+            gen = new org.bukkit.craftbukkit.generator.CustomChunkGenerator(this, this.getSeed(), this.generator);
+        } else if (this.worldProvider instanceof WorldProviderHell) {
+            gen = new org.bukkit.craftbukkit.generator.NetherChunkGenerator(this, this.getSeed());
+        } else if (this.worldProvider instanceof WorldProviderTheEnd) {
+            gen = new org.bukkit.craftbukkit.generator.SkyLandsChunkGenerator(this, this.getSeed());
+        } else {
+            gen = new org.bukkit.craftbukkit.generator.NormalChunkGenerator(this, this.getSeed());
+        }
+
+        return new ChunkProviderServer(this, ichunkloader, gen, this.server);
+        // CraftBukkit end
     }
 
     public boolean a(EntityHuman entityhuman, BlockPosition blockposition) {
@@ -553,6 +738,22 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             Random random = new Random(this.getSeed());
             BlockPosition blockposition = worldchunkmanager.a(0, 0, 256, list, random);
             ChunkCoordIntPair chunkcoordintpair = blockposition == null ? new ChunkCoordIntPair(0, 0) : new ChunkCoordIntPair(blockposition);
+
+            // CraftBukkit start
+            if (this.generator != null) {
+                Random rand = new Random(this.getSeed());
+                org.bukkit.Location spawn = this.generator.getFixedSpawnLocation(((WorldServer) this).getWorld(), rand);
+
+                if (spawn != null) {
+                    if (spawn.getWorld() != ((WorldServer) this).getWorld()) {
+                        throw new IllegalStateException("Cannot set spawn point for " + this.worldData.getName() + " to be in another world (" + spawn.getWorld().getName() + ")");
+                    } else {
+                        this.worldData.setSpawn(new BlockPosition(spawn.getBlockX(), spawn.getBlockY(), spawn.getBlockZ()));
+                        return;
+                    }
+                }
+            }
+            // CraftBukkit end
 
             if (blockposition == null) {
                 WorldServer.a.warn("Unable to find spawn biome");
@@ -629,6 +830,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         ChunkProviderServer chunkproviderserver = this.getChunkProvider();
 
         if (chunkproviderserver.d()) {
+            org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getWorld())); // CraftBukkit
             if (iprogressupdate != null) {
                 iprogressupdate.a(new ChatMessage("menu.savingLevel", new Object[0]));
             }
@@ -639,7 +841,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             }
 
             chunkproviderserver.a(flag);
-            List<Chunk> list = Lists.newArrayList(chunkproviderserver.a());
+            // CraftBukkit - ArrayList -> Collection
+            java.util.Collection<Chunk> list = chunkproviderserver.a();
             Iterator iterator = list.iterator();
 
             while (iterator.hasNext()) {
@@ -687,9 +890,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.h().a();
     }
 
-    public boolean addEntity(Entity entity) {
-        return this.j(entity) ? super.addEntity(entity) : false;
+    // CraftBukkit start
+    public boolean addEntity(Entity entity, SpawnReason spawnReason) { // Changed signature, added SpawnReason
+        // World.addEntity(Entity) will call this, and we still want to perform
+        // existing entity checking when it's called with a SpawnReason
+        return this.j(entity) ? super.addEntity(entity, spawnReason) : false;
     }
+    // CraftBukkit end
 
     public void a(Stream<Entity> stream) {
         stream.forEach((entity) -> {
@@ -703,7 +910,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     private boolean j(Entity entity) {
         if (entity.dead) {
-            WorldServer.a.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.getName(entity.P()));
+            // WorldServer.a.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.getName(entity.P())); // CraftBukkit
             return false;
         } else {
             UUID uuid = entity.getUniqueID();
@@ -715,7 +922,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     this.g.remove(entity1);
                 } else {
                     if (!(entity instanceof EntityHuman)) {
-                        WorldServer.a.warn("Keeping entity {} that already exists with UUID {}", EntityTypes.getName(entity1.P()), uuid.toString());
+                        // WorldServer.a.warn("Keeping entity {} that already exists with UUID {}", EntityTypes.getName(entity1.P()), uuid.toString()); // CraftBukkit
                         return false;
                     }
 
@@ -767,9 +974,21 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     }
 
+    // CraftBukkit start
     public boolean strikeLightning(Entity entity) {
+        return this.strikeLightning(entity, LightningStrikeEvent.Cause.UNKNOWN);
+    }
+
+    public boolean strikeLightning(Entity entity, LightningStrikeEvent.Cause cause) {
+        LightningStrikeEvent lightning = new LightningStrikeEvent(this.getWorld(), (org.bukkit.entity.LightningStrike) entity.getBukkitEntity(), cause);
+        this.getServer().getPluginManager().callEvent(lightning);
+
+        if (lightning.isCancelled()) {
+            return false;
+        }
+        // CraftBukkit end
         if (super.strikeLightning(entity)) {
-            this.server.getPlayerList().sendPacketNearby((EntityHuman) null, entity.locX, entity.locY, entity.locZ, 512.0D, this.worldProvider.getDimensionManager(), new PacketPlayOutSpawnEntityWeather(entity));
+            this.server.getPlayerList().sendPacketNearby((EntityHuman) null, entity.locX, entity.locY, entity.locZ, 512.0D, dimension, new PacketPlayOutSpawnEntityWeather(entity)); // CraftBukkit - Use dimension
             return true;
         } else {
             return false;
@@ -785,6 +1004,14 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
 
     public Explosion createExplosion(@Nullable Entity entity, DamageSource damagesource, double d0, double d1, double d2, float f, boolean flag, boolean flag1) {
+        // CraftBukkit start
+        Explosion explosion = super.createExplosion(entity, damagesource, d0, d1, d2, f, flag, flag1);
+
+        if (explosion.wasCanceled) {
+            return explosion;
+        }
+
+        /* Remove
         Explosion explosion = new Explosion(this, entity, d0, d1, d2, f, flag, flag1);
 
         if (damagesource != null) {
@@ -793,6 +1020,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
         explosion.a();
         explosion.a(false);
+        */
+        // CraftBukkit end - TODO: Check if explosions are still properly implemented
         if (!flag1) {
             explosion.clearBlocks();
         }
@@ -819,7 +1048,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             BlockActionData blockactiondata = (BlockActionData) this.d.removeFirst();
 
             if (this.a(blockactiondata)) {
-                this.server.getPlayerList().sendPacketNearby((EntityHuman) null, (double) blockactiondata.a().getX(), (double) blockactiondata.a().getY(), (double) blockactiondata.a().getZ(), 64.0D, this.worldProvider.getDimensionManager(), new PacketPlayOutBlockAction(blockactiondata.a(), blockactiondata.b(), blockactiondata.c(), blockactiondata.d()));
+                // CraftBukkit - this.worldProvider.dimension -> this.dimension
+                this.server.getPlayerList().sendPacketNearby((EntityHuman) null, (double) blockactiondata.a().getX(), (double) blockactiondata.a().getY(), (double) blockactiondata.a().getZ(), 64.0D, dimension, new PacketPlayOutBlockAction(blockactiondata.a(), blockactiondata.b(), blockactiondata.c(), blockactiondata.d()));
             }
         }
 
@@ -840,6 +1070,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         boolean flag = this.isRaining();
 
         super.w();
+        /* CraftBukkit start
         if (this.o != this.p) {
             this.server.getPlayerList().a((Packet) (new PacketPlayOutGameStateChange(7, this.p)), this.worldProvider.getDimensionManager());
         }
@@ -858,6 +1089,21 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             this.server.getPlayerList().sendAll(new PacketPlayOutGameStateChange(7, this.p));
             this.server.getPlayerList().sendAll(new PacketPlayOutGameStateChange(8, this.r));
         }
+        // */
+        if (flag != this.isRaining()) {
+            // Only send weather packets to those affected
+            for (int i = 0; i < this.players.size(); ++i) {
+                if (((EntityPlayer) this.players.get(i)).world == this) {
+                    ((EntityPlayer) this.players.get(i)).setPlayerWeather((!flag ? WeatherType.DOWNFALL : WeatherType.CLEAR), false);
+                }
+            }
+        }
+        for (int i = 0; i < this.players.size(); ++i) {
+            if (((EntityPlayer) this.players.get(i)).world == this) {
+                ((EntityPlayer) this.players.get(i)).updateWeather(this.o, this.p, this.q, this.r);
+            }
+        }
+        // CraftBukkit end
 
     }
 
@@ -891,13 +1137,20 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
 
     public <T extends ParticleParam> int a(T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6) {
-        PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(t0, false, (float) d0, (float) d1, (float) d2, (float) d3, (float) d4, (float) d5, (float) d6, i);
+        // CraftBukkit - visibility api support
+        return sendParticles(null, t0, d0, d1, d2, i, d3, d4, d5, d6, false);
+    }
+
+    public <T extends ParticleParam> int sendParticles(EntityPlayer sender, T t0, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6, boolean force) {
+        PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(t0, force, (float) d0, (float) d1, (float) d2, (float) d3, (float) d4, (float) d5, (float) d6, i);
+        // CraftBukkit end
         int j = 0;
 
         for (int k = 0; k < this.players.size(); ++k) {
             EntityPlayer entityplayer = (EntityPlayer) this.players.get(k);
+            if (sender != null && !entityplayer.getBukkitEntity().canSee(sender.getBukkitEntity())) continue; // CraftBukkit
 
-            if (this.a(entityplayer, false, d0, d1, d2, packetplayoutworldparticles)) {
+            if (this.a(entityplayer, force, d0, d1, d2, packetplayoutworldparticles)) { // CraftBukkit
                 ++j;
             }
         }

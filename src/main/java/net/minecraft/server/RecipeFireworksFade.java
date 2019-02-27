@@ -3,13 +3,15 @@ package net.minecraft.server;
 import com.google.common.collect.Lists;
 import java.util.List;
 
-public class RecipeFireworksFade extends IRecipeComplex {
+public class RecipeFireworksFade extends ShapelessRecipes implements IRecipe { // CraftBukkit - added extends
 
     private static final RecipeItemStack a = RecipeItemStack.a(Items.FIREWORK_STAR);
 
+    // CraftBukkit start - Delegate to new parent class with bogus info
     public RecipeFireworksFade(MinecraftKey minecraftkey) {
-        super(minecraftkey);
+        super(minecraftkey, "", new ItemStack(Items.FIREWORK_STAR, 0), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.FIREWORK_STAR, Items.BONE_MEAL)));
     }
+    // CraftBukkit end
 
     public boolean a(IInventory iinventory, World world) {
         if (!(iinventory instanceof InventoryCrafting)) {

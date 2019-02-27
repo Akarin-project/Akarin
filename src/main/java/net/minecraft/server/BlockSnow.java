@@ -85,6 +85,11 @@ public class BlockSnow extends Block {
 
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (world.getBrightness(EnumSkyBlock.BLOCK, blockposition) > 11) {
+            // CraftBukkit start
+            if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockFadeEvent(world, blockposition, Blocks.AIR.getBlockData()).isCancelled()) {
+                return;
+            }
+            // CraftBukkit end
             iblockdata.a(world, blockposition, 0);
             world.setAir(blockposition);
         }

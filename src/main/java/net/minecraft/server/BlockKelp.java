@@ -52,7 +52,7 @@ public class BlockKelp extends Block implements IFluidContainer {
             IBlockData iblockdata1 = world.getType(blockposition1);
 
             if (iblockdata1.getBlock() == Blocks.WATER && (Integer) iblockdata.get(BlockKelp.a) < 25 && random.nextDouble() < 0.14D) {
-                world.setTypeUpdate(blockposition1, (IBlockData) iblockdata.a((IBlockState) BlockKelp.a));
+                org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(world, blockposition, blockposition1, (IBlockData) iblockdata.a((IBlockState) BlockKelp.a)); // CraftBukkit
             }
 
         }

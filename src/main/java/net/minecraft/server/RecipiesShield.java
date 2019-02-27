@@ -1,10 +1,12 @@
 package net.minecraft.server;
 
-public class RecipiesShield extends IRecipeComplex {
+public class RecipiesShield extends ShapelessRecipes implements IRecipe { // CraftBukkit - added extends
 
+    // CraftBukkit start - Delegate to new parent class with bogus info
     public RecipiesShield(MinecraftKey minecraftkey) {
-        super(minecraftkey);
+        super(minecraftkey, "", new ItemStack(Items.SHIELD, 0), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.WHITE_BANNER)));
     }
+    // CraftBukkit end
 
     public boolean a(IInventory iinventory, World world) {
         if (!(iinventory instanceof InventoryCrafting)) {

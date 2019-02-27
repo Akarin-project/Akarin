@@ -10,6 +10,7 @@ public abstract class EntityAgeable extends EntityCreature {
     protected int c;
     private float bD = -1.0F;
     private float bE;
+    public boolean ageLocked; // CraftBukkit
 
     protected EntityAgeable(EntityTypes<?> entitytypes, World world) {
         super(entitytypes, world);
@@ -29,7 +30,7 @@ public abstract class EntityAgeable extends EntityCreature {
                 if (entityageable != null) {
                     entityageable.setAgeRaw(-24000);
                     entityageable.setPositionRotation(this.locX, this.locY, this.locZ, 0.0F, 0.0F);
-                    this.world.addEntity(entityageable);
+                    this.world.addEntity(entityageable, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER_EGG); // CraftBukkit
                     if (itemstack.hasName()) {
                         entityageable.setCustomName(itemstack.getName());
                     }
@@ -97,12 +98,14 @@ public abstract class EntityAgeable extends EntityCreature {
         super.b(nbttagcompound);
         nbttagcompound.setInt("Age", this.getAge());
         nbttagcompound.setInt("ForcedAge", this.b);
+        nbttagcompound.setBoolean("AgeLocked", this.ageLocked); // CraftBukkit
     }
 
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         this.setAgeRaw(nbttagcompound.getInt("Age"));
         this.b = nbttagcompound.getInt("ForcedAge");
+        this.ageLocked = nbttagcompound.getBoolean("AgeLocked"); // CraftBukkit
     }
 
     public void a(DataWatcherObject<?> datawatcherobject) {
@@ -115,7 +118,7 @@ public abstract class EntityAgeable extends EntityCreature {
 
     public void movementTick() {
         super.movementTick();
-        if (this.world.isClientSide) {
+        if (this.world.isClientSide || ageLocked) { // CraftBukkit
             if (this.c > 0) {
                 if (this.c % 4 == 0) {
                     this.world.addParticle(Particles.z, this.locX + (double) (this.random.nextFloat() * this.width * 2.0F) - (double) this.width, this.locY + 0.5D + (double) (this.random.nextFloat() * this.length), this.locZ + (double) (this.random.nextFloat() * this.width * 2.0F) - (double) this.width, 0.0D, 0.0D, 0.0D);

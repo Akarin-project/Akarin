@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
 
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+
 public class EntityFallingBlock extends Entity {
 
     private IBlockData block;
@@ -71,7 +73,7 @@ public class EntityFallingBlock extends Entity {
 
             if (this.ticksLived++ == 0) {
                 blockposition = new BlockPosition(this);
-                if (this.world.getType(blockposition).getBlock() == block) {
+                if (this.world.getType(blockposition).getBlock() == block && !CraftEventFactory.callEntityChangeBlockEvent(this, blockposition, Blocks.AIR.getBlockData()).isCancelled()) {
                     this.world.setAir(blockposition);
                 } else if (!this.world.isClientSide) {
                     this.die();
@@ -112,7 +114,7 @@ public class EntityFallingBlock extends Entity {
 
                     if (!flag1 && BlockFalling.canFallThrough(this.world.getType(new BlockPosition(this.locX, this.locY - 0.009999999776482582D, this.locZ)))) {
                         this.onGround = false;
-                        return;
+                        // return; // CraftBukkit
                     }
 
                     this.motX *= 0.699999988079071D;
@@ -121,7 +123,13 @@ public class EntityFallingBlock extends Entity {
                     if (iblockdata.getBlock() != Blocks.MOVING_PISTON) {
                         this.die();
                         if (!this.f) {
-                            if (iblockdata.getMaterial().isReplaceable() && (flag1 || !BlockFalling.canFallThrough(this.world.getType(blockposition.down()))) && this.world.setTypeAndData(blockposition, this.block, 3)) {
+                            // CraftBukkit start
+                            if (iblockdata.getMaterial().isReplaceable() && (flag1 || !BlockFalling.canFallThrough(this.world.getType(blockposition.down())))) {
+                                if (CraftEventFactory.callEntityChangeBlockEvent(this, blockposition, this.block).isCancelled()) {
+                                    return;
+                                }
+                                this.world.setTypeAndData(blockposition, this.block, 3);
+                                // CraftBukkit end
                                 if (block instanceof BlockFalling) {
                                     ((BlockFalling) block).a(this.world, blockposition, this.block, iblockdata);
                                 }
@@ -175,7 +183,9 @@ public class EntityFallingBlock extends Entity {
                 while (iterator.hasNext()) {
                     Entity entity = (Entity) iterator.next();
 
+                    CraftEventFactory.entityDamage = this; // CraftBukkit
                     entity.damageEntity(damagesource, (float) Math.min(MathHelper.d((float) i * this.fallHurtAmount), this.fallHurtMax));
+                    CraftEventFactory.entityDamage = null; // CraftBukkit
                 }
 
                 if (flag && (double) this.random.nextFloat() < 0.05000000074505806D + (double) i * 0.05D) {

@@ -158,7 +158,11 @@ public class AdvancementDataPlayer {
                         Advancement advancement = this.d.getAdvancementData().a((MinecraftKey) entry.getKey());
 
                         if (advancement == null) {
-                            AdvancementDataPlayer.a.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", entry.getKey(), this.e);
+                            // CraftBukkit start
+                            if (((MinecraftKey) entry.getKey()).b().equals("minecraft")) {
+                                AdvancementDataPlayer.a.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", entry.getKey(), this.e);
+                            }
+                            // CraftBukkit end
                         } else {
                             this.a(advancement, (AdvancementProgress) entry.getValue());
                         }
@@ -227,6 +231,7 @@ public class AdvancementDataPlayer {
             this.i.add(advancement);
             flag = true;
             if (!flag1 && advancementprogress.isDone()) {
+                this.player.world.getServer().getPluginManager().callEvent(new org.bukkit.event.player.PlayerAdvancementDoneEvent(this.player.getBukkitEntity(), advancement.bukkit)); // CraftBukkit
                 advancement.d().a(this.player);
                 if (advancement.c() != null && advancement.c().i() && this.player.world.getGameRules().getBoolean("announceAdvancements")) {
                     this.d.getPlayerList().sendMessage(new ChatMessage("chat.type.advancement." + advancement.c().e().a(), new Object[] { this.player.getScoreboardDisplayName(), advancement.j()}));

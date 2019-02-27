@@ -3,6 +3,11 @@ package net.minecraft.server;
 import java.util.UUID;
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
+// CraftBukkit end
+
 public class EntityWolf extends EntityTameableAnimal {
 
     private static final DataWatcherObject<Float> DATA_HEALTH = DataWatcher.a(EntityWolf.class, DataWatcherRegistry.c);
@@ -55,6 +60,22 @@ public class EntityWolf extends EntityTameableAnimal {
 
         this.getAttributeMap().b(GenericAttributes.ATTACK_DAMAGE).setValue(2.0D);
     }
+
+    // CraftBukkit - add overriden version
+    @Override
+    public boolean setGoalTarget(EntityLiving entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason, boolean fire) {
+        if (!super.setGoalTarget(entityliving, reason, fire)) {
+            return false;
+        }
+        entityliving = getGoalTarget();
+        if (entityliving == null) {
+            this.setAngry(false);
+        } else if (!this.isTamed()) {
+            this.setAngry(true);
+        }
+        return true;
+    }
+    // CraftBukkit end
 
     public void setGoalTarget(@Nullable EntityLiving entityliving) {
         super.setGoalTarget(entityliving);
@@ -190,7 +211,8 @@ public class EntityWolf extends EntityTameableAnimal {
             Entity entity = damagesource.getEntity();
 
             if (this.goalSit != null) {
-                this.goalSit.setSitting(false);
+                // CraftBukkit - moved into EntityLiving.d(DamageSource, float)
+                // this.goalSit.setSitting(false);
             }
 
             if (entity != null && !(entity instanceof EntityHuman) && !(entity instanceof EntityArrow)) {
@@ -236,7 +258,7 @@ public class EntityWolf extends EntityTameableAnimal {
                             itemstack.subtract(1);
                         }
 
-                        this.heal((float) itemfood.getNutrition(itemstack));
+                        this.heal((float) itemfood.getNutrition(itemstack), org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason.EATING); // CraftBukkit
                         return true;
                     }
                 } else if (item instanceof ItemDye) {
@@ -257,7 +279,7 @@ public class EntityWolf extends EntityTameableAnimal {
                 this.goalSit.setSitting(!this.isSitting());
                 this.bg = false;
                 this.navigation.q();
-                this.setGoalTarget((EntityLiving) null);
+                this.setGoalTarget((EntityLiving) null, TargetReason.FORGOT_TARGET, true); // CraftBukkit - reason
             }
         } else if (item == Items.BONE && !this.isAngry()) {
             if (!entityhuman.abilities.canInstantlyBuild) {
@@ -265,12 +287,13 @@ public class EntityWolf extends EntityTameableAnimal {
             }
 
             if (!this.world.isClientSide) {
-                if (this.random.nextInt(3) == 0) {
+                // CraftBukkit - added event call and isCancelled check.
+                if (this.random.nextInt(3) == 0 && !CraftEventFactory.callEntityTameEvent(this, entityhuman).isCancelled()) {
                     this.c(entityhuman);
                     this.navigation.q();
                     this.setGoalTarget((EntityLiving) null);
                     this.goalSit.setSitting(true);
-                    this.setHealth(20.0F);
+                    this.setHealth(this.getMaxHealth()); // CraftBukkit - 20.0 -> getMaxHealth()
                     this.s(true);
                     this.world.broadcastEntityEffect(this, (byte) 7);
                 } else {

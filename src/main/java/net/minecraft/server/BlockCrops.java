@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import java.util.Random;
 
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+
 public class BlockCrops extends BlockPlant implements IBlockFragilePlantElement {
 
     public static final BlockStateInteger AGE = BlockProperties.W;
@@ -49,7 +51,7 @@ public class BlockCrops extends BlockPlant implements IBlockFragilePlantElement 
                 float f = a((Block) this, (IBlockAccess) world, blockposition);
 
                 if (random.nextInt((int) (25.0F / f) + 1) == 0) {
-                    world.setTypeAndData(blockposition, this.setAge(i + 1), 2);
+                    CraftEventFactory.handleBlockGrowEvent(world, blockposition, this.setAge(i + 1), 2); // CraftBukkit
                 }
             }
         }
@@ -64,7 +66,7 @@ public class BlockCrops extends BlockPlant implements IBlockFragilePlantElement 
             i = j;
         }
 
-        world.setTypeAndData(blockposition, this.setAge(i), 2);
+        CraftEventFactory.handleBlockGrowEvent(world, blockposition, this.setAge(i), 2); // CraftBukkit
     }
 
     protected int a(World world) {

@@ -1,12 +1,62 @@
 package net.minecraft.server;
 
 import javax.annotation.Nullable;
+// CraftBukkit start
+import java.util.ArrayList;
+import java.util.List;
+import org.bukkit.Location;
+
+import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.entity.HumanEntity;
+// CraftBukkit end
 
 public class InventoryLargeChest implements ITileInventory {
 
     private final IChatBaseComponent a;
     public final ITileInventory left;
     public final ITileInventory right;
+
+    // CraftBukkit start - add fields and methods
+    public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
+
+    public List<ItemStack> getContents() {
+        List<ItemStack> result = new ArrayList<ItemStack>(this.getSize());
+        for (int i = 0; i < this.getSize(); i++) {
+            result.add(this.getItem(i));
+        }
+        return result;
+    }
+
+    public void onOpen(CraftHumanEntity who) {
+        this.left.onOpen(who);
+        this.right.onOpen(who);
+        transaction.add(who);
+    }
+
+    public void onClose(CraftHumanEntity who) {
+        this.left.onClose(who);
+        this.right.onClose(who);
+        transaction.remove(who);
+    }
+
+    public List<HumanEntity> getViewers() {
+        return transaction;
+    }
+
+    public org.bukkit.inventory.InventoryHolder getOwner() {
+        return null; // This method won't be called since CraftInventoryDoubleChest doesn't defer to here
+    }
+
+    public void setMaxStackSize(int size) {
+        this.left.setMaxStackSize(size);
+        this.right.setMaxStackSize(size);
+    }
+
+    @Override
+    public Location getLocation() {
+        return left.getLocation(); // TODO: right?
+    }
+    // CraftBukkit end
 
     public InventoryLargeChest(IChatBaseComponent ichatbasecomponent, ITileInventory itileinventory, ITileInventory itileinventory1) {
         this.a = ichatbasecomponent;
@@ -75,7 +125,7 @@ public class InventoryLargeChest implements ITileInventory {
     }
 
     public int getMaxStackSize() {
-        return this.left.getMaxStackSize();
+        return Math.min(this.left.getMaxStackSize(), this.right.getMaxStackSize()); // CraftBukkit - check both sides
     }
 
     public void update() {

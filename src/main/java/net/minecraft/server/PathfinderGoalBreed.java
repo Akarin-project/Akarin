@@ -75,11 +75,24 @@ public class PathfinderGoalBreed extends PathfinderGoal {
         EntityAgeable entityageable = this.animal.createChild(this.partner);
 
         if (entityageable != null) {
+            // CraftBukkit start - set persistence for tame animals
+            if (entityageable instanceof EntityTameableAnimal && ((EntityTameableAnimal) entityageable).isTamed()) {
+                entityageable.persistent = true;
+            }
+            // CraftBukkit end
             EntityPlayer entityplayer = this.animal.getBreedCause();
 
             if (entityplayer == null && this.partner.getBreedCause() != null) {
                 entityplayer = this.partner.getBreedCause();
             }
+            // CraftBukkit start - call EntityBreedEvent
+            int experience = this.animal.getRandom().nextInt(7) + 1;
+            org.bukkit.event.entity.EntityBreedEvent entityBreedEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityBreedEvent(entityageable, animal, partner, entityplayer, this.animal.breedItem, experience);
+            if (entityBreedEvent.isCancelled()) {
+                return;
+            }
+            experience = entityBreedEvent.getExperience();
+            // CraftBukkit end
 
             if (entityplayer != null) {
                 entityplayer.a(StatisticList.ANIMALS_BRED);
@@ -92,7 +105,7 @@ public class PathfinderGoalBreed extends PathfinderGoal {
             this.partner.resetLove();
             entityageable.setAgeRaw(-24000);
             entityageable.setPositionRotation(this.animal.locX, this.animal.locY, this.animal.locZ, 0.0F, 0.0F);
-            this.b.addEntity(entityageable);
+            this.b.addEntity(entityageable, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING); // CraftBukkit - added SpawnReason
             Random random = this.animal.getRandom();
 
             for (int i = 0; i < 7; ++i) {
@@ -107,7 +120,11 @@ public class PathfinderGoalBreed extends PathfinderGoal {
             }
 
             if (this.b.getGameRules().getBoolean("doMobLoot")) {
-                this.b.addEntity(new EntityExperienceOrb(this.b, this.animal.locX, this.animal.locY, this.animal.locZ, random.nextInt(7) + 1));
+                // CraftBukkit start - use event experience
+                if (experience > 0) {
+                    this.b.addEntity(new EntityExperienceOrb(this.b, this.animal.locX, this.animal.locY, this.animal.locZ, experience));
+                }
+                // CraftBukkit end
             }
 
         }

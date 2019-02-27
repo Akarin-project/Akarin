@@ -1,5 +1,9 @@
 package net.minecraft.server;
 
+// CraftBukkit start
+import org.bukkit.event.entity.EntityUnleashEvent;
+// CraftBukkit end
+
 public abstract class EntityCreature extends EntityInsentient {
 
     private BlockPosition a;
@@ -66,6 +70,7 @@ public abstract class EntityCreature extends EntityInsentient {
 
             if (this instanceof EntityTameableAnimal && ((EntityTameableAnimal) this).isSitting()) {
                 if (f > 10.0F) {
+                    this.world.getServer().getPluginManager().callEvent(new EntityUnleashEvent(this.getBukkitEntity(), EntityUnleashEvent.UnleashReason.DISTANCE)); // CraftBukkit
                     this.unleash(true, true);
                 }
 
@@ -74,6 +79,7 @@ public abstract class EntityCreature extends EntityInsentient {
 
             this.u(f);
             if (f > 10.0F) {
+                this.world.getServer().getPluginManager().callEvent(new EntityUnleashEvent(this.getBukkitEntity(), EntityUnleashEvent.UnleashReason.DISTANCE)); // CraftBukkit
                 this.unleash(true, true);
                 this.goalSelector.c(1);
             } else if (f > 6.0F) {

@@ -41,6 +41,7 @@ public abstract class MobSpawnerAbstract {
 
     public void setMobName(EntityTypes<?> entitytypes) {
         this.spawnData.b().setString("id", IRegistry.ENTITY_TYPE.getKey(entitytypes).toString());
+        this.mobs.clear(); // CraftBukkit - SPIGOT-3496, MC-92282
     }
 
     private boolean h() {
@@ -110,7 +111,7 @@ public abstract class MobSpawnerAbstract {
                             ((EntityInsentient) entity).prepare(world.getDamageScaler(new BlockPosition(entity)), (GroupDataEntity) null, (NBTTagCompound) null);
                         }
 
-                        ChunkRegionLoader.a(entity, (GeneratorAccess) world);
+                        ChunkRegionLoader.a(entity, (GeneratorAccess) world, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER); // CraftBukkit
                         world.triggerEffect(2004, blockposition, 0);
                         if (entityinsentient != null) {
                             entityinsentient.doSpawnEffect();

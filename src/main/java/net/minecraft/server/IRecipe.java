@@ -33,4 +33,6 @@ public interface IRecipe {
     MinecraftKey getKey();
 
     RecipeSerializer<?> a();
+
+    org.bukkit.inventory.Recipe toBukkitRecipe(); // CraftBukkit
 }

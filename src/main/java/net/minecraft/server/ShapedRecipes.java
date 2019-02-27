@@ -12,6 +12,15 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+// CraftBukkit start
+import java.util.ArrayList;
+import java.util.List;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.inventory.CraftRecipe;
+import org.bukkit.craftbukkit.inventory.CraftShapedRecipe;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.inventory.RecipeChoice;
+// CraftBukkit end
 
 public class ShapedRecipes implements IRecipe {
 
@@ -30,6 +39,66 @@ public class ShapedRecipes implements IRecipe {
         this.items = nonnulllist;
         this.result = itemstack;
     }
+
+    // CraftBukkit start
+    public org.bukkit.inventory.ShapedRecipe toBukkitRecipe() {
+        CraftItemStack result = CraftItemStack.asCraftMirror(this.result);
+        CraftShapedRecipe recipe = new CraftShapedRecipe(result, this);
+        recipe.setGroup(this.group);
+
+        switch (this.height) {
+        case 1:
+            switch (this.width) {
+            case 1:
+                recipe.shape("a");
+                break;
+            case 2:
+                recipe.shape("ab");
+                break;
+            case 3:
+                recipe.shape("abc");
+                break;
+            }
+            break;
+        case 2:
+            switch (this.width) {
+            case 1:
+                recipe.shape("a","b");
+                break;
+            case 2:
+                recipe.shape("ab","cd");
+                break;
+            case 3:
+                recipe.shape("abc","def");
+                break;
+            }
+            break;
+        case 3:
+            switch (this.width) {
+            case 1:
+                recipe.shape("a","b","c");
+                break;
+            case 2:
+                recipe.shape("ab","cd","ef");
+                break;
+            case 3:
+                recipe.shape("abc","def","ghi");
+                break;
+            }
+            break;
+        }
+        char c = 'a';
+        for (RecipeItemStack list : this.items) {
+            RecipeChoice choice = CraftRecipe.toBukkit(list);
+            if (choice != null) {
+                recipe.setIngredient(c, choice);
+            }
+
+            c++;
+        }
+        return recipe;
+    }
+    // CraftBukkit end
 
     public MinecraftKey getKey() {
         return this.key;

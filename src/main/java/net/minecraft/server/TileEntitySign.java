@@ -24,6 +24,12 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
             nbttagcompound.setString("Text" + (i + 1), s);
         }
 
+        // CraftBukkit start
+        if (Boolean.getBoolean("convertLegacySigns")) {
+            nbttagcompound.setBoolean("Bukkit.isConverted", true);
+        }
+        // CraftBukkit end
+
         return nbttagcompound;
     }
 
@@ -31,18 +37,38 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
         this.isEditable = false;
         super.load(nbttagcompound);
 
+        // CraftBukkit start - Add an option to convert signs correctly
+        // This is done with a flag instead of all the time because
+        // we have no way to tell whether a sign is from 1.7.10 or 1.8
+
+        boolean oldSign = Boolean.getBoolean("convertLegacySigns") && !nbttagcompound.getBoolean("Bukkit.isConverted");
+
         for (int i = 0; i < 4; ++i) {
             String s = nbttagcompound.getString("Text" + (i + 1));
-            IChatBaseComponent ichatbasecomponent = IChatBaseComponent.ChatSerializer.a(s);
+            if (s != null && s.length() > 2048) {
+                s = "\"\"";
+            }
 
-            if (this.world instanceof WorldServer) {
-                try {
-                    this.lines[i] = ChatComponentUtils.filterForDisplay(this.a((EntityPlayer) null), ichatbasecomponent, (Entity) null);
-                } catch (CommandSyntaxException commandsyntaxexception) {
+            try {
+                IChatBaseComponent ichatbasecomponent = IChatBaseComponent.ChatSerializer.a(s);
+
+                if (oldSign) {
+                    lines[i] = org.bukkit.craftbukkit.util.CraftChatMessage.fromString(s)[0];
+                    continue;
+                }
+                // CraftBukkit end
+
+                if (this.world instanceof WorldServer) {
+                    try {
+                        this.lines[i] = ChatComponentUtils.filterForDisplay(this.a((EntityPlayer) null), ichatbasecomponent, (Entity) null);
+                    } catch (CommandSyntaxException commandsyntaxexception) {
+                        this.lines[i] = ichatbasecomponent;
+                    }
+                } else {
                     this.lines[i] = ichatbasecomponent;
                 }
-            } else {
-                this.lines[i] = ichatbasecomponent;
+            } catch (com.google.gson.JsonParseException jsonparseexception) {
+                this.lines[i] = new ChatComponentText(s);
             }
 
             this.h[i] = null;
@@ -101,6 +127,13 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
     }
 
     public void sendMessage(IChatBaseComponent ichatbasecomponent) {}
+
+    // CraftBukkit start
+    @Override
+    public org.bukkit.command.CommandSender getBukkitSender(CommandListenerWrapper wrapper) {
+        return wrapper.getEntity() != null ? wrapper.getEntity().getBukkitSender(wrapper) : new org.bukkit.craftbukkit.command.CraftBlockCommandSender(wrapper, this);
+    }
+    // CraftBukkit end
 
     public CommandListenerWrapper a(@Nullable EntityPlayer entityplayer) {
         String s = entityplayer == null ? "Sign" : entityplayer.getDisplayName().getString();

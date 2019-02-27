@@ -58,7 +58,7 @@ public class BlockGrass extends BlockDirtSnowSpreadable implements IBlockFragile
                             }
 
                             if (iblockdata3.canPlace(world, blockposition2)) {
-                                world.setTypeAndData(blockposition2, iblockdata3, 3);
+                                org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(world, blockposition2, iblockdata3, 3); // CraftBukkit
                             }
                         }
                     }

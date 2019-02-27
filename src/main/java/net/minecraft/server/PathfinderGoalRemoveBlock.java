@@ -2,6 +2,10 @@ package net.minecraft.server;
 
 import java.util.Random;
 import javax.annotation.Nullable;
+// CraftBukkit start
+import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.event.entity.EntityInteractEvent;
+// CraftBukkit end
 
 public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
 
@@ -66,6 +70,14 @@ public class PathfinderGoalRemoveBlock extends PathfinderGoalGotoTarget {
             }
 
             if (this.h > 60) {
+                // CraftBukkit start - Step on eggs
+                EntityInteractEvent event = new EntityInteractEvent(this.entity.getBukkitEntity(), CraftBlock.at(world, blockposition1));
+                world.getServer().getPluginManager().callEvent((EntityInteractEvent) event);
+
+                if (event.isCancelled()) {
+                    return;
+                }
+                // CraftBukkit end
                 world.setAir(blockposition1);
                 if (!world.isClientSide) {
                     for (int i = 0; i < 20; ++i) {

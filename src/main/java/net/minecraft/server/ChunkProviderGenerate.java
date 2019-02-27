@@ -166,6 +166,11 @@ public class ChunkProviderGenerate extends ChunkGeneratorAbstract<GeneratorSetti
                             f5 = 1.0F + f5 * 2.0F;
                             f6 = 1.0F + f6 * 4.0F;
                         }
+                        // CraftBukkit start - fix MC-54738
+                        if (f5 < -1.8F) {
+                            f5 = -1.8F;
+                        }
+                        // CraftBukkit end
 
                         float f7 = this.o[l1 + 2 + (i2 + 2) * 5] / (f5 + 2.0F);
 

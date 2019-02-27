@@ -52,6 +52,11 @@ public class BlockIce extends BlockHalfTransparent {
     }
 
     protected void b(IBlockData iblockdata, World world, BlockPosition blockposition) {
+        // CraftBukkit start
+        if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockFadeEvent(world, blockposition, world.worldProvider.isNether() ? Blocks.AIR.getBlockData() : Blocks.WATER.getBlockData()).isCancelled()) {
+            return;
+        }
+        // CraftBukkit end
         if (world.worldProvider.isNether()) {
             world.setAir(blockposition);
         } else {

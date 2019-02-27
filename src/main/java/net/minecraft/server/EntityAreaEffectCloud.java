@@ -13,6 +13,10 @@ import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+// CraftBukkit start
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
+import org.bukkit.entity.LivingEntity;
+// CraftBukkit end
 
 public class EntityAreaEffectCloud extends Entity {
 
@@ -100,6 +104,22 @@ public class EntityAreaEffectCloud extends Entity {
         }
 
     }
+
+    // CraftBukkit start accessor methods
+    public void refreshEffects() {
+        if (!this.hasColor) {
+            this.getDataWatcher().set(EntityAreaEffectCloud.c, Integer.valueOf(PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects)))); // PAIL: rename
+        }
+    }
+
+    public String getType() {
+        return ((MinecraftKey) IRegistry.POTION.getKey(this.potionRegistry)).toString();
+    }
+
+    public void setType(String string) {
+        a(IRegistry.POTION.get(new MinecraftKey(string)));
+    }
+    // CraftBukkit end
 
     public int getColor() {
         return (Integer) this.getDataWatcher().get(EntityAreaEffectCloud.c);
@@ -244,6 +264,7 @@ public class EntityAreaEffectCloud extends Entity {
                     if (!list1.isEmpty()) {
                         Iterator iterator2 = list1.iterator();
 
+                        List<LivingEntity> entities = new java.util.ArrayList<LivingEntity>(); // CraftBukkit
                         while (iterator2.hasNext()) {
                             EntityLiving entityliving = (EntityLiving) iterator2.next();
 
@@ -253,6 +274,17 @@ public class EntityAreaEffectCloud extends Entity {
                                 double d2 = d0 * d0 + d1 * d1;
 
                                 if (d2 <= (double) (f * f)) {
+                                    // CraftBukkit start
+                                    entities.add((LivingEntity) entityliving.getBukkitEntity());
+                                }
+                            }
+                        }
+                        org.bukkit.event.entity.AreaEffectCloudApplyEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callAreaEffectCloudApplyEvent(this, entities);
+                        if (!event.isCancelled()) {
+                            for (LivingEntity entity : event.getAffectedEntities()) {
+                                if (entity instanceof CraftLivingEntity) {
+                                    EntityLiving entityliving = ((CraftLivingEntity) entity).getHandle();
+                                    // CraftBukkit end
                                     this.h.put(entityliving, this.ticksLived + this.reapplicationDelay);
                                     Iterator iterator3 = list.iterator();
 
@@ -262,7 +294,7 @@ public class EntityAreaEffectCloud extends Entity {
                                         if (mobeffect1.getMobEffect().isInstant()) {
                                             mobeffect1.getMobEffect().applyInstantEffect(this, this.getSource(), entityliving, mobeffect1.getAmplifier(), 0.5D);
                                         } else {
-                                            entityliving.addEffect(new MobEffect(mobeffect1));
+                                            entityliving.addEffect(new MobEffect(mobeffect1), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.AREA_EFFECT_CLOUD); // CraftBukkit
                                         }
                                     }
 

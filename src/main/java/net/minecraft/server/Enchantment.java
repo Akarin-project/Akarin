@@ -153,10 +153,15 @@ public abstract class Enchantment {
         a("channeling", new EnchantmentTridentChanneling(Enchantment.Rarity.VERY_RARE, new EnumItemSlot[] { EnumItemSlot.MAINHAND}));
         a("mending", new EnchantmentMending(Enchantment.Rarity.RARE, EnumItemSlot.values()));
         a("vanishing_curse", new EnchantmentVanishing(Enchantment.Rarity.VERY_RARE, EnumItemSlot.values()));
+        // CraftBukkit start
+        for (Object enchantment : IRegistry.ENCHANTMENT) {
+            org.bukkit.enchantments.Enchantment.registerEnchantment(new org.bukkit.craftbukkit.enchantments.CraftEnchantment((Enchantment) enchantment));
+        }
+        // CraftBukkit end
     }
 
     private static void a(String s, Enchantment enchantment) {
-        IRegistry.ENCHANTMENT.a(new MinecraftKey(s), (Object) enchantment);
+        IRegistry.ENCHANTMENT.a(new MinecraftKey(s), enchantment); // CraftBukkit - decompile error
     }
 
     public static enum Rarity {

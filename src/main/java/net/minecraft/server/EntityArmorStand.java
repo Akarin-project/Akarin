@@ -5,6 +5,15 @@ import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.craftbukkit.CraftEquipmentSlot;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+// CraftBukkit end
+
 public class EntityArmorStand extends EntityLiving {
 
     private static final Vector3f bx = new Vector3f(0.0F, 0.0F, 0.0F);
@@ -55,6 +64,13 @@ public class EntityArmorStand extends EntityLiving {
         this(world);
         this.setPosition(d0, d1, d2);
     }
+
+    // CraftBukkit start - SPIGOT-3607, SPIGOT-3637
+    @Override
+    public float getBukkitYaw() {
+        return this.yaw;
+    }
+    // CraftBukkit end
 
     public final void setSize(float f, float f1) {
         double d0 = this.locX;
@@ -354,6 +370,21 @@ public class EntityArmorStand extends EntityLiving {
         if (itemstack1.isEmpty() || (this.bH & 1 << enumitemslot.c() + 8) == 0) {
             if (!itemstack1.isEmpty() || (this.bH & 1 << enumitemslot.c() + 16) == 0) {
                 ItemStack itemstack2;
+                // CraftBukkit start
+                org.bukkit.inventory.ItemStack armorStandItem = CraftItemStack.asCraftMirror(itemstack1);
+                org.bukkit.inventory.ItemStack playerHeldItem = CraftItemStack.asCraftMirror(itemstack);
+
+                Player player = (Player) entityhuman.getBukkitEntity();
+                ArmorStand self = (ArmorStand) this.getBukkitEntity();
+
+                EquipmentSlot slot = CraftEquipmentSlot.getSlot(enumitemslot);
+                PlayerArmorStandManipulateEvent armorStandManipulateEvent = new PlayerArmorStandManipulateEvent(player,self,playerHeldItem,armorStandItem,slot);
+                this.world.getServer().getPluginManager().callEvent(armorStandManipulateEvent);
+
+                if (armorStandManipulateEvent.isCancelled()) {
+                    return;
+                }
+                // CraftBukkit end
 
                 if (entityhuman.abilities.canInstantlyBuild && itemstack1.isEmpty() && !itemstack.isEmpty()) {
                     itemstack2 = itemstack.cloneItemStack();
@@ -375,14 +406,19 @@ public class EntityArmorStand extends EntityLiving {
     }
 
     public boolean damageEntity(DamageSource damagesource, float f) {
+        // CraftBukkit start
+        if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f)) {
+            return false;
+        }
+        // CraftBukkit end
         if (!this.world.isClientSide && !this.dead) {
             if (DamageSource.OUT_OF_WORLD.equals(damagesource)) {
-                this.die();
+                this.killEntity(); // CraftBukkit - this.die() -> this.killEntity()
                 return false;
             } else if (!this.isInvulnerable(damagesource) && !this.bG && !this.isMarker()) {
                 if (damagesource.isExplosion()) {
                     this.D();
-                    this.die();
+                    this.killEntity(); // CraftBukkit - this.die() -> this.killEntity()
                     return false;
                 } else if (DamageSource.FIRE.equals(damagesource)) {
                     if (this.isBurning()) {
@@ -406,7 +442,7 @@ public class EntityArmorStand extends EntityLiving {
                     } else if (damagesource.v()) {
                         this.F();
                         this.A();
-                        this.die();
+                        this.killEntity(); // CraftBukkit - this.die() -> this.killEntity()
                         return false;
                     } else {
                         long i = this.world.getTime();
@@ -417,7 +453,7 @@ public class EntityArmorStand extends EntityLiving {
                         } else {
                             this.B();
                             this.A();
-                            this.die();
+                            this.killEntity(); // CraftBukkit - this.die() -> this.killEntity()
                         }
 
                         return true;
@@ -444,7 +480,7 @@ public class EntityArmorStand extends EntityLiving {
         f1 -= f;
         if (f1 <= 0.5F) {
             this.D();
-            this.die();
+            this.killEntity(); // CraftBukkit - this.die() -> this.killEntity()
         } else {
             this.setHealth(f1);
         }
@@ -452,7 +488,7 @@ public class EntityArmorStand extends EntityLiving {
     }
 
     private void B() {
-        Block.a(this.world, new BlockPosition(this), new ItemStack(Items.ARMOR_STAND));
+        drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(new ItemStack(Items.ARMOR_STAND))); // CraftBukkit - add to drops
         this.D();
     }
 
@@ -465,7 +501,7 @@ public class EntityArmorStand extends EntityLiving {
         for (i = 0; i < this.bE.size(); ++i) {
             itemstack = (ItemStack) this.bE.get(i);
             if (!itemstack.isEmpty()) {
-                Block.a(this.world, (new BlockPosition(this)).up(), itemstack);
+                drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemstack)); // CraftBukkit - add to drops
                 this.bE.set(i, ItemStack.a);
             }
         }
@@ -473,7 +509,7 @@ public class EntityArmorStand extends EntityLiving {
         for (i = 0; i < this.bF.size(); ++i) {
             itemstack = (ItemStack) this.bF.get(i);
             if (!itemstack.isEmpty()) {
-                Block.a(this.world, (new BlockPosition(this)).up(), itemstack);
+                drops.add(org.bukkit.craftbukkit.inventory.CraftItemStack.asBukkitCopy(itemstack)); // CraftBukkit - add to drops
                 this.bF.set(i, ItemStack.a);
             }
         }
@@ -585,6 +621,7 @@ public class EntityArmorStand extends EntityLiving {
     }
 
     public void killEntity() {
+        org.bukkit.craftbukkit.event.CraftEventFactory.callEntityDeathEvent(this, drops); // CraftBukkit - call event
         this.die();
     }
 

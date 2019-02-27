@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import javax.annotation.Nullable;
+// CraftBukkit start
+import org.bukkit.craftbukkit.block.CraftBlock;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+// CraftBukkit end
 
 public class TileEntityConduit extends TileEntity implements ITickable {
 
@@ -151,7 +155,7 @@ public class TileEntityConduit extends TileEntity implements ITickable {
                 EntityHuman entityhuman = (EntityHuman) iterator.next();
 
                 if (this.position.m(new BlockPosition(entityhuman)) <= (double) j && entityhuman.ao()) {
-                    entityhuman.addEffect(new MobEffect(MobEffects.CONDUIT_POWER, 260, 0, true, true));
+                    entityhuman.addEffect(new MobEffect(MobEffects.CONDUIT_POWER, 260, 0, true, true), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.CONDUIT); // CraftBukkit
                 }
             }
 
@@ -168,7 +172,7 @@ public class TileEntityConduit extends TileEntity implements ITickable {
             this.target = this.l();
             this.k = null;
         } else if (this.target == null) {
-            List<EntityLiving> list = this.world.a(EntityLiving.class, this.k(), (entityliving1) -> {
+            List<EntityLiving> list = this.world.a(EntityLiving.class, this.k(), (java.util.function.Predicate<EntityLiving>) (entityliving1) -> { // CraftBukkit - decompile error
                 return entityliving1 instanceof IMonster && entityliving1.ao();
             });
 
@@ -180,8 +184,13 @@ public class TileEntityConduit extends TileEntity implements ITickable {
         }
 
         if (this.target != null) {
-            this.world.a((EntityHuman) null, this.target.locX, this.target.locY, this.target.locZ, SoundEffects.BLOCK_CONDUIT_ATTACK_TARGET, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            this.target.damageEntity(DamageSource.MAGIC, 4.0F);
+            // CraftBukkit start
+            CraftEventFactory.blockDamage = CraftBlock.at(this.world, this.position);
+            if (this.target.damageEntity(DamageSource.MAGIC, 4.0F)) {
+                this.world.a((EntityHuman) null, this.target.locX, this.target.locY, this.target.locZ, SoundEffects.BLOCK_CONDUIT_ATTACK_TARGET, SoundCategory.BLOCKS, 1.0F, 1.0F);
+            }
+            CraftEventFactory.blockDamage = null;
+            // CraftBukkit end
         }
 
         if (entityliving != this.target) {
@@ -214,7 +223,7 @@ public class TileEntityConduit extends TileEntity implements ITickable {
 
     @Nullable
     private EntityLiving l() {
-        List<EntityLiving> list = this.world.a(EntityLiving.class, this.k(), (entityliving) -> {
+        List<EntityLiving> list = this.world.a(EntityLiving.class, this.k(), (java.util.function.Predicate<EntityLiving>) (entityliving) -> { // CraftBukkit - decompile error
             return entityliving.getUniqueID().equals(this.k);
         });
 

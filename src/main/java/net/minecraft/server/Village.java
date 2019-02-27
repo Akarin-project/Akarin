@@ -77,7 +77,7 @@ public class Village {
 
                 if (entityirongolem != null) {
                     if (entityirongolem.a((GeneratorAccess) this.a, false) && entityirongolem.a((IWorldReader) this.a)) {
-                        this.a.addEntity(entityirongolem);
+                        this.a.addEntity(entityirongolem, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE); // CraftBukkit
                         return entityirongolem;
                     }
 

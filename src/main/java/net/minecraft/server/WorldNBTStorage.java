@@ -14,6 +14,11 @@ import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+// CraftBukkit start
+import java.util.UUID;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+// CraftBukkit end
+
 public class WorldNBTStorage implements IDataManager, IPlayerFileData {
 
     private static final Logger b = LogManager.getLogger();
@@ -23,6 +28,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
     private final String f;
     private final DefinedStructureManager g;
     protected final DataFixer a;
+    private UUID uuid = null; // CraftBukkit
 
     public WorldNBTStorage(File file, String s, @Nullable MinecraftServer minecraftserver, DataFixer datafixer) {
         this.a = datafixer;
@@ -167,6 +173,16 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
         }
 
         if (nbttagcompound != null) {
+            // CraftBukkit start
+            if (entityhuman instanceof EntityPlayer) {
+                CraftPlayer player = (CraftPlayer) entityhuman.getBukkitEntity();
+                // Only update first played if it is older than the one we have
+                long modified = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat").lastModified();
+                if (modified < player.getFirstPlayed()) {
+                    player.setFirstPlayed(modified);
+                }
+            }
+            // CraftBukkit end
             int i = nbttagcompound.hasKeyOfType("DataVersion", 3) ? nbttagcompound.getInt("DataVersion") : -1;
 
             entityhuman.f(GameProfileSerializer.a(this.a, DataFixTypes.PLAYER, nbttagcompound, i));
@@ -174,6 +190,22 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
 
         return nbttagcompound;
     }
+
+    // CraftBukkit start
+    public NBTTagCompound getPlayerData(String s) {
+        try {
+            File file1 = new File(this.playerDir, s + ".dat");
+
+            if (file1.exists()) {
+                return NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file1)));
+            }
+        } catch (Exception exception) {
+            b.warn("Failed to load player data for " + s);
+        }
+
+        return null;
+    }
+    // CraftBukkit end
 
     public IPlayerFileData getPlayerFileData() {
         return this;
@@ -211,4 +243,50 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
     public DataFixer i() {
         return this.a;
     }
+
+    // CraftBukkit start
+    public UUID getUUID() {
+        if (uuid != null) return uuid;
+        File file1 = new File(this.baseDir, "uid.dat");
+        if (file1.exists()) {
+            DataInputStream dis = null;
+            try {
+                dis = new DataInputStream(new FileInputStream(file1));
+                return uuid = new UUID(dis.readLong(), dis.readLong());
+            } catch (IOException ex) {
+                b.warn("Failed to read " + file1 + ", generating new random UUID", ex);
+            } finally {
+                if (dis != null) {
+                    try {
+                        dis.close();
+                    } catch (IOException ex) {
+                        // NOOP
+                    }
+                }
+            }
+        }
+        uuid = UUID.randomUUID();
+        DataOutputStream dos = null;
+        try {
+            dos = new DataOutputStream(new FileOutputStream(file1));
+            dos.writeLong(uuid.getMostSignificantBits());
+            dos.writeLong(uuid.getLeastSignificantBits());
+        } catch (IOException ex) {
+            b.warn("Failed to write " + file1, ex);
+        } finally {
+            if (dos != null) {
+                try {
+                    dos.close();
+                } catch (IOException ex) {
+                    // NOOP
+                }
+            }
+        }
+        return uuid;
+    }
+
+    public File getPlayerDir() {
+        return playerDir;
+    }
+    // CraftBukkit end
 }

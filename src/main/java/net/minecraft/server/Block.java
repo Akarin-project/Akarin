@@ -405,7 +405,8 @@ public class Block implements IMaterial {
             int j = this.getDropCount(iblockdata, i, world, blockposition, world.random);
 
             for (int k = 0; k < j; ++k) {
-                if (f >= 1.0F || world.random.nextFloat() <= f) {
+                // CraftBukkit - <= to < to allow for plugins to completely disable block drops from explosions
+                if (f >= 1.0F || world.random.nextFloat() < f) {
                     Item item = this.getDropType(iblockdata, world, blockposition, i).getItem();
 
                     if (item != Items.AIR) {
@@ -426,7 +427,13 @@ public class Block implements IMaterial {
             EntityItem entityitem = new EntityItem(world, (double) blockposition.getX() + d0, (double) blockposition.getY() + d1, (double) blockposition.getZ() + d2, itemstack);
 
             entityitem.n();
-            world.addEntity(entityitem);
+            // CraftBukkit start
+            if (world.captureDrops != null) {
+                world.captureDrops.add(entityitem);
+            } else {
+                world.addEntity(entityitem);
+            }
+            // CraftBukkit end
         }
     }
 
@@ -1394,8 +1401,14 @@ public class Block implements IMaterial {
 
     }
 
+    // CraftBukkit start
+    public int getExpDrop(IBlockData iblockdata, World world, BlockPosition blockposition, int enchantmentLevel) {
+        return 0;
+    }
+    // CraftBukkit end
+
     private static void a(MinecraftKey minecraftkey, Block block) {
-        IRegistry.BLOCK.a(minecraftkey, (Object) block);
+        IRegistry.BLOCK.a(minecraftkey, block); // CraftBukkit - decompile error
     }
 
     private static void a(String s, Block block) {

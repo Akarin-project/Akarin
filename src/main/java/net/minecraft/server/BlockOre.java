@@ -32,6 +32,7 @@ public class BlockOre extends Block {
 
     public void dropNaturally(IBlockData iblockdata, World world, BlockPosition blockposition, float f, int i) {
         super.dropNaturally(iblockdata, world, blockposition, f, i);
+        /* CraftBukkit start - Delegated to getExpDrop
         if (this.getDropType(iblockdata, world, blockposition, i) != this) {
             int j = 0;
 
@@ -49,7 +50,32 @@ public class BlockOre extends Block {
 
             this.dropExperience(world, blockposition, j);
         }
+        // */
 
+    }
+
+    @Override
+    public int getExpDrop(IBlockData iblockdata, World world, BlockPosition blockposition, int enchantmentLevel) {
+        if (this.getDropType(iblockdata, world, blockposition, enchantmentLevel) != this) {
+            int j = 0;
+
+            if (this == Blocks.COAL_ORE) {
+                j = MathHelper.nextInt(world.random, 0, 2);
+            } else if (this == Blocks.DIAMOND_ORE) {
+                j = MathHelper.nextInt(world.random, 3, 7);
+            } else if (this == Blocks.EMERALD_ORE) {
+                j = MathHelper.nextInt(world.random, 3, 7);
+            } else if (this == Blocks.LAPIS_ORE) {
+                j = MathHelper.nextInt(world.random, 2, 5);
+            } else if (this == Blocks.NETHER_QUARTZ_ORE) {
+                j = MathHelper.nextInt(world.random, 2, 5);
+            }
+
+            return j;
+        }
+
+        return 0;
+        // CraftBukkit end
     }
 
     public ItemStack a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata) {

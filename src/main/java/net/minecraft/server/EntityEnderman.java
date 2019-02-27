@@ -44,7 +44,17 @@ public class EntityEnderman extends EntityMonster {
     }
 
     public void setGoalTarget(@Nullable EntityLiving entityliving) {
-        super.setGoalTarget(entityliving);
+        // CraftBukkit start - fire event
+        setGoalTarget(entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason.UNKNOWN, true);
+    }
+
+    @Override
+    public boolean setGoalTarget(EntityLiving entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason, boolean fireEvent) {
+        if (!super.setGoalTarget(entityliving, reason, fireEvent)) {
+            return false;
+        }
+        entityliving = getGoalTarget();
+        // CraftBukkit end
         AttributeInstance attributeinstance = this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED);
 
         if (entityliving == null) {
@@ -58,6 +68,7 @@ public class EntityEnderman extends EntityMonster {
                 attributeinstance.b(EntityEnderman.b);
             }
         }
+        return true;
 
     }
 
@@ -276,8 +287,12 @@ public class EntityEnderman extends EntityMonster {
             boolean flag = movingobjectposition != null && movingobjectposition.getBlockPosition().equals(blockposition);
 
             if (block.a(TagsBlock.ENDERMAN_HOLDABLE) && flag) {
-                this.enderman.setCarried(iblockdata);
-                world.setAir(blockposition);
+                // CraftBukkit start - Pickup event
+                if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.enderman, blockposition, Blocks.AIR.getBlockData()).isCancelled()) {
+                    this.enderman.setCarried(iblockdata);
+                    world.setAir(blockposition);
+                }
+                // CraftBukkit end
             }
 
         }
@@ -307,8 +322,12 @@ public class EntityEnderman extends EntityMonster {
             IBlockData iblockdata2 = this.a.getCarried();
 
             if (iblockdata2 != null && this.a(world, blockposition, iblockdata2, iblockdata, iblockdata1)) {
+                // CraftBukkit start - Place event
+                if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.a, blockposition, iblockdata2).isCancelled()) {
                 world.setTypeAndData(blockposition, iblockdata2, 3);
                 this.a.setCarried((IBlockData) null);
+                }
+                // CraftBukkit end
             }
 
         }

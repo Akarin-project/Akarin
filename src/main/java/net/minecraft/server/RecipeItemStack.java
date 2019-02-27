@@ -28,6 +28,7 @@ public final class RecipeItemStack implements Predicate<ItemStack> {
     private final RecipeItemStack.Provider[] c;
     public ItemStack[] choices;
     private IntList e;
+    public boolean exact; // CraftBukkit
 
     public RecipeItemStack(Stream<? extends RecipeItemStack.Provider> stream) {
         this.c = (RecipeItemStack.Provider[]) stream.filter(RecipeItemStack.b).toArray((i) -> {
@@ -59,6 +60,15 @@ public final class RecipeItemStack implements Predicate<ItemStack> {
             for (int j = 0; j < i; ++j) {
                 ItemStack itemstack1 = aitemstack[j];
 
+                // CraftBukkit start
+                if (exact) {
+                    if (ItemStack.equals(itemstack, itemstack1)) {
+                        return true;
+                    }
+
+                    continue;
+                }
+                // CraftBukkit end
                 if (itemstack1.getItem() == itemstack.getItem()) {
                     return true;
                 }

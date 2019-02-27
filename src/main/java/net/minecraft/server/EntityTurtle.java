@@ -232,7 +232,9 @@ public class EntityTurtle extends EntityAnimal {
     protected void l() {
         super.l();
         if (this.world.getGameRules().getBoolean("doMobLoot")) {
+            this.forceDrops = true; // CraftBukkit
             this.a((IMaterial) Items.SCUTE, 1);
+            this.forceDrops = false; // CraftBukkit
         }
 
     }
@@ -263,7 +265,9 @@ public class EntityTurtle extends EntityAnimal {
     }
 
     public void onLightningStrike(EntityLightning entitylightning) {
+        org.bukkit.craftbukkit.event.CraftEventFactory.entityDamage = entitylightning; // CraftBukkit
         this.damageEntity(DamageSource.LIGHTNING, Float.MAX_VALUE);
+        org.bukkit.craftbukkit.event.CraftEventFactory.entityDamage = null; // CraftBukkit
     }
 
     public void die(DamageSource damagesource) {
@@ -423,8 +427,12 @@ public class EntityTurtle extends EntityAnimal {
                 } else if (this.f.bK > 200) {
                     World world = this.f.world;
 
+                    // CraftBukkit start
+                    if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.f, this.d.up(), Blocks.TURTLE_EGG.getBlockData().set(BlockTurtleEgg.b, Integer.valueOf(this.f.random.nextInt(4) + 1))).isCancelled()) {
                     world.a((EntityHuman) null, blockposition, SoundEffects.ENTITY_TURTLE_LAY_EGG, SoundCategory.BLOCKS, 0.3F, 0.9F + world.random.nextFloat() * 0.2F);
                     world.setTypeAndData(this.d.up(), (IBlockData) Blocks.TURTLE_EGG.getBlockData().set(BlockTurtleEgg.b, this.f.random.nextInt(4) + 1), 3);
+                    }
+                    // CraftBukkit end
                     this.f.s(false);
                     this.f.t(false);
                     this.f.d(600);

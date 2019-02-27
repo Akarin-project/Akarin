@@ -17,8 +17,14 @@ public class EntityRabbit extends EntityAnimal {
         this.setSize(0.4F, 0.5F);
         this.h = new EntityRabbit.ControllerJumpRabbit(this);
         this.moveController = new EntityRabbit.ControllerMoveRabbit(this);
+        this.initializePathFinderGoals(); // CraftBukkit - moved code
+    }
+
+    // CraftBukkit start - code from constructor
+    public void initializePathFinderGoals(){
         this.c(0.0D);
     }
+    // CraftBukkit end
 
     protected void n() {
         this.goalSelector.a(1, new PathfinderGoalFloat(this));
@@ -393,9 +399,23 @@ public class EntityRabbit extends EntityAnimal {
                     Integer integer = (Integer) iblockdata.get(BlockCarrots.AGE);
 
                     if (integer == 0) {
+                        // CraftBukkit start
+                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.entity, blockposition, Blocks.AIR.getBlockData()).isCancelled()) {
+                            return;
+                        }
+                        // CraftBukkit end
                         world.setTypeAndData(blockposition, Blocks.AIR.getBlockData(), 2);
                         world.setAir(blockposition, true);
                     } else {
+                        // CraftBukkit start
+                        if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(
+                                this.entity,
+                                blockposition,
+                                iblockdata.set(BlockCarrots.AGE, integer - 1)
+                        ).isCancelled()) {
+                            return;
+                        }
+                        // CraftBukkit end
                         world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockCarrots.AGE, integer - 1), 2);
                         world.triggerEffect(2001, blockposition, Block.getCombinedId(iblockdata));
                     }

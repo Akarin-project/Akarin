@@ -6,6 +6,11 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multisets;
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import org.bukkit.Bukkit;
+import org.bukkit.event.server.MapInitializeEvent;
+// CraftBukkit end
+
 public class ItemWorldMap extends ItemWorldMapBase {
 
     public ItemWorldMap(Item.Info item_info) {
@@ -15,7 +20,7 @@ public class ItemWorldMap extends ItemWorldMapBase {
     public static ItemStack createFilledMapView(World world, int i, int j, byte b0, boolean flag, boolean flag1) {
         ItemStack itemstack = new ItemStack(Items.FILLED_MAP);
 
-        a(itemstack, world, i, j, b0, flag, flag1, world.worldProvider.getDimensionManager());
+        a(itemstack, world, i, j, b0, flag, flag1, ((WorldServer) world).dimension); // CraftBukkit - fixes Bukkit multiworld maps
         return itemstack;
     }
 
@@ -24,7 +29,7 @@ public class ItemWorldMap extends ItemWorldMapBase {
         WorldMap worldmap = a((GeneratorAccess) world, "map_" + e(itemstack));
 
         if (worldmap == null && !world.isClientSide) {
-            worldmap = a(itemstack, world, world.getWorldData().b(), world.getWorldData().d(), 3, false, false, world.worldProvider.getDimensionManager());
+            worldmap = a(itemstack, world, world.getWorldData().b(), world.getWorldData().d(), 3, false, false, ((WorldServer) world).dimension); // CraftBukkit - fixes Bukkit multiworld maps
         }
 
         return worldmap;
@@ -33,26 +38,42 @@ public class ItemWorldMap extends ItemWorldMapBase {
     public static int e(ItemStack itemstack) {
         NBTTagCompound nbttagcompound = itemstack.getTag();
 
-        return nbttagcompound != null && nbttagcompound.hasKeyOfType("map", 99) ? nbttagcompound.getInt("map") : 0;
+        return nbttagcompound != null && nbttagcompound.hasKeyOfType("map", 99) ? nbttagcompound.getInt("map") : -1; // CraftBukkit - make new maps for no tag
     }
 
     private static WorldMap a(ItemStack itemstack, World world, int i, int j, int k, boolean flag, boolean flag1, DimensionManager dimensionmanager) {
-        int l = world.a(DimensionManager.OVERWORLD, "map");
+        World worldMain = world.getServer().getServer().getWorldServer(DimensionManager.OVERWORLD); // CraftBukkit - store reference to primary world
+        int l = worldMain.a(DimensionManager.OVERWORLD, "map"); // CraftBukkit - use primary world for maps
         WorldMap worldmap = new WorldMap("map_" + l);
 
         worldmap.a(i, j, k, flag, flag1, dimensionmanager);
-        world.a(DimensionManager.OVERWORLD, worldmap.getId(), (PersistentBase) worldmap);
+        worldMain.a(DimensionManager.OVERWORLD, worldmap.getId(), (PersistentBase) worldmap); // CraftBukkit - use primary world for maps
         itemstack.getOrCreateTag().setInt("map", l);
+
+        // CraftBukkit start
+        MapInitializeEvent event = new MapInitializeEvent(worldmap.mapView);
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        // CraftBukkit end
         return worldmap;
     }
 
     @Nullable
     public static WorldMap a(GeneratorAccess generatoraccess, String s) {
-        return (WorldMap) generatoraccess.a(DimensionManager.OVERWORLD, WorldMap::new, s);
+        // CraftBukkit start - use primary world for maps and call event
+        WorldMap worldmap = (WorldMap) MinecraftServer.getServer().getWorldServer(DimensionManager.OVERWORLD).a(DimensionManager.OVERWORLD, (id) -> {
+            // We only get here when the data file exists, but is not a valid map
+            WorldMap newMap = new WorldMap(id);
+            MapInitializeEvent event = new MapInitializeEvent(newMap.mapView);
+            Bukkit.getServer().getPluginManager().callEvent(event);
+            return newMap;
+        }, s);
+        return worldmap;
+        // CraftBukkit end
     }
 
     public void a(World world, Entity entity, WorldMap worldmap) {
-        if (world.worldProvider.getDimensionManager() == worldmap.map && entity instanceof EntityHuman) {
+        // CraftBukkit - world.worldProvider -> ((WorldServer) world)
+        if (((WorldServer) world).dimension == worldmap.map && entity instanceof EntityHuman) {
             int i = 1 << worldmap.scale;
             int j = worldmap.centerX;
             int k = worldmap.centerZ;
@@ -199,7 +220,8 @@ public class ItemWorldMap extends ItemWorldMapBase {
         WorldMap worldmap = getSavedMap(itemstack, world);
 
         if (worldmap != null) {
-            if (world.worldProvider.getDimensionManager() == worldmap.map) {
+            // CraftBukkit - world.worldProvider -> ((WorldServer) world)
+            if (((WorldServer) world).dimension == worldmap.map) {
                 int i = 1 << worldmap.scale;
                 int j = worldmap.centerX;
                 int k = worldmap.centerZ;

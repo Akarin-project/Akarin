@@ -1,11 +1,18 @@
 package net.minecraft.server;
 
+import org.bukkit.craftbukkit.inventory.CraftInventoryView; // CraftBukkit
+
 public class ContainerBeacon extends Container {
 
     private final IInventory beacon;
     private final ContainerBeacon.SlotBeacon f;
+    // CraftBukkit start
+    private CraftInventoryView bukkitEntity = null;
+    private PlayerInventory player;
+    // CraftBukkit end
 
     public ContainerBeacon(IInventory iinventory, IInventory iinventory1) {
+        player = (PlayerInventory) iinventory; // CraftBukkit - TODO: check this
         this.beacon = iinventory1;
         this.f = new ContainerBeacon.SlotBeacon(iinventory1, 0, 136, 110);
         this.a((Slot) this.f);
@@ -48,6 +55,7 @@ public class ContainerBeacon extends Container {
     }
 
     public boolean canUse(EntityHuman entityhuman) {
+        if (!this.checkReachable) return true; // CraftBukkit
         return this.beacon.a(entityhuman);
     }
 
@@ -113,4 +121,17 @@ public class ContainerBeacon extends Container {
             return 1;
         }
     }
+
+    // CraftBukkit start
+    @Override
+    public CraftInventoryView getBukkitView() {
+        if (bukkitEntity != null) {
+            return bukkitEntity;
+        }
+
+        org.bukkit.craftbukkit.inventory.CraftInventory inventory = new org.bukkit.craftbukkit.inventory.CraftInventoryBeacon((TileEntityBeacon) this.beacon); // TODO - check this
+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), inventory, this);
+        return bukkitEntity;
+    }
+    // CraftBukkit end
 }

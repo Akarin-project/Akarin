@@ -2,6 +2,10 @@ package net.minecraft.server;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
+// CraftBukkit start
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.FurnaceExtractEvent;
+// CraftBukkit end
 
 public class SlotFurnaceResult extends Slot {
 
@@ -65,6 +69,18 @@ public class SlotFurnaceResult extends Slot {
 
                     i = j;
                 }
+
+                // CraftBukkit start - fire FurnaceExtractEvent
+                Player player = (Player) a.getBukkitEntity();
+                TileEntityFurnace furnace = ((TileEntityFurnace) this.inventory);
+                org.bukkit.block.Block block = a.world.getWorld().getBlockAt(furnace.position.getX(), furnace.position.getY(), furnace.position.getZ());
+
+                if (b != 0) {
+                    FurnaceExtractEvent event = new FurnaceExtractEvent(player, block, org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(itemstack.getItem()), b, i);
+                    a.world.getServer().getPluginManager().callEvent(event);
+                    i = event.getExpToDrop();
+                }
+                // CraftBukkit end
 
                 while (i > 0) {
                     j = EntityExperienceOrb.getOrbValue(i);

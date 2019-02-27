@@ -3,6 +3,13 @@ package net.minecraft.server;
 import java.util.Iterator;
 import java.util.Random;
 import javax.annotation.Nullable;
+// CraftBukkit start
+import java.util.List;
+import org.bukkit.Location;
+import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.inventory.InventoryHolder;
+// CraftBukkit end
 
 public abstract class EntityMinecartContainer extends EntityMinecartAbstract implements ITileInventory, ILootable {
 
@@ -11,15 +18,51 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
     private MinecraftKey c;
     public long lootTableSeed;
 
+    // CraftBukkit start
+    public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
+    private int maxStack = MAX_STACK;
+
+    public List<ItemStack> getContents() {
+        return this.items;
+    }
+
+    public void onOpen(CraftHumanEntity who) {
+        transaction.add(who);
+    }
+
+    public void onClose(CraftHumanEntity who) {
+        transaction.remove(who);
+    }
+
+    public List<HumanEntity> getViewers() {
+        return transaction;
+    }
+
+    public InventoryHolder getOwner() {
+        org.bukkit.entity.Entity cart = getBukkitEntity();
+        if(cart instanceof InventoryHolder) return (InventoryHolder) cart;
+        return null;
+    }
+
+    public void setMaxStackSize(int size) {
+        maxStack = size;
+    }
+
+    @Override
+    public Location getLocation() {
+        return getBukkitEntity().getLocation();
+    }
+    // CraftBukkit end
+
     protected EntityMinecartContainer(EntityTypes<?> entitytypes, World world) {
         super(entitytypes, world);
-        this.items = NonNullList.a(36, ItemStack.a);
+        this.items = NonNullList.a(this.getSize(), ItemStack.a); // CraftBukkit - SPIGOT-3513
         this.b = true;
     }
 
     protected EntityMinecartContainer(EntityTypes<?> entitytypes, double d0, double d1, double d2, World world) {
         super(entitytypes, world, d0, d1, d2);
-        this.items = NonNullList.a(36, ItemStack.a);
+        this.items = NonNullList.a(this.getSize(), ItemStack.a); // CraftBukkit - SPIGOT-3513
         this.b = true;
     }
 
@@ -102,7 +145,7 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
     }
 
     public int getMaxStackSize() {
-        return 64;
+        return maxStack; // CraftBukkit
     }
 
     @Nullable

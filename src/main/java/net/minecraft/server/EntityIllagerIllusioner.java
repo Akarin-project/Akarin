@@ -164,7 +164,7 @@ public class EntityIllagerIllusioner extends EntityIllagerWizard implements IRan
         }
 
         protected void j() {
-            EntityIllagerIllusioner.this.getGoalTarget().addEffect(new MobEffect(MobEffects.BLINDNESS, 400));
+            EntityIllagerIllusioner.this.getGoalTarget().addEffect(new MobEffect(MobEffects.BLINDNESS, 400), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ATTACK); // CraftBukkit
         }
 
         protected SoundEffect k() {
@@ -195,7 +195,7 @@ public class EntityIllagerIllusioner extends EntityIllagerWizard implements IRan
         }
 
         protected void j() {
-            EntityIllagerIllusioner.this.addEffect(new MobEffect(MobEffects.INVISIBILITY, 1200));
+            EntityIllagerIllusioner.this.addEffect(new MobEffect(MobEffects.INVISIBILITY, 1200), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ILLUSION); // CraftBukkit
         }
 
         @Nullable

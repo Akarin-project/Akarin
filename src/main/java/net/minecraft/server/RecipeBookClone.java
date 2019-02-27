@@ -1,10 +1,12 @@
 package net.minecraft.server;
 
-public class RecipeBookClone extends IRecipeComplex {
+public class RecipeBookClone extends ShapelessRecipes implements IRecipe { // CraftBukkit - added extends
 
+    // CraftBukkit start - Delegate to new parent class with bogus info
     public RecipeBookClone(MinecraftKey minecraftkey) {
-        super(minecraftkey);
+        super(minecraftkey, "", new ItemStack(Items.WRITTEN_BOOK, 0), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.WRITABLE_BOOK)));
     }
+    // CraftBukkit end
 
     public boolean a(IInventory iinventory, World world) {
         if (!(iinventory instanceof InventoryCrafting)) {

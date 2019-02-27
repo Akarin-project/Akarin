@@ -153,6 +153,11 @@ public class EntitySilverfish extends EntityMonster {
                 IBlockData iblockdata = world.getType(blockposition);
 
                 if (BlockMonsterEggs.k(iblockdata)) {
+                    // CraftBukkit start
+                    if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.a, blockposition, BlockMonsterEggs.f(iblockdata.getBlock())).isCancelled()) {
+                        return;
+                    }
+                    // CraftBukkit end
                     world.setTypeAndData(blockposition, BlockMonsterEggs.f(iblockdata.getBlock()), 3);
                     this.a.doSpawnEffect();
                     this.a.die();
@@ -197,6 +202,11 @@ public class EntitySilverfish extends EntityMonster {
                             Block block = iblockdata.getBlock();
 
                             if (block instanceof BlockMonsterEggs) {
+                                // CraftBukkit start
+                                if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.silverfish, blockposition1, Blocks.AIR.getBlockData()).isCancelled()) {
+                                    continue;
+                                }
+                                // CraftBukkit end
                                 if (world.getGameRules().getBoolean("mobGriefing")) {
                                     world.setAir(blockposition1, true);
                                 } else {

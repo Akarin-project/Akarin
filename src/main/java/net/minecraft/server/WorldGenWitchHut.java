@@ -86,7 +86,7 @@ public class WorldGenWitchHut extends WorldGenScatteredPiece {
                     entitywitch.di();
                     entitywitch.setPositionRotation((double) j + 0.5D, (double) i, (double) k + 0.5D, 0.0F, 0.0F);
                     entitywitch.prepare(generatoraccess.getDamageScaler(new BlockPosition(j, i, k)), (GroupDataEntity) null, (NBTTagCompound) null);
-                    generatoraccess.addEntity(entitywitch);
+                    generatoraccess.addEntity(entitywitch, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CHUNK_GEN); // CraftBukkit - add SpawnReason
                 }
             }
 

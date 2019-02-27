@@ -60,7 +60,7 @@ public class CommandEffect {
             if (entity instanceof EntityLiving) {
                 MobEffect mobeffect = new MobEffect(mobeffectlist, k, i, false, flag);
 
-                if (((EntityLiving) entity).addEffect(mobeffect)) {
+                if (((EntityLiving) entity).addEffect(mobeffect, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.COMMAND)) { // CraftBukkit
                     ++j;
                 }
             }
@@ -86,7 +86,7 @@ public class CommandEffect {
         while (iterator.hasNext()) {
             Entity entity = (Entity) iterator.next();
 
-            if (entity instanceof EntityLiving && ((EntityLiving) entity).removeAllEffects()) {
+            if (entity instanceof EntityLiving && ((EntityLiving) entity).removeAllEffects(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.COMMAND)) { // CraftBukkit
                 ++i;
             }
         }
@@ -111,7 +111,7 @@ public class CommandEffect {
         while (iterator.hasNext()) {
             Entity entity = (Entity) iterator.next();
 
-            if (entity instanceof EntityLiving && ((EntityLiving) entity).removeEffect(mobeffectlist)) {
+            if (entity instanceof EntityLiving && ((EntityLiving) entity).removeEffect(mobeffectlist, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.COMMAND)) { // CraftBukkit
                 ++i;
             }
         }

@@ -21,8 +21,13 @@ public class LootEnchantFunction extends LootItemFunction {
 
         if (entity instanceof EntityLiving) {
             int i = EnchantmentManager.g((EntityLiving) entity);
+            // CraftBukkit start - use lootingModifier if set by plugin
+            if (loottableinfo.lootingMod > org.bukkit.loot.LootContext.DEFAULT_LOOT_MODIFIER) {
+                i = loottableinfo.lootingMod;
+            }
+            // CraftBukkit end
 
-            if (i == 0) {
+            if (i <= 0) { // CraftBukkit - account for possible negative looting values from Bukkit
                 return itemstack;
             }
 

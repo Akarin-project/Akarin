@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.Random;
 import javax.annotation.Nullable;
 
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+
 public class BlockChorusFlower extends Block {
 
     public static final BlockStateInteger AGE = BlockProperties.V;
@@ -61,8 +63,12 @@ public class BlockChorusFlower extends Block {
                     }
 
                     if (flag && a((IWorldReader) world, blockposition1, (EnumDirection) null) && world.isEmpty(blockposition.up(2))) {
-                        world.setTypeAndData(blockposition, this.b.a((IBlockAccess) world, blockposition), 2);
-                        this.b(world, blockposition1, i);
+                        // CraftBukkit start - add event
+                        if (CraftEventFactory.handleBlockSpreadEvent(world, blockposition, blockposition1, this.getBlockData().set(BlockChorusFlower.AGE, Integer.valueOf(i)), 2)) {
+                            world.setTypeAndData(blockposition, this.b.a((IBlockAccess) world, blockposition), 2);
+                            this.b(world, blockposition1, i);
+                        }
+                        // CraftBukkit end
                     } else if (i < 4) {
                         j = random.nextInt(4);
                         if (flag1) {
@@ -76,18 +82,30 @@ public class BlockChorusFlower extends Block {
                             BlockPosition blockposition2 = blockposition.shift(enumdirection);
 
                             if (world.isEmpty(blockposition2) && world.isEmpty(blockposition2.down()) && a((IWorldReader) world, blockposition2, enumdirection.opposite())) {
-                                this.b(world, blockposition2, i + 1);
-                                flag2 = true;
+                                // CraftBukkit start - add event
+                                if (CraftEventFactory.handleBlockSpreadEvent(world, blockposition, blockposition2, this.getBlockData().set(BlockChorusFlower.AGE, Integer.valueOf(i + 1)), 2)) {
+                                    this.b(world, blockposition2, i + 1);
+                                    flag2 = true;
+                                }
+                                // CraftBukkit end
                             }
                         }
 
                         if (flag2) {
                             world.setTypeAndData(blockposition, this.b.a((IBlockAccess) world, blockposition), 2);
                         } else {
-                            this.a(world, blockposition);
+                            // CraftBukkit - add event
+                            if (CraftEventFactory.handleBlockGrowEvent(world, blockposition, this.getBlockData().set(BlockChorusFlower.AGE, Integer.valueOf(5)), 2)) {
+                                this.a(world, blockposition);
+                            }
+                            // CraftBukkit end
                         }
                     } else {
-                        this.a(world, blockposition);
+                        // CraftBukkit - add event
+                        if (CraftEventFactory.handleBlockGrowEvent(world, blockposition, this.getBlockData().set(BlockChorusFlower.AGE, Integer.valueOf(5)), 2)) {
+                            this.a(world, blockposition);
+                        }
+                        // CraftBukkit end
                     }
 
                 }

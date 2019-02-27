@@ -202,7 +202,7 @@ public abstract class StructureGenerator<C extends WorldGenFeatureConfiguration>
                 return structurestart;
             } else {
                 ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i);
-                IChunkAccess ichunkaccess = generatoraccess.getChunkProvider().a(chunkcoordintpair.x, chunkcoordintpair.z, false);
+                IChunkAccess ichunkaccess = generatoraccess.getChunkProvider().getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z, false, false); // CraftBukkit - don't load chunks
 
                 if (ichunkaccess != null) {
                     structurestart = ichunkaccess.a(this.a());

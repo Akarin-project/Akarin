@@ -80,6 +80,11 @@ public class PathfinderGoalMakeLove extends PathfinderGoal {
 
     private void i() {
         EntityVillager entityvillager = this.a.createChild(this.b);
+        // CraftBukkit start - call EntityBreedEvent
+        if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityBreedEvent(entityvillager, this.a, this.b, null, null, 0).isCancelled()) {
+            return;
+        }
+        // CraftBukkit end
 
         this.b.setAgeRaw(6000);
         this.a.setAgeRaw(6000);
@@ -87,7 +92,7 @@ public class PathfinderGoalMakeLove extends PathfinderGoal {
         this.a.v(false);
         entityvillager.setAgeRaw(-24000);
         entityvillager.setPositionRotation(this.a.locX, this.a.locY, this.a.locZ, 0.0F, 0.0F);
-        this.c.addEntity(entityvillager);
+        this.c.addEntity(entityvillager, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING); // CraftBukkit - added SpawnReason
         this.c.broadcastEntityEffect(entityvillager, (byte) 12);
     }
 }

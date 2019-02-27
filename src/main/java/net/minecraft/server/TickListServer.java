@@ -11,14 +11,15 @@ import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.bukkit.craftbukkit.util.HashTreeSet; // CraftBukkit
 
 public class TickListServer<T> implements TickList<T> {
 
     protected final Predicate<T> a;
     protected final Function<T, MinecraftKey> b;
     protected final Function<MinecraftKey, T> c;
-    protected final Set<NextTickListEntry<T>> nextTickListHash = Sets.newHashSet();
-    protected final TreeSet<NextTickListEntry<T>> nextTickList = new TreeSet();
+    // protected final Set<NextTickListEntry<T>> nextTickListHash = Sets.newHashSet();
+    protected final HashTreeSet<NextTickListEntry> nextTickList = new HashTreeSet<>(); // CraftBukkit - HashTreeSet
     private final WorldServer f;
     private final List<NextTickListEntry<T>> g = Lists.newArrayList();
     private final Consumer<NextTickListEntry<T>> h;
@@ -34,16 +35,22 @@ public class TickListServer<T> implements TickList<T> {
     public void a() {
         int i = this.nextTickList.size();
 
-        if (i != this.nextTickListHash.size()) {
+        if (false) { // CraftBukkit
             throw new IllegalStateException("TickNextTick list out of synch");
         } else {
             if (i > 65536) {
-                i = 65536;
+                // CraftBukkit start - If the server has too much to process over time, try to alleviate that
+                if (i > 20 * 65536) {
+                    i = i / 20;
+                } else {
+                    i = 65536;
+                }
+                // CraftBukkit end
             }
 
             this.f.methodProfiler.enter("cleaning");
 
-            NextTickListEntry nextticklistentry;
+            NextTickListEntry<T> nextticklistentry; // CraftBukkit - decompile error
 
             for (int j = 0; j < i; ++j) {
                 nextticklistentry = (NextTickListEntry) this.nextTickList.first();
@@ -52,7 +59,7 @@ public class TickListServer<T> implements TickList<T> {
                 }
 
                 this.nextTickList.remove(nextticklistentry);
-                this.nextTickListHash.remove(nextticklistentry);
+                // this.nextTickListHash.remove(nextticklistentry); // CraftBukkit - use nextTickList
                 this.g.add(nextticklistentry);
             }
 
@@ -118,7 +125,7 @@ public class TickListServer<T> implements TickList<T> {
                 if (blockposition.getX() >= structureboundingbox.a && blockposition.getX() < structureboundingbox.d && blockposition.getZ() >= structureboundingbox.c && blockposition.getZ() < structureboundingbox.f) {
                     if (flag) {
                         if (i == 0) {
-                            this.nextTickListHash.remove(nextticklistentry);
+                            // this.nextTickListHash.remove(nextticklistentry); // CraftBukkit - removed
                         }
 
                         iterator.remove();
@@ -187,7 +194,7 @@ public class TickListServer<T> implements TickList<T> {
     }
 
     public boolean a(BlockPosition blockposition, T t0) {
-        return this.nextTickListHash.contains(new NextTickListEntry<>(blockposition, t0));
+        return this.nextTickList.contains(new NextTickListEntry<>(blockposition, t0)); // CraftBukkit
     }
 
     public void a(BlockPosition blockposition, T t0, int i, TickListPriority ticklistpriority) {
@@ -209,8 +216,8 @@ public class TickListServer<T> implements TickList<T> {
     private void c(BlockPosition blockposition, T t0, int i, TickListPriority ticklistpriority) {
         NextTickListEntry<T> nextticklistentry = new NextTickListEntry<>(blockposition, t0, (long) i + this.f.getTime(), ticklistpriority);
 
-        if (!this.nextTickListHash.contains(nextticklistentry)) {
-            this.nextTickListHash.add(nextticklistentry);
+        // CraftBukkit - use nextTickList
+        if (!this.nextTickList.contains(nextticklistentry)) {
             this.nextTickList.add(nextticklistentry);
         }
 

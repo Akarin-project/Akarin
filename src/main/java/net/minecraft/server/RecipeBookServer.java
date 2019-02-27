@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 
 public class RecipeBookServer extends RecipeBook {
 
@@ -26,7 +27,7 @@ public class RecipeBookServer extends RecipeBook {
             IRecipe irecipe = (IRecipe) iterator.next();
             MinecraftKey minecraftkey = irecipe.getKey();
 
-            if (!this.a.contains(minecraftkey) && !irecipe.c()) {
+            if (!this.a.contains(minecraftkey) && !irecipe.c() && CraftEventFactory.handlePlayerRecipeListUpdateEvent(entityplayer, minecraftkey)) { // CraftBukkit
                 this.a(minecraftkey);
                 this.c(minecraftkey);
                 list.add(minecraftkey);
@@ -60,6 +61,7 @@ public class RecipeBookServer extends RecipeBook {
     }
 
     private void a(PacketPlayOutRecipes.Action packetplayoutrecipes_action, EntityPlayer entityplayer, List<MinecraftKey> list) {
+        if (entityplayer.playerConnection == null) return; // SPIGOT-4478 during PlayerLoginEvent
         entityplayer.playerConnection.sendPacket(new PacketPlayOutRecipes(packetplayoutrecipes_action, list, Collections.emptyList(), this.c, this.d, this.e, this.f));
     }
 

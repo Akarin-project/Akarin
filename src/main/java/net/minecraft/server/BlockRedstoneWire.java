@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 
+import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
+
 public class BlockRedstoneWire extends Block {
 
     public static final BlockStateEnum<BlockPropertyRedstoneSide> NORTH = BlockProperties.M;
@@ -215,6 +217,15 @@ public class BlockRedstoneWire extends Block {
         if (k > j - 1) {
             j = k;
         }
+
+        // CraftBukkit start
+        if (i != j) {
+            BlockRedstoneEvent event = new BlockRedstoneEvent(world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), i, j);
+            world.getServer().getPluginManager().callEvent(event);
+
+            j = event.getNewCurrent();
+        }
+        // CraftBukkit end
 
         if (i != j) {
             iblockdata = (IBlockData) iblockdata.set(BlockRedstoneWire.POWER, j);

@@ -3,6 +3,8 @@ package net.minecraft.server;
 import java.util.Iterator;
 import java.util.Random;
 
+import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+
 public class BlockCactus extends Block {
 
     public static final BlockStateInteger AGE = BlockProperties.X;
@@ -31,7 +33,7 @@ public class BlockCactus extends Block {
                     int j = (Integer) iblockdata.get(BlockCactus.AGE);
 
                     if (j == 15) {
-                        world.setTypeUpdate(blockposition1, this.getBlockData());
+                        CraftEventFactory.handleBlockGrowEvent(world, blockposition1, this.getBlockData()); // CraftBukkit
                         IBlockData iblockdata1 = (IBlockData) iblockdata.set(BlockCactus.AGE, 0);
 
                         world.setTypeAndData(blockposition, iblockdata1, 4);
@@ -92,7 +94,9 @@ public class BlockCactus extends Block {
     }
 
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity) {
+        CraftEventFactory.blockDamage = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()); // CraftBukkit
         entity.damageEntity(DamageSource.CACTUS, 1.0F);
+        CraftEventFactory.blockDamage = null; // CraftBukkit
     }
 
     public TextureType c() {

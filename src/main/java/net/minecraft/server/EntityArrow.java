@@ -7,6 +7,12 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
+// CraftBukkit start
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.entity.EntityCombustByEntityEvent;
+import org.bukkit.event.player.PlayerPickupArrowEvent;
+// CraftBukkit end
+
 public abstract class EntityArrow extends Entity implements IProjectile {
 
     private static final Predicate<Entity> g = IEntitySelector.f.and(IEntitySelector.a.and(Entity::isInteractable));
@@ -22,7 +28,7 @@ public abstract class EntityArrow extends Entity implements IProjectile {
     public EntityArrow.PickupStatus fromPlayer;
     public int shake;
     public UUID shooter;
-    private int despawnCounter;
+    public int despawnCounter; // PAIL
     private int aB;
     private double damage;
     public int knockbackStrength;
@@ -250,6 +256,7 @@ public abstract class EntityArrow extends Entity implements IProjectile {
     }
 
     protected void a(MovingObjectPosition movingobjectposition) {
+        org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // CraftBukkit - Call event
         if (movingobjectposition.entity != null) {
             this.b(movingobjectposition);
         } else {
@@ -299,7 +306,13 @@ public abstract class EntityArrow extends Entity implements IProjectile {
         }
 
         if (this.isBurning() && !(entity instanceof EntityEnderman)) {
-            entity.setOnFire(5);
+            // CraftBukkit start
+            EntityCombustByEntityEvent combustEvent = new EntityCombustByEntityEvent(this.getBukkitEntity(), entity.getBukkitEntity(), 5);
+            org.bukkit.Bukkit.getPluginManager().callEvent(combustEvent);
+            if (!combustEvent.isCancelled()) {
+                entity.setOnFire(combustEvent.getDuration(), false);
+            }
+            // CraftBukkit end
         }
 
         if (entity.damageEntity(damagesource, (float) i)) {
@@ -444,6 +457,7 @@ public abstract class EntityArrow extends Entity implements IProjectile {
 
     public void setShooter(@Nullable Entity entity) {
         this.shooter = entity == null ? null : entity.getUniqueID();
+        this.projectileSource = entity == null ? null : (LivingEntity) entity.getBukkitEntity(); // CraftBukkit
     }
 
     @Nullable
@@ -453,9 +467,23 @@ public abstract class EntityArrow extends Entity implements IProjectile {
 
     public void d(EntityHuman entityhuman) {
         if (!this.world.isClientSide && (this.inGround || this.q()) && this.shake <= 0) {
+            // CraftBukkit start
+            ItemStack itemstack = this.getItemStack();
+            if (this.fromPlayer == PickupStatus.ALLOWED && !itemstack.isEmpty() && entityhuman.inventory.canHold(itemstack) > 0) {
+                EntityItem item = new EntityItem(this.world, this.locX, this.locY, this.locZ, itemstack);
+                PlayerPickupArrowEvent event = new PlayerPickupArrowEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), new org.bukkit.craftbukkit.entity.CraftItem(this.world.getServer(), this, item), (org.bukkit.entity.Arrow) this.getBukkitEntity());
+                // event.setCancelled(!entityhuman.canPickUpLoot); TODO
+                this.world.getServer().getPluginManager().callEvent(event);
+
+                if (event.isCancelled()) {
+                    return;
+                }
+                itemstack = item.getItemStack();
+            }
             boolean flag = this.fromPlayer == EntityArrow.PickupStatus.ALLOWED || this.fromPlayer == EntityArrow.PickupStatus.CREATIVE_ONLY && entityhuman.abilities.canInstantlyBuild || this.q() && this.getShooter().getUniqueID() == entityhuman.getUniqueID();
 
-            if (this.fromPlayer == EntityArrow.PickupStatus.ALLOWED && !entityhuman.inventory.pickup(this.getItemStack())) {
+            if (this.fromPlayer == EntityArrow.PickupStatus.ALLOWED && !entityhuman.inventory.pickup(itemstack)) {
+                // CraftBukkit end
                 flag = false;
             }
 
