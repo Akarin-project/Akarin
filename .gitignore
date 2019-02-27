@@ -1,7 +1,11 @@
 # Akarin
+!src/
 src/*
-!src/main/java/io/akarin
-!src/main/java/io/akarin/*
+!src/main/
+src/main/*
+!src/main/java
+src/main/java/*
+!src/main/java/io/
 
 # Eclipse stuff
 .classpath
