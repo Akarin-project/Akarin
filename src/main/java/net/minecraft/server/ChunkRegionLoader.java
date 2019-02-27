@@ -1,0 +1,1155 @@
+package net.minecraft.server;
+
+import co.aikar.timings.Timings;
+import com.google.common.collect.Maps;
+import com.mojang.datafixers.DataFixTypes;
+import com.mojang.datafixers.DataFixer;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.shorts.ShortList;
+import it.unimi.dsi.fastutil.shorts.ShortListIterator;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import javax.annotation.Nullable;
+import java.util.concurrent.ConcurrentLinkedQueue; // Paper
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+// Spigot start
+import java.util.function.Supplier;
+import org.spigotmc.SupplierUtils;
+// Spigot end
+
+public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
+
+    // Paper start - Chunk queue improvements
+    private static class QueuedChunk {
+        public ChunkCoordIntPair coords;
+        public Supplier<NBTTagCompound> compoundSupplier;
+        public Runnable onSave;
+
+        public QueuedChunk(Runnable run) {
+            this.coords = null;
+            this.compoundSupplier = null;
+            this.onSave = run;
+        }
+
+        public QueuedChunk(ChunkCoordIntPair coords, Supplier<NBTTagCompound> compoundSupplier) {
+            this.coords = coords;
+            this.compoundSupplier = compoundSupplier;
+        }
+    }
+    final private ConcurrentLinkedQueue<QueuedChunk> queue = new ConcurrentLinkedQueue<>();
+    // Paper end
+
+    private static final Logger a = LogManager.getLogger();
+    private final it.unimi.dsi.fastutil.longs.Long2ObjectMap<Supplier<NBTTagCompound>> saveMap = it.unimi.dsi.fastutil.longs.Long2ObjectMaps.synchronize(new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<>()); // Paper
+    private final File c;
+    private final DataFixer d;
+    private PersistentStructureLegacy e;
+    // private boolean f; // CraftBukkit
+    public final LongSet blacklist = new LongOpenHashSet();
+    private static final double SAVE_QUEUE_TARGET_SIZE = 625; // Spigot
+    // Paper start - support saving to an alternate directory
+    private final File templateWorld;
+    private final File actualWorld;
+    private final boolean useAltWorld;
+
+    private void copyIfNeeded(int x, int z) {
+        if (!useAltWorld) {
+            return;
+        }
+        synchronized (RegionFileCache.class) {
+            if (RegionFileCache.hasRegionFile(this.actualWorld, x, z)) {
+                return;
+            }
+            File actual = RegionFileCache.getRegionFileName(this.actualWorld, x, z);
+            File template = RegionFileCache.getRegionFileName(this.templateWorld, x, z);
+            if (!actual.exists() && template.exists()) {
+                try {
+                    //a.info("Copying" + template + " to " + actual);
+                    java.nio.file.Files.copy(template.toPath(), actual.toPath(), java.nio.file.StandardCopyOption.COPY_ATTRIBUTES);
+                } catch (IOException e1) {
+                    LogManager.getLogger().error("Error copying " + template + " to " + actual, e1);
+                    MinecraftServer.getServer().safeShutdown();
+                    com.destroystokyo.paper.util.SneakyThrow.sneaky(e1);
+                }
+            }
+        }
+    }
+    // Paper end
+
+    public ChunkRegionLoader(File file, DataFixer datafixer) {
+        // Paper start
+        this.actualWorld = file;
+        if (com.destroystokyo.paper.PaperConfig.useVersionedWorld) {
+            this.useAltWorld = true;
+            String name = file.getName();
+            File container = file.getParentFile().getParentFile();
+            if (name.equals("DIM-1") || name.equals("DIM1")) {
+                container = container.getParentFile();
+            }
+            this.templateWorld = new File(container, name);
+            File region = new File(file, "region");
+            if (!region.exists()) {
+                region.mkdirs();
+            }
+        } else {
+            this.useAltWorld = false;
+            this.templateWorld = file;
+        }
+        // Paper end
+        this.c = file;
+        this.d = datafixer;
+    }
+
+    @Nullable
+    private NBTTagCompound a(GeneratorAccess generatoraccess, int i, int j) throws IOException {
+        return this.a(generatoraccess.o().getDimensionManager(), generatoraccess.h(), i, j, generatoraccess); // CraftBukkit
+    }
+
+    // CraftBukkit start
+    private boolean check(ChunkProviderServer cps, int x, int z) throws IOException {
+        if (cps != null) {
+            //com.google.common.base.Preconditions.checkState(org.bukkit.Bukkit.isPrimaryThread(), "primary thread"); // Paper - this is safe
+            if (cps.isLoaded(x, z)) {
+                return true;
+            }
+        }
+
+        if (this.chunkExists(x, z)) {
+            NBTTagCompound nbt = RegionFileCache.read(this.c, x, z);
+            if (nbt != null) {
+                NBTTagCompound level = nbt.getCompound("Level");
+                if (level.getBoolean("TerrainPopulated")) {
+                    return true;
+                }
+
+                ChunkStatus status = ChunkStatus.a(level.getString("Status"));
+                if (status != null && status.a(ChunkStatus.DECORATED)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public boolean chunkExists(int x, int z) {
+        // Paper start
+        if (this.saveMap.containsKey(ChunkCoordIntPair.asLong(x, z))) {
+            return true;
+        }
+        copyIfNeeded(x, z);
+        return RegionFileCache.chunkExists(this.actualWorld, x, z);
+        // Paper end
+    }
+
+    @Nullable
+    private NBTTagCompound a(DimensionManager dimensionmanager, @Nullable PersistentCollection persistentcollection, int i, int j, @Nullable GeneratorAccess generatoraccess) throws IOException {
+        // CraftBukkit start
+        if (blacklist.contains(ChunkCoordIntPair.a(i, j))) {
+            return null;
+        }
+        // CraftBukkit end
+        copyIfNeeded(i, j); // Paper
+
+        NBTTagCompound nbttagcompound = SupplierUtils.getIfExists(this.saveMap.get(ChunkCoordIntPair.asLong(i, j))); // Spigot // Paper
+
+        if (nbttagcompound != null) {
+            return nbttagcompound;
+        } else {
+            NBTTagCompound nbttagcompound1 = RegionFileCache.read(this.c, i, j);
+
+            if (nbttagcompound1 == null) {
+                return null;
+            } else {
+                int k = nbttagcompound1.hasKeyOfType("DataVersion", 99) ? nbttagcompound1.getInt("DataVersion") : -1;
+                // CraftBukkit start
+                if (k < 1466) {
+                    NBTTagCompound level = nbttagcompound1.getCompound("Level");
+                    if (level.getBoolean("TerrainPopulated") && !level.getBoolean("LightPopulated")) {
+                        ChunkProviderServer cps = (generatoraccess == null) ? null : ((WorldServer) generatoraccess).getChunkProvider();
+                        if (check(cps, i - 1, j) && check(cps, i - 1, j - 1) && check(cps, i, j - 1)) {
+                            level.setBoolean("LightPopulated", true);
+                        }
+                    }
+                }
+                // CraftBukkit end
+
+                if (k < 1493) {
+                    nbttagcompound1 = GameProfileSerializer.a(this.d, DataFixTypes.CHUNK, nbttagcompound1, k, 1493);
+                    if (nbttagcompound1.getCompound("Level").getBoolean("hasLegacyStructureData")) {
+                        this.a(dimensionmanager, persistentcollection);
+                        nbttagcompound1 = this.e.a(nbttagcompound1);
+                    }
+                }
+
+                nbttagcompound1 = GameProfileSerializer.a(this.d, DataFixTypes.CHUNK, nbttagcompound1, Math.max(1493, k));
+                if (k < 1631) {
+                    nbttagcompound1.setInt("DataVersion", 1631);
+                    this.a(new ChunkCoordIntPair(i, j), new SupplierUtils.ValueSupplier<>(nbttagcompound1)); // Spigot
+                }
+
+                return nbttagcompound1;
+            }
+        }
+    }
+
+    public void a(DimensionManager dimensionmanager, @Nullable PersistentCollection persistentcollection) {
+        if (this.e == null) {
+            this.e = PersistentStructureLegacy.a(dimensionmanager, persistentcollection);
+        }
+
+    }
+
+    // Paper start
+    private long queuedSaves = 0;
+    private final java.util.concurrent.atomic.AtomicLong processedSaves = new java.util.concurrent.atomic.AtomicLong(0L);
+    public int getQueueSize() { return queue.size(); }
+    public long getQueuedSaves() { return queuedSaves; }
+    public long getProcessedSaves() { return processedSaves.longValue(); }
+    // Paper end
+
+    // CraftBukkit start - Add async variant, provide compatibility
+    @Nullable
+    public Chunk a(GeneratorAccess generatoraccess, int i, int j, Consumer<Chunk> consumer) throws IOException {
+        generatoraccess.getMinecraftWorld().timings.syncChunkLoadDataTimer.startTiming(); // Spigot
+        Object[] data = loadChunk(generatoraccess, i, j, consumer);
+        generatoraccess.getMinecraftWorld().timings.syncChunkLoadDataTimer.stopTiming(); // Spigot
+        if (data != null) {
+            Chunk chunk = (Chunk) data[0];
+            NBTTagCompound nbttagcompound = (NBTTagCompound) data[1];
+            consumer.accept(chunk);
+            this.loadEntities(nbttagcompound.getCompound("Level"), chunk);
+            return chunk;
+        }
+
+        return null;
+    }
+
+    public Object[] loadChunk(GeneratorAccess generatoraccess, int i, int j, Consumer<Chunk> consumer) throws IOException {
+        // CraftBukkit end
+        NBTTagCompound nbttagcompound = this.a(generatoraccess, i, j);
+
+        if (nbttagcompound == null) {
+            return null;
+        } else {
+            /*
+            Chunk chunk = this.a(generatoraccess, i, j, nbttagcompound);
+
+            if (chunk != null) {
+                consumer.accept(chunk);
+                this.loadEntities(nbttagcompound.getCompound("Level"), chunk);
+            }
+
+            return chunk;
+            */
+
+            return this.a(generatoraccess, i, j, nbttagcompound);
+        }
+    }
+
+    @Nullable
+    public ProtoChunk b(GeneratorAccess generatoraccess, int i, int j, Consumer<IChunkAccess> consumer) throws IOException {
+        NBTTagCompound nbttagcompound;
+
+        try {
+            nbttagcompound = this.a(generatoraccess, i, j);
+        } catch (ReportedException reportedexception) {
+            if (reportedexception.getCause() instanceof IOException) {
+                throw (IOException) reportedexception.getCause();
+            }
+
+            throw reportedexception;
+        }
+
+        if (nbttagcompound == null) {
+            return null;
+        } else {
+            ProtoChunk protochunk = this.b(generatoraccess, i, j, nbttagcompound);
+
+            if (protochunk != null) {
+                consumer.accept(protochunk);
+            }
+
+            return protochunk;
+        }
+    }
+
+    @Nullable
+    protected Object[] a(GeneratorAccess generatoraccess, int i, int j, NBTTagCompound nbttagcompound) { // CraftBukkit - return Chunk -> Object[]
+        if (nbttagcompound.hasKeyOfType("Level", 10) && nbttagcompound.getCompound("Level").hasKeyOfType("Status", 8)) {
+            ChunkStatus.Type chunkstatus_type = this.a(nbttagcompound);
+
+            if (chunkstatus_type != ChunkStatus.Type.LEVELCHUNK) {
+                return null;
+            } else {
+                NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("Level");
+
+                if (!nbttagcompound1.hasKeyOfType("Sections", 9)) {
+                    ChunkRegionLoader.a.error("Chunk file at {},{} is missing block data, skipping", i, j);
+                    return null;
+                } else {
+                    Chunk chunk = this.a(generatoraccess, nbttagcompound1);
+
+                    if (!chunk.a(i, j)) {
+                        ChunkRegionLoader.a.error("Chunk file at {},{} is in the wrong location; relocating. (Expected {}, {}, got {}, {})", i, j, i, j, chunk.locX, chunk.locZ);
+                        nbttagcompound1.setInt("xPos", i);
+                        nbttagcompound1.setInt("zPos", j);
+
+                        // CraftBukkit start - Have to move tile entities since we don't load them at this stage
+                        NBTTagList tileEntities = nbttagcompound.getCompound("Level").getList("TileEntities", 10);
+                        if (tileEntities != null) {
+                            for (int te = 0; te < tileEntities.size(); te++) {
+                                NBTTagCompound tileEntity = (NBTTagCompound) tileEntities.get(te);
+                                int x = tileEntity.getInt("x") - chunk.locX * 16;
+                                int z = tileEntity.getInt("z") - chunk.locZ * 16;
+                                tileEntity.setInt("x", i * 16 + x);
+                                tileEntity.setInt("z", j * 16 + z);
+                            }
+                        }
+                        // CraftBukkit end
+                        chunk = this.a(generatoraccess, nbttagcompound1);
+                    }
+
+                    // CraftBukkit start
+                    Object[] data = new Object[2];
+                    data[0] = chunk;
+                    data[1] = nbttagcompound;
+                    return data;
+                    // CraftBukkit end
+                }
+            }
+        } else {
+            ChunkRegionLoader.a.error("Chunk file at {},{} is missing level data, skipping", i, j);
+            return null;
+        }
+    }
+
+    @Nullable
+    protected ProtoChunk b(GeneratorAccess generatoraccess, int i, int j, NBTTagCompound nbttagcompound) {
+        if (nbttagcompound.hasKeyOfType("Level", 10) && nbttagcompound.getCompound("Level").hasKeyOfType("Status", 8)) {
+            ChunkStatus.Type chunkstatus_type = this.a(nbttagcompound);
+
+            if (chunkstatus_type == ChunkStatus.Type.LEVELCHUNK) {
+                return new ProtoChunkExtension((IChunkAccess) this.a(generatoraccess, i, j, nbttagcompound)[0]); // CraftBukkit - fix up access
+            } else {
+                NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("Level");
+
+                return this.b(generatoraccess, nbttagcompound1);
+            }
+        } else {
+            ChunkRegionLoader.a.error("Chunk file at {},{} is missing level data, skipping", i, j);
+            return null;
+        }
+    }
+
+    // Spigot start
+    public void saveChunk(World world, IChunkAccess ichunkaccess) throws IOException, ExceptionWorldConflict {
+        saveChunk(world, ichunkaccess, false); // Ideally we shouldn't use this, but easier than decompile errors
+    }
+
+    public void saveChunk(World world, IChunkAccess ichunkaccess, boolean unloaded) throws IOException, ExceptionWorldConflict {
+        if (ichunkaccess.i().d() == ChunkStatus.Type.PROTOCHUNK) { return; } // Paper - don't save proto chunks
+        // Spigot end
+        world.checkSession();
+
+        try {
+            NBTTagCompound nbttagcompound = new NBTTagCompound();
+            NBTTagCompound nbttagcompound1 = new NBTTagCompound();
+
+            nbttagcompound.setInt("DataVersion", 1631);
+            ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
+
+            nbttagcompound.set("Level", nbttagcompound1);
+            // Spigot start
+            Supplier<NBTTagCompound> completion;
+            final long worldTime = world.getTime();
+            final boolean worldHasSkyLight = world.worldProvider.g();
+            if (ichunkaccess.i().d() == ChunkStatus.Type.LEVELCHUNK) {
+                final Chunk chunk = (Chunk) ichunkaccess;
+                saveEntities(nbttagcompound1, chunk, world);
+                completion = new Supplier<NBTTagCompound>() {
+                    public NBTTagCompound get() {
+                        saveBody(chunk, world, nbttagcompound1, worldTime, worldHasSkyLight);
+                        return nbttagcompound;
+                    }
+                };
+            } else {
+                /* // Paper start - we will never invoke this in an unsafe way
+                NBTTagCompound nbttagcompound2 = this.a(world, chunkcoordintpair.x, chunkcoordintpair.z);
+
+                if (nbttagcompound2 != null && this.a(nbttagcompound2) == ChunkStatus.Type.LEVELCHUNK) {
+                    return;
+                }*/ // Paper end
+
+                completion = new Supplier<NBTTagCompound>() {
+                    public NBTTagCompound get() {
+                        a((ProtoChunk) ichunkaccess, world, nbttagcompound1, worldTime, worldHasSkyLight);
+                        return nbttagcompound;
+                    }
+                };
+            }
+
+            this.a(chunkcoordintpair, SupplierUtils.createUnivaluedSupplier(completion, unloaded)); // Paper - Remove save queue target size
+            // Spigot end
+        } catch (Exception exception) {
+            ChunkRegionLoader.a.error("Failed to save chunk", exception);
+        }
+
+    }
+
+    protected void a(ChunkCoordIntPair chunkcoordintpair, Supplier<NBTTagCompound> nbttagcompound) { // Spigot
+        this.saveMap.put(chunkcoordintpair.asLong(), nbttagcompound); // Paper
+        queue.add(new QueuedChunk(chunkcoordintpair, nbttagcompound)); // Paper - Chunk queue improvements
+        queuedSaves++; // Paper
+        FileIOThread.a().a(this);
+    }
+
+    public boolean a() {
+        // CraftBukkit start
+        return this.processSaveQueueEntry(false);
+    }
+
+    private boolean processSaveQueueEntry(boolean logCompletion) {
+        // Paper start - Chunk queue improvements
+        QueuedChunk chunk = queue.poll();
+        if (chunk == null) {
+        // Paper - end
+            if (logCompletion) { // CraftBukkit
+                ChunkRegionLoader.a.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", this.c.getName());
+            }
+
+            return false;
+        } else {
+            // Paper start
+            if (chunk.onSave != null) {
+                chunk.onSave.run();
+                return true;
+            }
+            // Paper end
+            ChunkCoordIntPair chunkcoordintpair = chunk.coords; // Paper - Chunk queue improvements
+            Supplier<NBTTagCompound> nbttagcompound = chunk.compoundSupplier; // Spigot // Paper
+            processedSaves.incrementAndGet(); // Paper
+
+            if (nbttagcompound == null) {
+                return true;
+            } else {
+                try {
+                    // CraftBukkit start
+                    RegionFileCache.write(this.c, chunkcoordintpair.x, chunkcoordintpair.z, SupplierUtils.getIfExists(nbttagcompound)); // Spigot
+
+                    // Paper start remove from map only if this was the latest version of the chunk
+                    synchronized (this.saveMap) {
+                        long k = chunkcoordintpair.asLong();
+                        // This will not equal if a newer version is still pending - wait until newest is saved to remove
+                        if (this.saveMap.get(k) == chunk.compoundSupplier) {
+                            this.saveMap.remove(k);
+                        }
+                    }
+                    // Paper end
+                    /*
+                    NBTCompressedStreamTools.a(nbttagcompound, (DataOutput) dataoutputstream);
+                    dataoutputstream.close();
+                    */
+                    // CraftBukkit end
+                    if (this.e != null) {
+                        this.e.a(chunkcoordintpair.a());
+                    }
+                } catch (Exception exception) {
+                    ChunkRegionLoader.a.error("Failed to save chunk", exception);
+                }
+
+                return true;
+            }
+        }
+    }
+
+    private ChunkStatus.Type a(@Nullable NBTTagCompound nbttagcompound) {
+        if (nbttagcompound != null) {
+            ChunkStatus chunkstatus = ChunkStatus.a(nbttagcompound.getCompound("Level").getString("Status"));
+
+            if (chunkstatus != null) {
+                return chunkstatus.d();
+            }
+        }
+
+        return ChunkStatus.Type.PROTOCHUNK;
+    }
+
+    public void b() {
+        try {
+            // this.f = true; // CraftBukkit
+
+            while (true) {
+                if (this.processSaveQueueEntry(true)) { // CraftBukkit
+                    continue;
+                }
+                break; // CraftBukkit - Fix infinite loop when saving chunks
+            }
+        } finally {
+            // this.f = false; // CraftBukkit
+        }
+
+    }
+
+    private void a(ProtoChunk protochunk, World world, NBTTagCompound nbttagcompound, long worldTime, boolean worldHasSkyLight) { // Spigot
+        int i = protochunk.getPos().x;
+        int j = protochunk.getPos().z;
+
+        nbttagcompound.setInt("xPos", i);
+        nbttagcompound.setInt("zPos", j);
+        nbttagcompound.setLong("LastUpdate", worldTime); // Spigot
+        nbttagcompound.setLong("InhabitedTime", protochunk.m());
+        nbttagcompound.setString("Status", protochunk.i().b());
+        ChunkConverter chunkconverter = protochunk.v();
+
+        if (!chunkconverter.a()) {
+            nbttagcompound.set("UpgradeData", chunkconverter.b());
+        }
+
+        ChunkSection[] achunksection = protochunk.getSections();
+        NBTTagList nbttaglist = this.a(world, achunksection, worldHasSkyLight); // Spigot
+
+        nbttagcompound.set("Sections", nbttaglist);
+        BiomeBase[] abiomebase = protochunk.getBiomeIndex();
+        int[] aint = abiomebase != null ? new int[abiomebase.length] : new int[0];
+
+        if (abiomebase != null) {
+            for (int k = 0; k < abiomebase.length; ++k) {
+                aint[k] = IRegistry.BIOME.a(abiomebase[k]); // CraftBukkit - decompile error
+            }
+        }
+
+        nbttagcompound.setIntArray("Biomes", aint);
+        NBTTagList nbttaglist1 = new NBTTagList();
+        Iterator iterator = protochunk.s().iterator();
+
+        NBTTagCompound nbttagcompound1;
+
+        while (iterator.hasNext()) {
+            nbttagcompound1 = (NBTTagCompound) iterator.next();
+            nbttaglist1.add((NBTBase) nbttagcompound1);
+        }
+
+        nbttagcompound.set("Entities", nbttaglist1);
+        NBTTagList nbttaglist2 = new NBTTagList();
+        Iterator iterator1 = protochunk.q().iterator();
+
+        while (iterator1.hasNext()) {
+            BlockPosition blockposition = (BlockPosition) iterator1.next();
+            TileEntity tileentity = protochunk.getTileEntity(blockposition);
+
+            if (tileentity != null) {
+                NBTTagCompound nbttagcompound2 = new NBTTagCompound();
+
+                tileentity.save(nbttagcompound2);
+                nbttaglist2.add((NBTBase) nbttagcompound2);
+            } else {
+                nbttaglist2.add((NBTBase) protochunk.g(blockposition));
+            }
+        }
+
+        nbttagcompound.set("TileEntities", nbttaglist2);
+        nbttagcompound.set("Lights", a(protochunk.p()));
+        nbttagcompound.set("PostProcessing", a(protochunk.u()));
+        nbttagcompound.set("ToBeTicked", protochunk.k().a());
+        nbttagcompound.set("LiquidsToBeTicked", protochunk.l().a());
+        nbttagcompound1 = new NBTTagCompound();
+        Iterator iterator2 = protochunk.t().iterator();
+
+        while (iterator2.hasNext()) {
+            HeightMap.Type heightmap_type = (HeightMap.Type) iterator2.next();
+
+            nbttagcompound1.set(heightmap_type.b(), new NBTTagLongArray(protochunk.b(heightmap_type).b()));
+        }
+
+        nbttagcompound.set("Heightmaps", nbttagcompound1);
+        NBTTagCompound nbttagcompound3 = new NBTTagCompound();
+        WorldGenStage.Features[] aworldgenstage_features = WorldGenStage.Features.values();
+        int l = aworldgenstage_features.length;
+
+        for (int i1 = 0; i1 < l; ++i1) {
+            WorldGenStage.Features worldgenstage_features = aworldgenstage_features[i1];
+
+            nbttagcompound3.setByteArray(worldgenstage_features.toString(), protochunk.a(worldgenstage_features).toByteArray());
+        }
+
+        nbttagcompound.set("CarvingMasks", nbttagcompound3);
+        nbttagcompound.set("Structures", this.a(i, j, protochunk.e(), protochunk.f()));
+    }
+
+    private void saveBody(Chunk chunk, World world, NBTTagCompound nbttagcompound, long worldTime, boolean worldHasSkyLight) { // Spigot
+        nbttagcompound.setInt("xPos", chunk.locX);
+        nbttagcompound.setInt("zPos", chunk.locZ);
+        nbttagcompound.setLong("LastUpdate", worldTime); // Spigot
+        nbttagcompound.setLong("InhabitedTime", chunk.m());
+        nbttagcompound.setString("Status", chunk.i().b());
+        ChunkConverter chunkconverter = chunk.F();
+
+        if (!chunkconverter.a()) {
+            nbttagcompound.set("UpgradeData", chunkconverter.b());
+        }
+
+        ChunkSection[] achunksection = chunk.getSections();
+        NBTTagList nbttaglist = this.a(world, achunksection, worldHasSkyLight); // Spigot
+
+        nbttagcompound.set("Sections", nbttaglist);
+        BiomeBase[] abiomebase = chunk.getBiomeIndex();
+        int[] aint = new int[abiomebase.length];
+
+        for (int i = 0; i < abiomebase.length; ++i) {
+            aint[i] = IRegistry.BIOME.a(abiomebase[i]); // CraftBukkit - decompile error
+        }
+
+        nbttagcompound.setIntArray("Biomes", aint);
+
+        // Spigot start - End this method here and split off entity saving to another method
+    }
+
+    private void saveEntities(NBTTagCompound nbttagcompound, Chunk chunk, World world) {
+        // Spigot end
+        chunk.f(false);
+        NBTTagList nbttaglist1 = new NBTTagList();
+
+        Iterator iterator;
+
+        java.util.List<Entity> toUpdate = new java.util.ArrayList<>(); // Paper
+        for (int j = 0; j < chunk.getEntitySlices().length; ++j) {
+            iterator = chunk.getEntitySlices()[j].iterator();
+
+            while (iterator.hasNext()) {
+                Entity entity = (Entity) iterator.next();
+                // Paper start
+                if ((int)Math.floor(entity.locX) >> 4 != chunk.locX || (int)Math.floor(entity.locZ) >> 4 != chunk.locZ) {
+                    LogManager.getLogger().warn(entity + " is not in this chunk, skipping save. This a bug fix to a vanilla bug. Do not report this to PaperMC please.");
+                    toUpdate.add(entity);
+                    continue;
+                }
+                if (entity.dead) {
+                    continue;
+                }
+                // Paper end
+                NBTTagCompound nbttagcompound1 = new NBTTagCompound();
+
+                if (entity.d(nbttagcompound1)) {
+                    chunk.f(true);
+                    nbttaglist1.add((NBTBase) nbttagcompound1);
+                }
+            }
+        }
+        // Paper start - move entities to the correct chunk
+        for (Entity entity : toUpdate) {
+            world.entityJoinedWorld(entity, false);
+        }
+        // Paper end
+
+        nbttagcompound.set("Entities", nbttaglist1);
+        NBTTagList nbttaglist2 = new NBTTagList();
+
+        iterator = chunk.t().iterator();
+
+        while (iterator.hasNext()) {
+            BlockPosition blockposition = (BlockPosition) iterator.next();
+            TileEntity tileentity = chunk.getTileEntity(blockposition);
+            NBTTagCompound nbttagcompound2;
+
+            if (tileentity != null) {
+                nbttagcompound2 = new NBTTagCompound();
+                tileentity.save(nbttagcompound2);
+                nbttagcompound2.setBoolean("keepPacked", false);
+                nbttaglist2.add((NBTBase) nbttagcompound2);
+            } else {
+                nbttagcompound2 = chunk.g(blockposition);
+                if (nbttagcompound2 != null) {
+                    nbttagcompound2.setBoolean("keepPacked", true);
+                    nbttaglist2.add((NBTBase) nbttagcompound2);
+                }
+            }
+        }
+
+        nbttagcompound.set("TileEntities", nbttaglist2);
+        if (world.getBlockTickList() instanceof TickListServer) {
+            nbttagcompound.set("TileTicks", ((TickListServer) world.getBlockTickList()).a(chunk));
+        }
+
+        if (world.getFluidTickList() instanceof TickListServer) {
+            nbttagcompound.set("LiquidTicks", ((TickListServer) world.getFluidTickList()).a(chunk));
+        }
+
+        nbttagcompound.set("PostProcessing", a(chunk.G()));
+        if (chunk.k() instanceof ProtoChunkTickList) {
+            nbttagcompound.set("ToBeTicked", ((ProtoChunkTickList) chunk.k()).a());
+        }
+
+        if (chunk.l() instanceof ProtoChunkTickList) {
+            nbttagcompound.set("LiquidsToBeTicked", ((ProtoChunkTickList) chunk.l()).a());
+        }
+
+        NBTTagCompound nbttagcompound3 = new NBTTagCompound();
+        Iterator iterator1 = chunk.A().iterator();
+
+        while (iterator1.hasNext()) {
+            HeightMap.Type heightmap_type = (HeightMap.Type) iterator1.next();
+
+            if (heightmap_type.c() == HeightMap.Use.LIVE_WORLD) {
+                nbttagcompound3.set(heightmap_type.b(), new NBTTagLongArray(chunk.b(heightmap_type).b()));
+            }
+        }
+
+        nbttagcompound.set("Heightmaps", nbttagcompound3);
+        nbttagcompound.set("Structures", this.a(chunk.locX, chunk.locZ, chunk.e(), chunk.f()));
+    }
+
+    private Chunk a(GeneratorAccess generatoraccess, NBTTagCompound nbttagcompound) {
+        int i = nbttagcompound.getInt("xPos");
+        int j = nbttagcompound.getInt("zPos");
+        BiomeBase[] abiomebase = new BiomeBase[256];
+        BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
+
+        if (nbttagcompound.hasKeyOfType("Biomes", 11)) {
+            int[] aint = nbttagcompound.getIntArray("Biomes");
+
+            for (int k = 0; k < aint.length; ++k) {
+                abiomebase[k] = (BiomeBase) IRegistry.BIOME.fromId(aint[k]);
+                if (abiomebase[k] == null) {
+                    abiomebase[k] = generatoraccess.getChunkProvider().getChunkGenerator().getWorldChunkManager().getBiome(blockposition_mutableblockposition.c((k & 15) + (i << 4), 0, (k >> 4 & 15) + (j << 4)), Biomes.PLAINS);
+                }
+            }
+        } else {
+            for (int l = 0; l < abiomebase.length; ++l) {
+                abiomebase[l] = generatoraccess.getChunkProvider().getChunkGenerator().getWorldChunkManager().getBiome(blockposition_mutableblockposition.c((l & 15) + (i << 4), 0, (l >> 4 & 15) + (j << 4)), Biomes.PLAINS);
+            }
+        }
+
+        ChunkConverter chunkconverter = nbttagcompound.hasKeyOfType("UpgradeData", 10) ? new ChunkConverter(nbttagcompound.getCompound("UpgradeData")) : ChunkConverter.a;
+        ProtoChunkTickList<Block> protochunkticklist = new ProtoChunkTickList<>((block) -> {
+            return block.getBlockData().isAir();
+        }, IRegistry.BLOCK::getKey, IRegistry.BLOCK::getOrDefault, new ChunkCoordIntPair(i, j));
+        ProtoChunkTickList<FluidType> protochunkticklist1 = new ProtoChunkTickList<>((fluidtype) -> {
+            return fluidtype == FluidTypes.EMPTY;
+        }, IRegistry.FLUID::getKey, IRegistry.FLUID::getOrDefault, new ChunkCoordIntPair(i, j));
+        long i1 = nbttagcompound.getLong("InhabitedTime");
+        Chunk chunk = new Chunk(generatoraccess.getMinecraftWorld(), i, j, abiomebase, chunkconverter, protochunkticklist, protochunkticklist1, i1);
+
+        chunk.c(nbttagcompound.getString("Status"));
+        NBTTagList nbttaglist = nbttagcompound.getList("Sections", 10);
+
+        chunk.a(this.a((IWorldReader) generatoraccess, nbttaglist));
+        NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("Heightmaps");
+        HeightMap.Type[] aheightmap_type = HeightMap.Type.values();
+        int j1 = aheightmap_type.length;
+
+        int k1;
+
+        for (k1 = 0; k1 < j1; ++k1) {
+            HeightMap.Type heightmap_type = aheightmap_type[k1];
+
+            if (heightmap_type.c() == HeightMap.Use.LIVE_WORLD) {
+                String s = heightmap_type.b();
+
+                if (nbttagcompound1.hasKeyOfType(s, 12)) {
+                    chunk.a(heightmap_type, nbttagcompound1.o(s));
+                } else {
+                    chunk.b(heightmap_type).a();
+                }
+            }
+        }
+
+        NBTTagCompound nbttagcompound2 = nbttagcompound.getCompound("Structures");
+
+        chunk.a(this.c(generatoraccess, nbttagcompound2));
+        chunk.b(this.b(nbttagcompound2));
+        NBTTagList nbttaglist1 = nbttagcompound.getList("PostProcessing", 9);
+
+        for (k1 = 0; k1 < nbttaglist1.size(); ++k1) {
+            NBTTagList nbttaglist2 = nbttaglist1.f(k1);
+
+            for (int l1 = 0; l1 < nbttaglist2.size(); ++l1) {
+                chunk.a(nbttaglist2.g(l1), k1);
+            }
+        }
+
+        protochunkticklist.a(nbttagcompound.getList("ToBeTicked", 9));
+        protochunkticklist1.a(nbttagcompound.getList("LiquidsToBeTicked", 9));
+        if (nbttagcompound.getBoolean("shouldSave")) {
+            chunk.a(true);
+        }
+
+        return chunk;
+    }
+
+    public void loadEntities(NBTTagCompound nbttagcompound, Chunk chunk) {
+        NBTTagList nbttaglist = nbttagcompound.getList("Entities", 10);
+        World world = chunk.getWorld();
+        world.timings.chunkLoadLevelTimer.startTiming(); // Spigot
+
+        for (int i = 0; i < nbttaglist.size(); ++i) {
+            NBTTagCompound nbttagcompound1 = nbttaglist.getCompound(i);
+
+            a(nbttagcompound1, world, chunk);
+            chunk.f(true);
+        }
+
+        NBTTagList nbttaglist1 = nbttagcompound.getList("TileEntities", 10);
+
+        for (int j = 0; j < nbttaglist1.size(); ++j) {
+            NBTTagCompound nbttagcompound2 = nbttaglist1.getCompound(j);
+            boolean flag = nbttagcompound2.getBoolean("keepPacked");
+
+            if (flag) {
+                chunk.a(nbttagcompound2);
+            } else {
+                TileEntity tileentity = TileEntity.create(nbttagcompound2);
+
+                if (tileentity != null) {
+                    chunk.a(tileentity);
+                }
+            }
+        }
+
+        if (nbttagcompound.hasKeyOfType("TileTicks", 9) && world.getBlockTickList() instanceof TickListServer) {
+            ((TickListServer) world.getBlockTickList()).a(nbttagcompound.getList("TileTicks", 10));
+        }
+
+        if (nbttagcompound.hasKeyOfType("LiquidTicks", 9) && world.getFluidTickList() instanceof TickListServer) {
+            ((TickListServer) world.getFluidTickList()).a(nbttagcompound.getList("LiquidTicks", 10));
+        }
+        world.timings.chunkLoadLevelTimer.stopTiming(); // Spigot
+
+    }
+
+    private ProtoChunk b(GeneratorAccess generatoraccess, NBTTagCompound nbttagcompound) {
+        int i = nbttagcompound.getInt("xPos");
+        int j = nbttagcompound.getInt("zPos");
+        BiomeBase[] abiomebase = new BiomeBase[256];
+        BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
+
+        if (nbttagcompound.hasKeyOfType("Biomes", 11)) {
+            int[] aint = nbttagcompound.getIntArray("Biomes");
+
+            for (int k = 0; k < aint.length; ++k) {
+                abiomebase[k] = (BiomeBase) IRegistry.BIOME.fromId(aint[k]);
+                if (abiomebase[k] == null) {
+                    abiomebase[k] = generatoraccess.getChunkProvider().getChunkGenerator().getWorldChunkManager().getBiome(blockposition_mutableblockposition.c((k & 15) + (i << 4), 0, (k >> 4 & 15) + (j << 4)), Biomes.PLAINS);
+                }
+            }
+        } else {
+            for (int l = 0; l < abiomebase.length; ++l) {
+                abiomebase[l] = generatoraccess.getChunkProvider().getChunkGenerator().getWorldChunkManager().getBiome(blockposition_mutableblockposition.c((l & 15) + (i << 4), 0, (l >> 4 & 15) + (j << 4)), Biomes.PLAINS);
+            }
+        }
+
+        ChunkConverter chunkconverter = nbttagcompound.hasKeyOfType("UpgradeData", 10) ? new ChunkConverter(nbttagcompound.getCompound("UpgradeData")) : ChunkConverter.a;
+        ProtoChunk protochunk = new ProtoChunk(i, j, chunkconverter, generatoraccess); // Paper - Anti-Xray
+
+        protochunk.a(abiomebase);
+        protochunk.b(nbttagcompound.getLong("InhabitedTime"));
+        protochunk.c(nbttagcompound.getString("Status"));
+        NBTTagList nbttaglist = nbttagcompound.getList("Sections", 10);
+
+        protochunk.a(this.a((IWorldReader) generatoraccess, nbttaglist));
+        NBTTagList nbttaglist1 = nbttagcompound.getList("Entities", 10);
+
+        for (int i1 = 0; i1 < nbttaglist1.size(); ++i1) {
+            protochunk.b(nbttaglist1.getCompound(i1));
+        }
+
+        NBTTagList nbttaglist2 = nbttagcompound.getList("TileEntities", 10);
+
+        for (int j1 = 0; j1 < nbttaglist2.size(); ++j1) {
+            NBTTagCompound nbttagcompound1 = nbttaglist2.getCompound(j1);
+
+            protochunk.a(nbttagcompound1);
+        }
+
+        NBTTagList nbttaglist3 = nbttagcompound.getList("Lights", 9);
+
+        for (int k1 = 0; k1 < nbttaglist3.size(); ++k1) {
+            NBTTagList nbttaglist4 = nbttaglist3.f(k1);
+
+            for (int l1 = 0; l1 < nbttaglist4.size(); ++l1) {
+                protochunk.a(nbttaglist4.g(l1), k1);
+            }
+        }
+
+        NBTTagList nbttaglist5 = nbttagcompound.getList("PostProcessing", 9);
+
+        for (int i2 = 0; i2 < nbttaglist5.size(); ++i2) {
+            NBTTagList nbttaglist6 = nbttaglist5.f(i2);
+
+            for (int j2 = 0; j2 < nbttaglist6.size(); ++j2) {
+                protochunk.b(nbttaglist6.g(j2), i2);
+            }
+        }
+
+        protochunk.k().a(nbttagcompound.getList("ToBeTicked", 9));
+        protochunk.l().a(nbttagcompound.getList("LiquidsToBeTicked", 9));
+        NBTTagCompound nbttagcompound2 = nbttagcompound.getCompound("Heightmaps");
+        Iterator iterator = nbttagcompound2.getKeys().iterator();
+
+        while (iterator.hasNext()) {
+            String s = (String) iterator.next();
+
+            protochunk.a(HeightMap.Type.a(s), nbttagcompound2.o(s));
+        }
+
+        NBTTagCompound nbttagcompound3 = nbttagcompound.getCompound("Structures");
+
+        protochunk.a(this.c(generatoraccess, nbttagcompound3));
+        protochunk.b(this.b(nbttagcompound3));
+        NBTTagCompound nbttagcompound4 = nbttagcompound.getCompound("CarvingMasks");
+        Iterator iterator1 = nbttagcompound4.getKeys().iterator();
+
+        while (iterator1.hasNext()) {
+            String s1 = (String) iterator1.next();
+            WorldGenStage.Features worldgenstage_features = WorldGenStage.Features.valueOf(s1);
+
+            protochunk.a(worldgenstage_features, BitSet.valueOf(nbttagcompound4.getByteArray(s1)));
+        }
+
+        return protochunk;
+    }
+
+    private NBTTagList a(World world, ChunkSection[] achunksection, boolean worldHasSkyLight) { // Spigot
+        NBTTagList nbttaglist = new NBTTagList();
+        boolean flag = worldHasSkyLight; // Spigot
+        ChunkSection[] achunksection1 = achunksection;
+        int i = achunksection.length;
+
+        for (int j = 0; j < i; ++j) {
+            ChunkSection chunksection = achunksection1[j];
+
+            if (chunksection != Chunk.a) {
+                NBTTagCompound nbttagcompound = new NBTTagCompound();
+
+                nbttagcompound.setByte("Y", (byte) (chunksection.getYPosition() >> 4 & 255));
+                chunksection.getBlocks().b(nbttagcompound, "Palette", "BlockStates");
+                nbttagcompound.setByteArray("BlockLight", chunksection.getEmittedLightArray().asBytes());
+                if (flag) {
+                    nbttagcompound.setByteArray("SkyLight", chunksection.getSkyLightArray().asBytes());
+                } else {
+                    nbttagcompound.setByteArray("SkyLight", new byte[chunksection.getEmittedLightArray().asBytes().length]);
+                }
+
+                nbttaglist.add((NBTBase) nbttagcompound);
+            }
+        }
+
+        return nbttaglist;
+    }
+
+    private ChunkSection[] a(IWorldReader iworldreader, NBTTagList nbttaglist) {
+        boolean flag = true;
+        ChunkSection[] achunksection = new ChunkSection[16];
+        boolean flag1 = iworldreader.o().g();
+
+        for (int i = 0; i < nbttaglist.size(); ++i) {
+            NBTTagCompound nbttagcompound = nbttaglist.getCompound(i);
+            byte b0 = nbttagcompound.getByte("Y");
+            ChunkSection chunksection = new ChunkSection(b0 << 4, flag1, null, iworldreader, false); // Paper - Anti-Xray
+
+            chunksection.getBlocks().a(nbttagcompound, "Palette", "BlockStates");
+            chunksection.a(new NibbleArray(nbttagcompound.getByteArray("BlockLight")));
+            if (flag1) {
+                chunksection.b(new NibbleArray(nbttagcompound.getByteArray("SkyLight")));
+            }
+
+            chunksection.recalcBlockCounts();
+            achunksection[b0] = chunksection;
+        }
+
+        return achunksection;
+    }
+
+    private NBTTagCompound a(int i, int j, Map<String, StructureStart> map, Map<String, LongSet> map1) {
+        NBTTagCompound nbttagcompound = new NBTTagCompound();
+        NBTTagCompound nbttagcompound1 = new NBTTagCompound();
+        Iterator iterator = map.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Entry<String, StructureStart> entry = (Entry) iterator.next();
+
+            nbttagcompound1.set((String) entry.getKey(), ((StructureStart) entry.getValue()).a(i, j));
+        }
+
+        nbttagcompound.set("Starts", nbttagcompound1);
+        NBTTagCompound nbttagcompound2 = new NBTTagCompound();
+        Iterator iterator1 = map1.entrySet().iterator();
+
+        while (iterator1.hasNext()) {
+            Entry<String, LongSet> entry1 = (Entry) iterator1.next();
+
+            nbttagcompound2.set((String) entry1.getKey(), new NBTTagLongArray((LongSet) entry1.getValue()));
+        }
+
+        nbttagcompound.set("References", nbttagcompound2);
+        return nbttagcompound;
+    }
+
+    private Map<String, StructureStart> c(GeneratorAccess generatoraccess, NBTTagCompound nbttagcompound) {
+        Map<String, StructureStart> map = Maps.newHashMap();
+        NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("Starts");
+        Iterator iterator = nbttagcompound1.getKeys().iterator();
+
+        while (iterator.hasNext()) {
+            String s = (String) iterator.next();
+
+            map.put(s, WorldGenFactory.a(nbttagcompound1.getCompound(s), generatoraccess));
+        }
+
+        return map;
+    }
+
+    private Map<String, LongSet> b(NBTTagCompound nbttagcompound) {
+        Map<String, LongSet> map = Maps.newHashMap();
+        NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("References");
+        Iterator iterator = nbttagcompound1.getKeys().iterator();
+
+        while (iterator.hasNext()) {
+            String s = (String) iterator.next();
+
+            map.put(s, new LongOpenHashSet(nbttagcompound1.o(s)));
+        }
+
+        return map;
+    }
+
+    public static NBTTagList a(ShortList[] ashortlist) {
+        NBTTagList nbttaglist = new NBTTagList();
+        ShortList[] ashortlist1 = ashortlist;
+        int i = ashortlist.length;
+
+        for (int j = 0; j < i; ++j) {
+            ShortList shortlist = ashortlist1[j];
+            NBTTagList nbttaglist1 = new NBTTagList();
+
+            if (shortlist != null) {
+                ShortListIterator shortlistiterator = shortlist.iterator();
+
+                while (shortlistiterator.hasNext()) {
+                    Short oshort = (Short) shortlistiterator.next();
+
+                    nbttaglist1.add((NBTBase) (new NBTTagShort(oshort)));
+                }
+            }
+
+            nbttaglist.add((NBTBase) nbttaglist1);
+        }
+
+        return nbttaglist;
+    }
+
+    @Nullable
+    private static Entity a(NBTTagCompound nbttagcompound, World world, Function<Entity, Entity> function) {
+        Entity entity = a(nbttagcompound, world);
+
+        if (entity == null) {
+            return null;
+        } else {
+            entity = (Entity) function.apply(entity);
+            if (entity != null && nbttagcompound.hasKeyOfType("Passengers", 9)) {
+                NBTTagList nbttaglist = nbttagcompound.getList("Passengers", 10);
+
+                for (int i = 0; i < nbttaglist.size(); ++i) {
+                    Entity entity1 = a(nbttaglist.getCompound(i), world, function);
+
+                    if (entity1 != null) {
+                        entity1.a(entity, true);
+                    }
+                }
+            }
+
+            return entity;
+        }
+    }
+
+    @Nullable
+    public static Entity a(NBTTagCompound nbttagcompound, World world, Chunk chunk) {
+        return a(nbttagcompound, world, (entity) -> {
+            chunk.a(entity);
+            return entity;
+        });
+    }
+
+    @Nullable
+    // CraftBukkit start
+    public static Entity a(NBTTagCompound nbttagcompound, World world, double d0, double d1, double d2, boolean flag) {
+        return spawnEntity(nbttagcompound, world, d0, d1, d2, flag, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT);
+    }
+
+    public static Entity spawnEntity(NBTTagCompound nbttagcompound, World world, double d0, double d1, double d2, boolean flag, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason) {
+        // CraftBukkit end
+        return a(nbttagcompound, world, (entity) -> {
+            entity.setPositionRotation(d0, d1, d2, entity.yaw, entity.pitch);
+            return flag && !world.addEntity(entity, spawnReason) ? null : entity;
+        });
+    }
+
+    @Nullable
+    // CraftBukkit start
+    public static Entity a(NBTTagCompound nbttagcompound, World world, boolean flag) {
+        return spawnEntity(nbttagcompound, world, flag, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT);
+    }
+
+    public static Entity spawnEntity(NBTTagCompound nbttagcompound, World world, boolean flag, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason) {
+        // CraftBukkit end
+        return a(nbttagcompound, world, (entity) -> {
+            return flag && !world.addEntity(entity, spawnReason) ? null : entity; // CraftBukkit
+        });
+    }
+
+    @Nullable
+    protected static Entity a(NBTTagCompound nbttagcompound, World world) {
+        try {
+            return EntityTypes.a(nbttagcompound, world);
+        } catch (RuntimeException runtimeexception) {
+            ChunkRegionLoader.a.warn("Exception loading entity: ", runtimeexception);
+            return null;
+        }
+    }
+
+    // CraftBukkit start
+    public static void a(Entity entity, GeneratorAccess generatoraccess) {
+        a(entity, generatoraccess, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT);
+    }
+
+    public static void a(Entity entity, GeneratorAccess generatoraccess, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason) {
+        if (!entity.valid && generatoraccess.addEntity(entity, reason) && entity.isVehicle()) { // Paper
+            // CraftBukkit end
+            Iterator iterator = entity.bP().iterator();
+
+            while (iterator.hasNext()) {
+                Entity entity1 = (Entity) iterator.next();
+
+                a(entity1, generatoraccess);
+            }
+        }
+
+    }
+
+    public boolean a(ChunkCoordIntPair chunkcoordintpair, DimensionManager dimensionmanager, PersistentCollection persistentcollection) {
+        boolean flag = false;
+
+        try {
+            this.a(dimensionmanager, persistentcollection, chunkcoordintpair.x, chunkcoordintpair.z, null); // CraftBukkit
+
+            while (this.a()) {
+                flag = true;
+            }
+        } catch (IOException ioexception) {
+            ;
+        }
+
+        return flag;
+    }
+}
