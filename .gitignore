@@ -1,3 +1,8 @@
+# Akarin
+src/*
+!src/main/java/io/akarin
+!src/main/java/io/akarin/*
+
 # Eclipse stuff
 .classpath
 .project
