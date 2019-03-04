@@ -24,8 +24,6 @@ jobs:
         keys:
         # This branch if available
         - v1-dep-{{ .Branch }}-
-        # Default branch if not
-        - v1-dep-ver/1.12.2-
         # Any branch if there are none on the default branch - this should be unnecessary if you have your default branch configured correctly
         - v1-dep-
     - run: git config --global user.email "circle@circleci.com"

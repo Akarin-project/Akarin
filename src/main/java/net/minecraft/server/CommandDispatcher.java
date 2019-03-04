@@ -246,7 +246,7 @@ public class CommandDispatcher {
         if ( org.spigotmc.SpigotConfig.tabComplete < 0 ) return; // Spigot
         // CraftBukkit start
         // Register Vanilla commands into builtRoot as before
-        Map<CommandNode<CommandListenerWrapper>, CommandNode<ICompletionProvider>> map = Maps.newIdentityHashMap(); // Use identity to prevent aliasing issues
+        Map<CommandNode<CommandListenerWrapper>, CommandNode<ICompletionProvider>> map = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newMutableMap(); // Use identity to prevent aliasing issues // Akarin - koloboke
         RootCommandNode vanillaRoot = new RootCommandNode();
 
         RootCommandNode<CommandListenerWrapper> vanilla = entityplayer.server.vanillaCommandDispatcher.a().getRoot();

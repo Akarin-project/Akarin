@@ -356,7 +356,7 @@ public class ProtoChunk implements IChunkAccess {
     }
 
     public Map<String, StructureStart> e() {
-        return Collections.unmodifiableMap(this.n);
+        return com.koloboke.collect.map.hash.HashObjObjMaps.newImmutableMap(this.n); // Akarin - koloboke
     }
 
     public void a(Map<String, StructureStart> map) {
@@ -478,7 +478,7 @@ public class ProtoChunk implements IChunkAccess {
     }
 
     public Map<BlockPosition, NBTTagCompound> w() {
-        return Collections.unmodifiableMap(this.i);
+        return com.koloboke.collect.map.hash.HashObjObjMaps.newImmutableMap(this.i); // Akarin - koloboke
     }
 
     public NBTTagCompound g(BlockPosition blockposition) {

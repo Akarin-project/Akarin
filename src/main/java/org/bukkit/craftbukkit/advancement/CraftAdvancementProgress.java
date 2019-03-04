@@ -49,11 +49,11 @@ public class CraftAdvancementProgress implements AdvancementProgress {
 
     @Override
     public Collection<String> getRemainingCriteria() {
-        return Collections.unmodifiableCollection(Lists.newArrayList(handle.getRemainingCriteria()));
+        return com.koloboke.collect.set.hash.HashObjSets.newImmutableSet(Lists.newArrayList(handle.getRemainingCriteria())); // Akarin - koloboke
     }
 
     @Override
     public Collection<String> getAwardedCriteria() {
-        return Collections.unmodifiableCollection(Lists.newArrayList(handle.getAwardedCriteria()));
+        return com.koloboke.collect.set.hash.HashObjSets.newImmutableSet(Lists.newArrayList(handle.getAwardedCriteria())); // Akarin - koloboke
     }
 }

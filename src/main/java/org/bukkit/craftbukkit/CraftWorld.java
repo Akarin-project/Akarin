@@ -336,7 +336,7 @@ public class CraftWorld implements World {
             chunks.add(getChunkAt(ChunkCoordIntPair.a(coord), ChunkCoordIntPair.b(coord)));
         }
 
-        return Collections.unmodifiableCollection(chunks);
+        return com.koloboke.collect.set.hash.HashObjSets.newImmutableSet(chunks); // Akarin - koloboke
     }
 
     public WorldServer getHandle() {

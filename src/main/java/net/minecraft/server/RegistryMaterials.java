@@ -74,7 +74,7 @@ public class RegistryMaterials<V> implements IRegistry<V> {
     }
 
     public Set<MinecraftKey> keySet() {
-        return Collections.unmodifiableSet(this.c.keySet());
+        return com.koloboke.collect.set.hash.HashObjSets.newImmutableSet(this.c.keySet()); // Akarin - koloboke
     }
 
     public boolean d() {

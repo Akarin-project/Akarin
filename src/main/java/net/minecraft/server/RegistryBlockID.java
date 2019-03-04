@@ -3,6 +3,8 @@ package net.minecraft.server;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.koloboke.collect.map.hash.HashObjIntMap;
+
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -11,7 +13,7 @@ import javax.annotation.Nullable;
 public class RegistryBlockID<T> implements Registry<T> {
 
     private int a;
-    private final IdentityHashMap<T, Integer> b;
+    private final HashObjIntMap<T> b; // Akarin - IdentityHashMap ->  HashObjIntMap
     private final List<T> c;
 
     public RegistryBlockID() {
@@ -20,7 +22,7 @@ public class RegistryBlockID<T> implements Registry<T> {
 
     public RegistryBlockID(int i) {
         this.c = Lists.newArrayListWithExpectedSize(i);
-        this.b = new IdentityHashMap(i);
+        this.b = com.koloboke.collect.map.hash.HashObjIntMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap(i); // Akarin - koloboke
     }
 
     public void a(T t0, int i) {

@@ -1,8 +1,6 @@
 package io.akarin.server.core;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -14,7 +12,6 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -155,4 +152,6 @@ public class AkarinGlobalConfig {
     private static void serverBrandName() {
         serverBrandName = getString("alternative.modified-server-brand-name", "");
     }
+    
+    
 }

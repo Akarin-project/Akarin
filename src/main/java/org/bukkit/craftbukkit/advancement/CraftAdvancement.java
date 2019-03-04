@@ -25,6 +25,6 @@ public class CraftAdvancement implements org.bukkit.advancement.Advancement {
 
     @Override
     public Collection<String> getCriteria() {
-        return Collections.unmodifiableCollection(handle.getCriteria().keySet());
+        return com.koloboke.collect.set.hash.HashObjSets.newImmutableSet(handle.getCriteria().keySet()); // Akarin - koloboke
     }
 }

@@ -119,6 +119,17 @@
             <artifactId>caffeine</artifactId>
             <version>2.6.3-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.koloboke</groupId>
+            <artifactId>koloboke-api-jdk8</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.koloboke</groupId>
+            <artifactId>koloboke-impl-jdk8</artifactId>
+            <version>1.0.0</version>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -140,6 +151,10 @@
         <repository>
             <id>spongepowered-repo</id>
             <url>https://repo.spongepowered.org/maven/</url>
+        </repository>
+        <repository>
+            <id>sonatype-nexusg</id>
+            <url>https://oss.sonatype.org/content/repositories</url>
         </repository>
     </repositories>
 

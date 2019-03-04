@@ -1992,7 +1992,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
                 ret.add( getServer().getPlayer( u ) );
             }
 
-            return java.util.Collections.unmodifiableSet( ret );
+            return com.koloboke.collect.set.hash.HashObjSets.newImmutableSet( ret ); // Akarin - koloboke
         }
 
         @Override
