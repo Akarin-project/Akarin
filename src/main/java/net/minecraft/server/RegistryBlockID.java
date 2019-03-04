@@ -3,7 +3,6 @@ package net.minecraft.server;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.koloboke.collect.map.hash.HashObjIntMap;
 
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -13,7 +12,7 @@ import javax.annotation.Nullable;
 public class RegistryBlockID<T> implements Registry<T> {
 
     private int a;
-    private final HashObjIntMap<T> b; // Akarin - IdentityHashMap ->  HashObjIntMap
+    private com.koloboke.collect.map.hash.HashObjIntMap<T> b; // Akarin - IdentityHashMap ->  HashObjIntMap
     private final List<T> c;
 
     public RegistryBlockID() {
@@ -26,7 +25,12 @@ public class RegistryBlockID<T> implements Registry<T> {
     }
 
     public void a(T t0, int i) {
-        this.b.put(t0, i);
+        // Akarin start
+        com.koloboke.collect.map.hash.HashObjIntMap<T> toImmutable = com.koloboke.collect.map.hash.HashObjIntMaps.newMutableMap(this.b);
+        toImmutable.put(t0, i);
+        this.b = com.koloboke.collect.map.hash.HashObjIntMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newImmutableMap(toImmutable, toImmutable.size());
+        //this.b.put(t0, i);
+        // Akarin end
 
         while (this.c.size() <= i) {
             this.c.add(null); // Paper - decompile fix
@@ -44,9 +48,9 @@ public class RegistryBlockID<T> implements Registry<T> {
     }
 
     public int getId(T t0) {
-        Integer integer = (Integer) this.b.get(t0);
+        //Integer integer = this.b.get(t0); // Akarin
 
-        return integer == null ? -1 : integer;
+        return this.b.getOrDefault(t0, -1); // Akarin
     }
 
     @Nullable
