@@ -1384,7 +1384,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         timings.tileEntityTick.startTiming(); // Spigot
         if (!this.tileEntityListUnload.isEmpty()) {
             // Paper start - Use alternate implementation with faster contains
-            java.util.Set<TileEntity> toRemove = com.koloboke.collect.set.hash.HashObjSets.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withEquivalence(com.koloboke.collect.Equivalence.identity()).newImmutableSet(tileEntityListUnload); // Akarin - koloboke
+            java.util.Set<TileEntity> toRemove = com.koloboke.collect.set.hash.HashObjSets.getDefaultFactory().withNullKeyAllowed(true).withEquivalence(com.koloboke.collect.Equivalence.identity()).newImmutableSet(tileEntityListUnload); // Akarin - koloboke
             //toRemove.addAll(tileEntityListUnload); // Akarin - koloboke
             this.tileEntityListTick.removeAll(toRemove);
             // Paper end

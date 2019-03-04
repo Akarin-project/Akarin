@@ -101,7 +101,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     private int F;
     private int G;
     public final long[] d = new long[100];
-    protected final Map<DimensionManager, long[]> e = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap(); // Akarin - koloboke
+    protected final Map<DimensionManager, long[]> e = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap(); // Akarin - koloboke
     private KeyPair H;
     private String I;
     private String J;

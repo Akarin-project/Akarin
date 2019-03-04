@@ -21,14 +21,15 @@ public class RegistryBlockID<T> implements Registry<T> {
 
     public RegistryBlockID(int i) {
         this.c = Lists.newArrayListWithExpectedSize(i);
-        this.b = com.koloboke.collect.map.hash.HashObjIntMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap((int) (i * com.koloboke.collect.hash.HashConfig.getDefault().getTargetLoad())); // Akarin - koloboke
+        this.b = com.koloboke.collect.map.hash.HashObjIntMaps.getDefaultFactory().withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newMutableMap(i); // Akarin - koloboke
     }
 
     public void a(T t0, int i) {
         // Akarin start
+        if (t0 == null) return;
         com.koloboke.collect.map.hash.HashObjIntMap<T> toImmutable = com.koloboke.collect.map.hash.HashObjIntMaps.newMutableMap(this.b);
         toImmutable.put(t0, i);
-        this.b = com.koloboke.collect.map.hash.HashObjIntMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newImmutableMap(toImmutable, toImmutable.size());
+        this.b = com.koloboke.collect.map.hash.HashObjIntMaps.getDefaultFactory().withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newImmutableMap(toImmutable);
         //this.b.put(t0, i);
         // Akarin end
 

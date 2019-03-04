@@ -9,7 +9,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason; // CraftBukkit
 public class BlockMonsterEggs extends Block {
 
     private final Block a;
-    private static final Map<Block, Block> b = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap();
+    private static final Map<Block, Block> b = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap();
 
     public BlockMonsterEggs(Block block, Block.Info block_info) {
         super(block_info);

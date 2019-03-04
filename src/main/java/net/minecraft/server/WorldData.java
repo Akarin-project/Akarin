@@ -81,7 +81,7 @@ public class WorldData {
         this.Q = 15;
         this.R = Sets.newHashSet();
         this.S = Sets.newLinkedHashSet();
-        this.T = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap(); // Akarin - koloboke
+        this.T = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap(); // Akarin - koloboke
         this.V = new GameRules();
         this.p = null;
         this.q = 1631;
@@ -98,7 +98,7 @@ public class WorldData {
         this.Q = 15;
         this.R = Sets.newHashSet();
         this.S = Sets.newLinkedHashSet();
-        this.T = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap(); // Akarin - koloboke
+        this.T = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap(); // Akarin - koloboke
         this.V = new GameRules();
         this.p = datafixer;
         NBTTagCompound nbttagcompound2;
@@ -270,7 +270,7 @@ public class WorldData {
         this.Q = 15;
         this.R = Sets.newHashSet();
         this.S = Sets.newLinkedHashSet();
-        this.T = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap(); // Akarin - koloboke
+        this.T = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap(); // Akarin - koloboke
         this.V = new GameRules();
         this.p = null;
         this.q = 1631;
