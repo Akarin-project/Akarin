@@ -130,6 +130,12 @@
             <version>1.0.0</version>
             <scope>runtime</scope>
         </dependency>
+        <!-- Add trove back as it gone for an unknown reason -->
+        <dependency>
+            <groupId>gnu.trove</groupId>
+            <artifactId>trove</artifactId>
+            <version>3.0.3</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -146,7 +152,7 @@
         <!-- Akarin -->
         <repository>
             <id>nallar-repo</id>
-            <url>http://repo.nallar.me/</url>
+            <url>https://repo.nallar.me/</url>
         </repository>
         <repository>
             <id>spongepowered-repo</id>
@@ -155,6 +161,10 @@
         <repository>
             <id>sonatype-nexusg</id>
             <url>https://oss.sonatype.org/content/repositories</url>
+        </repository>
+        <repository>
+            <id>tu-darmstadt</id>
+            <url>https://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-releases/</url>
         </repository>
     </repositories>
 
