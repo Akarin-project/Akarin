@@ -42,6 +42,13 @@ public class RestartCommand extends Command
 
     private static void restart(final String restartScript)
     {
+        // Akarin start
+        if (io.akarin.server.core.AkarinGlobalConfig.noResponseDoGC) {
+            System.out.println("Attempting to garbage collect, this may takes a few seconds");
+            System.runFinalization();
+            System.gc();
+        }
+        // Akarin end
         AsyncCatcher.enabled = false; // Disable async catcher incase it interferes with us
         org.spigotmc.AsyncCatcher.shuttingDown = true; // Paper
         try

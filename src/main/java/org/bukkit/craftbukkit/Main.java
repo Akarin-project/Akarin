@@ -21,6 +21,7 @@ public class Main {
     public static boolean useConsole = true;
 
     public static void main(String[] args) {
+        io.akarin.server.core.AkarinGlobalConfig.init(new File("akarin.yml")); // Akarin
         // Todo: Installation script
         OptionParser parser = new OptionParser() {
             {
@@ -219,7 +220,7 @@ public class Main {
                     if (buildDate.before(deadline.getTime())) {
                         // Paper start - This is some stupid bullshit
                         System.err.println("*** Warning, you've not updated in a while! ***");
-                        System.err.println("*** Please download a new build as per instructions from https://papermc.io/downloads ***"); // Paper
+                        System.err.println("*** Please visit our website for the latest information: https://akarin.io/ ***"); // Paper // Akarin
                         //System.err.println("*** Server will start in 20 seconds ***");
                         //Thread.sleep(TimeUnit.SECONDS.toMillis(20));
                         // Paper End

@@ -31,7 +31,7 @@ public class Metrics {
     public static final int B_STATS_VERSION = 1;
 
     // The url to which the data is sent
-    private static final String URL = "https://bStats.org/submitData/server-implementation";
+    private static final String URL = "https://bStats.org/submitData/bukkit"; // Akarin
 
     // Should failed requests be logged?
     private static boolean logFailedRequests = false;
@@ -103,6 +103,7 @@ public class Metrics {
         JSONObject data = new JSONObject();
 
         data.put("pluginName", name); // Append the name of the server software
+        data.put("pluginVersion", Metrics.class.getPackage().getImplementationVersion() != null ? Metrics.class.getPackage().getImplementationVersion() : "unknown"); // Akarin
         JSONArray customCharts = new JSONArray();
         for (CustomChart customChart : charts) {
             // Add the data of the custom charts
@@ -123,13 +124,24 @@ public class Metrics {
      * @return The server specific data.
      */
     private JSONObject getServerData() {
+        // Akarin start - Minecraft specific data
+        int playerAmount = Bukkit.getOnlinePlayers().size();
+        int onlineMode = Bukkit.getOnlineMode() ? 1 : 0;
+        String bukkitVersion = org.bukkit.Bukkit.getVersion();
+        bukkitVersion = bukkitVersion.substring(bukkitVersion.indexOf("MC: ") + 4, bukkitVersion.length() - 1);
+        
+        JSONObject data = new JSONObject();
+        data.put("playerAmount", playerAmount);
+        data.put("onlineMode", onlineMode);
+        data.put("bukkitVersion", bukkitVersion);
+        // Akarin end
         // OS specific data
         String osName = System.getProperty("os.name");
         String osArch = System.getProperty("os.arch");
         String osVersion = System.getProperty("os.version");
         int coreCount = Runtime.getRuntime().availableProcessors();
 
-        JSONObject data = new JSONObject();
+        //JSONObject data = new JSONObject(); // Akarin
 
         data.put("serverUUID", serverUUID);
 
@@ -578,8 +590,10 @@ public class Metrics {
             boolean logFailedRequests = config.getBoolean("logFailedRequests", false);
             // Only start Metrics, if it's enabled in the config
             if (config.getBoolean("enabled", true)) {
-                Metrics metrics = new Metrics("Paper", serverUUID, logFailedRequests, Bukkit.getLogger());
+                // Akarin start
+                Metrics metrics = new Metrics("Torch", serverUUID, logFailedRequests, Bukkit.getLogger());
 
+                /*
                 metrics.addCustomChart(new Metrics.SimplePie("minecraft_version", () -> {
                     String minecraftVersion = Bukkit.getVersion();
                     minecraftVersion = minecraftVersion.substring(minecraftVersion.indexOf("MC: ") + 4, minecraftVersion.length() - 1);
@@ -620,6 +634,8 @@ public class Metrics {
 
                     return map;
                 }));
+                */
+                // Akarin end
             }
 
         }

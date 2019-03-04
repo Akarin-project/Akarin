@@ -24,7 +24,7 @@ public class WatchdogThread extends Thread
 
     private WatchdogThread(long timeoutTime, boolean restart)
     {
-        super( "Paper Watchdog Thread" );
+        super( "Akarin Watchdog Thread" ); // Akarin
         this.timeoutTime = timeoutTime;
         this.restart = restart;
         earlyWarningEvery = Math.min(PaperConfig.watchdogPrintEarlyWarningEvery, timeoutTime); // Paper
@@ -75,12 +75,12 @@ public class WatchdogThread extends Thread
                 if (isLongTimeout) {
                 // Paper end
                 log.log( Level.SEVERE, "------------------------------" );
-                log.log( Level.SEVERE, "The server has stopped responding! This is (probably) not a Paper bug." ); // Paper
+                log.log( Level.SEVERE, "The server has stopped responding! This is (probably) not a Akarin bug." ); // Paper // Akarin
                 log.log( Level.SEVERE, "If you see a plugin in the Server thread dump below, then please report it to that author" );
-                log.log( Level.SEVERE, "\t *Especially* if it looks like HTTP or MySQL operations are occurring" );
+                log.log( Level.SEVERE, "\t *Especially* if it looks like HTTP or disk operations are occurring" ); // Akarin - MYSQL -> disk
                 log.log( Level.SEVERE, "If you see a world save or edit, then it means you did far more than your server can handle at once" );
                 log.log( Level.SEVERE, "\t If this is the case, consider increasing timeout-time in spigot.yml but note that this will replace the crash with LARGE lag spikes" );
-                log.log( Level.SEVERE, "If you are unsure or still think this is a Paper bug, please report this to https://github.com/PaperMC/Paper/issues" );
+                log.log( Level.SEVERE, "If you are unsure or still think this is a Akarin bug, please report this to https://github.com/Akarin-project/Akarin/issues" ); // Akarin
                 log.log( Level.SEVERE, "Be sure to include ALL relevant console errors and Minecraft crash reports" );
                 log.log( Level.SEVERE, "Paper version: " + Bukkit.getServer().getVersion() );
                 //
@@ -105,14 +105,14 @@ public class WatchdogThread extends Thread
                 // Paper end
                 } else
                 {
-                    log.log(Level.SEVERE, "--- DO NOT REPORT THIS TO PAPER - THIS IS NOT A BUG OR A CRASH  - " + Bukkit.getServer().getVersion() + " ---");
-                    log.log(Level.SEVERE, "The server has not responded for " + (currentTime - lastTick) / 1000 + " seconds! Creating thread dump");
+                    log.log(Level.WARNING, "--- DO NOT REPORT THIS TO AKARIN - THIS IS NOT A BUG OR A CRASH  - " + Bukkit.getServer().getVersion() + " ---"); // Akarin - use WARNING level
+                    log.log(Level.WARNING, "The server has not responded for " + (currentTime - lastTick) / 1000 + " seconds! Creating thread dump"); // Akarin - use WARNING level
                 }
                 // Paper end - Different message for short timeout
-                log.log( Level.SEVERE, "------------------------------" );
-                log.log( Level.SEVERE, "Server thread dump (Look for plugins here before reporting to Paper!):" );
+                log.log( Level.WARNING, "------------------------------" ); // Akarin - use WARNING level
+                log.log( Level.WARNING, "Server thread dump (Look for plugins here before reporting to Paper!):" ); // Akarin - use WARNING level
                 dumpThread( ManagementFactory.getThreadMXBean().getThreadInfo( MinecraftServer.getServer().primaryThread.getId(), Integer.MAX_VALUE ), log );
-                log.log( Level.SEVERE, "------------------------------" );
+                log.log( Level.WARNING, "------------------------------" ); // Akarin - use WARNING level
                 //
                 // Paper start - Only print full dump on long timeouts
                 if ( isLongTimeout )
@@ -124,11 +124,11 @@ public class WatchdogThread extends Thread
                     dumpThread( thread, log );
                 }
                 } else {
-                    log.log(Level.SEVERE, "--- DO NOT REPORT THIS TO PAPER - THIS IS NOT A BUG OR A CRASH ---");
+                    log.log(Level.WARNING, "--- DO NOT REPORT THIS TO AKARIN - THIS IS NOT A BUG OR A CRASH ---"); // Akarin - use WARNING level
                 }
 
 
-                log.log( Level.SEVERE, "------------------------------" );
+                log.log( isLongTimeout ? Level.SEVERE : Level.WARNING, "------------------------------" ); // Akarin - use WARNING level
 
                 if ( isLongTimeout )
                 {

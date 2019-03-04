@@ -169,7 +169,7 @@ import javax.annotation.Nonnull; // Paper
 
 
 public final class CraftServer implements Server {
-    private final String serverName = "Paper"; // Paper
+    private final String serverName = org.apache.commons.lang3.StringUtils.isBlank(io.akarin.server.core.AkarinGlobalConfig.serverBrandName) ? "Akarin" : io.akarin.server.core.AkarinGlobalConfig.serverBrandName; // Paper // Akarin - configurable brand name
     private final String serverVersion;
     private final String bukkitVersion = Versioning.getBukkitVersion();
     private final Logger logger = Logger.getLogger("Minecraft");
