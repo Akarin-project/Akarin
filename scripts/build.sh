@@ -10,6 +10,14 @@ paperworkdir="$basedir/work/Paper/work"
 if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 	echo "[Akarin] Setup Paper.."
 	(
+		if [ "$2" == "--remote" ] || [ "$3" == "--remote" ] || [ "$4" == "--remote" ]; then
+			cd "$paperworkdir"
+			if [ -d "Minecraft" ]; then
+				rm Minecraft/ -r
+			fi
+			git clone https://github.com/Akarin-project/Minecraft.git
+		fi
+
 		cd "$paperbasedir"
 		./paper patch
 	)
