@@ -22,7 +22,7 @@ public class RegistryBlockID<T> implements Registry<T> {
 
     public RegistryBlockID(int i) {
         this.c = Lists.newArrayListWithExpectedSize(i);
-        this.b = com.koloboke.collect.map.hash.HashObjIntMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap(i); // Akarin - koloboke
+        this.b = com.koloboke.collect.map.hash.HashObjIntMaps.getDefaultFactory().withHashConfig(com.koloboke.collect.hash.HashConfig.fromLoads(1./3., 2./3., 2./3.)).withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newUpdatableMap((int) (i * com.koloboke.collect.hash.HashConfig.getDefault().getTargetLoad())); // Akarin - koloboke
     }
 
     public void a(T t0, int i) {
