@@ -51,7 +51,7 @@ Demo Servers
 
 Contributing
 ---
-* You can checkout the `src` folder to see more, And remember to exclude files that you changed from `.gitignore`. Please follow the patch style to do any change, so we are able to update between different Minecraft versions.
+* You can checkout the `src` folder to see more. Please follow the patch style to do any change, so we are able to update between different Minecraft versions.
 * Add your name to the [LICENSE](https://github.com/Akarin-project/Akarin/blob/master/LICENSE.md) if you want to publish your code under the [MIT License](https://github.com/Akarin-project/Akarin/blob/master/licenses/MIT.md).
 * If you want to join the [Akarin-project](https://github.com/Akarin-project) team, you can [send](mailto://kira@kira.moe) us an email with your experience and necessary information.
 
