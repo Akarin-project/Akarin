@@ -34,9 +34,9 @@ Get Akarin
 * Maven
 
 #### Compile
-~~```sh
+```sh
 ./scripts/inst.sh --setup --fast
-```~~
+```
 
 **Notes**
 * You must use `--setup` at least once to deploy necessary dependencies otherwise some imports cannot be organized.
