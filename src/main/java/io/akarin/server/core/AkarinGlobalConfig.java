@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+@SuppressWarnings({"UnusedIsStillUsed", "unused"})
 public class AkarinGlobalConfig {
     public final static Logger LOGGER = LogManager.getLogger("Akarin");
 
@@ -143,15 +144,20 @@ public class AkarinGlobalConfig {
         return config.getString(path, config.getString(path));
     }
     /*========================================================================*/
-    public static boolean noResponseDoGC;
+    public static boolean noResponseDoGC = true;
     private static void noResponseDoGC() {
-        noResponseDoGC = getBoolean("alternative.gc-before-stuck-restart", true);
+        noResponseDoGC = getBoolean("alternative.gc-before-stuck-restart", noResponseDoGC);
     }
-    
-    public static String serverBrandName;
+
+    public static String serverBrandName = "";
     private static void serverBrandName() {
-        serverBrandName = getString("alternative.modified-server-brand-name", "");
+        serverBrandName = getString("alternative.modified-server-brand-name", serverBrandName);
     }
-    
-    
+
+    public static int fileIOThreads = 2;
+    private static void fileIOThreads() {
+        fileIOThreads = getInt("core.chunk-save-threads", fileIOThreads);
+        fileIOThreads = fileIOThreads < 1 ? 1 : fileIOThreads;
+        fileIOThreads = fileIOThreads > 8 ? 8 : fileIOThreads;
+    }
 }
