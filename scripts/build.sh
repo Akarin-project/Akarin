@@ -40,7 +40,7 @@ echo "[Akarin] Ready to build"
 		./paper patch
 		\cp -rf "$basedir/src" "$paperbasedir/Paper-Server/"
 		\cp -rf "$basedir/pom.xml" "$paperbasedir/Paper-Server/"
-		mvn clean install
+		mvn clean install -DskipTests
 	fi
 	
 	minecraftversion=$(cat "$paperworkdir/BuildData/info.json"  | grep minecraftVersion | cut -d '"' -f 4)
