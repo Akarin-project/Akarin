@@ -19,6 +19,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 
 import java.net.SocketAddress;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
@@ -56,7 +57,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     private PacketListener packetListener;
     private IChatBaseComponent n;
     private boolean o;
-    private boolean p;
+    private AtomicBoolean p = new AtomicBoolean(false); // Akarin
     private int q;
     private int r;
     private float s;
@@ -357,10 +358,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     public void handleDisconnection() {
         if (this.channel != null && !this.channel.isOpen()) {
-            if (this.p) {
+            if (!this.p.compareAndSet(false, true)) { // Akarin
                 NetworkManager.g.warn("handleDisconnection() called twice");
             } else {
-                this.p = true;
+                // this.p = true; // Akarin
                 if (this.j() != null) {
                     this.i().a(this.j());
                 } else if (this.i() != null) {

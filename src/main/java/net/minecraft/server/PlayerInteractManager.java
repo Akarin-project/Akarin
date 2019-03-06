@@ -269,11 +269,13 @@ public class PlayerInteractManager {
 
             // Tell client the block is gone immediately then process events
             // Don't tell the client if its a creative sword break because its not broken!
-            if (world.getTileEntity(blockposition) == null && !isSwordNoBreak) {
-                PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(this.world, blockposition);
-                packet.block = Blocks.AIR.getBlockData();
-                ((EntityPlayer) this.player).playerConnection.sendPacket(packet);
-            }
+            // Akarin start
+            //if (world.getTileEntity(blockposition) == null && !isSwordNoBreak) {
+            //    PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(this.world, blockposition);
+            //    packet.block = Blocks.AIR.getBlockData();
+            //    ((EntityPlayer) this.player).playerConnection.sendPacket(packet);
+            //}
+            // Akarin end
 
             event = new BlockBreakEvent(bblock, this.player.getBukkitEntity());
 
@@ -303,20 +305,31 @@ public class PlayerInteractManager {
                     return false;
                 }
                 // Let the client know the block still exists
-                ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition));
+                //((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition)); // Akarin
 
                 // Brute force all possible updates
-                for (EnumDirection dir : EnumDirection.values()) {
-                    ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(world, blockposition.shift(dir)));
-                }
+                // Akarin start
+                //for (EnumDirection dir : EnumDirection.values()) {
+                //    ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(world, blockposition.shift(dir)));
+                //}
+                // Akarin end
 
                 // Update any tile entity data for this block
-                TileEntity tileentity = this.world.getTileEntity(blockposition);
-                if (tileentity != null) {
-                    this.player.playerConnection.sendPacket(tileentity.getUpdatePacket());
-                }
+                // Akarin start
+                //TileEntity tileentity = this.world.getTileEntity(blockposition);
+                //if (tileentity != null) {
+                //    this.player.playerConnection.sendPacket(tileentity.getUpdatePacket());
+                //}
                 return false;
+            // Akarin start
+            } else {
+                if (world.getTileEntity(blockposition) == null) {
+                    PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(this.world, blockposition);
+                    packet.block = Blocks.AIR.getBlockData();
+                    ((EntityPlayer) this.player).playerConnection.sendPacket(packet);
+                }
             }
+            // Akarin end
         }
         // CraftBukkit end
 
