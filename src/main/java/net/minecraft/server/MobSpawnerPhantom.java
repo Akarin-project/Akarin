@@ -29,7 +29,7 @@ public class MobSpawnerPhantom {
                     while (iterator.hasNext()) {
                         EntityHuman entityhuman = (EntityHuman) iterator.next();
 
-                        if (!entityhuman.isSpectator()) {
+                        if (!entityhuman.isSpectator() && !((EntityPlayer) entityhuman).playerInteractManager.isCreative()) { // Akarin - ignore creative mode
                             BlockPosition blockposition = new BlockPosition(entityhuman);
 
                             if (!world.worldProvider.g() || blockposition.getY() >= world.getSeaLevel() && world.e(blockposition)) {
