@@ -124,9 +124,10 @@ public class PlayerInteractManager {
             return;
         }
         // CraftBukkit end
-        if (this.isCreative()) {
+        boolean isCreative = this.isCreative();
+        if (isCreative) {
             if (!this.world.douseFire((EntityHuman) null, blockposition, enumdirection)) {
-                this.breakBlock(blockposition);
+                this.breakBlock(blockposition, isCreative, true); // Akarin - add parameters
             }
 
         } else {
@@ -176,7 +177,7 @@ public class PlayerInteractManager {
 
             if (event.useItemInHand() == Event.Result.DENY) {
                 // If we 'insta destroyed' then the client needs to be informed.
-                if (f > 1.0f) {
+                if (false && f > 1.0f) { // Akarin - this does nothing
                     ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition));
                 }
                 return;
@@ -185,17 +186,18 @@ public class PlayerInteractManager {
 
             if (blockEvent.isCancelled()) {
                 // Let the client know the block still exists
-                ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition));
+                //((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition)); // Akarin - unnecessary
                 return;
             }
 
-            if (blockEvent.getInstaBreak()) {
+            boolean instaBreak = blockEvent.getInstaBreak(); // Akarin
+            if (instaBreak) {
                 f = 2.0f;
             }
             // CraftBukkit end
 
             if (!iblockdata.isAir() && f >= 1.0F) {
-                this.breakBlock(blockposition);
+                this.breakBlock(blockposition, isCreative, instaBreak); // Akarin - add parameters
             } else {
                 this.d = true;
                 this.f = blockposition;
@@ -258,6 +260,12 @@ public class PlayerInteractManager {
     }
 
     public boolean breakBlock(BlockPosition blockposition) {
+        // Akarin start
+        return breakBlock(blockposition, this.isCreative(), true);
+    }
+
+    public boolean breakBlock(BlockPosition blockposition, boolean isCreative, boolean notifyCancel) {
+        // Akarin end
         IBlockData iblockdata = this.world.getType(blockposition);
         // CraftBukkit start - fire BlockBreakEvent
         org.bukkit.block.Block bblock = CraftBlock.at(world, blockposition);
@@ -269,13 +277,11 @@ public class PlayerInteractManager {
 
             // Tell client the block is gone immediately then process events
             // Don't tell the client if its a creative sword break because its not broken!
-            // Akarin start
-            //if (world.getTileEntity(blockposition) == null && !isSwordNoBreak) {
-            //    PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(this.world, blockposition);
-            //    packet.block = Blocks.AIR.getBlockData();
-            //    ((EntityPlayer) this.player).playerConnection.sendPacket(packet);
-            //}
-            // Akarin end
+            if (false && world.getTileEntity(blockposition) == null && !isSwordNoBreak) { // Akarin - this does nothing
+                PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(this.world, blockposition);
+                packet.block = Blocks.AIR.getBlockData();
+                ((EntityPlayer) this.player).playerConnection.sendPacket(packet);
+            }
 
             event = new BlockBreakEvent(bblock, this.player.getBukkitEntity());
 
@@ -288,7 +294,7 @@ public class PlayerInteractManager {
 
             ItemStack itemstack = this.player.getEquipment(EnumItemSlot.MAINHAND);
 
-            if (nmsBlock != null && !event.isCancelled() && !this.isCreative() && this.player.hasBlock(nmsBlock.getBlockData())) {
+            if (nmsBlock != null && !event.isCancelled() && !isCreative && this.player.hasBlock(nmsBlock.getBlockData())) { // Akarin
                 // Copied from block.a(World world, EntityHuman entityhuman, BlockPosition blockposition, IBlockData iblockdata, @Nullable TileEntity tileentity, ItemStack itemstack)
                 // PAIL: checkme each update
                 if (!(nmsBlock.X_() && EnchantmentManager.getEnchantmentLevel(Enchantments.SILK_TOUCH, itemstack) > 0)) {
@@ -301,35 +307,24 @@ public class PlayerInteractManager {
             this.world.getServer().getPluginManager().callEvent(event);
 
             if (event.isCancelled()) {
-                if (isSwordNoBreak) {
+                if (isSwordNoBreak || (!isCreative && !notifyCancel)) { // Akarin - only send back for insta breaks
                     return false;
                 }
                 // Let the client know the block still exists
-                //((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition)); // Akarin
+                ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition)); // Akarin
 
                 // Brute force all possible updates
-                // Akarin start
-                //for (EnumDirection dir : EnumDirection.values()) {
-                //    ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(world, blockposition.shift(dir)));
-                //}
-                // Akarin end
+                for (EnumDirection dir : EnumDirection.values()) {
+                    ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(world, blockposition.shift(dir)));
+                }
 
                 // Update any tile entity data for this block
-                // Akarin start
-                //TileEntity tileentity = this.world.getTileEntity(blockposition);
-                //if (tileentity != null) {
-                //    this.player.playerConnection.sendPacket(tileentity.getUpdatePacket());
-                //}
-                return false;
-            // Akarin start
-            } else {
-                if (world.getTileEntity(blockposition) == null) {
-                    PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(this.world, blockposition);
-                    packet.block = Blocks.AIR.getBlockData();
-                    ((EntityPlayer) this.player).playerConnection.sendPacket(packet);
+                TileEntity tileentity = this.world.getTileEntity(blockposition);
+                if (tileentity != null) {
+                    this.player.playerConnection.sendPacket(tileentity.getUpdatePacket());
                 }
+                return false;
             }
-            // Akarin end
         }
         // CraftBukkit end
 
@@ -343,7 +338,7 @@ public class PlayerInteractManager {
 
             // CraftBukkit start - Special case skulls, their item data comes from a tile entity (Also check if block should drop items)
             // And shulker boxes too for duplication on BlockPlaceEvent cancel reasons (Also check if block should drop items)
-            if (((iblockdata.getBlock() instanceof BlockSkullAbstract && !this.isCreative()) || iblockdata.getBlock() instanceof BlockShulkerBox) && event.isDropItems()) {
+            if (((iblockdata.getBlock() instanceof BlockSkullAbstract && !isCreative) || iblockdata.getBlock() instanceof BlockShulkerBox) && event.isDropItems()) { // Akarin
                 org.bukkit.block.BlockState state = bblock.getState();
                 world.captureDrops = new ArrayList<>();
 
@@ -489,9 +484,9 @@ public class PlayerInteractManager {
                 ((EntityPlayer) entityhuman).getBukkitEntity().sendHealthUpdate(); // SPIGOT-1341 - reset health for cake
             // Paper start  - extend Player Interact cancellation // TODO: consider merging this into the extracted method
             } else if (iblockdata.getBlock() instanceof BlockStructure) {
-                    ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutCloseWindow());
+                ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutCloseWindow());
             } else if (iblockdata.getBlock() instanceof BlockCommand) {
-                    ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutCloseWindow());
+                ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutCloseWindow());
             } else if (iblockdata.getBlock() instanceof BlockFlowerPot) {
                 // Send a block change to air and then send back the correct block, just to make the client happy
                 PacketPlayOutBlockChange packet = new PacketPlayOutBlockChange(this.world, blockposition);
