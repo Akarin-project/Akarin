@@ -118,7 +118,7 @@ public abstract class EntityMinecartAbstract extends Entity implements INamableT
                 this.world.getServer().getPluginManager().callEvent(event);
 
                 if (event.isCancelled()) {
-                    return true;
+                    return false;
                 }
 
                 f = (float) event.getDamage();

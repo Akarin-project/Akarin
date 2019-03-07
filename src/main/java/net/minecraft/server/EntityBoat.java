@@ -119,7 +119,7 @@ public class EntityBoat extends Entity {
                 this.world.getServer().getPluginManager().callEvent(event);
 
                 if (event.isCancelled()) {
-                    return true;
+                    return false;
                 }
                 // f = event.getDamage(); // TODO Why don't we do this?
                 // CraftBukkit end
