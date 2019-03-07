@@ -519,7 +519,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 // CraftBukkit start
                 iblockdata1.b(this, blockposition, j); // Don't call an event for the old block to limit event spam
                 CraftWorld world = ((WorldServer) this).getWorld();
-                if (world != null && ((WorldServer)this).hasPhysicsEvent) { // Paper
+                if (world != null && ((WorldServer)this).hasPhysicsEvent && !io.akarin.server.core.AkarinGlobalConfig.fixPhysicsEventBehaviour) { // Paper // Akarin - fixes physics event
                     BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftBlockData.fromData(iblockdata));
                     this.getServer().getPluginManager().callEvent(event);
 

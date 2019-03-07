@@ -160,4 +160,9 @@ public class AkarinGlobalConfig {
         fileIOThreads = fileIOThreads < 1 ? 1 : fileIOThreads;
         fileIOThreads = fileIOThreads > 8 ? 8 : fileIOThreads;
     }
+    
+    public static boolean fixPhysicsEventBehaviour = false;
+    private static void fixPhysicsEventBehavior() {
+        fixPhysicsEventBehaviour = getBoolean("alternative.fix-physics-event-behaviour", fixPhysicsEventBehaviour);
+    }
 }

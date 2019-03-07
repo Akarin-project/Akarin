@@ -10,6 +10,9 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.block.data.CraftBlockData;
+import org.bukkit.event.block.BlockPhysicsEvent;
 
 public class Block implements IMaterial {
 
@@ -172,7 +175,26 @@ public class Block implements IMaterial {
     }
 
     public static void a(IBlockData iblockdata, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, int i) {
+        // Akarin start
+        ensuresTypeAndData(iblockdata, iblockdata1, generatoraccess, blockposition, i, blockposition);
+    }
+
+    public static void ensuresTypeAndData(IBlockData iblockdata, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, int i, BlockPosition sourceBlockPosition) {
+        // Akarin end
         if (iblockdata1 != iblockdata) {
+            // Akarin start - fixes physics event
+            if (io.akarin.server.core.AkarinGlobalConfig.fixPhysicsEventBehaviour && ((WorldServer) generatoraccess).hasPhysicsEvent) {
+                CraftWorld world = ((WorldServer) generatoraccess).getWorld();
+                if (world != null) {
+                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftBlockData.fromData(iblockdata), world.getBlockAt(sourceBlockPosition.getX(), sourceBlockPosition.getY(), sourceBlockPosition.getZ()));
+                    ((WorldServer) generatoraccess).getServer().getPluginManager().callEvent(event);
+
+                    if (event.isCancelled()) {
+                        return;
+                    }
+                }
+            }
+            // Akarin end
             if (iblockdata1.isAir()) {
                 if (!generatoraccess.e()) {
                     generatoraccess.setAir(blockposition, (i & 32) == 0);
