@@ -191,7 +191,7 @@ public class PlayerInteractManager {
             }
 
             boolean instaBreak = blockEvent.getInstaBreak(); // Akarin
-            if (instaBreak) {
+            if (instaBreak) { // Akarin
                 f = 2.0f;
             }
             // CraftBukkit end
