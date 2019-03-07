@@ -26,7 +26,7 @@ public class EntityLargeFireball extends EntityFireball {
             boolean flag = this.world.getGameRules().getBoolean("mobGriefing");
 
             // CraftBukkit start - fire ExplosionPrimeEvent
-            ExplosionPrimeEvent event = new ExplosionPrimeEvent((org.bukkit.entity.Explosive) org.bukkit.craftbukkit.entity.CraftEntity.getEntity(this.world.getServer(), this));
+            ExplosionPrimeEvent event = new ExplosionPrimeEvent((org.bukkit.entity.Explosive) this.getBukkitEntity());
             this.world.getServer().getPluginManager().callEvent(event);
 
             if (!event.isCancelled()) {

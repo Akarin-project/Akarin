@@ -939,7 +939,7 @@ public abstract class EntityLiving extends Entity {
             return false;
         } else if (this.world.isClientSide) {
             return false;
-        } else if (this.getHealth() <= 0.0F) {
+        } else if (this.dead || this.killed || this.getHealth() <= 0.0F) { // CraftBukkit - Don't allow entities that got set to dead/killed elsewhere to get damaged and die
             return false;
         } else if (damagesource.p() && this.hasEffect(MobEffects.FIRE_RESISTANCE)) {
             return false;

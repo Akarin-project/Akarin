@@ -93,9 +93,8 @@ public class EntityTNTPrimed extends Entity {
         // CraftBukkit start
         // float f = 4.0F;
 
-        org.bukkit.craftbukkit.CraftServer server = this.world.getServer();
-        ExplosionPrimeEvent event = new ExplosionPrimeEvent((org.bukkit.entity.Explosive) org.bukkit.craftbukkit.entity.CraftEntity.getEntity(server, this));
-        server.getPluginManager().callEvent(event);
+        ExplosionPrimeEvent event = new ExplosionPrimeEvent((org.bukkit.entity.Explosive) this.getBukkitEntity());
+        this.world.getServer().getPluginManager().callEvent(event);
 
         if (!event.isCancelled()) {
             this.world.createExplosion(this, this.locX, this.locY + (double) (this.length / 16.0F), this.locZ, event.getRadius(), event.getFire(), true);
