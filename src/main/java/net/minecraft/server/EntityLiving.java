@@ -1210,7 +1210,7 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void die(DamageSource damagesource) {
-        if (!this.killed) {
+        if (!this.killed && !this.joinedWorld) { // Akarin
             Entity entity = damagesource.getEntity();
             EntityLiving entityliving = this.cv();
 

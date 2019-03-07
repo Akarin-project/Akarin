@@ -1550,6 +1550,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             return;
         }
         // CraftBukkit end
+        entity.joinedWorld = true; // Akarin
 
         entity.N = entity.locX;
         entity.O = entity.locY;
@@ -1622,6 +1623,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 }
             }
         }
+        entity.joinedWorld = false; // Akarin
     }
 
     // Paper start - Based on method below

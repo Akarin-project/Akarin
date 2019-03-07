@@ -188,6 +188,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     public boolean fromMobSpawner;
     public boolean spawnedViaMobSpawner; // Paper - Yes this name is similar to above, upstream took the better one
     protected int numCollisions = 0; // Paper
+    public boolean joinedWorld; // Akarin
     public void inactiveTick() { }
     // Spigot end
 
