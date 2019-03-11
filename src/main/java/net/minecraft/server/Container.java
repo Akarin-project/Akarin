@@ -319,10 +319,11 @@ public abstract class Container {
                         slot2.f();
                         // CraftBukkit start - Make sure the client has the right slot contents
                         if (entityhuman instanceof EntityPlayer && slot2.getMaxStackSize() != 64) {
-                            ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutSetSlot(this.windowId, slot2.rawSlotIndex, slot2.getItem()));
+                            boolean crafting = this.getBukkitView().getType() == InventoryType.WORKBENCH || this.getBukkitView().getType() == InventoryType.CRAFTING; // Akarin
+                            if (!crafting) ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutSetSlot(this.windowId, slot2.rawSlotIndex, slot2.getItem())); // Akarin
                             // Updating a crafting inventory makes the client reset the result slot, have to send it again
-                            if (this.getBukkitView().getType() == InventoryType.WORKBENCH || this.getBukkitView().getType() == InventoryType.CRAFTING) {
-                                ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutSetSlot(this.windowId, 0, this.getSlot(0).getItem()));
+                            if (crafting) { // Akarin
+                                ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutSetSlot(this.windowId, slot2.rawSlotIndex, slot2.getItem()), new PacketPlayOutSetSlot(this.windowId, 0, this.getSlot(0).getItem())); // Akarin
                             }
                         }
                         // CraftBukkit end

@@ -156,13 +156,16 @@ public abstract class PlayerList {
 
         playerconnection.sendPacket(new PacketPlayOutLogin(entityplayer.getId(), entityplayer.playerInteractManager.getGameMode(), worlddata.isHardcore(), worldserver.worldProvider.getDimensionManager(), worldserver.getDifficulty(), this.getMaxPlayers(), worlddata.getType(), worldserver.getGameRules().getBoolean("reducedDebugInfo")));
         entityplayer.getBukkitEntity().sendSupportedChannels(); // CraftBukkit
-        playerconnection.sendPacket(new PacketPlayOutCustomPayload(PacketPlayOutCustomPayload.b, (new PacketDataSerializer(Unpooled.buffer())).a(this.getServer().getServerModName())));
-        playerconnection.sendPacket(new PacketPlayOutServerDifficulty(worlddata.getDifficulty(), worlddata.isDifficultyLocked()));
-        playerconnection.sendPacket(new PacketPlayOutAbilities(entityplayer.abilities));
-        playerconnection.sendPacket(new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex));
-        playerconnection.sendPacket(new PacketPlayOutRecipeUpdate(this.server.getCraftingManager().b()));
-        playerconnection.sendPacket(new PacketPlayOutTags(this.server.getTagRegistry()));
-        playerconnection.sendPacket(new PacketPlayOutEntityStatus(entityplayer, (byte) (worldserver.getGameRules().getBoolean("reducedDebugInfo") ? 22 : 23))); // Paper - fix this rule not being initialized on the client
+        // Akarin start
+        playerconnection.sendPacket(
+                new PacketPlayOutCustomPayload(PacketPlayOutCustomPayload.b, (new PacketDataSerializer(Unpooled.buffer())).a(this.getServer().getServerModName())),
+                new PacketPlayOutServerDifficulty(worlddata.getDifficulty(), worlddata.isDifficultyLocked()),
+                new PacketPlayOutAbilities(entityplayer.abilities),
+                new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex),
+                new PacketPlayOutRecipeUpdate(this.server.getCraftingManager().b()),
+                new PacketPlayOutTags(this.server.getTagRegistry()),
+                new PacketPlayOutEntityStatus(entityplayer, (byte) (worldserver.getGameRules().getBoolean("reducedDebugInfo") ? 22 : 23))); // Paper - fix this rule not being initialized on the client
+        // Akarin end
         this.f(entityplayer);
         entityplayer.getStatisticManager().c();
         entityplayer.B().a(entityplayer);
@@ -720,8 +723,7 @@ public abstract class PlayerList {
         entityplayer1.setSneaking(false);
         blockposition1 = worldserver.getSpawn();
         // entityplayer1.playerConnection.a(entityplayer1.locX, entityplayer1.locY, entityplayer1.locZ, entityplayer1.yaw, entityplayer1.pitch);
-        entityplayer1.playerConnection.sendPacket(new PacketPlayOutSpawnPosition(blockposition1));
-        entityplayer1.playerConnection.sendPacket(new PacketPlayOutExperience(entityplayer1.exp, entityplayer1.expTotal, entityplayer1.expLevel));
+        entityplayer1.playerConnection.sendPacket(new PacketPlayOutSpawnPosition(blockposition1), new PacketPlayOutExperience(entityplayer1.exp, entityplayer1.expTotal, entityplayer1.expLevel)); // Akarin
         this.b(entityplayer1, worldserver);
         this.f(entityplayer1);
         if (!entityplayer.playerConnection.isDisconnected()) {
@@ -1284,11 +1286,13 @@ public abstract class PlayerList {
     public void b(EntityPlayer entityplayer, WorldServer worldserver) {
         WorldBorder worldborder = entityplayer.world.getWorldBorder(); // CraftBukkit
 
-        entityplayer.playerConnection.sendPacket(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.INITIALIZE));
-        entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateTime(worldserver.getTime(), worldserver.getDayTime(), worldserver.getGameRules().getBoolean("doDaylightCycle")));
+        // Akarin start
         BlockPosition blockposition = worldserver.getSpawn();
-
-        entityplayer.playerConnection.sendPacket(new PacketPlayOutSpawnPosition(blockposition));
+        entityplayer.playerConnection.sendPacket(
+                new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.INITIALIZE),
+                new PacketPlayOutUpdateTime(worldserver.getTime(), worldserver.getDayTime(), worldserver.getGameRules().getBoolean("doDaylightCycle")),
+                new PacketPlayOutSpawnPosition(blockposition));
+        // Akarin end
         if (worldserver.isRaining()) {
             // CraftBukkit start - handle player weather
             // entityplayer.playerConnection.sendPacket(new PacketPlayOutGameStateChange(1, 0.0F));
@@ -1305,11 +1309,12 @@ public abstract class PlayerList {
         entityplayer.updateInventory(entityplayer.defaultContainer);
         // entityplayer.triggerHealthUpdate();
         entityplayer.getBukkitEntity().updateScaledHealth(); // CraftBukkit - Update scaled health on respawn and worldchange
-        entityplayer.playerConnection.sendPacket(new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex));
-        // CraftBukkit start - from GameRules
+        // Akarin start
         int i = entityplayer.world.getGameRules().get("reducedDebugInfo").b() ? 22 : 23;
-        entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityStatus(entityplayer, (byte) i));
-        // CraftBukkit end
+        entityplayer.playerConnection.sendPacket(
+                new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex),
+                new PacketPlayOutEntityStatus(entityplayer, (byte) i));
+        // Akarin end
     }
 
     public int getPlayerCount() {

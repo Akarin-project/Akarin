@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
 import com.google.common.util.concurrent.Futures;
@@ -8,6 +9,8 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestions;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -1493,6 +1496,24 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     public void sendPacket(Packet<?> packet) {
         this.a(packet, (GenericFutureListener) null);
     }
+    // Akarin start
+    public void sendPacket(Packet<?>... packets) {
+        if (this.processedDisconnect)
+            return;
+        
+        try {
+            this.networkManager.sendPacket(packets);
+        } catch (Throwable throwable) {
+            CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
+            CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
+
+            crashreportsystemdetails.a("Packet classes", () -> {
+                return Lists.newArrayList(packets).toString();
+            });
+            throw new ReportedException(crashreport);
+        }
+    }
+    // Akarin end
 
     public void a(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
         if (packet instanceof PacketPlayOutChat) {

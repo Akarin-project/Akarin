@@ -88,15 +88,15 @@ public class HandshakeListener implements PacketHandshakingInListener {
                             return;
                         }
 
-                        packethandshakinginsetprotocol.hostname = event.getServerHostname();
-                        this.b.socketAddress = new java.net.InetSocketAddress(event.getSocketAddressHostname(), ((java.net.InetSocketAddress) this.b.getSocketAddress()).getPort());
+                        if (event.getServerHostname() != null) packethandshakinginsetprotocol.hostname = event.getServerHostname(); // Akarin - add null check
+                        if (event.getSocketAddressHostname() != null) this.b.socketAddress = new java.net.InetSocketAddress(event.getSocketAddressHostname(), ((java.net.InetSocketAddress) this.b.getSocketAddress()).getPort()); // Akarin - add null check
                         this.b.spoofedUUID = event.getUniqueId();
                         this.b.spoofedProfile = gson.fromJson(event.getPropertiesJson(), com.mojang.authlib.properties.Property[].class);
                         handledByEvent = true; // Hooray, we did it!
                     }
                 }
                 // Don't try and handle default logic if it's been handled by the event.
-                if (!handledByEvent && proxyLogicEnabled) {
+                if (!handledByEvent && org.spigotmc.SpigotConfig.bungee) { // Akarin - recheck for plugin hacking
                 // Paper end
                 // Spigot Start
                 //if (org.spigotmc.SpigotConfig.bungee) { // Paper - comment out, we check above!
