@@ -47,6 +47,7 @@ Demo Servers
 ---
 ~~* `demo.akarin.io` (official)~~
 * [Fair Server](https://fairserver.ru)
+* [LoyaltyMC](https://minecraft-mp.com/server-s212077)
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
