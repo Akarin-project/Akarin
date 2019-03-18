@@ -669,7 +669,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         Packet51MapChunk packet = new Packet51MapChunk(x, y, z, sx, sy, sz, data);
 
-        getHandle().playerConnection.sendPacket(packet);
+        getHandle().playerConnection.sendPackets(packet);
 
         return true;
         */
@@ -1712,7 +1712,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     public void sendHealthUpdate() {
         // Paper start - cancellable death event
-        //getHandle().playerConnection.sendPacket(new PacketPlayOutUpdateHealth(getScaledHealth(), getHandle().getFoodData().getFoodLevel(), getHandle().getFoodData().getSaturationLevel()));
+        //getHandle().playerConnection.sendPackets(new PacketPlayOutUpdateHealth(getScaledHealth(), getHandle().getFoodData().getFoodLevel(), getHandle().getFoodData().getSaturationLevel()));
         PacketPlayOutUpdateHealth packet = new PacketPlayOutUpdateHealth(getScaledHealth(), getHandle().getFoodData().getFoodLevel(), getHandle().getFoodData().getSaturationLevel());
         if (this.getHandle().queueHealthUpdatePacket) {
             this.getHandle().queuedHealthUpdatePacket = packet;

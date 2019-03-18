@@ -33,7 +33,7 @@ public class PacketStatusListener implements PacketStatusInListener {
             // Paper start - Replace everything
             /*
             // CraftBukkit start
-            // this.networkManager.sendPacket(new PacketStatusOutServerInfo(this.minecraftServer.getServerPing()));
+            // this.networkManager.sendPackets(new PacketStatusOutServerInfo(this.minecraftServer.getServerPing()));
             final Object[] players = minecraftServer.getPlayerList().players.toArray();
             class ServerListPingEvent extends org.bukkit.event.server.ServerListPingEvent {
 
@@ -126,7 +126,7 @@ public class PacketStatusListener implements PacketStatusInListener {
             int version = minecraftServer.getServerPing().getServerData().getProtocolVersion();
             ping.setServerInfo(new ServerPing.ServerData(minecraftServer.getServerModName() + " " + minecraftServer.getVersion(), version));
 
-            this.networkManager.sendPacket(new PacketStatusOutServerInfo(ping));
+            this.networkManager.sendPackets(new PacketStatusOutServerInfo(ping));
             */
             com.destroystokyo.paper.network.StandardPaperServerListPingEventImpl.processRequest(this.minecraftServer, this.networkManager);
             // Paper end

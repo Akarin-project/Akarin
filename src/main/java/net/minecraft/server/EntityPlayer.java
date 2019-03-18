@@ -7,7 +7,6 @@ import io.netty.util.concurrent.Future;
 import java.util.ArrayDeque; // Paper
 import java.util.Collection;
 import java.util.Deque; // Paper
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import javax.annotation.Nullable;
@@ -1010,7 +1009,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void a(Container container, NonNullList<ItemStack> nonnulllist) {
-        this.playerConnection.sendPacket(new PacketPlayOutWindowItems(container.windowId, nonnulllist), new PacketPlayOutSetSlot(-1, -1, this.inventory.getCarried())); // Akarin
+        this.playerConnection.sendPackets(new PacketPlayOutWindowItems(container.windowId, nonnulllist), new PacketPlayOutSetSlot(-1, -1, this.inventory.getCarried())); // Akarin
         // CraftBukkit start - Send a Set Slot to update the crafting result slot
         if (java.util.EnumSet.of(InventoryType.CRAFTING,InventoryType.WORKBENCH).contains(container.getBukkitView().getType())) {
             this.playerConnection.sendPacket(new PacketPlayOutSetSlot(container.windowId, 0, container.getSlot(0).getItem()));
@@ -1502,7 +1501,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             WorldServer worldserver1 = this.getWorldServer();
 
             this.dimension = worldserver.worldProvider.getDimensionManager();
-            this.playerConnection.sendPacket(new PacketPlayOutRespawn(this.dimension, worldserver1.getDifficulty(), worldserver1.getWorldData().getType(), this.playerInteractManager.getGameMode()));
+            this.playerConnection.sendPackets(new PacketPlayOutRespawn(this.dimension, worldserver1.getDifficulty(), worldserver1.getWorldData().getType(), this.playerInteractManager.getGameMode()));
             this.server.getPlayerList().f(this);
             worldserver1.removeEntity(this);
             this.dead = false;

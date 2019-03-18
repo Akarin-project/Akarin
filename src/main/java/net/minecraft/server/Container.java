@@ -323,7 +323,7 @@ public abstract class Container {
                             if (!crafting) ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutSetSlot(this.windowId, slot2.rawSlotIndex, slot2.getItem())); // Akarin
                             // Updating a crafting inventory makes the client reset the result slot, have to send it again
                             if (crafting) { // Akarin
-                                ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutSetSlot(this.windowId, slot2.rawSlotIndex, slot2.getItem()), new PacketPlayOutSetSlot(this.windowId, 0, this.getSlot(0).getItem())); // Akarin
+                                ((EntityPlayer) entityhuman).playerConnection.sendPackets(new PacketPlayOutSetSlot(this.windowId, slot2.rawSlotIndex, slot2.getItem()), new PacketPlayOutSetSlot(this.windowId, 0, this.getSlot(0).getItem())); // Akarin
                             }
                         }
                         // CraftBukkit end

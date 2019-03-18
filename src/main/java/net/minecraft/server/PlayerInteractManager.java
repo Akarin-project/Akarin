@@ -186,7 +186,7 @@ public class PlayerInteractManager {
 
             if (blockEvent.isCancelled()) {
                 // Let the client know the block still exists
-                //((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition)); // Akarin - unnecessary
+                //((EntityPlayer) this.player).playerConnection.sendPackets(new PacketPlayOutBlockChange(this.world, blockposition)); // Akarin - unnecessary
                 return;
             }
 

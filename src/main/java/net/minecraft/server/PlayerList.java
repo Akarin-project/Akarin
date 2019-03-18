@@ -157,7 +157,7 @@ public abstract class PlayerList {
         playerconnection.sendPacket(new PacketPlayOutLogin(entityplayer.getId(), entityplayer.playerInteractManager.getGameMode(), worlddata.isHardcore(), worldserver.worldProvider.getDimensionManager(), worldserver.getDifficulty(), this.getMaxPlayers(), worlddata.getType(), worldserver.getGameRules().getBoolean("reducedDebugInfo")));
         entityplayer.getBukkitEntity().sendSupportedChannels(); // CraftBukkit
         // Akarin start
-        playerconnection.sendPacket(
+        playerconnection.sendPackets(
                 new PacketPlayOutCustomPayload(PacketPlayOutCustomPayload.b, (new PacketDataSerializer(Unpooled.buffer())).a(this.getServer().getServerModName())),
                 new PacketPlayOutServerDifficulty(worlddata.getDifficulty(), worlddata.isDifficultyLocked()),
                 new PacketPlayOutAbilities(entityplayer.abilities),
@@ -723,7 +723,7 @@ public abstract class PlayerList {
         entityplayer1.setSneaking(false);
         blockposition1 = worldserver.getSpawn();
         // entityplayer1.playerConnection.a(entityplayer1.locX, entityplayer1.locY, entityplayer1.locZ, entityplayer1.yaw, entityplayer1.pitch);
-        entityplayer1.playerConnection.sendPacket(new PacketPlayOutSpawnPosition(blockposition1), new PacketPlayOutExperience(entityplayer1.exp, entityplayer1.expTotal, entityplayer1.expLevel)); // Akarin
+        entityplayer1.playerConnection.sendPackets(new PacketPlayOutSpawnPosition(blockposition1), new PacketPlayOutExperience(entityplayer1.exp, entityplayer1.expTotal, entityplayer1.expLevel)); // Akarin
         this.b(entityplayer1, worldserver);
         this.f(entityplayer1);
         if (!entityplayer.playerConnection.isDisconnected()) {
@@ -1288,16 +1288,16 @@ public abstract class PlayerList {
 
         // Akarin start
         BlockPosition blockposition = worldserver.getSpawn();
-        entityplayer.playerConnection.sendPacket(
+        entityplayer.playerConnection.sendPackets(
                 new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.INITIALIZE),
                 new PacketPlayOutUpdateTime(worldserver.getTime(), worldserver.getDayTime(), worldserver.getGameRules().getBoolean("doDaylightCycle")),
                 new PacketPlayOutSpawnPosition(blockposition));
         // Akarin end
         if (worldserver.isRaining()) {
             // CraftBukkit start - handle player weather
-            // entityplayer.playerConnection.sendPacket(new PacketPlayOutGameStateChange(1, 0.0F));
-            // entityplayer.playerConnection.sendPacket(new PacketPlayOutGameStateChange(7, worldserver.i(1.0F)));
-            // entityplayer.playerConnection.sendPacket(new PacketPlayOutGameStateChange(8, worldserver.g(1.0F)));
+            // entityplayer.playerConnection.sendPackets(new PacketPlayOutGameStateChange(1, 0.0F));
+            // entityplayer.playerConnection.sendPackets(new PacketPlayOutGameStateChange(7, worldserver.i(1.0F)));
+            // entityplayer.playerConnection.sendPackets(new PacketPlayOutGameStateChange(8, worldserver.g(1.0F)));
             entityplayer.setPlayerWeather(org.bukkit.WeatherType.DOWNFALL, false);
             entityplayer.updateWeather(-worldserver.o, worldserver.o, -worldserver.q, worldserver.q);
             // CraftBukkit end
@@ -1311,7 +1311,7 @@ public abstract class PlayerList {
         entityplayer.getBukkitEntity().updateScaledHealth(); // CraftBukkit - Update scaled health on respawn and worldchange
         // Akarin start
         int i = entityplayer.world.getGameRules().get("reducedDebugInfo").b() ? 22 : 23;
-        entityplayer.playerConnection.sendPacket(
+        entityplayer.playerConnection.sendPackets(
                 new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex),
                 new PacketPlayOutEntityStatus(entityplayer, (byte) i));
         // Akarin end

@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.annotation.Nullable;
 
+import net.md_5.bungee.api.ChatMessageType;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -1497,7 +1498,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.a(packet, (GenericFutureListener) null);
     }
     // Akarin start
-    public void sendPacket(Packet<?>... packets) {
+    public void sendPackets(Packet<?>... packets) {
         if (this.processedDisconnect)
             return;
         
@@ -2337,10 +2338,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
                             } else {
                                 if (action.modifiesCursor()) {
-                                    this.player.playerConnection.sendPacket(new Packet103SetSlot(-1, -1, this.player.inventory.getCarried()));
+                                    this.player.playerConnection.sendPackets(new Packet103SetSlot(-1, -1, this.player.inventory.getCarried()));
                                 }
                                 if (action.modifiesClicked()) {
-                                    this.player.playerConnection.sendPacket(new Packet103SetSlot(this.player.activeContainer.windowId, packet102windowclick.slot, this.player.activeContainer.getSlot(packet102windowclick.slot).getItem()));
+                                    this.player.playerConnection.sendPackets(new Packet103SetSlot(this.player.activeContainer.windowId, packet102windowclick.slot, this.player.activeContainer.getSlot(packet102windowclick.slot).getItem()));
                                 }
                             }*/
                             switch (action) {
