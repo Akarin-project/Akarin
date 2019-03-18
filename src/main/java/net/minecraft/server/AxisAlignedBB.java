@@ -5,12 +5,12 @@ import javax.annotation.Nullable;
 
 public class AxisAlignedBB {
 
-    public final double minX; public double getMinX() { return this.minX; } // Paper - OBFHELPER
-    public final double minY; public double getMinY() { return this.minY; } // Paper - OBFHELPER
-    public final double minZ; public double getMinZ() { return this.minZ; } // Paper - OBFHELPER
-    public final double maxX; public double getMaxX() { return this.maxX; } // Paper - OBFHELPER
-    public final double maxY; public double getMaxY() { return this.maxY; } // Paper - OBFHELPER
-    public final double maxZ; public double getMaxZ() { return this.maxZ; } // Paper - OBFHELPER
+    public final double minX;
+    public final double minY;
+    public final double minZ;
+    public final double maxX;
+    public final double maxY;
+    public final double maxZ;
 
     public AxisAlignedBB(double d0, double d1, double d2, double d3, double d4, double d5) {
         this.minX = Math.min(d0, d3);

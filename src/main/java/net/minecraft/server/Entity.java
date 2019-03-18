@@ -1676,12 +1676,6 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             if (spawnedViaMobSpawner) {
                 nbttagcompound.setBoolean("Paper.FromMobSpawner", true);
             }
-            // Paper start - MC-2025 fix - Save entity AABB and load it, floating point issues recalculating AABB can result in wobble
-            AxisAlignedBB boundingBox = this.getBoundingBox();
-            nbttagcompound.set("Paper.AAAB", this.createList(
-                boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(),
-                boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ()
-            ));
             // Paper end
             return nbttagcompound;
         } catch (Throwable throwable) {
@@ -1771,16 +1765,6 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             if (this.aD()) {
                 this.setPosition(this.locX, this.locY, this.locZ);
             }
-            // Paper start - MC-2025 fix - Save entity AABB and load it, floating point issues recalculating AABB can result in wobble
-            // Placement is important, always after the setPosition call above
-            if (nbttagcompound.hasKey("Paper.AABB")) {
-                NBTTagList savedBB = nbttagcompound.getList("Paper.AABB", 6);
-                this.setBoundingBox(new AxisAlignedBB(
-                    savedBB.getDoubleAt(0), savedBB.getDoubleAt(1), savedBB.getDoubleAt(2),
-                    savedBB.getDoubleAt(3), savedBB.getDoubleAt(4), savedBB.getDoubleAt(5)
-                ));
-            }
-            // Paper end
 
             // CraftBukkit start
             if (this instanceof EntityLiving) {
@@ -2858,7 +2842,6 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         return this.boundingBox;
     }
 
-    public void setBoundingBox(AxisAlignedBB axisAlignedBB) { this.a(axisAlignedBB); } // Paper - OBFHELPER
     public void a(AxisAlignedBB axisalignedbb) {
         // CraftBukkit start - block invalid bounding boxes
         double minX = axisalignedbb.minX,
