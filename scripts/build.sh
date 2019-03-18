@@ -30,7 +30,7 @@ echo "[Akarin] Ready to build"
 	
 	cd "$paperbasedir"
 	if [ "$2" == "--fast" ] || [ "$3" == "--fast" ] || [ "$4" == "--fast" ]; then
-		echo "[Akarin] Test has been skipped"
+		echo "[Akarin] Test and repatch has been skipped"
 		\cp -rf "$basedir/src" "$paperbasedir/Paper-Server/"
 		\cp -rf "$basedir/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install -DskipTests
