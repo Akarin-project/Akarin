@@ -165,33 +165,72 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         this.packetListener = packetlistener;
     }
 
-    public void sendPacket(Packet<?> packet) {
+    public final void sendPacket(Packet<?> packet) { // Akarin - add final
         this.sendPacket(packet, (GenericFutureListener) null);
     }
 
     // Akarin start
-    public void sendPacket(Packet<?>... packets) {
+    public final void sendPacket(Packet<?> packet0, Packet<?> packet1) {
         if (this.isConnected()) { // why send packet to whom not connected?
             this.j.readLock().lock();
             try {
                 // Send queued packets
                 this.sendPacketQueueUnsafe();
                 // Dispatch or queue new packets
-                for (Packet<?> packet : packets) {
-                    boolean dispatch = packet instanceof PacketStatusOutPong || packet instanceof PacketStatusOutServerInfo || (packet instanceof PacketPlayOutMapChunk && ((PacketPlayOutMapChunk) packet).isReady());
-                    if (dispatch)
-                        this.dispatchPacket(packet, null);
-                    else {
-                        this.packetQueue.add(new QueuedPacket(packet, null));
-                    }
-                }
+                this.packetQueue.offer(new QueuedPacket(packet0, null));
+                this.packetQueue.offer(new QueuedPacket(packet1, null));
             } finally {
                 this.j.readLock().unlock();
             }
         }
     }
 
-    private void sendPacketQueueUnsafe() {
+    public final void sendPacket(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2) {
+        if (this.isConnected()) { // why send packet to whom not connected?
+            this.j.readLock().lock();
+            try {
+                // Send queued packets
+                this.sendPacketQueueUnsafe();
+                // Dispatch or queue new packets
+                this.packetQueue.offer(new QueuedPacket(packet0, null));
+                this.packetQueue.offer(new QueuedPacket(packet1, null));
+                this.packetQueue.offer(new QueuedPacket(packet2, null));
+            } finally {
+                this.j.readLock().unlock();
+            }
+        }
+    }
+
+    public final void sendPacket(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2, Packet<?> packet3, Packet<?> packet4, Packet<?> packet5, Packet<?> packet6) {
+        if (this.isConnected()) { // why send packet to whom not connected?
+            this.j.readLock().lock();
+            try {
+                // Send queued packets
+                this.sendPacketQueueUnsafe();
+                // Dispatch or queue new packets
+                this.packetQueue.offer(new QueuedPacket(packet0, null));
+                this.packetQueue.offer(new QueuedPacket(packet1, null));
+                this.packetQueue.offer(new QueuedPacket(packet2, null));
+                this.packetQueue.offer(new QueuedPacket(packet3, null));
+                this.packetQueue.offer(new QueuedPacket(packet4, null));
+                this.packetQueue.offer(new QueuedPacket(packet5, null));
+                this.packetQueue.offer(new QueuedPacket(packet6, null));
+            } finally {
+                this.j.readLock().unlock();
+            }
+        }
+    }
+
+    private final void dispatchOrQueuePacketUnsafe(Packet<?> packet) {
+        boolean dispatch = packet instanceof PacketStatusOutPong || packet instanceof PacketStatusOutServerInfo || (packet instanceof PacketPlayOutMapChunk && ((PacketPlayOutMapChunk) packet).isReady());
+        if (dispatch)
+            this.dispatchPacket(packet, null);
+        else {
+            this.packetQueue.offer(new QueuedPacket(packet, null));
+        }
+    }
+
+    private final void sendPacketQueueUnsafe() {
         while (!this.packetQueue.isEmpty()) {
             QueuedPacket queuedPacket = this.packetQueue.poll(packet ->
                 packet != null &&
@@ -203,7 +242,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
     // Akarin end
-    public void sendPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
+    public final void sendPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) { // Akarin - add final
         if (this.isConnected() /*&& this.sendPacketQueue() && !(packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady())*/) { // Paper - Async-Anti-Xray - Add chunk packets which are not ready or all packets if the packet queue contains chunk packets which are not ready to the packet queue and send the packets later in the right order // Akarin
             //this.o(); // Paper - Async-Anti-Xray - Move to if statement (this.sendPacketQueue())
             // Akarin start
@@ -212,12 +251,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
                 // Send queued packets
                 this.sendPacketQueueUnsafe();
                 // Dispatch or queue new packets
-                boolean dispatch = packet instanceof PacketStatusOutPong || packet instanceof PacketStatusOutServerInfo || (packet instanceof PacketPlayOutMapChunk && ((PacketPlayOutMapChunk) packet).isReady());
-                if (dispatch)
-                    this.dispatchPacket(packet, genericfuturelistener);
-                else {
-                    this.packetQueue.add(new QueuedPacket(packet, genericfuturelistener));
-                }
+                this.dispatchOrQueuePacketUnsafe(packet);
             } finally {
                 this.j.readLock().unlock();
             }

@@ -327,7 +327,7 @@ public class CheckedConcurrentLinkedQueue<E> extends AbstractQueue<E>
      * @throws NullPointerException if the specified element is null
      */
     public boolean offer(E e) {
-        checkNotNull(e);
+        //checkNotNull(e);
         final Node<E> newNode = new Node<E>(e);
 
         for (Node<E> t = tail, p = t;;) {

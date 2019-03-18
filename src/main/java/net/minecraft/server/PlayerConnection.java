@@ -1465,7 +1465,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    public void a(IChatBaseComponent ichatbasecomponent) {
+    public final void a(IChatBaseComponent ichatbasecomponent) { // Akarin - add final
         // CraftBukkit start - Rarely it would send a disconnect line twice
         if (this.processedDisconnect) {
             return;
@@ -1497,25 +1497,59 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.a(packet, (GenericFutureListener) null);
     }
     // Akarin start
-    public void sendPacket(Packet<?>... packets) {
+    public final void sendPacket(Packet<?> packet0, Packet<?> packet1) {
         if (this.processedDisconnect)
             return;
-        
+
         try {
-            this.networkManager.sendPacket(packets);
+            this.networkManager.sendPacket(packet0, packet1);
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
 
             crashreportsystemdetails.a("Packet classes", () -> {
-                return Lists.newArrayList(packets).toString();
+                return Lists.newArrayList(packet0.getClass().getName(), packet1.getClass().getName()).toString();
+            });
+            throw new ReportedException(crashreport);
+        }
+    }
+
+    public final void sendPacket(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2) {
+        if (this.processedDisconnect)
+            return;
+
+        try {
+            this.networkManager.sendPacket(packet0, packet1, packet2);
+        } catch (Throwable throwable) {
+            CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
+            CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
+
+            crashreportsystemdetails.a("Packet classes", () -> {
+                return Lists.newArrayList(packet0.getClass().getName(), packet1.getClass().getName(), packet2.getClass().getName()).toString();
+            });
+            throw new ReportedException(crashreport);
+        }
+    }
+
+    public final void sendPacket(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2, Packet<?> packet3, Packet<?> packet4, Packet<?> packet5, Packet<?> packet6) {
+        if (this.processedDisconnect)
+            return;
+
+        try {
+            this.networkManager.sendPacket(packet0, packet1, packet2, packet3, packet4, packet5, packet6);
+        } catch (Throwable throwable) {
+            CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
+            CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
+
+            crashreportsystemdetails.a("Packet classes", () -> {
+                return Lists.newArrayList(packet0.getClass().getName(), packet1.getClass().getName(), packet2.getClass().getName(), packet3.getClass().getName(), packet4.getClass().getName(), packet5.getClass().getName(), packet6.getClass().getName()).toString();
             });
             throw new ReportedException(crashreport);
         }
     }
     // Akarin end
 
-    public void a(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
+    public final void a(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) { // Akarin - add final
         if (packet instanceof PacketPlayOutChat) {
             PacketPlayOutChat packetplayoutchat = (PacketPlayOutChat) packet;
             EntityHuman.EnumChatVisibility entityhuman_enumchatvisibility = this.player.getChatFlags();
