@@ -4,6 +4,8 @@ import co.aikar.timings.Timings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListenableFutureTask;
+
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1269,6 +1271,12 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     public ListenableFuture<Object> postToMainThread(Runnable runnable) {
         return this.server.postToMainThread(runnable);
     }
+    // Akarin start
+    @Override
+    public void ensuresMainThread(Runnable runnable) {
+        this.server.f.offer(ListenableFutureTask.create(runnable, null));
+    }
+    // Akarin end
 
     public boolean isMainThread() {
         return this.server.isMainThread();

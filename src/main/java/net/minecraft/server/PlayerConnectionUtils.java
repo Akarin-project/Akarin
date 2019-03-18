@@ -9,7 +9,7 @@ public class PlayerConnectionUtils {
         if (!iasynctaskhandler.isMainThread()) {
             Timing timing = MinecraftTimings.getPacketTiming(packet); // Paper
 
-            iasynctaskhandler.postToMainThread(() -> {
+            iasynctaskhandler.ensuresMainThread(() -> {
                 if (t0 instanceof PlayerConnection && ((PlayerConnection) t0).processedDisconnect) return; // CraftBukkit
                 try (Timing ignored = timing.startTiming()) { // Paper
                 packet.a(t0);

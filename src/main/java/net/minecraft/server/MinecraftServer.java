@@ -1681,7 +1681,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         if (!this.isMainThread()) { // CraftBukkit && !this.isStopped()) {
             ListenableFutureTask<V> listenablefuturetask = ListenableFutureTask.create(callable);
 
-            this.f.add(listenablefuturetask);
+            this.f.offer(listenablefuturetask); // Akarin - add -> offer
             return listenablefuturetask;
         } else {
             try {
@@ -1691,6 +1691,12 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             }
         }
     }
+    // Akarin start
+    @Override
+    public void ensuresMainThread(Runnable runnable) {
+        this.f.offer(ListenableFutureTask.create(runnable, null));
+    }
+    // Akarin end
 
     public ListenableFuture<Object> postToMainThread(Runnable runnable) {
         Validate.notNull(runnable);
