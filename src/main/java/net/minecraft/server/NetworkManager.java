@@ -222,8 +222,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     private final void dispatchOrQueuePacketUnsafe(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
-        boolean dispatch = packet instanceof PacketStatusOutPong || packet instanceof PacketStatusOutServerInfo || (packet.getType() == PacketType.PLAY_OUT_MAP_CHUNK && ((PacketPlayOutMapChunk) packet).isReady());
-        if (dispatch) {
+        if (packet.canDispatchImmediately()) {
             this.dispatchPacket(packet, genericfuturelistener);
         } else {
             this.packetQueue.offer(new QueuedPacket(packet, genericfuturelistener));
