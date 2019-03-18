@@ -1501,6 +1501,14 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         if (this.processedDisconnect)
             return;
 
+        if (packet0 instanceof PacketPlayOutSpawnPosition) {
+            PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet0;
+            this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
+        } else if (packet1 instanceof PacketPlayOutSpawnPosition) {
+            PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet1;
+            this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
+        }
+
         try {
             this.networkManager.sendPacket(packet0, packet1);
         } catch (Throwable throwable) {
@@ -1517,6 +1525,17 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     public final void sendPacket(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2) {
         if (this.processedDisconnect)
             return;
+
+        if (packet0 instanceof PacketPlayOutSpawnPosition) {
+            PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet0;
+            this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
+        } else if (packet1 instanceof PacketPlayOutSpawnPosition) {
+            PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet1;
+            this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
+        } else if (packet2 instanceof PacketPlayOutSpawnPosition) {
+            PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet2;
+            this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
+        }
 
         try {
             this.networkManager.sendPacket(packet0, packet1, packet2);
@@ -1564,7 +1583,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
 
         // CraftBukkit start
-        if (packet == null || this.processedDisconnect) { // Spigot
+        if (/*packet == null ||*/ this.processedDisconnect) { // Spigot // Akarin
             return;
         } else if (packet instanceof PacketPlayOutSpawnPosition) {
             PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet;
