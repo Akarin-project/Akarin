@@ -57,4 +57,15 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
     public boolean a() {
         return true;
     }
+    // Akarin start
+    @Override
+    public io.akarin.server.core.PacketType getType() {
+        return io.akarin.server.core.PacketType.PLAY_OUT_CHAT;
+    }
+
+    @Override
+    public boolean canDispatchImmediately() {
+        return true;
+    }
+    // Akarin end
 }

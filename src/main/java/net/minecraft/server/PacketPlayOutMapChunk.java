@@ -204,4 +204,15 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
     public boolean f() {
         return this.f;
     }
+    // Akarin start
+    @Override
+    public io.akarin.server.core.PacketType getType() {
+        return io.akarin.server.core.PacketType.PLAY_OUT_MAP_CHUNK;
+    }
+
+    @Override
+    public boolean canDispatchImmediately() {
+        return this.ready;
+    }
+    // Akarin end
 }

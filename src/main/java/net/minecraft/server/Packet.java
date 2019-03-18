@@ -25,5 +25,9 @@ public interface Packet<T extends PacketListener> {
     public default io.akarin.server.core.PacketType getType() {
         return io.akarin.server.core.PacketType.UNKNOWN;
     }
+
+    public default boolean canDispatchImmediately() {
+        return false;
+    }
     // Akarin end
 }

@@ -3,6 +3,7 @@ package net.minecraft.server;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import io.akarin.server.core.PacketType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -221,7 +222,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     private final void dispatchOrQueuePacketUnsafe(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
-        boolean dispatch = packet instanceof PacketStatusOutPong || packet instanceof PacketStatusOutServerInfo || (packet instanceof PacketPlayOutMapChunk && ((PacketPlayOutMapChunk) packet).isReady());
+        boolean dispatch = packet instanceof PacketStatusOutPong || packet instanceof PacketStatusOutServerInfo || (packet.getType() == PacketType.PLAY_OUT_MAP_CHUNK && ((PacketPlayOutMapChunk) packet).isReady());
         if (dispatch) {
             this.dispatchPacket(packet, genericfuturelistener);
         } else {
@@ -232,9 +233,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     private final void sendPacketQueueUnsafe() {
         while (!this.packetQueue.isEmpty()) {
             QueuedPacket queuedPacket = this.packetQueue.poll(packet ->
-                packet != null &&
-                (!(packet.getPacket() instanceof PacketPlayOutMapChunk) ||
-                (((PacketPlayOutMapChunk) packet.getPacket()).isReady())), null);
+                packet != null && (
+                    !(packet.getPacket().getType() == PacketType.PLAY_OUT_MAP_CHUNK) ||
+                    (((PacketPlayOutMapChunk) packet.getPacket()).isReady())
+                ), null);
 
             if (queuedPacket != null)
                 this.dispatchPacket(queuedPacket.getPacket(), queuedPacket.getGenericFutureListener());
@@ -333,7 +335,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
                     NetworkManager.QueuedPacket networkmanager_queuedpacket = (NetworkManager.QueuedPacket) this.getPacketQueue().peek(); // poll -> peek
 
                     if (networkmanager_queuedpacket != null) { // Fix NPE (Spigot bug caused by handleDisconnection())
-                        if (networkmanager_queuedpacket.getPacket() instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) networkmanager_queuedpacket.getPacket()).isReady()) { // Check if the peeked packet is a chunk packet which is not ready
+                        if (networkmanager_queuedpacket.getPacket().getType() == PacketType.PLAY_OUT_MAP_CHUNK && !((PacketPlayOutMapChunk) networkmanager_queuedpacket.getPacket()).isReady()) { // Check if the peeked packet is a chunk packet which is not ready
                             return false; // Return false if the peeked packet is a chunk packet which is not ready
                         } else {
                             this.getPacketQueue().poll(); // poll here

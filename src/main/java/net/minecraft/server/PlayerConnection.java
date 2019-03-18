@@ -7,6 +7,8 @@ import com.google.common.util.concurrent.Futures;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestions;
+
+import io.akarin.server.core.PacketType;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
@@ -1501,10 +1503,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         if (this.processedDisconnect)
             return;
 
-        if (packet0 instanceof PacketPlayOutSpawnPosition) {
+        if (packet0.getType() == PacketType.PLAY_OUT_SPAWN_POSITION) {
             PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet0;
             this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
-        } else if (packet1 instanceof PacketPlayOutSpawnPosition) {
+        } else if (packet1.getType() == PacketType.PLAY_OUT_SPAWN_POSITION) {
             PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet1;
             this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
         }
@@ -1526,13 +1528,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         if (this.processedDisconnect)
             return;
 
-        if (packet0 instanceof PacketPlayOutSpawnPosition) {
+        if (packet0 .getType() == PacketType.PLAY_OUT_SPAWN_POSITION) {
             PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet0;
             this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
-        } else if (packet1 instanceof PacketPlayOutSpawnPosition) {
+        } else if (packet1.getType() == PacketType.PLAY_OUT_SPAWN_POSITION) {
             PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet1;
             this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
-        } else if (packet2 instanceof PacketPlayOutSpawnPosition) {
+        } else if (packet2.getType() == PacketType.PLAY_OUT_SPAWN_POSITION) {
             PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet2;
             this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
         }
@@ -1569,7 +1571,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     // Akarin end
 
     public final void a(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) { // Akarin - add final
-        if (packet instanceof PacketPlayOutChat) {
+        if (packet.getType() == PacketType.PLAY_OUT_CHAT) { // Akarin
             PacketPlayOutChat packetplayoutchat = (PacketPlayOutChat) packet;
             EntityHuman.EnumChatVisibility entityhuman_enumchatvisibility = this.player.getChatFlags();
 
@@ -1585,7 +1587,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         // CraftBukkit start
         if (/*packet == null ||*/ this.processedDisconnect) { // Spigot // Akarin
             return;
-        } else if (packet instanceof PacketPlayOutSpawnPosition) {
+        } else if (packet.getType() == PacketType.PLAY_OUT_SPAWN_POSITION) { // Akarin
             PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet;
             this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(), packet6.position.getY(), packet6.position.getZ());
         }
