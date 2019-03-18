@@ -31,7 +31,7 @@ echo "[Akarin] Ready to build"
 	cd "$paperbasedir"
 	if [ "$2" == "--fast" ] || [ "$3" == "--fast" ] || [ "$4" == "--fast" ]; then
 		echo "[Akarin] Test and repatch has been skipped"
-		\cp -rf "$basedir/src/api" "$paperbasedir/Paper-API/src/main/java"
+		\cp -rf "$basedir/src/api/org" "$paperbasedir/Paper-API/src/main/java"
 		\cp -rf "$basedir/src" "$paperbasedir/Paper-Server/"
 		\cp -rf "$basedir/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install -DskipTests
@@ -39,7 +39,7 @@ echo "[Akarin] Ready to build"
 		rm -rf Paper-API/src
 		rm -rf Paper-Server/src
 		./paper patch
-		\cp -rf "$basedir/src/api" "$paperbasedir/Paper-API/src/main/java"
+		\cp -rf "$basedir/src/api/org" "$paperbasedir/Paper-API/src/main/java"
 		\cp -rf "$basedir/src" "$paperbasedir/Paper-Server/"
 		\cp -rf "$basedir/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install -DskipTests
