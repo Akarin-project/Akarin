@@ -296,7 +296,7 @@ public class CheckedConcurrentLinkedQueue<E> extends AbstractQueue<E>
      * @return {@code true} (as specified by {@link Collection#add})
      * @throws NullPointerException if the specified element is null
      */
-    public boolean add(E e) {
+    public final boolean add(E e) {
         return offer(e);
     }
 
@@ -326,7 +326,7 @@ public class CheckedConcurrentLinkedQueue<E> extends AbstractQueue<E>
      * @return {@code true} (as specified by {@link Queue#offer})
      * @throws NullPointerException if the specified element is null
      */
-    public boolean offer(E e) {
+    public final boolean offer(E e) {
         //checkNotNull(e);
         final Node<E> newNode = new Node<E>(e);
 
@@ -381,7 +381,7 @@ public class CheckedConcurrentLinkedQueue<E> extends AbstractQueue<E>
         }
     }
 
-    public E poll(Predicate<E> predicate, E signal) {
+    public final E poll(Predicate<E> predicate, E signal) {
         restartFromHead:
         for (;;) {
             for (Node<E> h = head, p = h, q;;) {

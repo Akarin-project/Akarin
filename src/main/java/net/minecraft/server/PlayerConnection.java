@@ -1493,11 +1493,11 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    public void sendPacket(Packet<?> packet) {
+    public final void sendPacket(Packet<?> packet) { // Akarin - add final
         this.a(packet, (GenericFutureListener) null);
     }
     // Akarin start
-    public final void sendPacket(Packet<?> packet0, Packet<?> packet1) {
+    public final void sendPackets(Packet<?> packet0, Packet<?> packet1) {
         if (this.processedDisconnect)
             return;
 
@@ -1510,7 +1510,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
 
         try {
-            this.networkManager.sendPacket(packet0, packet1);
+            this.networkManager.sendPackets(packet0, packet1);
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
@@ -1522,7 +1522,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
     }
 
-    public final void sendPacket(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2) {
+    public final void sendPackets(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2) {
         if (this.processedDisconnect)
             return;
 
@@ -1538,7 +1538,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
 
         try {
-            this.networkManager.sendPacket(packet0, packet1, packet2);
+            this.networkManager.sendPackets(packet0, packet1, packet2);
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
@@ -1550,12 +1550,12 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         }
     }
 
-    public final void sendPacket(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2, Packet<?> packet3, Packet<?> packet4, Packet<?> packet5, Packet<?> packet6) {
+    public final void sendPackets(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2, Packet<?> packet3, Packet<?> packet4, Packet<?> packet5, Packet<?> packet6) {
         if (this.processedDisconnect)
             return;
 
         try {
-            this.networkManager.sendPacket(packet0, packet1, packet2, packet3, packet4, packet5, packet6);
+            this.networkManager.sendPackets(packet0, packet1, packet2, packet3, packet4, packet5, packet6);
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");

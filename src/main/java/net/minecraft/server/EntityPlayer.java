@@ -1010,7 +1010,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void a(Container container, NonNullList<ItemStack> nonnulllist) {
-        this.playerConnection.sendPacket(new PacketPlayOutWindowItems(container.windowId, nonnulllist), new PacketPlayOutSetSlot(-1, -1, this.inventory.getCarried())); // Akarin
+        this.playerConnection.sendPackets(new PacketPlayOutWindowItems(container.windowId, nonnulllist), new PacketPlayOutSetSlot(-1, -1, this.inventory.getCarried())); // Akarin
         // CraftBukkit start - Send a Set Slot to update the crafting result slot
         if (java.util.EnumSet.of(InventoryType.CRAFTING,InventoryType.WORKBENCH).contains(container.getBukkitView().getType())) {
             this.playerConnection.sendPacket(new PacketPlayOutSetSlot(container.windowId, 0, container.getSlot(0).getItem()));

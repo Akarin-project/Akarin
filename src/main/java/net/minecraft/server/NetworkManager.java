@@ -169,13 +169,13 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     // Akarin start
-    public final void sendPacket(Packet<?> packet0, Packet<?> packet1) {
+    public final void sendPackets(Packet<?> packet0, Packet<?> packet1) {
         if (this.isConnected()) { // why send packet to whom not connected?
             this.j.readLock().lock();
             try {
                 // Send queued packets
                 this.sendPacketQueueUnsafe();
-                // Dispatch or queue new packets
+                // Queue new packets
                 this.packetQueue.offer(new QueuedPacket(packet0, null));
                 this.packetQueue.offer(new QueuedPacket(packet1, null));
             } finally {
@@ -184,13 +184,13 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
 
-    public final void sendPacket(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2) {
+    public final void sendPackets(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2) {
         if (this.isConnected()) { // why send packet to whom not connected?
             this.j.readLock().lock();
             try {
                 // Send queued packets
                 this.sendPacketQueueUnsafe();
-                // Dispatch or queue new packets
+                // Queue new packets
                 this.packetQueue.offer(new QueuedPacket(packet0, null));
                 this.packetQueue.offer(new QueuedPacket(packet1, null));
                 this.packetQueue.offer(new QueuedPacket(packet2, null));
@@ -200,13 +200,13 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
 
-    public final void sendPacket(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2, Packet<?> packet3, Packet<?> packet4, Packet<?> packet5, Packet<?> packet6) {
+    public final void sendPackets(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2, Packet<?> packet3, Packet<?> packet4, Packet<?> packet5, Packet<?> packet6) {
         if (this.isConnected()) { // why send packet to whom not connected?
             this.j.readLock().lock();
             try {
                 // Send queued packets
                 this.sendPacketQueueUnsafe();
-                // Dispatch or queue new packets
+                // Queue new packets
                 this.packetQueue.offer(new QueuedPacket(packet0, null));
                 this.packetQueue.offer(new QueuedPacket(packet1, null));
                 this.packetQueue.offer(new QueuedPacket(packet2, null));
@@ -220,12 +220,12 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
 
-    private final void dispatchOrQueuePacketUnsafe(Packet<?> packet) {
+    private final void dispatchOrQueuePacketUnsafe(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
         boolean dispatch = packet instanceof PacketStatusOutPong || packet instanceof PacketStatusOutServerInfo || (packet instanceof PacketPlayOutMapChunk && ((PacketPlayOutMapChunk) packet).isReady());
-        if (dispatch)
-            this.dispatchPacket(packet, null);
-        else {
-            this.packetQueue.offer(new QueuedPacket(packet, null));
+        if (dispatch) {
+            this.dispatchPacket(packet, genericfuturelistener);
+        } else {
+            this.packetQueue.offer(new QueuedPacket(packet, genericfuturelistener));
         }
     }
 
@@ -250,11 +250,11 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
                 // Send queued packets
                 this.sendPacketQueueUnsafe();
                 // Dispatch or queue new packets
-                this.dispatchOrQueuePacketUnsafe(packet);
+                this.dispatchOrQueuePacketUnsafe(packet, genericfuturelistener);
             } finally {
                 this.j.readLock().unlock();
             }
-            //this.b(packet, genericfuturelistener);
+            //this.dispatchPacket(packet, genericfuturelistener);
         } else if (false) {
             // Akarin end
             this.j.writeLock().lock();
@@ -268,8 +268,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     }
 
-    private void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
-    private void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
+    private final void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER // Akarin - add final
+    private final void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) { // Akarin - add final
         EnumProtocol enumprotocol = EnumProtocol.a(packet);
         EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
 
