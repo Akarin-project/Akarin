@@ -131,11 +131,7 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
             TileEntity tile = getTileEntityFromWorld();
 
             if (isApplicable(tile)) {
-                // Paper start
-                if (!snapshotDisabled) {
-                    applyTo(tileEntityClass.cast(tile));
-                }
-                // Paper end
+                applyTo(tileEntityClass.cast(tile));
                 tile.update();
             }
         }
