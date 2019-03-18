@@ -20,4 +20,10 @@ public interface Packet<T extends PacketListener> {
     default boolean a() {
         return false;
     }
+
+    // Akarin start
+    public default io.akarin.server.core.PacketType getType() {
+        return io.akarin.server.core.PacketType.UNKNOWN;
+    }
+    // Akarin end
 }
