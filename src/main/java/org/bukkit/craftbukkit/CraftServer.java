@@ -139,6 +139,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
+import co.aikar.timings.ThreadAssertion;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
@@ -709,7 +710,7 @@ public final class CraftServer implements Server {
         org.spigotmc.AsyncCatcher.catchOp( "command dispatch" ); // Spigot
 
         // Paper Start
-        if (!org.spigotmc.AsyncCatcher.shuttingDown && !Bukkit.isPrimaryThread()) {
+        if (!org.spigotmc.AsyncCatcher.shuttingDown && !ThreadAssertion.isMainThread() && !Bukkit.isPrimaryThread()) { // Akarin
             final CommandSender fSender = sender;
             final String fCommandLine = commandLine;
             Bukkit.getLogger().log(Level.SEVERE, "Command Dispatched Async: " + commandLine);
@@ -1723,7 +1724,7 @@ public final class CraftServer implements Server {
 
     @Override
     public boolean isPrimaryThread() {
-        return Thread.currentThread().equals(console.primaryThread);
+        return ThreadAssertion.isMainThread() || Thread.currentThread().equals(console.primaryThread);
     }
 
     @Override

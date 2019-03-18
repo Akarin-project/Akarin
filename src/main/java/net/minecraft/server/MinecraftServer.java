@@ -16,6 +16,7 @@ import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.datafixers.DataFixer;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
@@ -65,6 +66,7 @@ import org.bukkit.event.server.ServerLoadEvent;
 // CraftBukkit end
 import org.spigotmc.SlackActivityAccountant; // Spigot
 import co.aikar.timings.MinecraftTimings; // Paper
+import co.aikar.timings.ThreadAssertion;
 
 public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStatistics, ICommandListener, Runnable {
 
@@ -1704,7 +1706,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     }
 
     public boolean isMainThread() {
-        return Thread.currentThread() == this.serverThread;
+        return ThreadAssertion.isMainThread() || Thread.currentThread() == this.serverThread; // Akarin
     }
 
     public int aw() {

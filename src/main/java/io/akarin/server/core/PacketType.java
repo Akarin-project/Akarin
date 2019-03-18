@@ -1,6 +1,6 @@
 package io.akarin.server.core;
 
-public enum PacketType { // unused yet
+public enum PacketType {
     STATUS_OUT_SERVER_INFO,
     STATUS_OUT_PONG,
     

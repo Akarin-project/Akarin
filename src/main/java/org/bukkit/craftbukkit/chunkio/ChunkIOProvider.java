@@ -40,7 +40,7 @@ class ChunkIOProvider implements AsynchronousExecutor.CallBackProvider<QueuedChu
             queuedChunk.provider.getChunkAt(queuedChunk.x, queuedChunk.z, true, true); // Paper - actually call original if it was already loaded
             return;
         }
-        try (Timing ignored = queuedChunk.provider.world.timings.chunkIOStage2.startTimingIfSync()) { // Paper
+        try (Timing ignored = queuedChunk.provider.world.timings.chunkIOStage2.startTimingIfSync(true)) { // Paper // Akarin
 
         queuedChunk.loader.loadEntities(queuedChunk.compound.getCompound("Level"), chunk);
         chunk.setLastSaved(queuedChunk.provider.world.getTime());

@@ -69,6 +69,7 @@ import com.destroystokyo.paper.event.player.IllegalPacketEvent; // Paper
 import com.destroystokyo.paper.event.player.PlayerJumpEvent; // Paper
 import co.aikar.timings.MinecraftTimings; // Paper
 // CraftBukkit end
+import co.aikar.timings.ThreadAssertion;
 
 public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
@@ -1756,7 +1757,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
         if (!async && s.startsWith("/")) {
             // Paper Start
-            if (!org.spigotmc.AsyncCatcher.shuttingDown && !org.bukkit.Bukkit.isPrimaryThread()) {
+            if (!org.spigotmc.AsyncCatcher.shuttingDown && !ThreadAssertion.isMainThread() && !org.bukkit.Bukkit.isPrimaryThread()) {
                 final String fCommandLine = s;
                 MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Command Dispatched Async: " + fCommandLine);
                 MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Please notify author of plugin causing this execution to fix this bug! see: http://bit.ly/1oSiM6C", new Throwable());

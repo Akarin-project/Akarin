@@ -5,6 +5,9 @@ import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.authlib.GameProfile;
+
+import co.aikar.timings.ThreadAssertion;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
@@ -115,7 +118,7 @@ public final class MCUtil {
      * @return
      */
     public static void ensureMain(String reason, Runnable run) {
-        if (AsyncCatcher.enabled && Thread.currentThread() != MinecraftServer.getServer().primaryThread) {
+        if (AsyncCatcher.enabled && !ThreadAssertion.isMainThread() && Thread.currentThread() != MinecraftServer.getServer().primaryThread) { // Akarin
             if (reason != null) {
                 new IllegalStateException("Asynchronous " + reason + "!").printStackTrace();
             }
@@ -140,7 +143,7 @@ public final class MCUtil {
      * @return
      */
     public static <T> T ensureMain(String reason, Supplier<T> run) {
-        if (AsyncCatcher.enabled && Thread.currentThread() != MinecraftServer.getServer().primaryThread) {
+        if (AsyncCatcher.enabled && !ThreadAssertion.isMainThread() && Thread.currentThread() != MinecraftServer.getServer().primaryThread) { // Akarin
             if (reason != null) {
                 new IllegalStateException("Asynchronous " + reason + "! Blocking thread until it returns ").printStackTrace();
             }

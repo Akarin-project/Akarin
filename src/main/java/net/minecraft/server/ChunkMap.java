@@ -14,8 +14,8 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
     }
 
     public Chunk put(long i, Chunk chunk) {
-        org.spigotmc.AsyncCatcher.catchOp("Async Chunk put"); // Paper
         chunk.world.timings.syncChunkLoadPostTimer.startTiming(); // Paper
+        //org.spigotmc.AsyncCatcher.catchOp("Async Chunk put"); // Paper // Akarin - comment
         lastChunkByPos = chunk; // Paper
         // Paper start
         Chunk chunk1;
@@ -81,7 +81,7 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
 
     public Chunk remove(long i) {
         // Paper start
-        org.spigotmc.AsyncCatcher.catchOp("Async Chunk remove");
+        //org.spigotmc.AsyncCatcher.catchOp("Async Chunk remove"); // Akarin - comment
         Chunk chunk;
         synchronized (this) {
             // synchronize so any async gets are safe
