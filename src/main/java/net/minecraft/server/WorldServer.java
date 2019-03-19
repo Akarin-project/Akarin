@@ -279,7 +279,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
 
         timings.doChunkUnload.startTimingUnsafe(); // Spigot // Akarin
-        this.methodProfiler.exitEnter("chunkSource");
+        //this.methodProfiler.exitEnter("chunkSource"); // Akarin - remove caller
         this.chunkProvider.unloadChunks(booleansupplier);
         int j = this.a(1.0F);
 
@@ -293,28 +293,28 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
 
         timings.doChunkUnload.stopTimingUnsafe(); // Spigot // Akarin
-        this.methodProfiler.exitEnter("tickPending");
+        //this.methodProfiler.exitEnter("tickPending"); // Akarin - remove caller
         timings.scheduledBlocks.startTimingUnsafe(); // Paper // Akarin
         this.q();
         timings.scheduledBlocks.stopTimingUnsafe(); // Paper // Akarin
-        this.methodProfiler.exitEnter("tickBlocks");
+        //this.methodProfiler.exitEnter("tickBlocks"); // Akarin - remove caller
         timings.chunkTicks.startTimingUnsafe(); // Paper // Akarin
         this.n_();
         timings.chunkTicks.stopTimingUnsafe(); // Paper // Akarin
-        this.methodProfiler.exitEnter("chunkMap");
+        //this.methodProfiler.exitEnter("chunkMap"); // Akarin - remove caller
         timings.doChunkMap.startTimingUnsafe(); // Spigot // Akarin
         this.manager.flush();
         timings.doChunkMap.stopTimingUnsafe(); // Spigot // Akarin
-        this.methodProfiler.exitEnter("village");
+        //this.methodProfiler.exitEnter("village"); // Akarin - remove caller
         timings.doVillages.startTimingUnsafe(); // Spigot // Akarin
         this.villages.tick();
         this.siegeManager.a();
         timings.doVillages.stopTimingUnsafe(); // Spigot // Akarin
-        this.methodProfiler.exitEnter("portalForcer");
+        //this.methodProfiler.exitEnter("portalForcer"); // Akarin - remove caller
         timings.doPortalForcer.startTimingUnsafe(); // Spigot // Akarin
         this.portalTravelAgent.a(this.getTime());
         timings.doPortalForcer.stopTimingUnsafe(); // Spigot // Akarin
-        this.methodProfiler.exit();
+        //this.methodProfiler.exit(); // Akarin - remove caller
         timings.doSounds.startTimingUnsafe(); // Spigot // Akarin
         this.an();
         timings.doSounds.stopTimingUnsafe(); // Spigot // Akarin
@@ -453,7 +453,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             this.r(new BlockPosition(j, k, l));
         }
 
-        this.methodProfiler.exit();
+        //this.methodProfiler.exit(); // Akarin - remove caller
     }
 
     protected void n_() {
@@ -478,12 +478,12 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 int j = chunk.locX * 16;
                 int k = chunk.locZ * 16;
 
-                this.methodProfiler.exitEnter("checkNextLight");
+                //this.methodProfiler.exitEnter("checkNextLight"); // Akarin - remove caller
                 chunk.x();
-                this.methodProfiler.exitEnter("tickChunk");
+                //this.methodProfiler.exitEnter("tickChunk"); // Akarin - remove caller
                 chunk.d(false);
                 if ( !chunk.areNeighborsLoaded( 1 ) ) continue; // Spigot
-                this.methodProfiler.exitEnter("thunder");
+                //this.methodProfiler.exitEnter("thunder"); // Akarin - remove caller
                 int l;
                 BlockPosition blockposition;
 
@@ -508,7 +508,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     }
                 }
 
-                this.methodProfiler.exitEnter("iceandsnow");
+                //this.methodProfiler.exitEnter("iceandsnow"); // Akarin - remove caller
                 if (!this.paperConfig.disableIceAndSnow && this.random.nextInt(16) == 0) { // Paper - Disable ice and snow
                     this.m = this.m * 3 + 1013904223;
                     l = this.m >> 2;
@@ -529,7 +529,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                     }
                 }
 
-                this.methodProfiler.exitEnter("tickBlocks");
+                //this.methodProfiler.exitEnter("tickBlocks"); // Akarin - remove caller
                 timings.chunkTicksBlocks.startTiming(); // Paper
                 if (i > 0) {
                     ChunkSection[] achunksection = chunk.getSections();
@@ -557,7 +557,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                                     fluid.b(this, new BlockPosition(i2 + j, k2 + chunksection.getYPosition(), j2 + k), this.random);
                                 }
 
-                                this.methodProfiler.exit();
+                                //this.methodProfiler.exit(); // Akarin - remove caller
                             }
                         }
                     }
@@ -565,7 +565,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 timings.chunkTicksBlocks.stopTiming(); // Paper
             }
 
-            this.methodProfiler.exit();
+            //this.methodProfiler.exit(); // Akarin - remove caller
         }
     }
 
@@ -603,7 +603,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     protected void p_() {
         super.p_();
-        this.methodProfiler.exitEnter("players");
+        //this.methodProfiler.exitEnter("players"); // Akarin - remove caller
 
         for (int i = 0; i < this.players.size(); ++i) {
             Entity entity = (Entity) this.players.get(i);
@@ -630,7 +630,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 }
             }
 
-            this.methodProfiler.exit();
+            //this.methodProfiler.exit(); // Akarin - remove caller
             //this.methodProfiler.enter(* // Akarin - remove caller
             if (entity.dead) {
                 int j = entity.chunkX;
@@ -644,7 +644,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 this.c(entity);
             }
 
-            this.methodProfiler.exit();
+            //this.methodProfiler.exit(); // Akarin - remove caller
         }
 
     }

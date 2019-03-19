@@ -360,7 +360,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     public void postTick() {
         // No clean way to break out of ticking once the entity has been copied to a new world, so instead we move the portalling later in the tick cycle
         if (!this.world.isClientSide && this.world instanceof WorldServer) {
-            this.world.methodProfiler.enter("portal");
+            //this.world.methodProfiler.enter("portal"); // Akarin - remove caller
             if (this.an) {
                 MinecraftServer minecraftserver = this.world.getMinecraftServer();
 
@@ -402,7 +402,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     // CraftBukkit end
 
     public void W() {
-        this.world.methodProfiler.enter("entityBaseTick");
+        //this.world.methodProfiler.enter("entityBaseTick"); // Akarin - remove caller
         if (this.isPassenger() && this.getVehicle().dead) {
             this.stopRiding();
         }
@@ -638,7 +638,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                 }
             }
 
-            this.world.methodProfiler.enter("move");
+            //this.world.methodProfiler.enter("move"); // Akarin - remove caller
             double d4 = this.locX;
             double d5 = this.locY;
             double d6 = this.locZ;
@@ -807,7 +807,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             }
 
             //this.world.methodProfiler.exit(); // Akarin - remove caller
-            this.world.methodProfiler.enter("rest");
+            //this.world.methodProfiler.enter("rest"); // Akarin - remove caller
             this.recalcPosition();
             this.positionChanged = d7 != d0 || d9 != d2;
             this.C = d1 != d8; // CraftBukkit - decompile error
@@ -2560,7 +2560,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     @Nullable
     public Entity a(DimensionManager dimensionmanager) {
         if (!this.world.isClientSide && !this.dead) {
-            this.world.methodProfiler.enter("changeDimension");
+            //this.world.methodProfiler.enter("changeDimension"); // Akarin - remove caller
             MinecraftServer minecraftserver = this.bK();
             // CraftBukkit start - Move logic into new function "teleportTo(Location,boolean)"
             // DimensionManager dimensionmanager1 = this.dimension;
@@ -2626,7 +2626,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
             this.world.removeEntity(this); // Paper - Fully remove entity, can't have dupes in the UUID map
             this.dead = false;
-            this.world.methodProfiler.enter("reposition");
+            //this.world.methodProfiler.enter("reposition"); // Akarin - remove caller
             /* CraftBukkit start - Handled in calculateTarget
             BlockPosition blockposition;
 
@@ -2662,7 +2662,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             worldserver1.getMinecraftServer().getPlayerList().repositionEntity(this, exit, portal);
             // worldserver.entityJoinedWorld(this, false); // Handled in repositionEntity
             // CraftBukkit end
-            this.world.methodProfiler.exitEnter("reloading");
+            //this.world.methodProfiler.exitEnter("reloading"); // Akarin - remove caller
             Entity entity = this.P().a((World) worldserver1);
 
             if (entity != null) {
@@ -2697,7 +2697,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             //this.world.methodProfiler.exit(); // Akarin - remove caller
             worldserver.p();
             worldserver1.p();
-            // //this.world.methodProfiler.exit(); // Akarin - remove caller // CraftBukkit: Moved up to keep balanced
+            // this.world.methodProfiler.exit(); // CraftBukkit: Moved up to keep balanced
             return entity;
         } else {
             return null;

@@ -64,7 +64,7 @@ public class PathfinderGoalSelector {
     }
 
     public void doTick() {
-        this.d.enter("goalSetup");
+        //this.d.enter("goalSetup"); // Akarin - remove caller
         Iterator iterator;
         PathfinderGoalSelector.PathfinderGoalSelectorItem pathfindergoalselector_pathfindergoalselectoritem;
 
@@ -98,9 +98,9 @@ public class PathfinderGoalSelector {
             }
         }
 
-        this.d.exit();
+        //this.d.exit(); // Akarin - remove caller
         if (!this.c.isEmpty()) {
-            this.d.enter("goalTick");
+            //this.d.enter("goalTick"); // Akarin - remove caller
             iterator = this.c.iterator();
 
             while (iterator.hasNext()) {
@@ -108,7 +108,7 @@ public class PathfinderGoalSelector {
                 pathfindergoalselector_pathfindergoalselectoritem.a.e();
             }
 
-            this.d.exit();
+            //this.d.exit(); // Akarin - remove caller
         }
 
     }

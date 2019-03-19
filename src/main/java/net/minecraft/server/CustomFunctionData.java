@@ -76,7 +76,7 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
             Collection<CustomFunction> collection = this.g().b(CustomFunctionData.e).a();
 
             minecraftkey = CustomFunctionData.e;
-            this.server.methodProfiler.a(minecraftkey::toString);
+            //this.server.methodProfiler.a(minecraftkey::toString); // Akarin - remove caller
             Iterator iterator1 = collection.iterator();
 
             while (iterator1.hasNext()) {
@@ -115,7 +115,7 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
                     try {
                         CustomFunctionData.a customfunctiondata_a = (CustomFunctionData.a) this.h.removeFirst();
 
-                        this.server.methodProfiler.a(customfunctiondata_a::toString);
+                        //this.server.methodProfiler.a(customfunctiondata_a::toString); // Akarin - remove caller
                         customfunctiondata_a.a(this.h, i);
                     } finally {
                         //this.server.methodProfiler.exit(); // Akarin - remove caller

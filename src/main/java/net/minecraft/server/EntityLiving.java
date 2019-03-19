@@ -216,7 +216,7 @@ public abstract class EntityLiving extends Entity {
     public void W() {
         this.aF = this.aG;
         super.W();
-        this.world.methodProfiler.enter("livingEntityBaseTick");
+        //this.world.methodProfiler.enter("livingEntityBaseTick"); // Akarin - remove caller
         boolean flag = this instanceof EntityHuman;
 
         if (this.isAlive()) {
@@ -2164,10 +2164,10 @@ public abstract class EntityLiving extends Entity {
         }
 
         this.ba += (f3 - this.ba) * 0.3F;
-        this.world.methodProfiler.enter("headTurn");
+        //this.world.methodProfiler.enter("headTurn"); // Akarin - remove caller
         f2 = this.e(f1, f2);
         //this.world.methodProfiler.exit(); // Akarin - remove caller
-        this.world.methodProfiler.enter("rangeChecks");
+        //this.world.methodProfiler.enter("rangeChecks"); // Akarin - remove caller
 
         while (this.yaw - this.lastYaw < -180.0F) {
             this.lastYaw -= 360.0F;
@@ -2327,20 +2327,20 @@ public abstract class EntityLiving extends Entity {
             this.motZ = 0.0D;
         }
 
-        this.world.methodProfiler.enter("ai");
+        //this.world.methodProfiler.enter("ai"); // Akarin - remove caller
         if (this.isFrozen()) {
             this.bg = false;
             this.bh = 0.0F;
             this.bj = 0.0F;
             this.bk = 0.0F;
         } else if (this.cP()) {
-            this.world.methodProfiler.enter("newAi");
+            //this.world.methodProfiler.enter("newAi"); // Akarin - remove caller
             this.doTick();
             //this.world.methodProfiler.exit(); // Akarin - remove caller
         }
 
         //this.world.methodProfiler.exit(); // Akarin - remove caller
-        this.world.methodProfiler.enter("jump");
+        //this.world.methodProfiler.enter("jump"); // Akarin - remove caller
         if (this.bg) {
             if (this.W > 0.0D && (!this.onGround || this.W > 0.4D)) {
                 this.c(TagsFluid.WATER);
@@ -2355,7 +2355,7 @@ public abstract class EntityLiving extends Entity {
         }
 
         //this.world.methodProfiler.exit(); // Akarin - remove caller
-        this.world.methodProfiler.enter("travel");
+        //this.world.methodProfiler.enter("travel"); // Akarin - remove caller
         this.bh *= 0.98F;
         this.bj *= 0.98F;
         this.bk *= 0.9F;
@@ -2364,7 +2364,7 @@ public abstract class EntityLiving extends Entity {
 
         this.a(this.bh, this.bi, this.bj);
         //this.world.methodProfiler.exit(); // Akarin - remove caller
-        this.world.methodProfiler.enter("push");
+        //this.world.methodProfiler.enter("push"); // Akarin - remove caller
         if (this.bw > 0) {
             --this.bw;
             this.a(axisalignedbb, this.getBoundingBox());

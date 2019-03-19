@@ -444,7 +444,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 if (iblockdata2.b(this, blockposition) != iblockdata1.b(this, blockposition) || iblockdata2.e() != iblockdata1.e()) {
                     //this.methodProfiler.enter(* // Akarin - remove caller
                     chunk.runOrQueueLightUpdate(() -> this.r(blockposition)); // Paper - Queue light update
-                    this.methodProfiler.exit();
+                    //this.methodProfiler.exit(); // Akarin - remove caller
                 }
 
                 /*
@@ -1281,7 +1281,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             }
         }
 
-        this.methodProfiler.exitEnter("remove");
+        //this.methodProfiler.exitEnter("remove"); // Akarin - remove caller
         timings.entityRemoval.startTimingUnsafe(); // Paper // Akarin
         this.entityList.removeAll(this.g);
 
@@ -1307,7 +1307,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         this.g.clear();
         this.p_();
         timings.entityRemoval.stopTimingUnsafe(); // Paper // Akarin
-        this.methodProfiler.exitEnter("regular");
+        //this.methodProfiler.exitEnter("regular");// Akarin - remove caller
 
         CrashReport crashreport1;
         CrashReportSystemDetails crashreportsystemdetails1;
@@ -1354,7 +1354,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 }
             }
 
-            this.methodProfiler.exit();
+            //this.methodProfiler.exit(); // Akarin - remove caller
             //this.methodProfiler.enter(* // Akarin - remove caller
             if (entity.dead) {
                 // Paper start
@@ -1375,12 +1375,12 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 this.c(entity);
             }
 
-            this.methodProfiler.exit();
+            //this.methodProfiler.exit(); // Akarin - remove caller
         }
         guardEntityList = false; // Spigot
 
         timings.entityTick.stopTimingUnsafe(); // Spigot // Akarin
-        this.methodProfiler.exitEnter("blockEntities");
+        //this.methodProfiler.exitEnter("blockEntities");// Akarin - remove caller
         timings.tileEntityTick.startTimingUnsafe(); // Spigot // Akarin
         if (!this.tileEntityListUnload.isEmpty()) {
             // Paper start - Use alternate implementation with faster contains
@@ -1419,12 +1419,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 if (shouldTick && this.K.a(blockposition)) {
                     // Paper end
                     try {
-                        this.methodProfiler.a(() -> {
-                            return String.valueOf(TileEntityTypes.a(tileentity.C()));
-                        });
+                        // Akarin start
+                        //this.methodProfiler.a(() -> {
+                        //    return String.valueOf(TileEntityTypes.a(tileentity.C()));
+                        //});
+                        // Akarin end
                         tileentity.tickTimer.startTiming(); // Spigot
                         ((ITickable) tileentity).tick();
-                        this.methodProfiler.exit();
+                        //this.methodProfiler.exit(); // Akarin - remove caller
                     } catch (Throwable throwable2) {
                         // Paper start - Prevent tile entity and entity crashes
                         String msg = "TileEntity threw exception at " + tileentity.world.getWorld().getName() + ":" + tileentity.position.getX() + "," + tileentity.position.getY() + "," + tileentity.position.getZ();
@@ -1493,8 +1495,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
         timings.tileEntityPending.stopTimingUnsafe(); // Spigot // Akarin
         co.aikar.timings.TimingHistory.tileEntityTicks += this.tileEntityListTick.size(); // Paper
-        this.methodProfiler.exit();
-        this.methodProfiler.exit();
+        //this.methodProfiler.exit(); // Akarin - remove caller
+        //this.methodProfiler.exit(); // Akarin - remove caller
     }
 
     protected void p_() {}
@@ -1563,12 +1565,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             if (entity.isPassenger()) {
                 entity.aH();
             } else {
-                this.methodProfiler.a(() -> {
-                    return IRegistry.ENTITY_TYPE.getKey(entity.P()).toString();
-                });
+                // Akarin start
+                //this.methodProfiler.a(() -> {
+                //    return IRegistry.ENTITY_TYPE.getKey(entity.P()).toString();
+                //});
+                // Akarin end
                 entity.tick();
                 entity.postTick(); // CraftBukkit
-                this.methodProfiler.exit();
+                //this.methodProfiler.exit(); // Akarin - remove caller
             }
         }
 
@@ -1609,7 +1613,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             }
         }
 
-        this.methodProfiler.exit();
+        //this.methodProfiler.exit(); // Akarin - remove caller
         if (flag && entity.inChunk) {
             Iterator iterator = entity.bP().iterator();
 
@@ -2341,7 +2345,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 i = 0;
             }
 
-            this.methodProfiler.exit();
+            //this.methodProfiler.exit(); // Akarin - remove caller
             //this.methodProfiler.enter(* // Akarin - remove caller
 
             while (i < j) {
@@ -2390,7 +2394,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 }
             }
 
-            this.methodProfiler.exit();
+            //this.methodProfiler.exit(); // Akarin - remove caller
             return true;
         }
     }

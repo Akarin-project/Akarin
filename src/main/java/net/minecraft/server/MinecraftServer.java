@@ -933,7 +933,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         ++this.ticks;
         if (this.S) {
             this.S = false;
-            this.methodProfiler.a(this.ticks);
+            //this.methodProfiler.a(this.ticks); // Akarin - remove caller
         }
 
         //this.methodProfiler.enter(* // Akarin - remove caller
@@ -974,7 +974,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             server.playerCommandState = false;
             // this.saveChunks(true);
             // Spigot End
-            this.methodProfiler.exit();
+            ////this.methodProfiler.exit(); // Akarin // Akarin - remove caller
         //} // Paper - Incremental Auto Saving
 
         //this.methodProfiler.enter(* // Akarin - remove caller
@@ -986,13 +986,13 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             this.snooper.b();
         }
 
-        this.methodProfiler.exit();
+        //this.methodProfiler.exit(); // Akarin
         //this.methodProfiler.enter(* // Akarin - remove caller
         long l = this.d[this.ticks % 100] = SystemUtils.getMonotonicNanos() - i;
 
         this.ap = this.ap * 0.8F + (float) l / 1000000.0F * 0.19999999F;
-        this.methodProfiler.exit();
-        this.methodProfiler.exit();
+        //this.methodProfiler.exit(); // Akarin
+        //this.methodProfiler.exit(); // Akarin
         org.spigotmc.WatchdogThread.tick(); // Spigot
         PaperLightingQueue.processQueue(startTime); // Paper
         expiringMaps.removeIf(ExpiringMap::clean); // Paper
@@ -1015,11 +1015,11 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         PaperAsyncChunkProvider.processMainThreadQueue(this); // Paper
         MinecraftTimings.minecraftSchedulerTimer.stopTimingUnsafe(); // Paper // Akarin
 
-        this.methodProfiler.exitEnter("commandFunctions");
+        //this.methodProfiler.exitEnter("commandFunctions"); // Akarin
         MinecraftTimings.commandFunctionsTimer.startTimingUnsafe(); // Spigot // Akarin
         this.getFunctionData().tick();
         MinecraftTimings.commandFunctionsTimer.stopTimingUnsafe(); // Spigot // Akarin
-        this.methodProfiler.exitEnter("levels");
+        //this.methodProfiler.exitEnter("levels"); // Akarin
 
         // CraftBukkit start
         // Run tasks that are waiting on processing
@@ -1073,7 +1073,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
                 if (this.ticks % 20 == 0) {
                     //this.methodProfiler.enter(* // Akarin - remove caller
                     this.playerList.a((Packet) (new PacketPlayOutUpdateTime(worldserver.getTime(), worldserver.getDayTime(), worldserver.getGameRules().getBoolean("doDaylightCycle"))), worldserver.worldProvider.getDimensionManager());
-                    this.methodProfiler.exit();
+                    //this.methodProfiler.exit(); // Akarin
                 }
                 // CraftBukkit end */
 
@@ -1113,24 +1113,24 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
                     throw new ReportedException(crashreport);
                 }
 
-                this.methodProfiler.exit();
+                //this.methodProfiler.exit(); // Akarin
                 //this.methodProfiler.enter(* // Akarin - remove caller
                 worldserver.getTracker().updatePlayers();
-                this.methodProfiler.exit();
-                this.methodProfiler.exit();
+                //this.methodProfiler.exit(); // Akarin
+                //this.methodProfiler.exit(); // Akarin
                 worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions
             }
         }
 
-        this.methodProfiler.exitEnter("connection");
+        //this.methodProfiler.exitEnter("connection"); // Akarin
         MinecraftTimings.connectionTimer.startTimingUnsafe(); // Spigot // Akarin
         this.getServerConnection().c();
         MinecraftTimings.connectionTimer.stopTimingUnsafe(); // Spigot // Akarin
-        this.methodProfiler.exitEnter("players");
+        //this.methodProfiler.exitEnter("players"); // Akarin
         MinecraftTimings.playerListTimer.startTimingUnsafe(); // Spigot // Akarin
         this.playerList.tick();
         MinecraftTimings.playerListTimer.stopTimingUnsafe(); // Spigot // Akarin
-        this.methodProfiler.exitEnter("tickables");
+        //this.methodProfiler.exitEnter("tickables"); // Akarin
 
         MinecraftTimings.tickablesTimer.startTimingUnsafe(); // Spigot // Akarin
         for (int j = 0; j < this.k.size(); ++j) {
@@ -1138,7 +1138,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         }
         MinecraftTimings.tickablesTimer.stopTimingUnsafe(); // Spigot // Akarin
 
-        this.methodProfiler.exit();
+        //this.methodProfiler.exit(); // Akarin
     }
 
     public boolean getAllowNether() {

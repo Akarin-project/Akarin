@@ -880,7 +880,7 @@ public abstract class PlayerList {
         float f = entity.yaw;
         */
 
-        worldserver.methodProfiler.enter("moving");
+        //worldserver.methodProfiler.enter("moving"); // Akarin
         if (worldserver1.dimension == DimensionManager.NETHER) {
             d0 = MathHelper.a(d0 / 8.0D, worldserver1.getWorldBorder().b() + 16.0D, worldserver1.getWorldBorder().d() - 16.0D);
             d1 = MathHelper.a(d1 / 8.0D, worldserver1.getWorldBorder().c() + 16.0D, worldserver1.getWorldBorder().e() - 16.0D);
@@ -921,9 +921,9 @@ public abstract class PlayerList {
             */
         }
 
-        worldserver.methodProfiler.exit();
+        //worldserver.methodProfiler.exit(); // Akarin - remove caller
         if (dimensionmanager != DimensionManager.THE_END) {
-            worldserver.methodProfiler.enter("placing");
+            //worldserver.methodProfiler.enter("placing"); // Akarin
             d0 = (double) MathHelper.clamp((int) d0, -29999872, 29999872);
             d1 = (double) MathHelper.clamp((int) d1, -29999872, 29999872);
             /*
@@ -935,7 +935,7 @@ public abstract class PlayerList {
             }
             */
 
-            worldserver.methodProfiler.exit();
+            //worldserver.methodProfiler.exit(); // Akarin - remove caller
         }
 
         // entity.spawnIn(worldserver1);
@@ -955,7 +955,7 @@ public abstract class PlayerList {
         float f = entity.yaw;
         */
 
-        worldserver.methodProfiler.enter("moving");
+        //worldserver.methodProfiler.enter("moving"); // Akarin
         entity.setPositionRotation(exit.getX(), exit.getY(), exit.getZ(), exit.getYaw(), exit.getPitch());
         if (entity.isAlive()) {
             worldserver.entityJoinedWorld(entity, false);
@@ -996,9 +996,9 @@ public abstract class PlayerList {
         }
         */
 
-        worldserver.methodProfiler.exit();
+        //worldserver.methodProfiler.exit(); // Akarin - remove caller
         if (dimensionmanager != DimensionManager.THE_END) {
-            worldserver.methodProfiler.enter("placing");
+            //worldserver.methodProfiler.enter("placing"); // Akarin
             /*
             d0 = (double) MathHelper.clamp((int) d0, -29999872, 29999872);
             d1 = (double) MathHelper.clamp((int) d1, -29999872, 29999872);
@@ -1018,7 +1018,7 @@ public abstract class PlayerList {
                 worldserver1.entityJoinedWorld(entity, false);
             }
 
-            worldserver.methodProfiler.exit();
+            //worldserver.methodProfiler.exit(); // Akarin - remove caller
         }
 
         entity.spawnIn(worldserver1);

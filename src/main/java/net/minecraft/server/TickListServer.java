@@ -54,8 +54,8 @@ public class TickListServer<T> implements TickList<T> {
                 // CraftBukkit end
             }
 
-            this.f.methodProfiler.enter("cleaning");
-            timingCleanup.startTiming(); // Paper
+            //this.f.methodProfiler.enter("cleaning"); // Akarin
+            timingCleanup.startTimingUnsafe(); // Paper // Akarin
             NextTickListEntry<T> nextticklistentry; // CraftBukkit - decompile error
 
             for (int j = 0; j < i; ++j) {
@@ -68,11 +68,11 @@ public class TickListServer<T> implements TickList<T> {
                 // this.nextTickListHash.remove(nextticklistentry); // CraftBukkit - use nextTickList
                 this.g.add(nextticklistentry);
             }
-            timingCleanup.stopTiming(); // Paper
+            timingCleanup.stopTimingUnsafe(); // Paper // Akarin
 
-            this.f.methodProfiler.exit();
-            this.f.methodProfiler.enter("ticking");
-            timingTicking.startTiming(); // Paper
+            //this.f.methodProfiler.exit(); // Akarin
+            //this.f.methodProfiler.enter("ticking"); // Akarin
+            timingTicking.startTimingUnsafe(); // Paper // Akarin
             Iterator iterator = this.g.iterator();
 
             while (iterator.hasNext()) {
@@ -95,9 +95,9 @@ public class TickListServer<T> implements TickList<T> {
                 }
             }
 
-            this.f.methodProfiler.exit();
+            //this.f.methodProfiler.exit(); // Akarin
             this.g.clear();
-            timingTicking.stopTiming(); // Paper
+            timingTicking.stopTimingUnsafe(); // Paper // Akarin
         }
     }
 
