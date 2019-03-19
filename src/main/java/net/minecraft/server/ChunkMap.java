@@ -14,7 +14,7 @@ public class ChunkMap extends Long2ObjectOpenHashMap<Chunk> {
     }
 
     public Chunk put(long i, Chunk chunk) {
-        chunk.world.timings.syncChunkLoadPostTimer.startTiming(true); // Paper // Akarin
+        chunk.world.timings.syncChunkLoadPostTimer.startTiming(); // Paper
         //org.spigotmc.AsyncCatcher.catchOp("Async Chunk put"); // Paper // Akarin - comment
         lastChunkByPos = chunk; // Paper
         // Paper start
