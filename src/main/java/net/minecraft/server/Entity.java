@@ -396,7 +396,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             }
 
             this.E();
-            this.world.methodProfiler.exit();
+            //this.world.methodProfiler.exit(); // Akarin - remove caller
         }
     }
     // CraftBukkit end
@@ -456,7 +456,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             }
 
             this.E();
-            this.world.methodProfiler.exit();
+            //this.world.methodProfiler.exit(); // Akarin - remove caller
         }
         */
 
@@ -499,7 +499,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         }
 
         this.justCreated = false;
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
     }
 
     // Paper start
@@ -806,7 +806,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                 }
             }
 
-            this.world.methodProfiler.exit();
+            //this.world.methodProfiler.exit(); // Akarin - remove caller
             this.world.methodProfiler.enter("rest");
             this.recalcPosition();
             this.positionChanged = d7 != d0 || d9 != d2;
@@ -939,7 +939,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                 this.fireTicks = -this.getMaxFireTicks();
             }
 
-            this.world.methodProfiler.exit();
+            //this.world.methodProfiler.exit(); // Akarin - remove caller
         }
     }
 
@@ -2602,7 +2602,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
             // Need to make sure the profiler state is reset afterwards (but we still want to time the call)
             Entity entity = this.teleportTo(exit, true);
-            this.world.methodProfiler.exit();
+            //this.world.methodProfiler.exit(); // Akarin - remove caller
             return entity;
         } else {
             return null;
@@ -2694,10 +2694,10 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             }
 
             this.dead = true;
-            this.world.methodProfiler.exit();
+            //this.world.methodProfiler.exit(); // Akarin - remove caller
             worldserver.p();
             worldserver1.p();
-            // this.world.methodProfiler.exit(); // CraftBukkit: Moved up to keep balanced
+            // //this.world.methodProfiler.exit(); // Akarin - remove caller // CraftBukkit: Moved up to keep balanced
             return entity;
         } else {
             return null;

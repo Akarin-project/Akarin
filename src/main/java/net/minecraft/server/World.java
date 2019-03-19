@@ -442,7 +442,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 IBlockData iblockdata2 = this.getType(blockposition);
 
                 if (iblockdata2.b(this, blockposition) != iblockdata1.b(this, blockposition) || iblockdata2.e() != iblockdata1.e()) {
-                    this.methodProfiler.enter("checkLight");
+                    //this.methodProfiler.enter(* // Akarin - remove caller
                     chunk.runOrQueueLightUpdate(() -> this.r(blockposition)); // Paper - Queue light update
                     this.methodProfiler.exit();
                 }
@@ -1246,8 +1246,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void tickEntities() {
-        this.methodProfiler.enter("entities");
-        this.methodProfiler.enter("global");
+        //this.methodProfiler.enter(* // Akarin - remove caller
+        //this.methodProfiler.enter(* // Akarin - remove caller
 
         Entity entity;
         int i;
@@ -1282,7 +1282,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
 
         this.methodProfiler.exitEnter("remove");
-        timings.entityRemoval.startTiming(); // Paper
+        timings.entityRemoval.startTimingUnsafe(); // Paper // Akarin
         this.entityList.removeAll(this.g);
 
         int j;
@@ -1306,14 +1306,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
         this.g.clear();
         this.p_();
-        timings.entityRemoval.stopTiming(); // Paper
+        timings.entityRemoval.stopTimingUnsafe(); // Paper // Akarin
         this.methodProfiler.exitEnter("regular");
 
         CrashReport crashreport1;
         CrashReportSystemDetails crashreportsystemdetails1;
 
         org.spigotmc.ActivationRange.activateEntities(this); // Spigot
-        timings.entityTick.startTiming(); // Spigot
+        timings.entityTick.startTimingUnsafe(); // Spigot // Akarin
         guardEntityList = true; // Spigot
         // CraftBukkit start - Use field for loop variable
         co.aikar.timings.TimingHistory.entityTicks += this.entityList.size(); // Paper
@@ -1335,7 +1335,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 entity.stopRiding();
             }
 
-            this.methodProfiler.enter("tick");
+            //this.methodProfiler.enter(* // Akarin - remove caller
             if (!entity.dead && !(entity instanceof EntityPlayer)) {
                 try {
                     entity.tickTimer.startTiming(); // Paper
@@ -1355,7 +1355,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             }
 
             this.methodProfiler.exit();
-            this.methodProfiler.enter("remove");
+            //this.methodProfiler.enter(* // Akarin - remove caller
             if (entity.dead) {
                 // Paper start
                 /*
@@ -1379,9 +1379,9 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         }
         guardEntityList = false; // Spigot
 
-        timings.entityTick.stopTiming(); // Spigot
+        timings.entityTick.stopTimingUnsafe(); // Spigot // Akarin
         this.methodProfiler.exitEnter("blockEntities");
-        timings.tileEntityTick.startTiming(); // Spigot
+        timings.tileEntityTick.startTimingUnsafe(); // Spigot // Akarin
         if (!this.tileEntityListUnload.isEmpty()) {
             // Paper start - Use alternate implementation with faster contains
             java.util.Set<TileEntity> toRemove = com.koloboke.collect.set.hash.HashObjSets.getDefaultFactory().withNullKeyAllowed(true).withEquivalence(com.koloboke.collect.Equivalence.identity()).newImmutableSet(tileEntityListUnload); // Akarin - koloboke
@@ -1457,8 +1457,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             }
         }
 
-        timings.tileEntityTick.stopTiming(); // Spigot
-        timings.tileEntityPending.startTiming(); // Spigot
+        timings.tileEntityTick.stopTimingUnsafe(); // Spigot // Akarin
+        timings.tileEntityPending.startTimingUnsafe(); // Spigot // Akarin
         this.J = false;
         this.methodProfiler.exitEnter("pendingBlockEntities");
         if (!this.c.isEmpty()) {
@@ -1491,7 +1491,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             this.c.clear();
         }
 
-        timings.tileEntityPending.stopTiming(); // Spigot
+        timings.tileEntityPending.stopTimingUnsafe(); // Spigot // Akarin
         co.aikar.timings.TimingHistory.tileEntityTicks += this.tileEntityListTick.size(); // Paper
         this.methodProfiler.exit();
         this.methodProfiler.exit();
@@ -1572,7 +1572,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             }
         }
 
-        this.methodProfiler.enter("chunkCheck");
+        //this.methodProfiler.enter(* // Akarin - remove caller
         if (Double.isNaN(entity.locX) || Double.isInfinite(entity.locX)) {
             entity.locX = entity.N;
         }
@@ -2259,7 +2259,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             int i = 0;
             int j = 0;
 
-            this.methodProfiler.enter("getBrightness");
+            //this.methodProfiler.enter(* // Akarin - remove caller
             int k = this.getBrightness(enumskyblock, blockposition);
             int l = this.a(blockposition, enumskyblock);
             int i1 = blockposition.getX();
@@ -2342,7 +2342,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             }
 
             this.methodProfiler.exit();
-            this.methodProfiler.enter("checkedPosition < toCheckCount");
+            //this.methodProfiler.enter(* // Akarin - remove caller
 
             while (i < j) {
                 l1 = this.E[i++];

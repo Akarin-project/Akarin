@@ -299,7 +299,7 @@ public class Chunk implements IChunkAccess {
     }
 
     private void g(boolean flag) {
-        this.world.methodProfiler.enter("recheckGaps");
+        //this.world.methodProfiler.enter("recheckGaps"); // Akarin - remove caller
         if (this.areNeighborsLoaded(1)) { // Paper
             for (int i = 0; i < 16; ++i) {
                 for (int j = 0; j < 16; ++j) {
@@ -326,7 +326,7 @@ public class Chunk implements IChunkAccess {
                         }
 
                         if (flag) {
-                            this.world.methodProfiler.exit();
+                            //this.world.methodProfiler.exit(); // Akarin - remove caller
                             return;
                         }
                     }
@@ -336,7 +336,7 @@ public class Chunk implements IChunkAccess {
             this.l = false;
         }
 
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
     }
 
     private void c(int i, int j, int k) {

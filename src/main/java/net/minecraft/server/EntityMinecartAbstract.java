@@ -244,7 +244,7 @@ public abstract class EntityMinecartAbstract extends Entity implements INamableT
                 --this.portalCooldown;
             }
 
-            this.world.methodProfiler.exit();
+            //this.world.methodProfiler.exit(); // Akarin - remove caller
         }
         */
 

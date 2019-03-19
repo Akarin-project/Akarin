@@ -179,7 +179,7 @@ public class ChunkProviderServer implements IChunkProvider {
             this.asyncTaskHandler.postToMainThread(chunk::addEntities);
             return chunk;
         } else if (flag1) {
-            try (co.aikar.timings.Timing timing = world.timings.chunkGeneration.startTiming()) { // Paper
+            try (co.aikar.timings.Timing timing = world.timings.chunkGeneration.startTiming(true)) { // Paper // Akarin
                 this.batchScheduler.b();
                 this.batchScheduler.a(new ChunkCoordIntPair(i, j));
                 CompletableFuture<ProtoChunk> completablefuture = this.batchScheduler.c();

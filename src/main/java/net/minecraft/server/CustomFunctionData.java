@@ -61,7 +61,7 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
     public void tick() {
         MinecraftKey minecraftkey = CustomFunctionData.d;
 
-        this.server.methodProfiler.a(minecraftkey::toString);
+        //this.server.methodProfiler.a(minecraftkey::toString); // Akarin - remove caller
         Iterator iterator = this.k.iterator();
 
         while (iterator.hasNext()) {
@@ -70,7 +70,7 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
             this.a(customfunction, this.f());
         }
 
-        this.server.methodProfiler.exit();
+        //this.server.methodProfiler.exit(); // Akarin - remove caller
         if (this.l) {
             this.l = false;
             Collection<CustomFunction> collection = this.g().b(CustomFunctionData.e).a();
@@ -85,7 +85,7 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
                 this.a(customfunction1, this.f());
             }
 
-            this.server.methodProfiler.exit();
+            //this.server.methodProfiler.exit(); // Akarin - remove caller
         }
 
     }
@@ -118,7 +118,7 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
                         this.server.methodProfiler.a(customfunctiondata_a::toString);
                         customfunctiondata_a.a(this.h, i);
                     } finally {
-                        this.server.methodProfiler.exit();
+                        //this.server.methodProfiler.exit(); // Akarin - remove caller
                     }
 
                     ++j;

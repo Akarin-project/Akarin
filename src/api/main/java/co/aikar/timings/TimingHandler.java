@@ -50,6 +50,7 @@ class TimingHandler implements Timing {
     private boolean timed;
     private boolean enabled;
     private TimingHandler parent;
+    private boolean unsafe; // Akarin
 
     TimingHandler(TimingIdentifier id) {
         if (id.name.startsWith("##")) {
@@ -108,6 +109,26 @@ class TimingHandler implements Timing {
     }
 
     @Override
+    public Timing startTimingUnsafe() {
+        if (enabled && ++timingDepth == 1) {
+            start = System.nanoTime();
+            parent = TimingsManager.CURRENT;
+            TimingsManager.CURRENT = this;
+            unsafe = true;
+        }
+        return this;
+    }
+
+    @Override
+    public void stopTimingUnsafe() {
+        if (enabled && timingDepth > 0 && --timingDepth == 0 && start != 0) {
+            addDiff(System.nanoTime() - start);
+            start = 0;
+            unsafe = false;
+        }
+    }
+
+    @Override
     public Timing startTiming(boolean assertThread) {
         if (enabled && (ThreadAssertion.isMainThread() || Bukkit.isPrimaryThread()) /*&& ++timingDepth == 1*/) {
             if (AkarinGlobalConfig.lazyThreadAssertion && assertThread) ThreadAssertion.setMainThread(true);
@@ -126,6 +147,7 @@ class TimingHandler implements Timing {
         if (enabled && timingDepth > 0 && (ThreadAssertion.isMainThread() || Bukkit.isPrimaryThread()) /*&& --timingDepth == 0 && start != 0*/) {
             if (AkarinGlobalConfig.lazyThreadAssertion) ThreadAssertion.setMainThread(false);
             if (--timingDepth != 0 || start == 0) return;
+            unsafe = false;
             // Akarin end
             addDiff(System.nanoTime() - start);
             start = 0;
@@ -196,7 +218,7 @@ class TimingHandler implements Timing {
      */
     @Override
     public void close() {
-        stopTimingIfSync();
+        if (unsafe) stopTimingUnsafe(); else stopTimingIfSync(); // Akarin
     }
 
     public boolean isSpecial() {

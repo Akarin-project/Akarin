@@ -318,7 +318,7 @@ public abstract class EntityLiving extends Entity {
         this.aT = this.aS;
         this.lastYaw = this.yaw;
         this.lastPitch = this.pitch;
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
     }
 
     // CraftBukkit start
@@ -2166,7 +2166,7 @@ public abstract class EntityLiving extends Entity {
         this.ba += (f3 - this.ba) * 0.3F;
         this.world.methodProfiler.enter("headTurn");
         f2 = this.e(f1, f2);
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         this.world.methodProfiler.enter("rangeChecks");
 
         while (this.yaw - this.lastYaw < -180.0F) {
@@ -2201,7 +2201,7 @@ public abstract class EntityLiving extends Entity {
             this.aT += 360.0F;
         }
 
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         this.bb += f2;
         if (this.dc()) {
             ++this.bv;
@@ -2336,10 +2336,10 @@ public abstract class EntityLiving extends Entity {
         } else if (this.cP()) {
             this.world.methodProfiler.enter("newAi");
             this.doTick();
-            this.world.methodProfiler.exit();
+            //this.world.methodProfiler.exit(); // Akarin - remove caller
         }
 
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         this.world.methodProfiler.enter("jump");
         if (this.bg) {
             if (this.W > 0.0D && (!this.onGround || this.W > 0.4D)) {
@@ -2354,7 +2354,7 @@ public abstract class EntityLiving extends Entity {
             this.bJ = 0;
         }
 
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         this.world.methodProfiler.enter("travel");
         this.bh *= 0.98F;
         this.bj *= 0.98F;
@@ -2363,7 +2363,7 @@ public abstract class EntityLiving extends Entity {
         AxisAlignedBB axisalignedbb = this.getBoundingBox();
 
         this.a(this.bh, this.bi, this.bj);
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         this.world.methodProfiler.enter("push");
         if (this.bw > 0) {
             --this.bw;
@@ -2371,7 +2371,7 @@ public abstract class EntityLiving extends Entity {
         }
 
         this.cN();
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
     }
 
     private void n() {

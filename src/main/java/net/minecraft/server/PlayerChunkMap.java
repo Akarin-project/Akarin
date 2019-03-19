@@ -85,7 +85,7 @@ public class PlayerChunkMap {
         int j;
 
         if (i - this.k > 8000L) {
-            try (Timing ignored = world.timings.doChunkMapUpdate.startTiming()) { // Paper
+            try (Timing ignored = world.timings.doChunkMapUpdate.startTimingUnsafe()) { // Paper // Akarin
             this.k = i;
 
             for (j = 0; j < this.i.size(); ++j) {
@@ -97,7 +97,7 @@ public class PlayerChunkMap {
         }
 
         if (!this.f.isEmpty()) {
-            try (Timing ignored = world.timings.doChunkMapToUpdate.startTiming()) { // Paper
+            try (Timing ignored = world.timings.doChunkMapToUpdate.startTimingUnsafe()) { // Paper // Akarin
             Iterator iterator = this.f.iterator();
 
             while (iterator.hasNext()) {
@@ -111,7 +111,7 @@ public class PlayerChunkMap {
 
         if (this.l && i % 4L == 0L) {
             this.l = false;
-            try (Timing ignored = world.timings.doChunkMapSortMissing.startTiming()) { // Paper
+            try (Timing ignored = world.timings.doChunkMapSortMissing.startTimingUnsafe()) { // Paper // Akarin
             Collections.sort(this.h, (playerchunk1, playerchunk2) -> {
                 return ComparisonChain.start().compare(playerchunk1.g(), playerchunk2.g()).result();
             });
@@ -120,7 +120,7 @@ public class PlayerChunkMap {
 
         if (this.m && i % 4L == 2L) {
             this.m = false;
-            try (Timing ignored = world.timings.doChunkMapSortSendToPlayers.startTiming()) { // Paper
+            try (Timing ignored = world.timings.doChunkMapSortSendToPlayers.startTimingUnsafe()) { // Paper // Akarin
             Collections.sort(this.g, (playerchunk1, playerchunk2) -> {
                 return ComparisonChain.start().compare(playerchunk1.g(), playerchunk2.g()).result();
             });
@@ -128,7 +128,7 @@ public class PlayerChunkMap {
         }
 
         if (!this.h.isEmpty()) {
-            try (Timing ignored = world.timings.doChunkMapPlayersNeedingChunks.startTiming()) { // Paper
+            try (Timing ignored = world.timings.doChunkMapPlayersNeedingChunks.startTimingUnsafe()) { // Paper // Akarin
             // Spigot start
             org.spigotmc.SlackActivityAccountant activityAccountant = this.world.getMinecraftServer().slackActivityAccountant;
             activityAccountant.startActivity(0.5);
@@ -171,7 +171,7 @@ public class PlayerChunkMap {
 
         if (!this.g.isEmpty()) {
             j = world.paperConfig.maxChunkSendsPerTick; // Paper
-            try (Timing ignored = world.timings.doChunkMapPendingSendToPlayers.startTiming()) { // Paper
+            try (Timing ignored = world.timings.doChunkMapPendingSendToPlayers.startTimingUnsafe()) { // Paper // Akarin
             Iterator iterator2 = this.g.iterator();
 
             while (iterator2.hasNext()) {
@@ -189,7 +189,7 @@ public class PlayerChunkMap {
         }
 
         if (this.managedPlayers.isEmpty()) {
-            try (Timing ignored = world.timings.doChunkMapUnloadChunks.startTiming()) { // Paper
+            try (Timing ignored = world.timings.doChunkMapUnloadChunks.startTimingUnsafe()) { // Paper // Akarin
             WorldProvider worldprovider = this.world.worldProvider;
 
             if (!worldprovider.canRespawn() && !this.world.savingDisabled) { // Paper - respect saving disabled setting

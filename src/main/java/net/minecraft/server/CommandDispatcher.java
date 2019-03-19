@@ -172,7 +172,7 @@ public class CommandDispatcher {
             stringreader.skip();
         }
 
-        commandlistenerwrapper.getServer().methodProfiler.enter(s);
+        //commandlistenerwrapper.getServer().methodProfiler.enter(s); // Akarin - remove caller
 
         byte b0;
 
@@ -236,7 +236,7 @@ public class CommandDispatcher {
                 return b1;
             }
         } finally {
-            commandlistenerwrapper.getServer().methodProfiler.exit();
+            //commandlistenerwrapper.getServer().methodProfiler.exit(); // Akarin - remove caller
         }
 
         return b0;

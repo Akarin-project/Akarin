@@ -205,7 +205,7 @@ public abstract class EntityInsentient extends EntityLiving {
             this.A();
         }
 
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
     }
 
     protected void c(DamageSource damagesource) {
@@ -540,7 +540,7 @@ public abstract class EntityInsentient extends EntityLiving {
             }
         }
 
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
     }
 
     protected void a(EntityItem entityitem) {
@@ -662,7 +662,7 @@ public abstract class EntityInsentient extends EntityLiving {
         ++this.ticksFarFromPlayer;
         this.world.methodProfiler.enter("checkDespawn");
         this.I();
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         // Spigot Start
         if ( this.fromMobSpawner )
         {
@@ -677,19 +677,19 @@ public abstract class EntityInsentient extends EntityLiving {
         // Spigot End
         this.world.methodProfiler.enter("sensing");
         this.bC.a();
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         this.world.methodProfiler.enter("targetSelector");
         this.targetSelector.doTick();
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         this.world.methodProfiler.enter("goalSelector");
         this.goalSelector.doTick();
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         this.world.methodProfiler.enter("navigation");
         this.navigation.d();
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         this.world.methodProfiler.enter("mob tick");
         this.mobTick();
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
         if (this.isPassenger() && this.getVehicle() instanceof EntityInsentient) {
             EntityInsentient entityinsentient = (EntityInsentient) this.getVehicle();
 
@@ -704,8 +704,8 @@ public abstract class EntityInsentient extends EntityLiving {
         this.lookController.a();
         this.world.methodProfiler.exitEnter("jump");
         this.h.b();
-        this.world.methodProfiler.exit();
-        this.world.methodProfiler.exit();
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
+        //this.world.methodProfiler.exit(); // Akarin - remove caller
     }
 
     protected void mobTick() {}

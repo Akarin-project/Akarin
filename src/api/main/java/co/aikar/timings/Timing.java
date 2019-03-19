@@ -34,6 +34,7 @@ public interface Timing extends AutoCloseable {
      */
     Timing startTiming();
     default Timing startTiming(boolean assertThread) { return startTiming(); }; // Akarin
+    default Timing startTimingUnsafe() { return startTiming(); }; // Akarin
 
     /**
      * <p>Stops timing and records the data. Propagates the data up to group handlers.</p>
@@ -41,6 +42,7 @@ public interface Timing extends AutoCloseable {
      * Will automatically be called when this Timing is used with try-with-resources
      */
     void stopTiming();
+    default void stopTimingUnsafe() { stopTiming(); }; // Akarin
 
     /**
      * Starts timing the execution until {@link #stopTiming()} is called.

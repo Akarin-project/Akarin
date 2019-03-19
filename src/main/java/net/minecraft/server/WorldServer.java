@@ -267,7 +267,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             this.i();
         }
 
-        this.methodProfiler.enter("spawner");
+        //this.methodProfiler.enter(* // Akarin - remove caller
         // CraftBukkit start - Only call spawner if we have players online and the world allows for mobs or animals
         long time = this.worldData.getTime();
         if (this.getGameRules().getBoolean("doMobSpawning") && this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES && (this.allowMonsters || this.allowAnimals) && (this instanceof WorldServer && this.players.size() > 0)) {
@@ -278,7 +278,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             // CraftBukkit end
         }
 
-        timings.doChunkUnload.startTiming(); // Spigot
+        timings.doChunkUnload.startTimingUnsafe(); // Spigot // Akarin
         this.methodProfiler.exitEnter("chunkSource");
         this.chunkProvider.unloadChunks(booleansupplier);
         int j = this.a(1.0F);
@@ -292,37 +292,37 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             this.worldData.setDayTime(this.worldData.getDayTime() + 1L);
         }
 
-        timings.doChunkUnload.stopTiming(); // Spigot
+        timings.doChunkUnload.stopTimingUnsafe(); // Spigot // Akarin
         this.methodProfiler.exitEnter("tickPending");
-        timings.scheduledBlocks.startTiming(); // Paper
+        timings.scheduledBlocks.startTimingUnsafe(); // Paper // Akarin
         this.q();
-        timings.scheduledBlocks.stopTiming(); // Paper
+        timings.scheduledBlocks.stopTimingUnsafe(); // Paper // Akarin
         this.methodProfiler.exitEnter("tickBlocks");
-        timings.chunkTicks.startTiming(); // Paper
+        timings.chunkTicks.startTimingUnsafe(); // Paper // Akarin
         this.n_();
-        timings.chunkTicks.stopTiming(); // Paper
+        timings.chunkTicks.stopTimingUnsafe(); // Paper // Akarin
         this.methodProfiler.exitEnter("chunkMap");
-        timings.doChunkMap.startTiming(); // Spigot
+        timings.doChunkMap.startTimingUnsafe(); // Spigot // Akarin
         this.manager.flush();
-        timings.doChunkMap.stopTiming(); // Spigot
+        timings.doChunkMap.stopTimingUnsafe(); // Spigot // Akarin
         this.methodProfiler.exitEnter("village");
-        timings.doVillages.startTiming(); // Spigot
+        timings.doVillages.startTimingUnsafe(); // Spigot // Akarin
         this.villages.tick();
         this.siegeManager.a();
-        timings.doVillages.stopTiming(); // Spigot
+        timings.doVillages.stopTimingUnsafe(); // Spigot // Akarin
         this.methodProfiler.exitEnter("portalForcer");
-        timings.doPortalForcer.startTiming(); // Spigot
+        timings.doPortalForcer.startTimingUnsafe(); // Spigot // Akarin
         this.portalTravelAgent.a(this.getTime());
-        timings.doPortalForcer.stopTiming(); // Spigot
+        timings.doPortalForcer.stopTimingUnsafe(); // Spigot // Akarin
         this.methodProfiler.exit();
-        timings.doSounds.startTiming(); // Spigot
+        timings.doSounds.startTimingUnsafe(); // Spigot // Akarin
         this.an();
-        timings.doSounds.stopTiming(); // Spigot
+        timings.doSounds.stopTimingUnsafe(); // Spigot // Akarin
         this.P = false;
 
-        timings.doChunkGC.startTiming();// Spigot
+        timings.doChunkGC.startTimingUnsafe();// Spigot // Akarin
         this.getWorld().processChunkGC(); // CraftBukkit
-        timings.doChunkGC.stopTiming(); // Spigot
+        timings.doChunkGC.stopTimingUnsafe(); // Spigot // Akarin
     }
 
     public boolean j_() {
@@ -442,7 +442,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
 
     protected void l() {
-        this.methodProfiler.enter("playerCheckLight");
+        //this.methodProfiler.enter(* // Akarin - remove caller
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
             int i = this.random.nextInt(this.players.size());
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
@@ -470,10 +470,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             boolean flag = this.isRaining();
             boolean flag1 = this.Y();
 
-            this.methodProfiler.enter("pollingChunks");
+            //this.methodProfiler.enter(* // Akarin - remove caller
 
             for (Iterator iterator1 = this.manager.b(); iterator1.hasNext(); this.methodProfiler.exit()) {
-                this.methodProfiler.enter("getChunk");
+                //this.methodProfiler.enter(* // Akarin - remove caller
                 Chunk chunk = (Chunk) iterator1.next();
                 int j = chunk.locX * 16;
                 int k = chunk.locZ * 16;
@@ -548,7 +548,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                                 IBlockData iblockdata = chunksection.getType(i2, k2, j2);
                                 Fluid fluid = chunksection.b(i2, k2, j2);
 
-                                this.methodProfiler.enter("randomTick");
+                                //this.methodProfiler.enter(* // Akarin - remove caller
                                 if (iblockdata.t()) {
                                     iblockdata.b((World) this, new BlockPosition(i2 + j, k2 + chunksection.getYPosition(), j2 + k), this.random);
                                 }
@@ -617,7 +617,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 entity.stopRiding();
             }
 
-            this.methodProfiler.enter("tick");
+            //this.methodProfiler.enter(* // Akarin - remove caller
             if (!entity.dead) {
                 try {
                     this.g(entity);
@@ -631,7 +631,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             }
 
             this.methodProfiler.exit();
-            this.methodProfiler.enter("remove");
+            //this.methodProfiler.enter(* // Akarin - remove caller
             if (entity.dead) {
                 int j = entity.chunkX;
                 int k = entity.chunkZ;
