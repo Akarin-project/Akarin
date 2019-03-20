@@ -131,7 +131,7 @@ public class Block implements IMaterial {
                 IBlockData iblockdata1 = generatoraccess.getType(blockposition_pooledblockposition);
                 IBlockData iblockdata2 = iblockdata1.updateState(enumdirection.opposite(), iblockdata, generatoraccess, blockposition_pooledblockposition, blockposition);
 
-                ensuresTypeAndData(iblockdata1, iblockdata2, generatoraccess, blockposition_b, i, blockposition); // Akarin - fixes physics event
+                ensuresTypeAndData(iblockdata1, iblockdata2, generatoraccess, blockposition_pooledblockposition, i, blockposition); // Akarin - fixes physics event
             }
         } catch (Throwable throwable1) {
             throwable = throwable1;
