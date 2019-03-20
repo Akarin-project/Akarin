@@ -53,4 +53,10 @@ public class PacketPlayOutOpenWindow implements Packet<PacketListenerPlayOut> {
         }
 
     }
+    // Akarin start
+    @Override
+    public boolean canDispatchImmediately() {
+        return true;
+    }
+    // Akarin end
 }
