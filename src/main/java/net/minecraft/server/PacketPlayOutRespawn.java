@@ -39,4 +39,10 @@ public class PacketPlayOutRespawn implements Packet<PacketListenerPlayOut> {
         packetdataserializer.writeByte(this.c.getId());
         packetdataserializer.a(this.d.name());
     }
+    // Akarin start
+    @Override
+    public boolean canDispatchImmediately() {
+        return true;
+    }
+    // Akarin end
 }
