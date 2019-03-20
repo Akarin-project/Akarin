@@ -105,4 +105,10 @@ public class PacketPlayOutAdvancements implements Packet<PacketListenerPlayOut> 
         }
 
     }
+    // Akarin start
+    @Override
+    public boolean canDispatchImmediately() {
+        return true;
+    }
+    // Akarin end
 }

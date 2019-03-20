@@ -100,4 +100,10 @@ public class PacketPlayOutAbilities implements Packet<PacketListenerPlayOut> {
     public void b(float f) {
         this.f = f;
     }
+    // Akarin start
+    @Override
+    public boolean canDispatchImmediately() {
+        return true;
+    }
+    // Akarin end
 }
