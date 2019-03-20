@@ -1572,6 +1572,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     // Akarin end
 
     public final void a(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) { // Akarin - add final
+        if (packet == null) return; // Akarin - GH-72
         if (packet.getType() == PacketType.PLAY_OUT_CHAT) { // Akarin
             PacketPlayOutChat packetplayoutchat = (PacketPlayOutChat) packet;
             EntityHuman.EnumChatVisibility entityhuman_enumchatvisibility = this.player.getChatFlags();
