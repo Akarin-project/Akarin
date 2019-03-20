@@ -77,7 +77,7 @@ public class BlockRedstoneWire extends Block {
     }
 
     public void b(IBlockData iblockdata, GeneratorAccess generatoraccess, BlockPosition blockposition, int i) {
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         try {
@@ -87,25 +87,25 @@ public class BlockRedstoneWire extends Block {
                 EnumDirection enumdirection = (EnumDirection) iterator.next();
                 BlockPropertyRedstoneSide blockpropertyredstoneside = (BlockPropertyRedstoneSide) iblockdata.get((IBlockState) BlockRedstoneWire.q.get(enumdirection));
 
-                if (blockpropertyredstoneside != BlockPropertyRedstoneSide.NONE && generatoraccess.getType(blockposition_b.g(blockposition).c(enumdirection)).getBlock() != this) {
-                    blockposition_b.c(EnumDirection.DOWN);
-                    IBlockData iblockdata1 = generatoraccess.getType(blockposition_b);
+                if (blockpropertyredstoneside != BlockPropertyRedstoneSide.NONE && generatoraccess.getType(blockposition_pooledblockposition.g(blockposition).c(enumdirection)).getBlock() != this) {
+                    blockposition_pooledblockposition.c(EnumDirection.DOWN);
+                    IBlockData iblockdata1 = generatoraccess.getType(blockposition_pooledblockposition);
 
                     if (iblockdata1.getBlock() != Blocks.OBSERVER) {
-                        BlockPosition blockposition1 = blockposition_b.shift(enumdirection.opposite());
-                        IBlockData iblockdata2 = iblockdata1.updateState(enumdirection.opposite(), generatoraccess.getType(blockposition1), generatoraccess, blockposition_b, blockposition1);
+                        BlockPosition blockposition1 = blockposition_pooledblockposition.shift(enumdirection.opposite());
+                        IBlockData iblockdata2 = iblockdata1.updateState(enumdirection.opposite(), generatoraccess.getType(blockposition1), generatoraccess, blockposition_pooledblockposition, blockposition1);
 
-                        a(iblockdata1, iblockdata2, generatoraccess, blockposition_b, i);
+                        a(iblockdata1, iblockdata2, generatoraccess, blockposition_pooledblockposition, i);
                     }
 
-                    blockposition_b.g(blockposition).c(enumdirection).c(EnumDirection.UP);
-                    IBlockData iblockdata3 = generatoraccess.getType(blockposition_b);
+                    blockposition_pooledblockposition.g(blockposition).c(enumdirection).c(EnumDirection.UP);
+                    IBlockData iblockdata3 = generatoraccess.getType(blockposition_pooledblockposition);
 
                     if (iblockdata3.getBlock() != Blocks.OBSERVER) {
-                        BlockPosition blockposition2 = blockposition_b.shift(enumdirection.opposite());
-                        IBlockData iblockdata4 = iblockdata3.updateState(enumdirection.opposite(), generatoraccess.getType(blockposition2), generatoraccess, blockposition_b, blockposition2);
+                        BlockPosition blockposition2 = blockposition_pooledblockposition.shift(enumdirection.opposite());
+                        IBlockData iblockdata4 = iblockdata3.updateState(enumdirection.opposite(), generatoraccess.getType(blockposition2), generatoraccess, blockposition_pooledblockposition, blockposition2);
 
-                        a(iblockdata3, iblockdata4, generatoraccess, blockposition_b, i);
+                        a(iblockdata3, iblockdata4, generatoraccess, blockposition_pooledblockposition, i);
                     }
                 }
             }
@@ -113,15 +113,15 @@ public class BlockRedstoneWire extends Block {
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 

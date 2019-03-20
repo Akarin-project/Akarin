@@ -14,11 +14,11 @@ public class CommandGamerule {
         Iterator iterator = GameRules.getGameRules().entrySet().iterator();
 
         while (iterator.hasNext()) {
-            Entry<String, GameRules.b> entry = (Entry) iterator.next();
+            Entry<String, GameRules.GameRuleDefinition> entry = (Entry) iterator.next();
 
             literalargumentbuilder.then(((LiteralArgumentBuilder) CommandDispatcher.a((String) entry.getKey()).executes((commandcontext) -> {
                 return a((CommandListenerWrapper) commandcontext.getSource(), (String) entry.getKey());
-            })).then(((GameRules.b) entry.getValue()).b().a("value").executes((commandcontext) -> {
+            })).then(((GameRules.GameRuleDefinition) entry.getValue()).b().a("value").executes((commandcontext) -> {
                 return a((CommandListenerWrapper) commandcontext.getSource(), (String) entry.getKey(), commandcontext);
             })));
         }

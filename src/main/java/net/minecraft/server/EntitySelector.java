@@ -17,7 +17,7 @@ public class EntitySelector {
     private final boolean b;
     private final boolean c;
     private final Predicate<Entity> d;
-    private final CriterionConditionValue.c e;
+    private final CriterionConditionValue.FloatRange e;
     private final Function<Vec3D, Vec3D> f;
     @Nullable
     private final AxisAlignedBB g;
@@ -30,12 +30,12 @@ public class EntitySelector {
     private final Class<? extends Entity> l;
     private final boolean m;
 
-    public EntitySelector(int i, boolean flag, boolean flag1, Predicate<Entity> predicate, CriterionConditionValue.c criterionconditionvalue_c, Function<Vec3D, Vec3D> function, @Nullable AxisAlignedBB axisalignedbb, BiConsumer<Vec3D, List<? extends Entity>> biconsumer, boolean flag2, @Nullable String s, @Nullable UUID uuid, Class<? extends Entity> oclass, boolean flag3) {
+    public EntitySelector(int i, boolean flag, boolean flag1, Predicate<Entity> predicate, CriterionConditionValue.FloatRange criterionconditionvalue_floatrange, Function<Vec3D, Vec3D> function, @Nullable AxisAlignedBB axisalignedbb, BiConsumer<Vec3D, List<? extends Entity>> biconsumer, boolean flag2, @Nullable String s, @Nullable UUID uuid, Class<? extends Entity> oclass, boolean flag3) {
         this.a = i;
         this.b = flag;
         this.c = flag1;
         this.d = predicate;
-        this.e = criterionconditionvalue_c;
+        this.e = criterionconditionvalue_floatrange;
         this.f = function;
         this.g = axisalignedbb;
         this.h = biconsumer;

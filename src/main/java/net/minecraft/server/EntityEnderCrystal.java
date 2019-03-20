@@ -93,13 +93,13 @@ public class EntityEnderCrystal extends Entity {
                 if (!this.world.isClientSide) {
                     if (!damagesource.isExplosion()) {
                         // CraftBukkit start
-                        ExplosionPrimeEvent event = new ExplosionPrimeEvent(this.getBukkitEntity(), 6.0F, true);
+                        ExplosionPrimeEvent event = new ExplosionPrimeEvent(this.getBukkitEntity(), 6.0F, false);
                         this.world.getServer().getPluginManager().callEvent(event);
                         if (event.isCancelled()) {
                             this.dead = false;
                             return false;
                         }
-                        this.world.explode(this, this.locX, this.locY, this.locZ, event.getRadius(), event.getFire());
+                        this.world.createExplosion(this, this.locX, this.locY, this.locZ, event.getRadius(), event.getFire(), true);
                         // CraftBukkit end
                     }
 

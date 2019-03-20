@@ -388,7 +388,7 @@ public class DispenserRegistry {
                 }
             }
         }));
-        BlockDispenser.a((IMaterial) Items.FLINT_AND_STEEL, (IDispenseBehavior) (new DispenserRegistry.c() {
+        BlockDispenser.a((IMaterial) Items.FLINT_AND_STEEL, (IDispenseBehavior) (new DispenserRegistry.DispenseBehaviorMaybe() {
             protected ItemStack a(ISourceBlock isourceblock, ItemStack itemstack) {
                 World world = isourceblock.getWorld();
 
@@ -443,7 +443,7 @@ public class DispenserRegistry {
                 return itemstack;
             }
         }));
-        BlockDispenser.a((IMaterial) Items.BONE_MEAL, (IDispenseBehavior) (new DispenserRegistry.c() {
+        BlockDispenser.a((IMaterial) Items.BONE_MEAL, (IDispenseBehavior) (new DispenserRegistry.DispenseBehaviorMaybe() {
             protected ItemStack a(ISourceBlock isourceblock, ItemStack itemstack) {
                 this.a = true;
                 World world = isourceblock.getWorld();
@@ -544,19 +544,19 @@ public class DispenserRegistry {
                 return itemstack;
             }
         }));
-        DispenserRegistry.c dispenserregistry_c = new DispenserRegistry.c() {
+        DispenserRegistry.DispenseBehaviorMaybe dispenserregistry_dispensebehaviormaybe = new DispenserRegistry.DispenseBehaviorMaybe() {
             protected ItemStack a(ISourceBlock isourceblock, ItemStack itemstack) {
                 this.a = !ItemArmor.a(isourceblock, itemstack).isEmpty();
                 return itemstack;
             }
         };
 
-        BlockDispenser.a((IMaterial) Items.CREEPER_HEAD, (IDispenseBehavior) dispenserregistry_c);
-        BlockDispenser.a((IMaterial) Items.ZOMBIE_HEAD, (IDispenseBehavior) dispenserregistry_c);
-        BlockDispenser.a((IMaterial) Items.DRAGON_HEAD, (IDispenseBehavior) dispenserregistry_c);
-        BlockDispenser.a((IMaterial) Items.SKELETON_SKULL, (IDispenseBehavior) dispenserregistry_c);
-        BlockDispenser.a((IMaterial) Items.PLAYER_HEAD, (IDispenseBehavior) dispenserregistry_c);
-        BlockDispenser.a((IMaterial) Items.WITHER_SKELETON_SKULL, (IDispenseBehavior) (new DispenserRegistry.c() {
+        BlockDispenser.a((IMaterial) Items.CREEPER_HEAD, (IDispenseBehavior) dispenserregistry_dispensebehaviormaybe);
+        BlockDispenser.a((IMaterial) Items.ZOMBIE_HEAD, (IDispenseBehavior) dispenserregistry_dispensebehaviormaybe);
+        BlockDispenser.a((IMaterial) Items.DRAGON_HEAD, (IDispenseBehavior) dispenserregistry_dispensebehaviormaybe);
+        BlockDispenser.a((IMaterial) Items.SKELETON_SKULL, (IDispenseBehavior) dispenserregistry_dispensebehaviormaybe);
+        BlockDispenser.a((IMaterial) Items.PLAYER_HEAD, (IDispenseBehavior) dispenserregistry_dispensebehaviormaybe);
+        BlockDispenser.a((IMaterial) Items.WITHER_SKELETON_SKULL, (IDispenseBehavior) (new DispenserRegistry.DispenseBehaviorMaybe() {
             protected ItemStack a(ISourceBlock isourceblock, ItemStack itemstack) {
                 World world = isourceblock.getWorld();
                 EnumDirection enumdirection = (EnumDirection) isourceblock.e().get(BlockDispenser.FACING);
@@ -603,7 +603,7 @@ public class DispenserRegistry {
                 return itemstack;
             }
         }));
-        BlockDispenser.a((IMaterial) Blocks.CARVED_PUMPKIN, (IDispenseBehavior) (new DispenserRegistry.c() {
+        BlockDispenser.a((IMaterial) Blocks.CARVED_PUMPKIN, (IDispenseBehavior) (new DispenserRegistry.DispenseBehaviorMaybe() {
             protected ItemStack a(ISourceBlock isourceblock, ItemStack itemstack) {
                 World world = isourceblock.getWorld();
                 BlockPosition blockposition = isourceblock.getBlockPosition().shift((EnumDirection) isourceblock.e().get(BlockDispenser.FACING));
@@ -829,7 +829,7 @@ public class DispenserRegistry {
         }
     }
 
-    static class d extends DispenserRegistry.c {
+    static class d extends DispenserRegistry.DispenseBehaviorMaybe {
 
         private d() {}
 
@@ -876,11 +876,11 @@ public class DispenserRegistry {
         }
     }
 
-    public abstract static class c extends DispenseBehaviorItem {
+    public abstract static class DispenseBehaviorMaybe extends DispenseBehaviorItem {
 
         protected boolean a = true;
 
-        public c() {}
+        public DispenseBehaviorMaybe() {}
 
         protected void a(ISourceBlock isourceblock) {
             isourceblock.getWorld().triggerEffect(this.a ? 1000 : 1001, isourceblock.getBlockPosition(), 0);

@@ -1987,12 +1987,12 @@ public abstract class EntityLiving extends Entity {
                 }
             } else {
                 float f9 = 0.91F;
-                BlockPosition.b blockposition_b = BlockPosition.b.d(this.locX, this.getBoundingBox().minY - 1.0D, this.locZ);
+                BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.d(this.locX, this.getBoundingBox().minY - 1.0D, this.locZ);
                 Throwable throwable = null;
 
                 try {
                     if (this.onGround) {
-                        f9 = this.world.getType(blockposition_b).getBlock().n() * 0.91F;
+                        f9 = this.world.getType(blockposition_pooledblockposition).getBlock().n() * 0.91F;
                     }
 
                     f4 = 0.16277137F / (f9 * f9 * f9);
@@ -2005,7 +2005,7 @@ public abstract class EntityLiving extends Entity {
                     this.a(f, f1, f2, f3);
                     f9 = 0.91F;
                     if (this.onGround) {
-                        f9 = this.world.getType(blockposition_b.c(this.locX, this.getBoundingBox().minY - 1.0D, this.locZ)).getBlock().n() * 0.91F;
+                        f9 = this.world.getType(blockposition_pooledblockposition.c(this.locX, this.getBoundingBox().minY - 1.0D, this.locZ)).getBlock().n() * 0.91F;
                     }
 
                     if (this.z_()) {
@@ -2034,8 +2034,8 @@ public abstract class EntityLiving extends Entity {
                         this.motY += (0.05D * (double) (this.getEffect(MobEffects.LEVITATION).getAmplifier() + 1) - this.motY) * 0.2D;
                         this.fallDistance = 0.0F;
                     } else {
-                        blockposition_b.c(this.locX, 0.0D, this.locZ);
-                        if (this.world.isClientSide && (!this.world.isLoaded(blockposition_b) || !this.world.getChunkAtWorldCoords(blockposition_b).y())) {
+                        blockposition_pooledblockposition.c(this.locX, 0.0D, this.locZ);
+                        if (this.world.isClientSide && (!this.world.isLoaded(blockposition_pooledblockposition) || !this.world.getChunkAtWorldCoords(blockposition_pooledblockposition).y())) {
                             if (this.locY > 0.0D) {
                                 this.motY = -0.1D;
                             } else {
@@ -2053,15 +2053,15 @@ public abstract class EntityLiving extends Entity {
                     throwable = throwable1;
                     throw throwable1;
                 } finally {
-                    if (blockposition_b != null) {
+                    if (blockposition_pooledblockposition != null) {
                         if (throwable != null) {
                             try {
-                                blockposition_b.close();
+                                blockposition_pooledblockposition.close();
                             } catch (Throwable throwable2) {
                                 throwable.addSuppressed(throwable2);
                             }
                         } else {
-                            blockposition_b.close();
+                            blockposition_pooledblockposition.close();
                         }
                     }
 

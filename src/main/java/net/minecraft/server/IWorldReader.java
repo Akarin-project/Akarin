@@ -230,14 +230,14 @@ public interface IWorldReader extends IBlockAccess {
         int l = MathHelper.f(axisalignedbb.maxY);
         int i1 = MathHelper.floor(axisalignedbb.minZ);
         int j1 = MathHelper.f(axisalignedbb.maxZ);
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         try {
             for (int k1 = i; k1 < j; ++k1) {
                 for (int l1 = k; l1 < l; ++l1) {
                     for (int i2 = i1; i2 < j1; ++i2) {
-                        IBlockData iblockdata = this.getType(blockposition_b.c(k1, l1, i2));
+                        IBlockData iblockdata = this.getType(blockposition_pooledblockposition.c(k1, l1, i2));
 
                         if (!iblockdata.s().e()) {
                             boolean flag = true;
@@ -253,15 +253,15 @@ public interface IWorldReader extends IBlockAccess {
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 

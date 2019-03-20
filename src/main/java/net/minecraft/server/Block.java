@@ -114,7 +114,7 @@ public class Block implements IMaterial {
 
     @Deprecated
     public void a(IBlockData iblockdata, GeneratorAccess generatoraccess, BlockPosition blockposition, int i) {
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         try {
@@ -124,25 +124,25 @@ public class Block implements IMaterial {
             for (int k = 0; k < j; ++k) {
                 EnumDirection enumdirection = aenumdirection[k];
 
-                blockposition_b.g(blockposition).c(enumdirection);
-                IBlockData iblockdata1 = generatoraccess.getType(blockposition_b);
-                IBlockData iblockdata2 = iblockdata1.updateState(enumdirection.opposite(), iblockdata, generatoraccess, blockposition_b, blockposition);
+                blockposition_pooledblockposition.g(blockposition).c(enumdirection);
+                IBlockData iblockdata1 = generatoraccess.getType(blockposition_pooledblockposition);
+                IBlockData iblockdata2 = iblockdata1.updateState(enumdirection.opposite(), iblockdata, generatoraccess, blockposition_pooledblockposition, blockposition);
 
-                a(iblockdata1, iblockdata2, generatoraccess, blockposition_b, i);
+                a(iblockdata1, iblockdata2, generatoraccess, blockposition_pooledblockposition, i);
             }
         } catch (Throwable throwable1) {
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 

@@ -49,7 +49,7 @@ public class BlockBeacon extends BlockTileEntity {
     }
 
     public static void a(World world, BlockPosition blockposition) {
-        //HttpUtilities.a.submit(() -> { // Paper
+        // HttpUtilities.a.submit(() -> { // CraftBukkit - dangerously threaded
             Chunk chunk = world.getChunkAtWorldCoords(blockposition);
 
             for (int i = blockposition.getY() - 1; i >= 0; --i) {
@@ -73,6 +73,7 @@ public class BlockBeacon extends BlockTileEntity {
                     });
                 }
             }
-     //   }); // Paper
+
+        // }); // CraftBukkit
     }
 }
