@@ -130,4 +130,10 @@ public class PacketPlayOutEntity implements Packet<PacketListenerPlayOut> {
             packetdataserializer.writeBoolean(this.g);
         }
     }
+    // Akarin start
+    @Override
+    public boolean canDispatchImmediately() {
+        return true;
+    }
+    // Akarin end
 }

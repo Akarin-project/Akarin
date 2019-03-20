@@ -73,4 +73,10 @@ public class PacketPlayOutCombatEvent implements Packet<PacketListenerPlayOut> {
 
         private EnumCombatEventType() {}
     }
+    // Akarin start
+    @Override
+    public boolean canDispatchImmediately() {
+        return true;
+    }
+    // Akarin end
 }

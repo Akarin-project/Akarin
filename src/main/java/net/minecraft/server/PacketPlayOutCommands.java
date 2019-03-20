@@ -260,4 +260,10 @@ public class PacketPlayOutCommands implements Packet<PacketListenerPlayOut> {
             return true;
         }
     }
+    // Akarin start
+    @Override
+    public boolean canDispatchImmediately() {
+        return true;
+    }
+    // Akarin end
 }

@@ -31,4 +31,10 @@ public class PacketPlayOutCollect implements Packet<PacketListenerPlayOut> {
     public void a(PacketListenerPlayOut packetlistenerplayout) {
         packetlistenerplayout.a(this);
     }
+    // Akarin start
+    @Override
+    public boolean canDispatchImmediately() {
+        return true;
+    }
+    // Akarin end
 }
