@@ -54,8 +54,8 @@ public class ArgumentParserSelector {
     private int n;
     private boolean o;
     private boolean p;
-    private CriterionConditionValue.c q;
-    private CriterionConditionValue.d r;
+    private CriterionConditionValue.FloatRange q;
+    private CriterionConditionValue.IntegerRange r;
     @Nullable
     private Double s;
     @Nullable
@@ -97,23 +97,9 @@ public class ArgumentParserSelector {
         this(stringreader, true);
     }
 
-    // CraftBukkit start - decompile error
-    private static final CriterionConditionValue.c DEFAULT_q;
-    private static final CriterionConditionValue.d DEFAULT_r;
-
-    static {
-        try {
-            DEFAULT_q = (CriterionConditionValue.c) Class.forName("net.minecraft.server.CriterionConditionValue$c").getDeclaredField("e").get(null);
-            DEFAULT_r = (CriterionConditionValue.d) Class.forName("net.minecraft.server.CriterionConditionValue$d").getDeclaredField("e").get(null);
-        } catch (Exception ex) {
-            throw new AssertionError(ex);
-        }
-    }
-
     public ArgumentParserSelector(StringReader stringreader, boolean flag) {
-        this.q = DEFAULT_q;
-        this.r = DEFAULT_r;
-        // CraftBukkit end
+        this.q = CriterionConditionValue.FloatRange.e;
+        this.r = CriterionConditionValue.IntegerRange.e;
         this.y = CriterionConditionRange.a;
         this.z = CriterionConditionRange.a;
         this.A = (entity) -> {
@@ -348,20 +334,20 @@ public class ArgumentParserSelector {
         this.p = true;
     }
 
-    public CriterionConditionValue.c h() {
+    public CriterionConditionValue.FloatRange h() {
         return this.q;
     }
 
-    public void a(CriterionConditionValue.c criterionconditionvalue_c) {
-        this.q = criterionconditionvalue_c;
+    public void a(CriterionConditionValue.FloatRange criterionconditionvalue_floatrange) {
+        this.q = criterionconditionvalue_floatrange;
     }
 
-    public CriterionConditionValue.d i() {
+    public CriterionConditionValue.IntegerRange i() {
         return this.r;
     }
 
-    public void a(CriterionConditionValue.d criterionconditionvalue_d) {
-        this.r = criterionconditionvalue_d;
+    public void a(CriterionConditionValue.IntegerRange criterionconditionvalue_integerrange) {
+        this.r = criterionconditionvalue_integerrange;
     }
 
     public CriterionConditionRange j() {

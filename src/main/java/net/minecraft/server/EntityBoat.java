@@ -431,7 +431,7 @@ public class EntityBoat extends Entity {
         int l = MathHelper.f(axisalignedbb.maxY - this.aN);
         int i1 = MathHelper.floor(axisalignedbb.minZ);
         int j1 = MathHelper.f(axisalignedbb.maxZ);
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         try {
@@ -441,8 +441,8 @@ public class EntityBoat extends Entity {
 
                 for (int l1 = i; l1 < j; ++l1) {
                     for (int i2 = i1; i2 < j1; ++i2) {
-                        blockposition_b.c(l1, k1, i2);
-                        Fluid fluid = this.world.getFluid(blockposition_b);
+                        blockposition_pooledblockposition.c(l1, k1, i2);
+                        Fluid fluid = this.world.getFluid(blockposition_pooledblockposition);
 
                         if (fluid.a(TagsFluid.WATER)) {
                             f = Math.max(f, (float) k1 + fluid.getHeight());
@@ -455,7 +455,7 @@ public class EntityBoat extends Entity {
                 }
 
                 if (f < 1.0F) {
-                    float f1 = (float) blockposition_b.getY() + f;
+                    float f1 = (float) blockposition_pooledblockposition.getY() + f;
 
                     return f1;
                 }
@@ -468,15 +468,15 @@ public class EntityBoat extends Entity {
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 
@@ -495,7 +495,7 @@ public class EntityBoat extends Entity {
         VoxelShape voxelshape = VoxelShapes.a(axisalignedbb1);
         float f = 0.0F;
         int k1 = 0;
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         try {
@@ -506,10 +506,10 @@ public class EntityBoat extends Entity {
                     if (j2 != 2) {
                         for (int k2 = k; k2 < l; ++k2) {
                             if (j2 <= 0 || k2 != k && k2 != l - 1) {
-                                blockposition_b.c(l1, k2, i2);
-                                IBlockData iblockdata = this.world.getType(blockposition_b);
+                                blockposition_pooledblockposition.c(l1, k2, i2);
+                                IBlockData iblockdata = this.world.getType(blockposition_pooledblockposition);
 
-                                if (!(iblockdata.getBlock() instanceof BlockWaterLily) && VoxelShapes.c(iblockdata.getCollisionShape(this.world, blockposition_b).a((double) l1, (double) k2, (double) i2), voxelshape, OperatorBoolean.AND)) {
+                                if (!(iblockdata.getBlock() instanceof BlockWaterLily) && VoxelShapes.c(iblockdata.getCollisionShape(this.world, blockposition_pooledblockposition).a((double) l1, (double) k2, (double) i2), voxelshape, OperatorBoolean.AND)) {
                                     f += iblockdata.getBlock().n();
                                     ++k1;
                                 }
@@ -522,15 +522,15 @@ public class EntityBoat extends Entity {
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 
@@ -550,15 +550,15 @@ public class EntityBoat extends Entity {
         boolean flag = false;
 
         this.aJ = Double.MIN_VALUE;
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         try {
             for (int k1 = i; k1 < j; ++k1) {
                 for (int l1 = k; l1 < l; ++l1) {
                     for (int i2 = i1; i2 < j1; ++i2) {
-                        blockposition_b.c(k1, l1, i2);
-                        Fluid fluid = this.world.getFluid(blockposition_b);
+                        blockposition_pooledblockposition.c(k1, l1, i2);
+                        Fluid fluid = this.world.getFluid(blockposition_pooledblockposition);
 
                         if (fluid.a(TagsFluid.WATER)) {
                             float f = (float) l1 + fluid.getHeight();
@@ -573,15 +573,15 @@ public class EntityBoat extends Entity {
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 
@@ -601,17 +601,17 @@ public class EntityBoat extends Entity {
         int i1 = MathHelper.floor(axisalignedbb.minZ);
         int j1 = MathHelper.f(axisalignedbb.maxZ);
         boolean flag = false;
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         try {
             for (int k1 = i; k1 < j; ++k1) {
                 for (int l1 = k; l1 < l; ++l1) {
                     for (int i2 = i1; i2 < j1; ++i2) {
-                        blockposition_b.c(k1, l1, i2);
-                        Fluid fluid = this.world.getFluid(blockposition_b);
+                        blockposition_pooledblockposition.c(k1, l1, i2);
+                        Fluid fluid = this.world.getFluid(blockposition_pooledblockposition);
 
-                        if (fluid.a(TagsFluid.WATER) && d0 < (double) ((float) blockposition_b.getY() + fluid.getHeight())) {
+                        if (fluid.a(TagsFluid.WATER) && d0 < (double) ((float) blockposition_pooledblockposition.getY() + fluid.getHeight())) {
                             if (!fluid.d()) {
                                 EntityBoat.EnumStatus entityboat_enumstatus = EntityBoat.EnumStatus.UNDER_FLOWING_WATER;
 
@@ -629,15 +629,15 @@ public class EntityBoat extends Entity {
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 

@@ -41,7 +41,7 @@ public abstract class FluidTypeFlowing extends FluidType {
     public Vec3D a(IWorldReader iworldreader, BlockPosition blockposition, Fluid fluid) {
         double d0 = 0.0D;
         double d1 = 0.0D;
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         Vec3D vec3d;
@@ -52,16 +52,16 @@ public abstract class FluidTypeFlowing extends FluidType {
             while (iterator.hasNext()) {
                 EnumDirection enumdirection = (EnumDirection) iterator.next();
 
-                blockposition_b.g(blockposition).c(enumdirection);
-                Fluid fluid1 = iworldreader.getFluid(blockposition_b);
+                blockposition_pooledblockposition.g(blockposition).c(enumdirection);
+                Fluid fluid1 = iworldreader.getFluid(blockposition_pooledblockposition);
 
                 if (this.g(fluid1)) {
                     float f = fluid1.getHeight();
                     float f1 = 0.0F;
 
                     if (f == 0.0F) {
-                        if (!iworldreader.getType(blockposition_b).getMaterial().isSolid()) {
-                            Fluid fluid2 = iworldreader.getFluid(blockposition_b.down());
+                        if (!iworldreader.getType(blockposition_pooledblockposition).getMaterial().isSolid()) {
+                            Fluid fluid2 = iworldreader.getFluid(blockposition_pooledblockposition.down());
 
                             if (this.g(fluid2)) {
                                 f = fluid2.getHeight();
@@ -89,8 +89,8 @@ public abstract class FluidTypeFlowing extends FluidType {
                 while (iterator1.hasNext()) {
                     EnumDirection enumdirection1 = (EnumDirection) iterator1.next();
 
-                    blockposition_b.g(blockposition).c(enumdirection1);
-                    if (this.a((IBlockAccess) iworldreader, (BlockPosition) blockposition_b, enumdirection1) || this.a((IBlockAccess) iworldreader, blockposition_b.up(), enumdirection1)) {
+                    blockposition_pooledblockposition.g(blockposition).c(enumdirection1);
+                    if (this.a((IBlockAccess) iworldreader, (BlockPosition) blockposition_pooledblockposition, enumdirection1) || this.a((IBlockAccess) iworldreader, blockposition_pooledblockposition.up(), enumdirection1)) {
                         vec3d1 = vec3d1.a().add(0.0D, -6.0D, 0.0D);
                         break;
                     }
@@ -102,15 +102,15 @@ public abstract class FluidTypeFlowing extends FluidType {
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 

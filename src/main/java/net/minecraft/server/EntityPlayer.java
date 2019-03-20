@@ -735,7 +735,13 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public EntityHuman.EnumBedResult a(BlockPosition blockposition) {
-        EntityHuman.EnumBedResult entityhuman_enumbedresult = super.a(blockposition);
+        // CraftBukkit start - add force parameter
+        return this.a(blockposition, false);
+    }
+
+    public EntityHuman.EnumBedResult a(BlockPosition blockposition, boolean force) {
+        EntityHuman.EnumBedResult entityhuman_enumbedresult = super.a(blockposition, force);
+        // CraftBukkit end
 
         if (entityhuman_enumbedresult == EntityHuman.EnumBedResult.OK) {
             this.a(StatisticList.SLEEP_IN_BED);

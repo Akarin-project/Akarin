@@ -143,13 +143,11 @@ public final class CraftChatMessage {
     }
 
     public static IChatBaseComponent fromStringOrNull(String message) {
-        // Paper start - fix up spigot tab API
         return fromStringOrNull(message, false);
     }
 
     public static IChatBaseComponent fromStringOrNull(String message, boolean keepNewlines) {
         return (message == null || message.isEmpty()) ? null : fromString(message, keepNewlines)[0];
-        // Paper end - fix up spigot tab API
     }
 
     public static IChatBaseComponent[] fromString(String message) {

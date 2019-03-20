@@ -56,7 +56,7 @@ public class BlockLeaves extends Block {
 
     private static IBlockData a(IBlockData iblockdata, GeneratorAccess generatoraccess, BlockPosition blockposition) {
         int i = 7;
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         try {
@@ -66,8 +66,8 @@ public class BlockLeaves extends Block {
             for (int k = 0; k < j; ++k) {
                 EnumDirection enumdirection = aenumdirection[k];
 
-                blockposition_b.g(blockposition).c(enumdirection);
-                i = Math.min(i, w(generatoraccess.getType(blockposition_b)) + 1);
+                blockposition_pooledblockposition.g(blockposition).c(enumdirection);
+                i = Math.min(i, w(generatoraccess.getType(blockposition_pooledblockposition)) + 1);
                 if (i == 1) {
                     break;
                 }
@@ -76,15 +76,15 @@ public class BlockLeaves extends Block {
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 

@@ -1131,22 +1131,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         double z = d2;
         float yaw = f;
         float pitch = f1;
-        if (set.contains(PacketPlayOutPosition.EnumPlayerTeleportFlags.X)) {
-            x += from.getX();
-        }
-        if (set.contains(PacketPlayOutPosition.EnumPlayerTeleportFlags.Y)) {
-            y += from.getY();
-        }
-        if (set.contains(PacketPlayOutPosition.EnumPlayerTeleportFlags.Z)) {
-            z += from.getZ();
-        }
-        if (set.contains(PacketPlayOutPosition.EnumPlayerTeleportFlags.Y_ROT)) {
-            yaw += from.getYaw();
-        }
-        if (set.contains(PacketPlayOutPosition.EnumPlayerTeleportFlags.X_ROT)) {
-            pitch += from.getPitch();
-        }
-
 
         Location to = new Location(this.getPlayer().getWorld(), x, y, z, yaw, pitch);
         PlayerTeleportEvent event = new PlayerTeleportEvent(player, from.clone(), to.clone(), cause);

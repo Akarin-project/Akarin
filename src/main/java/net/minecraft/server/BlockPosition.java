@@ -240,71 +240,71 @@ public class BlockPosition extends BaseBlockPosition {
         };
     }
 
-    public static final class b extends BlockPosition.MutableBlockPosition implements AutoCloseable {
+    public static final class PooledBlockPosition extends BlockPosition.MutableBlockPosition implements AutoCloseable {
 
         private boolean f;
-        private static final List<BlockPosition.b> g = Lists.newArrayList();
+        private static final List<BlockPosition.PooledBlockPosition> g = Lists.newArrayList();
 
-        private b(int i, int j, int k) {
+        private PooledBlockPosition(int i, int j, int k) {
             super(i, j, k);
         }
 
-        public static BlockPosition.b r() {
+        public static BlockPosition.PooledBlockPosition r() {
             return e(0, 0, 0);
         }
 
-        public static BlockPosition.b b(Entity entity) {
+        public static BlockPosition.PooledBlockPosition b(Entity entity) {
             return d(entity.locX, entity.locY, entity.locZ);
         }
 
-        public static BlockPosition.b d(double d0, double d1, double d2) {
+        public static BlockPosition.PooledBlockPosition d(double d0, double d1, double d2) {
             return e(MathHelper.floor(d0), MathHelper.floor(d1), MathHelper.floor(d2));
         }
 
-        public static BlockPosition.b e(int i, int j, int k) {
-            synchronized (BlockPosition.b.g) {
-                if (!BlockPosition.b.g.isEmpty()) {
-                    BlockPosition.b blockposition_b = (BlockPosition.b) BlockPosition.b.g.remove(BlockPosition.b.g.size() - 1);
+        public static BlockPosition.PooledBlockPosition e(int i, int j, int k) {
+            synchronized (BlockPosition.PooledBlockPosition.g) {
+                if (!BlockPosition.PooledBlockPosition.g.isEmpty()) {
+                    BlockPosition.PooledBlockPosition blockposition_pooledblockposition = (BlockPosition.PooledBlockPosition) BlockPosition.PooledBlockPosition.g.remove(BlockPosition.PooledBlockPosition.g.size() - 1);
 
-                    if (blockposition_b != null && blockposition_b.f) {
-                        blockposition_b.f = false;
-                        blockposition_b.c(i, j, k);
-                        return blockposition_b;
+                    if (blockposition_pooledblockposition != null && blockposition_pooledblockposition.f) {
+                        blockposition_pooledblockposition.f = false;
+                        blockposition_pooledblockposition.c(i, j, k);
+                        return blockposition_pooledblockposition;
                     }
                 }
             }
 
-            return new BlockPosition.b(i, j, k);
+            return new BlockPosition.PooledBlockPosition(i, j, k);
         }
 
-        public BlockPosition.b c(int i, int j, int k) {
-            return (BlockPosition.b) super.c(i, j, k);
+        public BlockPosition.PooledBlockPosition c(int i, int j, int k) {
+            return (BlockPosition.PooledBlockPosition) super.c(i, j, k);
         }
 
-        public BlockPosition.b c(double d0, double d1, double d2) {
-            return (BlockPosition.b) super.c(d0, d1, d2);
+        public BlockPosition.PooledBlockPosition c(double d0, double d1, double d2) {
+            return (BlockPosition.PooledBlockPosition) super.c(d0, d1, d2);
         }
 
-        public BlockPosition.b g(BaseBlockPosition baseblockposition) {
-            return (BlockPosition.b) super.g(baseblockposition);
+        public BlockPosition.PooledBlockPosition g(BaseBlockPosition baseblockposition) {
+            return (BlockPosition.PooledBlockPosition) super.g(baseblockposition);
         }
 
-        public BlockPosition.b c(EnumDirection enumdirection) {
-            return (BlockPosition.b) super.c(enumdirection);
+        public BlockPosition.PooledBlockPosition c(EnumDirection enumdirection) {
+            return (BlockPosition.PooledBlockPosition) super.c(enumdirection);
         }
 
-        public BlockPosition.b c(EnumDirection enumdirection, int i) {
-            return (BlockPosition.b) super.c(enumdirection, i);
+        public BlockPosition.PooledBlockPosition c(EnumDirection enumdirection, int i) {
+            return (BlockPosition.PooledBlockPosition) super.c(enumdirection, i);
         }
 
-        public BlockPosition.b d(int i, int j, int k) {
-            return (BlockPosition.b) super.d(i, j, k);
+        public BlockPosition.PooledBlockPosition d(int i, int j, int k) {
+            return (BlockPosition.PooledBlockPosition) super.d(i, j, k);
         }
 
         public void close() {
-            synchronized (BlockPosition.b.g) {
-                if (BlockPosition.b.g.size() < 100) {
-                    BlockPosition.b.g.add(this);
+            synchronized (BlockPosition.PooledBlockPosition.g) {
+                if (BlockPosition.PooledBlockPosition.g.size() < 100) {
+                    BlockPosition.PooledBlockPosition.g.add(this);
                 }
 
                 this.f = true;

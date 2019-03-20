@@ -1694,14 +1694,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         int l = MathHelper.f(axisalignedbb.maxY);
         int i1 = MathHelper.floor(axisalignedbb.minZ);
         int j1 = MathHelper.f(axisalignedbb.maxZ);
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         try {
             for (int k1 = i; k1 < j; ++k1) {
                 for (int l1 = k; l1 < l; ++l1) {
                     for (int i2 = i1; i2 < j1; ++i2) {
-                        IBlockData iblockdata = this.getType(blockposition_b.c(k1, l1, i2));
+                        IBlockData iblockdata = this.getType(blockposition_pooledblockposition.c(k1, l1, i2));
 
                         if (!iblockdata.isAir()) {
                             boolean flag = true;
@@ -1717,15 +1717,15 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 
@@ -1741,14 +1741,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         int j1 = MathHelper.f(axisalignedbb.maxZ);
 
         if (this.isAreaLoaded(i, k, i1, j, l, j1, true)) {
-            BlockPosition.b blockposition_b = BlockPosition.b.r();
+            BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
             Throwable throwable = null;
 
             try {
                 for (int k1 = i; k1 < j; ++k1) {
                     for (int l1 = k; l1 < l; ++l1) {
                         for (int i2 = i1; i2 < j1; ++i2) {
-                            Block block = this.getType(blockposition_b.c(k1, l1, i2)).getBlock();
+                            Block block = this.getType(blockposition_pooledblockposition.c(k1, l1, i2)).getBlock();
 
                             if (block == Blocks.FIRE || block == Blocks.LAVA) {
                                 boolean flag = true;
@@ -1764,15 +1764,15 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 throwable = throwable1;
                 throw throwable1;
             } finally {
-                if (blockposition_b != null) {
+                if (blockposition_pooledblockposition != null) {
                     if (throwable != null) {
                         try {
-                            blockposition_b.close();
+                            blockposition_pooledblockposition.close();
                         } catch (Throwable throwable2) {
                             throwable.addSuppressed(throwable2);
                         }
                     } else {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     }
                 }
 
@@ -1792,14 +1792,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         int j1 = MathHelper.f(axisalignedbb.maxZ);
 
         if (this.isAreaLoaded(i, k, i1, j, l, j1, true)) {
-            BlockPosition.b blockposition_b = BlockPosition.b.r();
+            BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
             Throwable throwable = null;
 
             try {
                 for (int k1 = i; k1 < j; ++k1) {
                     for (int l1 = k; l1 < l; ++l1) {
                         for (int i2 = i1; i2 < j1; ++i2) {
-                            IBlockData iblockdata = this.getType(blockposition_b.c(k1, l1, i2));
+                            IBlockData iblockdata = this.getType(blockposition_pooledblockposition.c(k1, l1, i2));
 
                             if (iblockdata.getBlock() == block) {
                                 IBlockData iblockdata1 = iblockdata;
@@ -1815,15 +1815,15 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 throwable = throwable1;
                 throw throwable1;
             } finally {
-                if (blockposition_b != null) {
+                if (blockposition_pooledblockposition != null) {
                     if (throwable != null) {
                         try {
-                            blockposition_b.close();
+                            blockposition_pooledblockposition.close();
                         } catch (Throwable throwable2) {
                             throwable.addSuppressed(throwable2);
                         }
                     } else {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     }
                 }
 
@@ -1841,14 +1841,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         int i1 = MathHelper.floor(axisalignedbb.minZ);
         int j1 = MathHelper.f(axisalignedbb.maxZ);
         MaterialPredicate materialpredicate = MaterialPredicate.a(material);
-        BlockPosition.b blockposition_b = BlockPosition.b.r();
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
         Throwable throwable = null;
 
         try {
             for (int k1 = i; k1 < j; ++k1) {
                 for (int l1 = k; l1 < l; ++l1) {
                     for (int i2 = i1; i2 < j1; ++i2) {
-                        if (materialpredicate.test(this.getType(blockposition_b.c(k1, l1, i2)))) {
+                        if (materialpredicate.test(this.getType(blockposition_pooledblockposition.c(k1, l1, i2)))) {
                             boolean flag = true;
 
                             return flag;
@@ -1862,15 +1862,15 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 
@@ -2202,7 +2202,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             } else if (i >= 14) {
                 return i;
             } else {
-                BlockPosition.b blockposition_b = BlockPosition.b.r();
+                BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
                 Throwable throwable = null;
 
                 try {
@@ -2212,8 +2212,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                     for (int l = 0; l < k; ++l) {
                         EnumDirection enumdirection = aenumdirection[l];
 
-                        blockposition_b.g(blockposition).c(enumdirection);
-                        int i1 = this.getBrightness(enumskyblock, blockposition_b) - j;
+                        blockposition_pooledblockposition.g(blockposition).c(enumdirection);
+                        int i1 = this.getBrightness(enumskyblock, blockposition_pooledblockposition) - j;
 
                         if (i1 > i) {
                             i = i1;
@@ -2231,15 +2231,15 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                     throwable = throwable1;
                     throw throwable1;
                 } finally {
-                    if (blockposition_b != null) {
+                    if (blockposition_pooledblockposition != null) {
                         if (throwable != null) {
                             try {
-                                blockposition_b.close();
+                                blockposition_pooledblockposition.close();
                             } catch (Throwable throwable2) {
                                 throwable.addSuppressed(throwable2);
                             }
                         } else {
-                            blockposition_b.close();
+                            blockposition_pooledblockposition.close();
                         }
                     }
 
@@ -2299,7 +2299,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                             j3 = MathHelper.a(j2 - j1);
                             k3 = MathHelper.a(k2 - k1);
                             if (i3 + j3 + k3 < 17) {
-                                BlockPosition.b blockposition_b = BlockPosition.b.r();
+                                BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
                                 Throwable throwable = null;
 
                                 try {
@@ -2312,10 +2312,10 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                                         int l4 = j2 + enumdirection.getAdjacentY();
                                         int i5 = k2 + enumdirection.getAdjacentZ();
 
-                                        blockposition_b.c(k4, l4, i5);
-                                        int j5 = Math.max(1, this.getType(blockposition_b).b(this, blockposition_b));
+                                        blockposition_pooledblockposition.c(k4, l4, i5);
+                                        int j5 = Math.max(1, this.getType(blockposition_pooledblockposition).b(this, blockposition_pooledblockposition));
 
-                                        l2 = this.getBrightness(enumskyblock, blockposition_b);
+                                        l2 = this.getBrightness(enumskyblock, blockposition_pooledblockposition);
                                         if (l2 == l3 - j5 && j < this.E.length) {
                                             this.E[j++] = k4 - i1 + 32 | l4 - j1 + 32 << 6 | i5 - k1 + 32 << 12 | l3 - j5 << 18;
                                         }
@@ -2324,15 +2324,15 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                                     throwable = throwable1;
                                     throw throwable1;
                                 } finally {
-                                    if (blockposition_b != null) {
+                                    if (blockposition_pooledblockposition != null) {
                                         if (throwable != null) {
                                             try {
-                                                blockposition_b.close();
+                                                blockposition_pooledblockposition.close();
                                             } catch (Throwable throwable2) {
                                                 throwable.addSuppressed(throwable2);
                                             }
                                         } else {
-                                            blockposition_b.close();
+                                            blockposition_pooledblockposition.close();
                                         }
                                     }
 

@@ -1319,10 +1319,14 @@ public abstract class EntityHuman extends EntityLiving {
 
     public EntityHuman.EnumBedResult a(BlockPosition blockposition, boolean force) {
         EnumDirection enumdirection = (EnumDirection) this.world.getType(blockposition).get(BlockFacingHorizontal.FACING);
-        EntityHuman.EnumBedResult bedResult = force ? EnumBedResult.OK : this.getBedResult(blockposition, enumdirection);
+        EntityHuman.EnumBedResult bedResult = this.getBedResult(blockposition, enumdirection);
 
         if (bedResult == EntityHuman.EnumBedResult.OTHER_PROBLEM) {
             return bedResult; // return immediately if the result is not bypassable by plugins
+        }
+
+        if (force) {
+            bedResult = EnumBedResult.OK;
         }
 
         if (this.getBukkitEntity() instanceof Player) {

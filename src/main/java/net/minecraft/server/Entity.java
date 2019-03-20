@@ -970,33 +970,33 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
     protected void checkBlockCollisions() {
         AxisAlignedBB axisalignedbb = this.getBoundingBox();
-        BlockPosition.b blockposition_b = BlockPosition.b.d(axisalignedbb.minX + 0.001D, axisalignedbb.minY + 0.001D, axisalignedbb.minZ + 0.001D);
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.d(axisalignedbb.minX + 0.001D, axisalignedbb.minY + 0.001D, axisalignedbb.minZ + 0.001D);
         Throwable throwable = null;
 
         try {
-            BlockPosition.b blockposition_b1 = BlockPosition.b.d(axisalignedbb.maxX - 0.001D, axisalignedbb.maxY - 0.001D, axisalignedbb.maxZ - 0.001D);
+            BlockPosition.PooledBlockPosition blockposition_pooledblockposition1 = BlockPosition.PooledBlockPosition.d(axisalignedbb.maxX - 0.001D, axisalignedbb.maxY - 0.001D, axisalignedbb.maxZ - 0.001D);
             Throwable throwable1 = null;
 
             try {
-                BlockPosition.b blockposition_b2 = BlockPosition.b.r();
+                BlockPosition.PooledBlockPosition blockposition_pooledblockposition2 = BlockPosition.PooledBlockPosition.r();
                 Throwable throwable2 = null;
 
                 try {
-                    if (this.world.areChunksLoadedBetween(blockposition_b, blockposition_b1)) {
-                        for (int i = blockposition_b.getX(); i <= blockposition_b1.getX(); ++i) {
-                            for (int j = blockposition_b.getY(); j <= blockposition_b1.getY(); ++j) {
-                                for (int k = blockposition_b.getZ(); k <= blockposition_b1.getZ(); ++k) {
-                                    blockposition_b2.c(i, j, k);
-                                    IBlockData iblockdata = this.world.getType(blockposition_b2);
+                    if (this.world.areChunksLoadedBetween(blockposition_pooledblockposition, blockposition_pooledblockposition1)) {
+                        for (int i = blockposition_pooledblockposition.getX(); i <= blockposition_pooledblockposition1.getX(); ++i) {
+                            for (int j = blockposition_pooledblockposition.getY(); j <= blockposition_pooledblockposition1.getY(); ++j) {
+                                for (int k = blockposition_pooledblockposition.getZ(); k <= blockposition_pooledblockposition1.getZ(); ++k) {
+                                    blockposition_pooledblockposition2.c(i, j, k);
+                                    IBlockData iblockdata = this.world.getType(blockposition_pooledblockposition2);
 
                                     try {
-                                        iblockdata.a(this.world, blockposition_b2, this);
+                                        iblockdata.a(this.world, blockposition_pooledblockposition2, this);
                                         this.a(iblockdata);
                                     } catch (Throwable throwable3) {
                                         CrashReport crashreport = CrashReport.a(throwable3, "Colliding entity with block");
                                         CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Block being collided with");
 
-                                        CrashReportSystemDetails.a(crashreportsystemdetails, blockposition_b2, iblockdata);
+                                        CrashReportSystemDetails.a(crashreportsystemdetails, blockposition_pooledblockposition2, iblockdata);
                                         throw new ReportedException(crashreport);
                                     }
                                 }
@@ -1007,15 +1007,15 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                     throwable2 = throwable4;
                     throw throwable4;
                 } finally {
-                    if (blockposition_b2 != null) {
+                    if (blockposition_pooledblockposition2 != null) {
                         if (throwable2 != null) {
                             try {
-                                blockposition_b2.close();
+                                blockposition_pooledblockposition2.close();
                             } catch (Throwable throwable5) {
                                 throwable2.addSuppressed(throwable5);
                             }
                         } else {
-                            blockposition_b2.close();
+                            blockposition_pooledblockposition2.close();
                         }
                     }
 
@@ -1024,15 +1024,15 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                 throwable1 = throwable6;
                 throw throwable6;
             } finally {
-                if (blockposition_b1 != null) {
+                if (blockposition_pooledblockposition1 != null) {
                     if (throwable1 != null) {
                         try {
-                            blockposition_b1.close();
+                            blockposition_pooledblockposition1.close();
                         } catch (Throwable throwable7) {
                             throwable1.addSuppressed(throwable7);
                         }
                     } else {
-                        blockposition_b1.close();
+                        blockposition_pooledblockposition1.close();
                     }
                 }
 
@@ -1041,15 +1041,15 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             throwable = throwable8;
             throw throwable8;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable9) {
                         throwable.addSuppressed(throwable9);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 
@@ -1153,26 +1153,26 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     }
 
     private boolean p() {
-        BlockPosition.b blockposition_b = BlockPosition.b.b(this);
+        BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.b(this);
         Throwable throwable = null;
 
         boolean flag;
 
         try {
-            flag = this.world.isRainingAt(blockposition_b) || this.world.isRainingAt(blockposition_b.c(this.locX, this.locY + (double) this.length, this.locZ));
+            flag = this.world.isRainingAt(blockposition_pooledblockposition) || this.world.isRainingAt(blockposition_pooledblockposition.c(this.locX, this.locY + (double) this.length, this.locZ));
         } catch (Throwable throwable1) {
             throwable = throwable1;
             throw throwable1;
         } finally {
-            if (blockposition_b != null) {
+            if (blockposition_pooledblockposition != null) {
                 if (throwable != null) {
                     try {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     } catch (Throwable throwable2) {
                         throwable.addSuppressed(throwable2);
                     }
                 } else {
-                    blockposition_b.close();
+                    blockposition_pooledblockposition.close();
                 }
             }
 
@@ -1981,7 +1981,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         if (this.noclip) {
             return false;
         } else {
-            BlockPosition.b blockposition_b = BlockPosition.b.r();
+            BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
             Throwable throwable = null;
 
             try {
@@ -1990,9 +1990,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                     int k = MathHelper.floor(this.locX + (double) (((float) ((i >> 1) % 2) - 0.5F) * this.width * 0.8F));
                     int l = MathHelper.floor(this.locZ + (double) (((float) ((i >> 2) % 2) - 0.5F) * this.width * 0.8F));
 
-                    if (blockposition_b.getX() != k || blockposition_b.getY() != j || blockposition_b.getZ() != l) {
-                        blockposition_b.c(k, j, l);
-                        if (this.world.getType(blockposition_b).r()) {
+                    if (blockposition_pooledblockposition.getX() != k || blockposition_pooledblockposition.getY() != j || blockposition_pooledblockposition.getZ() != l) {
+                        blockposition_pooledblockposition.c(k, j, l);
+                        if (this.world.getType(blockposition_pooledblockposition).r()) {
                             boolean flag = true;
 
                             return flag;
@@ -2005,15 +2005,15 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                 throwable = throwable1;
                 throw throwable1;
             } finally {
-                if (blockposition_b != null) {
+                if (blockposition_pooledblockposition != null) {
                     if (throwable != null) {
                         try {
-                            blockposition_b.close();
+                            blockposition_pooledblockposition.close();
                         } catch (Throwable throwable2) {
                             throwable.addSuppressed(throwable2);
                         }
                     } else {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     }
                 }
 
@@ -3145,15 +3145,15 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             boolean flag1 = false;
             Vec3D vec3d = Vec3D.a;
             int k1 = 0;
-            BlockPosition.b blockposition_b = BlockPosition.b.r();
+            BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
             Throwable throwable = null;
 
             try {
                 for (int l1 = i; l1 < j; ++l1) {
                     for (int i2 = k; i2 < l; ++i2) {
                         for (int j2 = i1; j2 < j1; ++j2) {
-                            blockposition_b.c(l1, i2, j2);
-                            Fluid fluid = this.world.getFluid(blockposition_b);
+                            blockposition_pooledblockposition.c(l1, i2, j2);
+                            Fluid fluid = this.world.getFluid(blockposition_pooledblockposition);
 
                             if (fluid.a(tag)) {
                                 double d1 = (double) ((float) i2 + fluid.getHeight());
@@ -3162,7 +3162,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                                     flag1 = true;
                                     d0 = Math.max(d1 - axisalignedbb.minY, d0);
                                     if (flag) {
-                                        Vec3D vec3d1 = fluid.a((IWorldReader) this.world, (BlockPosition) blockposition_b);
+                                        Vec3D vec3d1 = fluid.a((IWorldReader) this.world, (BlockPosition) blockposition_pooledblockposition);
 
                                         if (d0 < 0.4D) {
                                             vec3d1 = vec3d1.a(d0);
@@ -3180,15 +3180,15 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                 throwable = throwable1;
                 throw throwable1;
             } finally {
-                if (blockposition_b != null) {
+                if (blockposition_pooledblockposition != null) {
                     if (throwable != null) {
                         try {
-                            blockposition_b.close();
+                            blockposition_pooledblockposition.close();
                         } catch (Throwable throwable2) {
                             throwable.addSuppressed(throwable2);
                         }
                     } else {
-                        blockposition_b.close();
+                        blockposition_pooledblockposition.close();
                     }
                 }
 

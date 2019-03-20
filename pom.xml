@@ -85,7 +85,7 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>7.0</version>
+            <version>7.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -257,11 +257,13 @@
                             <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation> <!-- Paper -->
                             <createSourcesJar>${shadeSourcesJar}</createSourcesJar>
                             <relocations>
-                                <!-- Paper - Workaround for hardcoded path lookup in dependency, easier than forking it - GH-189 -->
-                                <!--<relocation>-->
-                                    <!--<pattern>joptsimple</pattern>-->
-                                    <!--<shadedPattern>org.bukkit.craftbukkit.libs.joptsimple</shadedPattern>-->
-                                <!--</relocation>-->
+                                <!-- Cannot be relocated as it breaks translation property keys -->
+                                <!--
+                                <relocation>
+                                    <pattern>joptsimple</pattern>
+                                    <shadedPattern>org.bukkit.craftbukkit.libs.joptsimple</shadedPattern>
+                                </relocation>
+                                -->
                                 <relocation>
                                     <pattern>jline</pattern>
                                     <shadedPattern>org.bukkit.craftbukkit.libs.jline</shadedPattern>
