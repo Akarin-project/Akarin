@@ -56,4 +56,10 @@ public class PacketPlayOutStatistic implements Packet<PacketListenerPlayOut> {
     private <T> int a(Statistic<T> statistic) {
         return statistic.a().a().a(statistic.b());
     }
+    // Akarin start
+    @Override
+    public boolean canDispatchImmediately() {
+        return true;
+    }
+    // Akarin end
 }
