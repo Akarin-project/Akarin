@@ -12,6 +12,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.kqueue.KQueue;
+import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -35,6 +37,11 @@ public class ServerConnection {
     public static final LazyInitVar<EpollEventLoopGroup> b = new LazyInitVar<>(() -> {
         return new EpollEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Epoll Server IO #%d").setDaemon(true).build());
     });
+    // Akarin start
+    public static final LazyInitVar<EpollEventLoopGroup> kQueue = new LazyInitVar<>(() -> {
+        return new EpollEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty KQueue Server IO #%d").setDaemon(true).build());
+    });
+    // Akarin end
     private final MinecraftServer e;
     public volatile boolean c;
     private final List<ChannelFuture> f = Collections.synchronizedList(Lists.newArrayList());
@@ -65,6 +72,12 @@ public class ServerConnection {
                 oclass = EpollServerSocketChannel.class;
                 lazyinitvar = ServerConnection.b;
                 ServerConnection.d.info("Using epoll channel type");
+                // Akarin start
+            } else if (KQueue.isAvailable()) {
+                oclass = KQueueServerSocketChannel.class;
+                lazyinitvar = ServerConnection.kQueue;
+                ServerConnection.d.info("Using kqueue channel type");
+                // Akarin end
             } else {
                 oclass = NioServerSocketChannel.class;
                 lazyinitvar = ServerConnection.a;
