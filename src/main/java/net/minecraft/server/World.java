@@ -1340,11 +1340,11 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             //this.methodProfiler.enter(* // Akarin - remove caller
             if (!entity.dead && !(entity instanceof EntityPlayer)) {
                 try {
-                    entity.tickTimer.startTiming(); // Paper
+                    entity.tickTimer.startTimingUnsafe(); // Paper
                     this.g(entity);
-                    entity.tickTimer.stopTiming(); // Paper
+                    entity.tickTimer.stopTimingUnsafe(); // Paper
                 } catch (Throwable throwable1) {
-                    entity.tickTimer.stopTiming();
+                    entity.tickTimer.stopTimingUnsafe();
                     // Paper start - Prevent tile entity and entity crashes
                     String msg = "Entity threw exception at " + entity.world.getWorld().getName() + ":" + entity.locX + "," + entity.locY + "," + entity.locZ;
                     System.err.println(msg);
@@ -1426,7 +1426,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                         //    return String.valueOf(TileEntityTypes.a(tileentity.C()));
                         //});
                         // Akarin end
-                        tileentity.tickTimer.startTiming(); // Spigot
+                        tileentity.tickTimer.startTimingUnsafe(); // Spigot
                         ((ITickable) tileentity).tick();
                         //this.methodProfiler.exit(); // Akarin - remove caller
                     } catch (Throwable throwable2) {
@@ -1442,7 +1442,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                     }
                     // Spigot start
                     finally {
-                        tileentity.tickTimer.stopTiming();
+                        tileentity.tickTimer.stopTimingUnsafe();
                     }
                     // Spigot end
                 }
