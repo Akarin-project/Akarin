@@ -190,7 +190,6 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     protected int numCollisions = 0; // Paper
     // Akarin start
     public boolean enderTeleport;
-    public boolean spirtingWaterParticle;
     // Akarin end
     public void inactiveTick() { }
     // Spigot end
@@ -463,10 +462,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         }
         */
 
-        // Akarin start - async executor
-        //this.av();
-        this.spirtingWaterParticle = true;
-        // Akarin end
+        //this.av(); // Akarin - this handle by the client
         this.r();
         if (this.world.isClientSide) {
             this.extinguish();
@@ -1285,7 +1281,6 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
     }
 
-    public void populateSprintingWaterParticles() { this.av(); } // Akarin - OBFHELPER
     public void av() {
         if (this.isSprinting() && !this.isInWater()) {
             this.aw();

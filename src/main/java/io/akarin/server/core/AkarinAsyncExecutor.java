@@ -30,13 +30,6 @@ public class AkarinAsyncExecutor extends Thread {
         MinecraftServer server = MinecraftServer.getServer();
         
         while (server.isRunning()) {
-            server.getWorlds().forEach(world -> world.entityList.forEach(entity -> {
-                if (!entity.dead && entity.spirtingWaterParticle) {
-                    entity.populateSprintingWaterParticles();
-                    entity.spirtingWaterParticle = false;
-                }
-            }));
-            
             try {
                 Thread.sleep(STD_TICK_TIME);
             } catch (InterruptedException interrupted) {
