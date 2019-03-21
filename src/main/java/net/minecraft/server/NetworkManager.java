@@ -242,7 +242,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
     // Akarin end
-    public final void sendPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) { // Akarin - add final
+    public void sendPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
         if (this.isConnected() /*&& this.sendPacketQueue() && !(packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady())*/) { // Paper - Async-Anti-Xray - Add chunk packets which are not ready or all packets if the packet queue contains chunk packets which are not ready to the packet queue and send the packets later in the right order // Akarin
             //this.o(); // Paper - Async-Anti-Xray - Move to if statement (this.sendPacketQueue())
             // Akarin start
