@@ -7,7 +7,7 @@ import net.minecraft.server.MinecraftServer;
 
 public class AkarinAsyncExecutor extends Thread {
     private final static Logger LOGGER = LogManager.getLogger("Akarin");
-    private final static int STD_TICK_TIME = 20;
+    private final static int STD_TICK_TIME = 50;
     
     public static AkarinAsyncExecutor initalise() {
         return Singleton.instance;
