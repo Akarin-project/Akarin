@@ -406,12 +406,12 @@ public class Block implements IMaterial {
 
     @Deprecated
     public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1) {
-        org.spigotmc.AsyncCatcher.catchOp( "block onPlace"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "block onPlace"); // Spigot // Akarin
     }
 
     @Deprecated
     public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
-        org.spigotmc.AsyncCatcher.catchOp( "block remove"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "block remove"); // Spigot // Akarin
     }
 
     public int a(IBlockData iblockdata, Random random) {

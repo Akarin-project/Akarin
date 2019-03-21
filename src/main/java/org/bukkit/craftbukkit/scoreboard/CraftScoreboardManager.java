@@ -43,7 +43,7 @@ public final class CraftScoreboardManager implements ScoreboardManager {
     }
 
     public CraftScoreboard getNewScoreboard() {
-        org.spigotmc.AsyncCatcher.catchOp( "scoreboard creation"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "scoreboard creation"); // Spigot // Akarin
         CraftScoreboard scoreboard = new CraftScoreboard(new ScoreboardServer(server));
         scoreboards.add(scoreboard);
         return scoreboard;

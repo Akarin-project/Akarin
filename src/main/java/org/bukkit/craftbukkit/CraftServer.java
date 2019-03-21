@@ -707,7 +707,7 @@ public final class CraftServer implements Server {
     public boolean dispatchCommand(CommandSender sender, String commandLine) {
         Validate.notNull(sender, "Sender cannot be null");
         Validate.notNull(commandLine, "CommandLine cannot be null");
-        org.spigotmc.AsyncCatcher.catchOp( "command dispatch" ); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "command dispatch" ); // Spigot // Akarin
 
         // Paper Start
         if (!org.spigotmc.AsyncCatcher.shuttingDown && !ThreadAssertion.isMainThread() && !Bukkit.isPrimaryThread()) { // Akarin

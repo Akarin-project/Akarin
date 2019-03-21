@@ -105,7 +105,7 @@ public class EntityTracker {
     }
 
     public void addEntity(Entity entity, int originalRange, int j, boolean flag) { // Spigot
-        org.spigotmc.AsyncCatcher.catchOp( "entity track"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "entity track"); // Spigot // Akarin
         int i = org.spigotmc.TrackingRange.getEntityTrackingRange(entity, originalRange); // Spigot
         try {
             if (this.trackedEntities.b(entity.getId())) {
@@ -144,7 +144,7 @@ public class EntityTracker {
     }
 
     public void untrackEntity(Entity entity) {
-        org.spigotmc.AsyncCatcher.catchOp( "entity untrack"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "entity untrack"); // Spigot // Akarin
         if (entity instanceof EntityPlayer) {
             EntityPlayer entityplayer = (EntityPlayer) entity;
             Iterator iterator = this.c.iterator();

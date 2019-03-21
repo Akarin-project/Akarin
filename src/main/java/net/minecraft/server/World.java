@@ -1088,7 +1088,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             return regionLimited.addEntity(entity, spawnReason);
         }
         // Paper end
-        org.spigotmc.AsyncCatcher.catchOp( "entity add"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "entity add"); // Spigot // Akarin
         if (entity.valid) { MinecraftServer.LOGGER.error("Attempted Double World add on " + entity, new Throwable()); return true; } // Paper
         if (!CraftEventFactory.doEntityAddEventCalling(this, entity, spawnReason)) {
             return false;
@@ -1149,7 +1149,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void kill(Entity entity) {
-        org.spigotmc.AsyncCatcher.catchOp( "entity kill"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "entity kill"); // Spigot // Akarin
         if (entity.isVehicle()) {
             entity.ejectPassengers();
         }
@@ -1190,7 +1190,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void removeEntity(Entity entity) {
-        org.spigotmc.AsyncCatcher.catchOp( "entity remove"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "entity remove"); // Spigot // Akarin
         entity.b(false);
         entity.die();
         if (entity instanceof EntityHuman) {
@@ -2542,7 +2542,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
     public void addChunkEntities(Stream<Entity> collection) { a(collection); } // Paper - OBFHELPER
     public void a(Stream<Entity> stream) {
-        org.spigotmc.AsyncCatcher.catchOp( "entity world add"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "entity world add"); // Spigot // Akarin
         stream.forEach((entity) -> {
             if (entity == null || entity.dead || entity.valid) { // Paper - prevent adding already added or dead entities
                 return;

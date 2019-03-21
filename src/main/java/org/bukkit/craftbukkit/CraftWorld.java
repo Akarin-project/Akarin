@@ -223,7 +223,7 @@ public class CraftWorld implements World {
     }
 
     public boolean unloadChunkRequest(int x, int z, boolean safe) {
-        org.spigotmc.AsyncCatcher.catchOp( "chunk unload"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "chunk unload"); // Spigot // Akarin
         if (safe && isChunkInUse(x, z)) {
             return false;
         }
@@ -237,7 +237,7 @@ public class CraftWorld implements World {
     }
 
     public boolean unloadChunk(int x, int z, boolean save, boolean safe) {
-        org.spigotmc.AsyncCatcher.catchOp( "chunk unload" ); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "chunk unload" ); // Spigot // Akarin
         if (isChunkInUse(x, z)) {
             return false;
         }
@@ -258,7 +258,7 @@ public class CraftWorld implements World {
     }
 
     public boolean regenerateChunk(int x, int z) {
-        org.spigotmc.AsyncCatcher.catchOp( "chunk regenerate" ); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "chunk regenerate" ); // Spigot // Akarin
         if (!unloadChunk0(x, z, false)) {
             return false;
         }
@@ -304,7 +304,7 @@ public class CraftWorld implements World {
     }
 
     public boolean loadChunk(int x, int z, boolean generate) {
-        org.spigotmc.AsyncCatcher.catchOp( "chunk load"); // Spigot
+        //org.spigotmc.AsyncCatcher.catchOp( "chunk load"); // Spigot // Akarin
         chunkLoadCount++;
         return world.getChunkProvider().getChunkAt(x, z, true, generate || isChunkGenerated(x, z)) != null; // Paper
     }
