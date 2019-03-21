@@ -1480,7 +1480,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    public final void sendPacket(Packet<?> packet) { // Akarin - add final
+    public void sendPacket(Packet<?> packet) {
         this.a(packet, (GenericFutureListener) null);
     }
     // Akarin start
@@ -1555,7 +1555,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     }
     // Akarin end
 
-    public final void a(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) { // Akarin - add final
+    public void a(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
         if (packet == null) return; // Akarin - GH-72
         if (packet.getType() == PacketType.PLAY_OUT_CHAT) { // Akarin
             PacketPlayOutChat packetplayoutchat = (PacketPlayOutChat) packet;
