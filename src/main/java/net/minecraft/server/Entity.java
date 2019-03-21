@@ -188,7 +188,10 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     public boolean fromMobSpawner;
     public boolean spawnedViaMobSpawner; // Paper - Yes this name is similar to above, upstream took the better one
     protected int numCollisions = 0; // Paper
-    public boolean joinedWorld; // Akarin
+    // Akarin start
+    public boolean enderTeleport;
+    public boolean spirtingWaterParticle;
+    // Akarin end
     public void inactiveTick() { }
     // Spigot end
 
@@ -460,7 +463,10 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         }
         */
 
-        this.av();
+        // Akarin start - async executor
+        //this.av();
+        this.spirtingWaterParticle = true;
+        // Akarin end
         this.r();
         if (this.world.isClientSide) {
             this.extinguish();
@@ -1279,6 +1285,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
 
     }
 
+    public void populateSprintingWaterParticles() { this.av(); } // Akarin - OBFHELPER
     public void av() {
         if (this.isSprinting() && !this.isInWater()) {
             this.aw();
@@ -2806,9 +2813,11 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     }
 
     public void enderTeleportTo(double d0, double d1, double d2) {
+        this.enderTeleport = true; // Akarin
         this.aK = true;
         this.setPositionRotation(d0, d1, d2, this.yaw, this.pitch);
         this.world.entityJoinedWorld(this, false);
+        this.enderTeleport = false; // Akarin
     }
 
     public void a(DataWatcherObject<?> datawatcherobject) {}

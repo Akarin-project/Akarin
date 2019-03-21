@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -192,7 +193,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
         this.ticksPerMonsterSpawns = this.getServer().getTicksPerMonsterSpawns(); // CraftBukkit
         // CraftBukkit end
-        this.v = Lists.newArrayList(new IWorldAccess[] { this.u});
+        this.v = new CopyOnWriteArrayList<IWorldAccess>(new IWorldAccess[] { this.u}); // Akarin - ArrayList -> CopyOnWriteArrayList
         this.allowMonsters = true;
         this.allowAnimals = true;
         this.E = new int['\u8000'];
@@ -1554,7 +1555,6 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             return;
         }
         // CraftBukkit end
-        entity.joinedWorld = true; // Akarin
 
         entity.N = entity.locX;
         entity.O = entity.locY;
@@ -1629,7 +1629,6 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 }
             }
         }
-        entity.joinedWorld = false; // Akarin
     }
 
     // Paper start - Based on method below
