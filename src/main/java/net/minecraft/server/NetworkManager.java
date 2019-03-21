@@ -257,7 +257,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         EnumProtocol enumprotocol = EnumProtocol.a(packet);
         EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
 
-        //++this.r; // Akarin - meaningless
+        //++this.r; // Akarin - unused
         if (enumprotocol1 != enumprotocol) {
             NetworkManager.g.debug("Disabled auto read");
             this.channel.config().setAutoRead(false);

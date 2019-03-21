@@ -2,6 +2,10 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.koloboke.collect.map.hash.HashIntObjMaps;
+import com.koloboke.collect.map.hash.HashObjIntMap;
+import com.koloboke.collect.map.hash.HashObjIntMaps;
+
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
 import java.io.IOException;
@@ -20,9 +24,9 @@ import org.apache.logging.log4j.Logger;
 public class DataWatcher {
 
     private static final Logger a = LogManager.getLogger();
-    private static final Map<Class<? extends Entity>, Integer> b = Maps.newHashMap();
+    private static final Map<Class<? extends Entity>, Integer> b = HashObjIntMaps.newMutableMap(255); private static final HashObjIntMap<Class<? extends Entity>> entityTypeToIdMap() { return (HashObjIntMap<Class<? extends Entity>>) b; }// Akarin
     private final Entity c;
-    private final Map<Integer, DataWatcher.Item<?>> d = new Int2ObjectOpenHashMap<>(); // Paper
+    private final Map<Integer, DataWatcher.Item<?>> d = HashIntObjMaps.newMutableMap(255); // Paper // Akarin
     private final ReadWriteLock e = new ReentrantReadWriteLock();
     private boolean f = true;
     private boolean g;
@@ -44,18 +48,23 @@ public class DataWatcher {
             }
         }
 
-        int i;
+        // Akarin start
+        int i = entityTypeToIdMap().getOrDefault(oclass, -1);
 
-        if (DataWatcher.b.containsKey(oclass)) {
-            i = (Integer) DataWatcher.b.get(oclass) + 1;
+        if (i != -1) {
+            i = i + 1;
+            // Akarin end
         } else {
             int j = 0;
             Class oclass2 = oclass;
 
             while (oclass2 != Entity.class) {
                 oclass2 = oclass2.getSuperclass();
-                if (DataWatcher.b.containsKey(oclass2)) {
-                    j = (Integer) DataWatcher.b.get(oclass2) + 1;
+                // Akarin start
+                int superId = entityTypeToIdMap().getOrDefault(oclass2, -1);
+                if (superId != -1) {
+                    j = superId + 1;
+                    // Akarin end
                     break;
                 }
             }
