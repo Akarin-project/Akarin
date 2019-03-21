@@ -1261,8 +1261,10 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             // CraftBukkit end
 
             try {
+                if (!entity.dead) { // Akarin start - do not tick dead entity
                 ++entity.ticksLived;
                 entity.tick();
+                } // Akarin end
             } catch (Throwable throwable) {
                 CrashReport crashreport = CrashReport.a(throwable, "Ticking entity");
                 CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Entity being ticked");
