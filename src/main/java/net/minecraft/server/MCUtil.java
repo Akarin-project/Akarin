@@ -118,7 +118,7 @@ public final class MCUtil {
      * @return
      */
     public static void ensureMain(String reason, Runnable run) {
-        if (/*AsyncCatcher.enabled*/ && !ThreadAssertion.isMainThread() && Thread.currentThread() != MinecraftServer.getServer().primaryThread) { // Akarin
+        if (/*AsyncCatcher.enabled &&*/ !ThreadAssertion.isMainThread() && Thread.currentThread() != MinecraftServer.getServer().primaryThread) { // Akarin
             if (reason != null) {
                 new IllegalStateException("Asynchronous " + reason + "!").printStackTrace();
             }
