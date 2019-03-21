@@ -1871,7 +1871,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     }
 
     // CraftBukkit start
-    @Deprecated
+    //@Deprecated // Akarin - remove deprecated
     public static MinecraftServer getServer() {
         return SERVER;
     }
