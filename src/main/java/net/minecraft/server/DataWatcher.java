@@ -2,7 +2,6 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.koloboke.collect.map.hash.HashIntObjMaps;
 import com.koloboke.collect.map.hash.HashObjIntMap;
 import com.koloboke.collect.map.hash.HashObjIntMaps;
 
@@ -13,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
@@ -26,7 +26,7 @@ public class DataWatcher {
     private static final Logger a = LogManager.getLogger();
     private static final Map<Class<? extends Entity>, Integer> b = HashObjIntMaps.newMutableMap(255); private static final HashObjIntMap<Class<? extends Entity>> entityTypeToIdMap() { return (HashObjIntMap<Class<? extends Entity>>) b; }// Akarin
     private final Entity c;
-    private final Map<Integer, DataWatcher.Item<?>> d = HashIntObjMaps.newMutableMap(255); // Paper // Akarin
+    private final Map<Integer, DataWatcher.Item<?>> d = new ConcurrentHashMap<Integer, DataWatcher.Item<?>>(255); // Paper // Akarin
     private final ReadWriteLock e = new ReentrantReadWriteLock();
     private boolean f = true;
     private boolean g;
@@ -97,14 +97,14 @@ public class DataWatcher {
     private <T> void registerObject(DataWatcherObject<T> datawatcherobject, T t0) {
         DataWatcher.Item<T> datawatcher_item = new DataWatcher.Item<>(datawatcherobject, t0);
 
-        this.e.writeLock().lock();
+        //this.e.writeLock().lock(); // Akarin
         this.d.put(datawatcherobject.a(), datawatcher_item);
         this.f = false;
-        this.e.writeLock().unlock();
+        //this.e.writeLock().unlock(); // Akarin
     }
 
     private <T> DataWatcher.Item<T> b(DataWatcherObject<T> datawatcherobject) {
-        this.e.readLock().lock();
+        //this.e.readLock().lock(); // Akarin
 
         DataWatcher.Item datawatcher_item;
 
@@ -118,7 +118,7 @@ public class DataWatcher {
             throw new ReportedException(crashreport);
         }
 
-        this.e.readLock().unlock();
+        //this.e.readLock().unlock(); // Akarin
         return datawatcher_item;
     }
 
@@ -166,7 +166,7 @@ public class DataWatcher {
         List<DataWatcher.Item<?>> list = null;
 
         if (this.g) {
-            this.e.readLock().lock();
+            //this.e.readLock().lock(); // Akarin
             Iterator iterator = this.d.values().iterator();
 
             while (iterator.hasNext()) {
@@ -182,7 +182,7 @@ public class DataWatcher {
                 }
             }
 
-            this.e.readLock().unlock();
+            //this.e.readLock().unlock(); // Akarin
         }
 
         this.g = false;
@@ -190,7 +190,7 @@ public class DataWatcher {
     }
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
-        this.e.readLock().lock();
+        //this.e.readLock().lock(); // Akarin
         Iterator iterator = this.d.values().iterator();
 
         while (iterator.hasNext()) {
@@ -199,7 +199,7 @@ public class DataWatcher {
             a(packetdataserializer, datawatcher_item);
         }
 
-        this.e.readLock().unlock();
+        //this.e.readLock().unlock(); // Akarin
         packetdataserializer.writeByte(255);
     }
 
@@ -207,7 +207,7 @@ public class DataWatcher {
     public List<DataWatcher.Item<?>> c() {
         List<DataWatcher.Item<?>> list = null;
 
-        this.e.readLock().lock();
+        //this.e.readLock().lock(); // Akarin
 
         DataWatcher.Item datawatcher_item;
 
@@ -218,7 +218,7 @@ public class DataWatcher {
             }
         }
 
-        this.e.readLock().unlock();
+        //this.e.readLock().unlock(); // Akarin
         return list;
     }
 
@@ -269,7 +269,7 @@ public class DataWatcher {
 
     public void e() {
         this.g = false;
-        this.e.readLock().lock();
+        //this.e.readLock().lock(); // Akarin
         Iterator iterator = this.d.values().iterator();
 
         while (iterator.hasNext()) {
@@ -278,7 +278,7 @@ public class DataWatcher {
             datawatcher_item.a(false);
         }
 
-        this.e.readLock().unlock();
+        //this.e.readLock().unlock(); // Akarin
     }
 
     public static class Item<T> {
