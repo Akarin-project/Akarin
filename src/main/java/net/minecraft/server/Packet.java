@@ -27,7 +27,7 @@ public interface Packet<T extends PacketListener> {
     }
 
     public default boolean canDispatchImmediately() {
-        return false;
+        return true;
     }
     // Akarin end
 }

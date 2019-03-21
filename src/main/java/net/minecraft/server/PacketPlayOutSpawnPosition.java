@@ -28,10 +28,5 @@ public class PacketPlayOutSpawnPosition implements Packet<PacketListenerPlayOut>
     public io.akarin.server.core.PacketType getType() {
         return io.akarin.server.core.PacketType.PLAY_OUT_SPAWN_POSITION;
     }
-
-    @Override
-    public boolean canDispatchImmediately() {
-        return true;
-    }
     // Akarin end
 }

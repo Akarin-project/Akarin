@@ -1,6 +1,8 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.akarin.server.core.PacketType;
@@ -8,6 +10,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultEventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -18,10 +21,13 @@ import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.concurrent.PromiseNotifier;
 
 import java.net.SocketAddress;
+import java.nio.channels.Channels;
 import java.util.Iterator;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
@@ -47,7 +53,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         return new DefaultEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Local Client IO #%d").setDaemon(true).build());
     });
     private final EnumProtocolDirection h;
-    private final io.akarin.server.misc.CheckedConcurrentLinkedQueue<NetworkManager.QueuedPacket> packetQueue = new io.akarin.server.misc.CheckedConcurrentLinkedQueue<NetworkManager.QueuedPacket>();  private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.packetQueue; } // Paper - OBFHELPER // Akarin
+    private final ConcurrentLinkedQueue<NetworkManager.QueuedPacket> packetQueue = new ConcurrentLinkedQueue<NetworkManager.QueuedPacket>();  private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.packetQueue; } // Paper - OBFHELPER // Akarin
+    private final Queue<PacketPlayOutMapChunk> pendingChunkQueue = Lists.newLinkedList(); // Akarin - remove packet queue
     private final ReentrantReadWriteLock j = new ReentrantReadWriteLock();
     public Channel channel;
     public SocketAddress socketAddress; public void setSpoofedRemoteAddress(SocketAddress address) { this.socketAddress = address; } // Paper - OBFHELPER
@@ -165,80 +172,53 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         this.packetListener = packetlistener;
     }
 
-    public final void sendPacket(Packet<?> packet) { // Akarin - add final
+    public void sendPacket(Packet<?> packet) {
         this.sendPacket(packet, (GenericFutureListener) null);
     }
 
     // Akarin start
     public final void sendPackets(Packet<?> packet0, Packet<?> packet1) {
         if (this.isConnected()) { // why send packet to whom not connected?
-            this.j.readLock().lock();
-            try {
-                // Send queued packets
-                this.sendPacketQueueUnsafe();
+            //this.j.readLock().lock();
+            //try {
                 // Queue new packets
-                this.packetQueue.offer(new QueuedPacket(packet0, null));
-                this.packetQueue.offer(new QueuedPacket(packet1, null));
-            } finally {
-                this.j.readLock().unlock();
-            }
+                this.dispatchPacket(packet0, null);
+                this.dispatchPacket(packet1, null);
+            //} finally {
+            //    this.j.readLock().unlock();
+            //}
         }
     }
 
     public final void sendPackets(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2) {
         if (this.isConnected()) { // why send packet to whom not connected?
-            this.j.readLock().lock();
-            try {
-                // Send queued packets
-                this.sendPacketQueueUnsafe();
+            //this.j.readLock().lock();
+            //try {
                 // Queue new packets
-                this.packetQueue.offer(new QueuedPacket(packet0, null));
-                this.packetQueue.offer(new QueuedPacket(packet1, null));
-                this.packetQueue.offer(new QueuedPacket(packet2, null));
-            } finally {
-                this.j.readLock().unlock();
-            }
+                this.dispatchPacket(packet0, null);
+                this.dispatchPacket(packet1, null);
+                this.dispatchPacket(packet2, null);
+            //} finally {
+            //this.j.readLock().unlock();
+            //}
         }
     }
 
     public final void sendPackets(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2, Packet<?> packet3, Packet<?> packet4, Packet<?> packet5, Packet<?> packet6) {
         if (this.isConnected()) { // why send packet to whom not connected?
-            this.j.readLock().lock();
-            try {
-                // Send queued packets
-                this.sendPacketQueueUnsafe();
+            //this.j.readLock().lock();
+            //try {
                 // Queue new packets
-                this.packetQueue.offer(new QueuedPacket(packet0, null));
-                this.packetQueue.offer(new QueuedPacket(packet1, null));
-                this.packetQueue.offer(new QueuedPacket(packet2, null));
-                this.packetQueue.offer(new QueuedPacket(packet3, null));
-                this.packetQueue.offer(new QueuedPacket(packet4, null));
-                this.packetQueue.offer(new QueuedPacket(packet5, null));
-                this.packetQueue.offer(new QueuedPacket(packet6, null));
-            } finally {
-                this.j.readLock().unlock();
-            }
-        }
-    }
-
-    private final void dispatchOrQueuePacketUnsafe(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
-        if (packet.canDispatchImmediately()) {
-            this.dispatchPacket(packet, genericfuturelistener);
-        } else {
-            this.packetQueue.offer(new QueuedPacket(packet, genericfuturelistener));
-        }
-    }
-
-    private final void sendPacketQueueUnsafe() {
-        while (!this.packetQueue.isEmpty()) {
-            QueuedPacket queuedPacket = this.packetQueue.poll(packet ->
-                packet != null && (
-                    !(packet.getPacket().getType() == PacketType.PLAY_OUT_MAP_CHUNK) ||
-                    (((PacketPlayOutMapChunk) packet.getPacket()).isReady())
-                ), null);
-
-            if (queuedPacket != null)
-                this.dispatchPacket(queuedPacket.getPacket(), queuedPacket.getGenericFutureListener());
+                this.dispatchPacket(packet0, null);
+                this.dispatchPacket(packet1, null);
+                this.dispatchPacket(packet2, null);
+                this.dispatchPacket(packet3, null);
+                this.dispatchPacket(packet4, null);
+                this.dispatchPacket(packet5, null);
+                this.dispatchPacket(packet6, null);
+            //} finally {
+            //this.j.readLock().unlock();
+            //}
         }
     }
     // Akarin end
@@ -246,16 +226,13 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         if (this.isConnected() /*&& this.sendPacketQueue() && !(packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady())*/) { // Paper - Async-Anti-Xray - Add chunk packets which are not ready or all packets if the packet queue contains chunk packets which are not ready to the packet queue and send the packets later in the right order // Akarin
             //this.o(); // Paper - Async-Anti-Xray - Move to if statement (this.sendPacketQueue())
             // Akarin start
-            this.j.readLock().lock();
-            try {
-                // Send queued packets
-                this.sendPacketQueueUnsafe();
+            //this.j.readLock().lock();
+            //try {
                 // Dispatch or queue new packets
-                this.dispatchOrQueuePacketUnsafe(packet, genericfuturelistener);
-            } finally {
-                this.j.readLock().unlock();
-            }
-            //this.dispatchPacket(packet, genericfuturelistener);
+                this.dispatchPacket(packet, genericfuturelistener);
+            //} finally {
+            //    this.j.readLock().unlock();
+            //}
         } else if (false) {
             // Akarin end
             this.j.writeLock().lock();
@@ -269,8 +246,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     }
 
-    private final void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER // Akarin - add final
-    private void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
+    // Akarin start
+    private final void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
+    private final void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
+        if (!packet.canDispatchImmediately() && packet.getType() == PacketType.PLAY_OUT_MAP_CHUNK) {
+            this.pendingChunkQueue.add((PacketPlayOutMapChunk) packet);
+            return;
+        }
+        // Akarin end
         EnumProtocol enumprotocol = EnumProtocol.a(packet);
         EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
 
@@ -323,6 +306,16 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     private boolean sendPacketQueue() { return this.o(); } // OBFHELPER // void -> boolean
     private boolean o() { // void -> boolean
         if (this.channel != null && this.channel.isOpen()) {
+            // Akarin start
+            Iterator<PacketPlayOutMapChunk> iterator = this.pendingChunkQueue.iterator();
+            while (iterator.hasNext()) {
+                PacketPlayOutMapChunk packet = iterator.next();
+                if (packet.isReady()) {
+                    this.dispatchPacket(packet, null);
+                    iterator.remove();
+                }
+            }
+            /*
             if (this.packetQueue.isEmpty()) { // return if the packet queue is empty so that the write lock by Anti-Xray doesn't affect the vanilla performance at all
                 return true;
             }
@@ -334,7 +327,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
                     NetworkManager.QueuedPacket networkmanager_queuedpacket = (NetworkManager.QueuedPacket) this.getPacketQueue().peek(); // poll -> peek
 
                     if (networkmanager_queuedpacket != null) { // Fix NPE (Spigot bug caused by handleDisconnection())
-                        if (networkmanager_queuedpacket.getPacket().getType() == PacketType.PLAY_OUT_MAP_CHUNK && !((PacketPlayOutMapChunk) networkmanager_queuedpacket.getPacket()).isReady()) { // Check if the peeked packet is a chunk packet which is not ready
+                        if (networkmanager_queuedpacket.getPacket() instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) networkmanager_queuedpacket.getPacket()).isReady()) { // Check if the peeked packet is a chunk packet which is not ready
                             return false; // Return false if the peeked packet is a chunk packet which is not ready
                         } else {
                             this.getPacketQueue().poll(); // poll here
@@ -345,6 +338,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
             } finally {
                 this.j.writeLock().unlock(); // readLock -> writeLock (because of race condition between peek and poll)
             }
+            */
+            // Akarin end
 
         }
 
@@ -353,7 +348,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     // Paper end
 
     public void a() {
-        this.o();
+        //this.o(); // Akarin - remove packet queue
         if (this.packetListener instanceof ITickable) {
             ((ITickable) this.packetListener).tick();
         }
