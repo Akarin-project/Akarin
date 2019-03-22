@@ -249,7 +249,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     // Akarin start
     private final void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
     private final void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
-        if (!packet.canDispatchImmediately() && packet.getType() == PacketType.PLAY_OUT_MAP_CHUNK) {
+        if (!packet.canDispatchImmediately()) {
             this.pendingChunkQueue.add((PacketPlayOutMapChunk) packet);
             return;
         }
@@ -348,7 +348,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     // Paper end
 
     public void a() {
-        //this.o(); // Akarin - remove packet queue
+        this.o();
         if (this.packetListener instanceof ITickable) {
             ((ITickable) this.packetListener).tick();
         }

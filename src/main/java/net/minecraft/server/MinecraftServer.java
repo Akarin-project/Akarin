@@ -927,7 +927,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public void t() {}
 
     protected void a(BooleanSupplier booleansupplier) {
-        co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTimingUnsafe(); // Paper // Akarin
+        co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Paper // Akarin
         this.slackActivityAccountant.tickStarted(); // Spigot
         long i = SystemUtils.getMonotonicNanos(); long startTime = i; // Paper
 
@@ -998,7 +998,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         PaperLightingQueue.processQueue(startTime); // Paper
         expiringMaps.removeIf(ExpiringMap::clean); // Paper
         this.slackActivityAccountant.tickEnded(l); // Spigot
-        co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTimingUnsafe(); // Paper // Akarin
+        co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Paper // Akarin
     }
 
     public void b(BooleanSupplier booleansupplier) {
