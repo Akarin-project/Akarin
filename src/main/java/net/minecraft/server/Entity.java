@@ -26,6 +26,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Hanging;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
 import co.aikar.timings.MinecraftTimings; // Paper
 import co.aikar.timings.Timing; // Paper
@@ -1270,13 +1271,13 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         for (i = 0; (float) i < 1.0F + this.width * 20.0F; ++i) {
             f3 = (this.random.nextFloat() * 2.0F - 1.0F) * this.width;
             f4 = (this.random.nextFloat() * 2.0F - 1.0F) * this.width;
-            this.world.addParticle(Particles.e, this.locX + (double) f3, (double) (f2 + 1.0F), this.locZ + (double) f4, this.motX, this.motY - (double) (this.random.nextFloat() * 0.2F), this.motZ);
+            //this.world.addParticle(Particles.e, this.locX + (double) f3, (double) (f2 + 1.0F), this.locZ + (double) f4, this.motX, this.motY - (double) (this.random.nextFloat() * 0.2F), this.motZ);
         }
 
         for (i = 0; (float) i < 1.0F + this.width * 20.0F; ++i) {
             f3 = (this.random.nextFloat() * 2.0F - 1.0F) * this.width;
             f4 = (this.random.nextFloat() * 2.0F - 1.0F) * this.width;
-            this.world.addParticle(Particles.R, this.locX + (double) f3, (double) (f2 + 1.0F), this.locZ + (double) f4, this.motX, this.motY, this.motZ);
+            //this.world.addParticle(Particles.R, this.locX + (double) f3, (double) (f2 + 1.0F), this.locZ + (double) f4, this.motX, this.motY, this.motZ);
         }
 
     }

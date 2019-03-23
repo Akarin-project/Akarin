@@ -178,7 +178,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     // Akarin start
     public final void sendPackets(Packet<?> packet0, Packet<?> packet1) {
-        if (this.isConnected()) { // why send packet to whom not connected?
+        if (this.isConnected() && this.channel.isRegistered()) { // why send packet to whom not connected?
             //this.j.readLock().lock();
             //try {
                 // Queue new packets
@@ -191,7 +191,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public final void sendPackets(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2) {
-        if (this.isConnected()) { // why send packet to whom not connected?
+        if (this.isConnected() && this.channel.isRegistered()) { // why send packet to whom not connected?
             //this.j.readLock().lock();
             //try {
                 // Queue new packets
@@ -205,7 +205,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public final void sendPackets(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2, Packet<?> packet3, Packet<?> packet4, Packet<?> packet5, Packet<?> packet6) {
-        if (this.isConnected()) { // why send packet to whom not connected?
+        if (this.isConnected() && this.channel.isRegistered()) { // why send packet to whom not connected?
             //this.j.readLock().lock();
             //try {
                 // Queue new packets
@@ -223,7 +223,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     }
     // Akarin end
     public void sendPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
-        if (this.isConnected() /*&& this.sendPacketQueue() && !(packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady())*/) { // Paper - Async-Anti-Xray - Add chunk packets which are not ready or all packets if the packet queue contains chunk packets which are not ready to the packet queue and send the packets later in the right order // Akarin
+        if (this.isConnected() && this.channel.isRegistered() /*&& this.sendPacketQueue() && !(packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady())*/) { // Paper - Async-Anti-Xray - Add chunk packets which are not ready or all packets if the packet queue contains chunk packets which are not ready to the packet queue and send the packets later in the right order // Akarin
             //this.o(); // Paper - Async-Anti-Xray - Move to if statement (this.sendPacketQueue())
             // Akarin start
             //this.j.readLock().lock();

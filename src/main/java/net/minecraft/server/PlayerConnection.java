@@ -98,9 +98,11 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     private double s;
     private double t;
     private double u;
-    private double v;
-    private double w;
-    private double x;
+    // Akarin start - package
+    double v;
+    double w;
+    double x;
+    // Akarin end
     private Vec3D teleportPos;
     private int teleportAwait;
     private int A;
