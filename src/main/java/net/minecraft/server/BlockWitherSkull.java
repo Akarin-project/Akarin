@@ -80,9 +80,13 @@ public class BlockWitherSkull extends BlockSkull {
 
                 int k;
 
+                // Akarin start - this handle by client
+                /*
                 for (k = 0; k < 120; ++k) {
                     world.addParticle(Particles.E, (double) blockposition1.getX() + world.random.nextDouble(), (double) (blockposition1.getY() - 2) + world.random.nextDouble() * 3.9D, (double) blockposition1.getZ() + world.random.nextDouble(), 0.0D, 0.0D, 0.0D);
                 }
+                */
+                // Akarin end
 
                 for (k = 0; k < shapedetector.c(); ++k) {
                     for (int l = 0; l < shapedetector.b(); ++l) {

@@ -181,6 +181,8 @@ public class EntityWolf extends EntityTameableAnimal {
                 this.bN = 0.0F;
             }
 
+            // Akarin start - this handle by client
+            /*
             if (this.bN > 0.4F) {
                 float f = (float) this.getBoundingBox().minY;
                 int i = (int) (MathHelper.sin((this.bN - 0.4F) * 3.1415927F) * 7.0F);
@@ -192,6 +194,8 @@ public class EntityWolf extends EntityTameableAnimal {
                     this.world.addParticle(Particles.R, this.locX + (double) f1, (double) (f + 0.8F), this.locZ + (double) f2, this.motX, this.motY, this.motZ);
                 }
             }
+            */
+            // Akarin end
         }
 
     }

@@ -104,9 +104,13 @@ public class BlockPumpkinCarved extends BlockFacingHorizontal {
                     CriterionTriggers.n.a(entityplayer, (Entity) entityirongolem);
                 }
 
+                // Akarin start - this handle by client
+                /*
                 for (j = 0; j < 120; ++j) {
                     world.addParticle(Particles.E, (double) blockposition2.getX() + world.random.nextDouble(), (double) blockposition2.getY() + world.random.nextDouble() * 3.9D, (double) blockposition2.getZ() + world.random.nextDouble(), 0.0D, 0.0D, 0.0D);
                 }
+                */
+                // Akarin end
 
                 for (j = 0; j < this.g().c(); ++j) {
                     for (k = 0; k < this.g().b(); ++k) {

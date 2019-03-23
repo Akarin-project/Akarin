@@ -106,6 +106,8 @@ public class PathfinderGoalBreed extends PathfinderGoal {
             entityageable.setAgeRaw(-24000);
             entityageable.setPositionRotation(this.animal.locX, this.animal.locY, this.animal.locZ, 0.0F, 0.0F);
             this.b.addEntity(entityageable, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING); // CraftBukkit - added SpawnReason
+            // Akarin start - this handle by client
+            /*
             Random random = this.animal.getRandom();
 
             for (int i = 0; i < 7; ++i) {
@@ -118,6 +120,8 @@ public class PathfinderGoalBreed extends PathfinderGoal {
 
                 this.b.addParticle(Particles.A, this.animal.locX + d3, this.animal.locY + d4, this.animal.locZ + d5, d0, d1, d2);
             }
+            */
+            // Akarin end
 
             if (this.b.getGameRules().getBoolean("doMobLoot")) {
                 // CraftBukkit start - use event experience

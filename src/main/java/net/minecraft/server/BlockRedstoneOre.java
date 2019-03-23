@@ -112,6 +112,8 @@ public class BlockRedstoneOre extends Block {
     }
 
     private static void playEffect(World world, BlockPosition blockposition) {
+        // Akarin start - this handle by client
+        /*
         double d0 = 0.5625D;
         Random random = world.random;
         EnumDirection[] aenumdirection = EnumDirection.values();
@@ -130,6 +132,8 @@ public class BlockRedstoneOre extends Block {
                 world.addParticle(ParticleParamRedstone.a, (double) blockposition.getX() + d1, (double) blockposition.getY() + d2, (double) blockposition.getZ() + d3, 0.0D, 0.0D, 0.0D);
             }
         }
+        */
+        // Akarin end
 
     }
 

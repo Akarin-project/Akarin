@@ -155,15 +155,23 @@ public class BlockFluids extends Block implements IFluidSource {
     }
 
     protected void fizz(GeneratorAccess generatoraccess, BlockPosition blockposition) {
+        // Akarin start - this handle by client
+        /*
         double d0 = (double) blockposition.getX();
         double d1 = (double) blockposition.getY();
         double d2 = (double) blockposition.getZ();
+        */
+        // Akarin end
 
         generatoraccess.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_LAVA_EXTINGUISH, SoundCategory.BLOCKS, 0.5F, 2.6F + (generatoraccess.m().nextFloat() - generatoraccess.m().nextFloat()) * 0.8F);
 
+        // Akarin start - this handle by client
+        /*
         for (int i = 0; i < 8; ++i) {
             generatoraccess.addParticle(Particles.F, d0 + Math.random(), d1 + 1.2D, d2 + Math.random(), 0.0D, 0.0D, 0.0D);
         }
+        */
+        // Akarin end
 
     }
 

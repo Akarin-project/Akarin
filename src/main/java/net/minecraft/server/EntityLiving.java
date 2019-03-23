@@ -248,6 +248,8 @@ public abstract class EntityLiving extends Entity {
                     if (this.getAirTicks() == -20) {
                         this.setAirTicks(0);
 
+                        // Akarin start - this handle by client
+                        /*
                         for (int i = 0; i < 8; ++i) {
                             float f = this.random.nextFloat() - this.random.nextFloat();
                             float f1 = this.random.nextFloat() - this.random.nextFloat();
@@ -255,6 +257,8 @@ public abstract class EntityLiving extends Entity {
 
                             this.world.addParticle(Particles.e, this.locX + (double) f, this.locY + (double) f1, this.locZ + (double) f2, this.motX, this.motY, this.motZ);
                         }
+                        */
+                        // Akarin end
 
                         this.damageEntity(DamageSource.DROWN, 2.0F);
                     }
@@ -369,6 +373,8 @@ public abstract class EntityLiving extends Entity {
 
             this.die();
 
+            // Akarin start - this handle by client
+            /*
             for (i = 0; i < 20; ++i) {
                 double d0 = this.random.nextGaussian() * 0.02D;
                 double d1 = this.random.nextGaussian() * 0.02D;
@@ -376,6 +382,8 @@ public abstract class EntityLiving extends Entity {
 
                 this.world.addParticle(Particles.J, this.locX + (double) (this.random.nextFloat() * this.width * 2.0F) - (double) this.width, this.locY + (double) (this.random.nextFloat() * this.length), this.locZ + (double) (this.random.nextFloat() * this.width * 2.0F) - (double) this.width, d0, d1, d2);
             }
+            */
+            // Akarin end
         }
 
     }
@@ -2672,6 +2680,8 @@ public abstract class EntityLiving extends Entity {
     }
 
     private void a(ItemStack itemstack, int i) {
+        // Akarin start - this handle by client
+        /*
         for (int j = 0; j < i; ++j) {
             Vec3D vec3d = new Vec3D(((double) this.random.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
 
@@ -2685,6 +2695,8 @@ public abstract class EntityLiving extends Entity {
             vec3d1 = vec3d1.add(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ);
             this.world.addParticle(new ParticleParamItem(Particles.C, itemstack), vec3d1.x, vec3d1.y, vec3d1.z, vec3d.x, vec3d.y + 0.05D, vec3d.z);
         }
+        */
+        // Akarin end
 
     }
 
@@ -2825,6 +2837,8 @@ public abstract class EntityLiving extends Entity {
         } else {
             flag1 = true;
 
+            // Akarin start - this handle by client
+            /*
             for (int i = 0; i < 128; ++i) {
                 double d6 = (double) i / 127.0D;
                 float f = (random.nextFloat() - 0.5F) * 0.2F;
@@ -2836,6 +2850,8 @@ public abstract class EntityLiving extends Entity {
 
                 world.addParticle(Particles.K, d7, d8, d9, (double) f, (double) f1, (double) f2);
             }
+            */
+            // Akarin end
 
             if (this instanceof EntityCreature) {
                 ((EntityCreature) this).getNavigation().q();

@@ -84,7 +84,7 @@ public class EntityTNTPrimed extends Entity {
             // CraftBukkit end
         } else {
             this.at();
-            this.world.addParticle(Particles.M, this.locX, this.locY + 0.5D, this.locZ, 0.0D, 0.0D, 0.0D);
+            //this.world.addParticle(Particles.M, this.locX, this.locY + 0.5D, this.locZ, 0.0D, 0.0D, 0.0D); // Akarin start - this handle by client
         }
 
     }

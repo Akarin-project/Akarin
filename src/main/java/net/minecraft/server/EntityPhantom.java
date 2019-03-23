@@ -87,6 +87,8 @@ public class EntityPhantom extends EntityFlying implements IMonster {
                 this.world.a(this.locX, this.locY, this.locZ, SoundEffects.ENTITY_PHANTOM_FLAP, this.bV(), 0.95F + this.random.nextFloat() * 0.05F, 0.95F + this.random.nextFloat() * 0.05F, false);
             }
 
+            // Akarin start - this handle by client
+            /*
             int i = this.getSize();
             float f2 = MathHelper.cos(this.yaw * 0.017453292F) * (1.3F + 0.21F * (float) i);
             float f3 = MathHelper.sin(this.yaw * 0.017453292F) * (1.3F + 0.21F * (float) i);
@@ -94,6 +96,8 @@ public class EntityPhantom extends EntityFlying implements IMonster {
 
             this.world.addParticle(Particles.H, this.locX + (double) f2, this.locY + (double) f4, this.locZ + (double) f3, 0.0D, 0.0D, 0.0D);
             this.world.addParticle(Particles.H, this.locX - (double) f2, this.locY + (double) f4, this.locZ - (double) f3, 0.0D, 0.0D, 0.0D);
+            */
+            // Akarin end
         }
 
         if (!this.world.isClientSide && this.world.getDifficulty() == EnumDifficulty.PEACEFUL) {

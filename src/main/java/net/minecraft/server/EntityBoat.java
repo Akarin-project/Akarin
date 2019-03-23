@@ -163,7 +163,7 @@ public class EntityBoat extends Entity {
             }
         }
 
-        this.world.addParticle(Particles.R, this.locX + (double) this.random.nextFloat(), this.locY + 0.7D, this.locZ + (double) this.random.nextFloat(), 0.0D, 0.0D, 0.0D);
+        //this.world.addParticle(Particles.R, this.locX + (double) this.random.nextFloat(), this.locY + 0.7D, this.locZ + (double) this.random.nextFloat(), 0.0D, 0.0D, 0.0D); // Akarin - this handle by client
         if (this.random.nextInt(20) == 0) {
             this.world.a(this.locX, this.locY, this.locZ, this.ae(), this.bV(), 1.0F, 0.8F + 0.4F * this.random.nextFloat(), false);
         }

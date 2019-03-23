@@ -97,6 +97,8 @@ public class BlockRedstoneTorch extends BlockTorch {
                 if (a(world, blockposition, true)) {
                     world.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_REDSTONE_TORCH_BURNOUT, SoundCategory.BLOCKS, 0.5F, 2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F);
 
+                    // Akarin start - this handle by client
+                    /*
                     for (int i = 0; i < 5; ++i) {
                         double d0 = (double) blockposition.getX() + random.nextDouble() * 0.6D + 0.2D;
                         double d1 = (double) blockposition.getY() + random.nextDouble() * 0.6D + 0.2D;
@@ -104,6 +106,8 @@ public class BlockRedstoneTorch extends BlockTorch {
 
                         world.addParticle(Particles.M, d0, d1, d2, 0.0D, 0.0D, 0.0D);
                     }
+                    */
+                    // Akarin end
 
                     world.getBlockTickList().a(blockposition, world.getType(blockposition).getBlock(), 160);
                 }

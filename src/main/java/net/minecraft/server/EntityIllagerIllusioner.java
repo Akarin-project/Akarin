@@ -85,9 +85,13 @@ public class EntityIllagerIllusioner extends EntityIllagerWizard implements IRan
                     this.bC[1][j] = new Vec3D((double) (-6.0F + (float) this.random.nextInt(13)) * 0.5D, (double) Math.max(0, this.random.nextInt(6) - 4), (double) (-6.0F + (float) this.random.nextInt(13)) * 0.5D);
                 }
 
+                // Akarin start - this handle by client
+                /*
                 for (j = 0; j < 16; ++j) {
                     this.world.addParticle(Particles.g, this.locX + (this.random.nextDouble() - 0.5D) * (double) this.width, this.locY + this.random.nextDouble() * (double) this.length, this.locZ + (this.random.nextDouble() - 0.5D) * (double) this.width, 0.0D, 0.0D, 0.0D);
                 }
+                */
+                // Akarin end
 
                 this.world.a(this.locX, this.locY, this.locZ, SoundEffects.ENTITY_ILLUSIONER_MIRROR_MOVE, this.bV(), 1.0F, 1.0F, false);
             }

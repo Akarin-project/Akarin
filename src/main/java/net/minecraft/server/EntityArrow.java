@@ -209,11 +209,15 @@ public abstract class EntityArrow extends Entity implements IProjectile {
                 this.impulse = true;
             }
 
+            // Akarin start - this handle by client
+            /*
             if (this.isCritical()) {
                 for (int i = 0; i < 4; ++i) {
                     this.world.addParticle(Particles.h, this.locX + this.motX * (double) i / 4.0D, this.locY + this.motY * (double) i / 4.0D, this.locZ + this.motZ * (double) i / 4.0D, -this.motX, -this.motY + 0.2D, -this.motZ);
                 }
             }
+            */
+            // Akarin end
 
             this.locX += this.motX;
             this.locY += this.motY;

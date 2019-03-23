@@ -63,12 +63,16 @@ public abstract class MobSpawnerAbstract {
             BlockPosition blockposition = this.b();
 
             if (this.a().isClientSide) {
+                // Akarin start - this handle by client
+                /*
                 double d0 = (double) ((float) blockposition.getX() + this.a().random.nextFloat());
                 double d1 = (double) ((float) blockposition.getY() + this.a().random.nextFloat());
                 double d2 = (double) ((float) blockposition.getZ() + this.a().random.nextFloat());
 
                 this.a().addParticle(Particles.M, d0, d1, d2, 0.0D, 0.0D, 0.0D);
                 this.a().addParticle(Particles.y, d0, d1, d2, 0.0D, 0.0D, 0.0D);
+                */
+                // Akarin end
                 if (this.spawnDelay > 0) {
                     this.spawnDelay -= tickDelay; // Paper
                 }

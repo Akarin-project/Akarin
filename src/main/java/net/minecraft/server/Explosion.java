@@ -175,11 +175,15 @@ public class Explosion {
 
     public void a(boolean flag) {
         this.world.a((EntityHuman) null, this.posX, this.posY, this.posZ, SoundEffects.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F, (1.0F + (this.world.random.nextFloat() - this.world.random.nextFloat()) * 0.2F) * 0.7F);
+        // Akarin start - this handle by client
+        /*
         if (this.size >= 2.0F && this.b) {
             this.world.addParticle(Particles.t, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D);
         } else {
             this.world.addParticle(Particles.u, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D);
         }
+        */
+        // Akarin end
 
         Iterator iterator;
         BlockPosition blockposition;
@@ -236,6 +240,8 @@ public class Explosion {
                 IBlockData iblockdata = this.world.getType(blockposition);
                 Block block = iblockdata.getBlock();
 
+                // Akarin start - this handle by client
+                /*
                 if (flag) {
                     double d0 = (double) ((float) blockposition.getX() + this.world.random.nextFloat());
                     double d1 = (double) ((float) blockposition.getY() + this.world.random.nextFloat());
@@ -257,6 +263,8 @@ public class Explosion {
                     this.world.addParticle(Particles.J, (d0 + this.posX) / 2.0D, (d1 + this.posY) / 2.0D, (d2 + this.posZ) / 2.0D, d3, d4, d5);
                     this.world.addParticle(Particles.M, d0, d1, d2, d3, d4, d5);
                 }
+                */
+                // Akarin end
 
                 if (!iblockdata.isAir()) {
                     if (block.a(this)) {

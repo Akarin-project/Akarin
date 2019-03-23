@@ -37,7 +37,7 @@ public class EntityMushroomCow extends EntityCow {
                 return false;
             }
             // CraftBukkit end
-            this.world.addParticle(Particles.u, this.locX, this.locY + (double) (this.length / 2.0F), this.locZ, 0.0D, 0.0D, 0.0D);
+            //this.world.addParticle(Particles.u, this.locX, this.locY + (double) (this.length / 2.0F), this.locZ, 0.0D, 0.0D, 0.0D); // Akarin start - this handle by client
             if (!this.world.isClientSide) {
                 // this.die(); // CraftBukkit - moved down
                 EntityCow entitycow = EntityTypes.COW.create(world); // Paper

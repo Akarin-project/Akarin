@@ -195,11 +195,15 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         float f2 = this.f();
 
         if (this.isInWater()) {
+            // Akarin start - this handle by client
+            /*
             for (int j = 0; j < 4; ++j) {
                 float f3 = 0.25F;
 
                 this.world.addParticle(Particles.e, this.locX - this.motX * 0.25D, this.locY - this.motY * 0.25D, this.locZ - this.motZ * 0.25D, this.motX, this.motY, this.motZ);
             }
+            */
+            // Akarin end
 
             f1 = 0.8F;
         }

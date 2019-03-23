@@ -146,9 +146,13 @@ public abstract class EntityAgeable extends EntityCreature {
         super.movementTick();
         if (this.world.isClientSide || ageLocked) { // CraftBukkit
             if (this.c > 0) {
+                // Akarin start - this handle by client
+                /*
                 if (this.c % 4 == 0) {
                     this.world.addParticle(Particles.z, this.locX + (double) (this.random.nextFloat() * this.width * 2.0F) - (double) this.width, this.locY + 0.5D + (double) (this.random.nextFloat() * this.length), this.locZ + (double) (this.random.nextFloat() * this.width * 2.0F) - (double) this.width, 0.0D, 0.0D, 0.0D);
                 }
+                */
+                // Akarin end
 
                 --this.c;
             }

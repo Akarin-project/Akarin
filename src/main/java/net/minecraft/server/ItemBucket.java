@@ -146,7 +146,7 @@ public class ItemBucket extends Item {
                     }
                 }
                 // CraftBukkit end
-                if (world.worldProvider.isNether() && this.fluidType.a(TagsFluid.WATER)) {
+                if (false && world.worldProvider.isNether() && this.fluidType.a(TagsFluid.WATER)) { // Akarin - this handle by client
                     int i = blockposition.getX();
                     int j = blockposition.getY();
                     int k = blockposition.getZ();

@@ -111,7 +111,7 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
         this.bL = this.bM;
         float f2;
 
-        if (this.getHealth() <= 0.0F) {
+        if (false && this.getHealth() <= 0.0F) { // Akarin - this handle by client
             f = (this.random.nextFloat() - 0.5F) * 8.0F;
             f1 = (this.random.nextFloat() - 0.5F) * 4.0F;
             f2 = (this.random.nextFloat() - 0.5F) * 8.0F;
@@ -487,6 +487,8 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
         }
         // CraftBukkit end
 
+        // Akarin start - this handle by client
+        /*
         if (flag1) {
             double d0 = axisalignedbb.minX + (axisalignedbb.maxX - axisalignedbb.minX) * (double) this.random.nextFloat();
             double d1 = axisalignedbb.minY + (axisalignedbb.maxY - axisalignedbb.minY) * (double) this.random.nextFloat();
@@ -494,6 +496,8 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
 
             this.world.addParticle(Particles.u, d0, d1, d2, 0.0D, 0.0D, 0.0D);
         }
+        */
+        // Akarin end
 
         return flag;
     }

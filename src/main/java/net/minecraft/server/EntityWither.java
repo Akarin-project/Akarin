@@ -161,6 +161,8 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
             }
         }
 
+        // Akarin start - this handle by client
+        /*
         boolean flag = this.dA();
 
         for (j = 0; j < 3; ++j) {
@@ -179,6 +181,8 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
                 this.world.addParticle(Particles.s, this.locX + this.random.nextGaussian(), this.locY + (double) (this.random.nextFloat() * 3.3F), this.locZ + this.random.nextGaussian(), 0.699999988079071D, 0.699999988079071D, 0.8999999761581421D);
             }
         }
+        */
+        // Akarin end
 
     }
 

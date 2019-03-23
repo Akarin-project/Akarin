@@ -132,6 +132,8 @@ public abstract class FluidTypeLava extends FluidTypeFlowing {
     }
 
     protected void a(GeneratorAccess generatoraccess, BlockPosition blockposition) {
+        // Akarin start - this handle by client
+        /*
         double d0 = (double) blockposition.getX();
         double d1 = (double) blockposition.getY();
         double d2 = (double) blockposition.getZ();
@@ -141,6 +143,8 @@ public abstract class FluidTypeLava extends FluidTypeFlowing {
         for (int i = 0; i < 8; ++i) {
             generatoraccess.addParticle(Particles.F, d0 + Math.random(), d1 + 1.2D, d2 + Math.random(), 0.0D, 0.0D, 0.0D);
         }
+        */
+        // Akarin end
 
     }
 

@@ -31,6 +31,8 @@ public abstract class EntityAnimal extends EntityAgeable implements IAnimal {
 
         if (this.bC > 0) {
             --this.bC;
+            // Akarin start - this handle by client
+            /*
             if (this.bC % 10 == 0) {
                 double d0 = this.random.nextGaussian() * 0.02D;
                 double d1 = this.random.nextGaussian() * 0.02D;
@@ -38,6 +40,8 @@ public abstract class EntityAnimal extends EntityAgeable implements IAnimal {
 
                 this.world.addParticle(Particles.A, this.locX + (double) (this.random.nextFloat() * this.width * 2.0F) - (double) this.width, this.locY + 0.5D + (double) (this.random.nextFloat() * this.length), this.locZ + (double) (this.random.nextFloat() * this.width * 2.0F) - (double) this.width, d0, d1, d2);
             }
+            */
+            // Akarin end
         }
 
     }

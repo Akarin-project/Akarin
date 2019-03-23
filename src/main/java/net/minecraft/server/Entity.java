@@ -1229,12 +1229,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         if (this.getVehicle() instanceof EntityBoat) {
             this.inWater = false;
         } else if (this.b(TagsFluid.WATER)) {
-            // Akarin start - this handle by client
-            /*
             if (!this.inWater && !this.justCreated) {
                 this.au();
             }
-            */
 
             this.fallDistance = 0.0F;
             this.inWater = true;
@@ -1265,6 +1262,8 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             this.a(this.af(), f1, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
         }
 
+        // Akarin start - this handle by client
+        /*
         float f2 = (float) MathHelper.floor(this.getBoundingBox().minY);
 
         float f3;
@@ -1282,17 +1281,25 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             f4 = (this.random.nextFloat() * 2.0F - 1.0F) * this.width;
             this.world.addParticle(Particles.R, this.locX + (double) f3, (double) (f2 + 1.0F), this.locZ + (double) f4, this.motX, this.motY, this.motZ);
         }
+        */
+        // Akarin end
 
     }
 
     public void av() {
+        // Akarin start - this handle by client
+        /*
         if (this.isSprinting() && !this.isInWater()) {
             this.aw();
         }
+        */
+        // Akarin end
 
     }
 
     protected void aw() {
+        // Akarin start - this handle by client
+        /*
         int i = MathHelper.floor(this.locX);
         int j = MathHelper.floor(this.locY - 0.20000000298023224D);
         int k = MathHelper.floor(this.locZ);
@@ -1302,6 +1309,8 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         if (iblockdata.i() != EnumRenderType.INVISIBLE) {
             this.world.addParticle(new ParticleParamBlock(Particles.d, iblockdata), this.locX + ((double) this.random.nextFloat() - 0.5D) * (double) this.width, this.getBoundingBox().minY + 0.1D, this.locZ + ((double) this.random.nextFloat() - 0.5D) * (double) this.width, -this.motX * 4.0D, 1.5D, -this.motZ * 4.0D);
         }
+        */
+        // Akarin end
 
     }
 

@@ -106,6 +106,8 @@ public class EntitySlime extends EntityInsentient implements IMonster {
         this.c = this.b;
         super.tick();
         if (this.onGround && !this.bD) {
+            // Akarin start - this handle by client
+            /*
             int i = this.getSize();
 
             for (int j = 0; j < i * 8; ++j) {
@@ -120,6 +122,8 @@ public class EntitySlime extends EntityInsentient implements IMonster {
 
                 world.addParticle(particleparam, d0, this.getBoundingBox().minY, d1, 0.0D, 0.0D, 0.0D);
             }
+            */
+            // Akarin end
 
             this.a(this.dv(), this.cD(), ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) / 0.8F);
             this.a = -0.5F;
@@ -146,13 +150,9 @@ public class EntitySlime extends EntityInsentient implements IMonster {
             this.setSize(0.51000005F * (float) i, 0.51000005F * (float) i);
             this.yaw = this.aS;
             this.aQ = this.aS;
-            // Akarin start - this handle by client
-            /*
             if (this.isInWater() && this.random.nextInt(20) == 0) {
                 this.au();
             }
-            */
-            // Akarin end
         }
 
         super.a(datawatcherobject);

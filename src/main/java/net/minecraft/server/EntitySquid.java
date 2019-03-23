@@ -231,9 +231,12 @@ public class EntitySquid extends EntityWaterAnimal {
                     EntitySquid.this.c((float) vec3d.x / 20.0F, (float) vec3d.y / 20.0F, (float) vec3d.z / 20.0F);
                 }
 
+                // Akarin start - this handle by client
+                /*
                 if (this.b % 10 == 5) {
                     EntitySquid.this.world.addParticle(Particles.e, EntitySquid.this.locX, EntitySquid.this.locY, EntitySquid.this.locZ, 0.0D, 0.0D, 0.0D);
                 }
+                */
 
             }
         }

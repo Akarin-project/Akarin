@@ -82,6 +82,8 @@ public class EntityIronGolem extends EntityGolem {
             --this.bD;
         }
 
+        // Akarin start - this handle by client
+        /*
         if (this.motX * this.motX + this.motZ * this.motZ > 2.500000277905201E-7D && this.random.nextInt(5) == 0) {
             int i = MathHelper.floor(this.locX);
             int j = MathHelper.floor(this.locY - 0.20000000298023224D);
@@ -92,6 +94,8 @@ public class EntityIronGolem extends EntityGolem {
                 this.world.addParticle(new ParticleParamBlock(Particles.d, iblockdata), this.locX + ((double) this.random.nextFloat() - 0.5D) * (double) this.width, this.getBoundingBox().minY + 0.1D, this.locZ + ((double) this.random.nextFloat() - 0.5D) * (double) this.width, 4.0D * ((double) this.random.nextFloat() - 0.5D), 0.5D, ((double) this.random.nextFloat() - 0.5D) * 4.0D);
             }
         }
+        */
+        // Akarin end
 
     }
 

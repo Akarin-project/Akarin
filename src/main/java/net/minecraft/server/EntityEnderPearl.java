@@ -54,9 +54,13 @@ public class EntityEnderPearl extends EntityProjectile {
             }
         }
 
+        // Akarin start
+        /*
         for (int i = 0; i < 32; ++i) {
             this.world.addParticle(Particles.K, this.locX, this.locY + this.random.nextDouble() * 2.0D, this.locZ, this.random.nextGaussian(), 0.0D, this.random.nextGaussian());
         }
+        */
+        // Akarin end
 
         if (!this.world.isClientSide) {
             if (entityliving instanceof EntityPlayer) {
