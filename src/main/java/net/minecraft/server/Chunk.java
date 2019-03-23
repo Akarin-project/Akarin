@@ -280,7 +280,7 @@ public class Chunk implements IChunkAccess {
 
                             if (chunksection != Chunk.a) {
                                 chunksection.a(j, i1 & 15, k, l);
-                                this.world.m(new BlockPosition((this.locX << 4) + j, i1, (this.locZ << 4) + k));
+                                //this.world.m(new BlockPosition((this.locX << 4) + j, i1, (this.locZ << 4) + k)); // Akarin
                             }
                         }
 
@@ -387,7 +387,7 @@ public class Chunk implements IChunkAccess {
 
                     if (chunksection != Chunk.a) {
                         chunksection.a(i, k2 & 15, k, j2);
-                        this.world.m(new BlockPosition((this.locX << 4) + i, k2, (this.locZ << 4) + k));
+                        //this.world.m(new BlockPosition((this.locX << 4) + i, k2, (this.locZ << 4) + k)); // Akarin
                     }
                 }
 
@@ -1182,7 +1182,7 @@ public class Chunk implements IChunkAccess {
                 TileEntity tileentity = this.j(blockposition);
 
                 this.world.setTileEntity(blockposition, tileentity);
-                this.world.a(blockposition, blockposition);
+                //this.world.a(blockposition, blockposition); // Akarin
             }
         }
 

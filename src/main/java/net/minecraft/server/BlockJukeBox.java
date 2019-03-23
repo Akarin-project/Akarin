@@ -45,7 +45,7 @@ public class BlockJukeBox extends BlockTileEntity {
 
                 if (!itemstack.isEmpty()) {
                     world.triggerEffect(1010, blockposition, 0);
-                    world.a(blockposition, (SoundEffect) null);
+                    //world.a(blockposition, (SoundEffect) null); // Akarin
                     tileentityjukebox.setRecord(ItemStack.a);
                     float f = 0.7F;
                     double d0 = (double) (world.random.nextFloat() * 0.7F) + 0.15000000596046448D;

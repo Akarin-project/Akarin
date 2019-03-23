@@ -73,7 +73,7 @@ public class BlockMinecartDetector extends BlockMinecartTrackAbstract {
             this.b(world, blockposition, iblockdata, true);
             world.applyPhysics(blockposition, this);
             world.applyPhysics(blockposition.down(), this);
-            world.a(blockposition, blockposition);
+            //world.a(blockposition, blockposition); // Akarin
         }
 
         if (!flag1 && flag) {
@@ -81,7 +81,7 @@ public class BlockMinecartDetector extends BlockMinecartTrackAbstract {
             this.b(world, blockposition, iblockdata, false);
             world.applyPhysics(blockposition, this);
             world.applyPhysics(blockposition.down(), this);
-            world.a(blockposition, blockposition);
+            //world.a(blockposition, blockposition); // Akarin
         }
 
         if (flag1) {

@@ -88,7 +88,7 @@ public class WorldManager implements IWorldAccess {
                 // CraftBukkit end
 
                 if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
-                    entityplayer.playerConnection.sendPacket(new PacketPlayOutBlockBreakAnimation(i, blockposition, j));
+                    //entityplayer.playerConnection.sendPacket(new PacketPlayOutBlockBreakAnimation(i, blockposition, j));
                 }
             }
         }

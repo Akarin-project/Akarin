@@ -84,7 +84,7 @@ public abstract class BlockPressurePlateAbstract extends Block {
             iblockdata = this.a(iblockdata, j);
             world.setTypeAndData(blockposition, iblockdata, 2);
             this.a(world, blockposition);
-            world.a(blockposition, blockposition);
+            //world.a(blockposition, blockposition); // Akarin
         }
 
         if (!flag1 && flag) {

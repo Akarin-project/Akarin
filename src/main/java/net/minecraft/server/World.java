@@ -499,9 +499,13 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         IBlockData iblockdata1 = oldBlock;
         IBlockData iblockdata2 = actualBlock;
         if (iblockdata2 == iblockdata) {
+            // Akarin start
+            /*
             if (iblockdata1 != iblockdata2) {
                 this.a(blockposition, blockposition);
             }
+            */
+            // Akarin end
 
             if ((i & 2) != 0 && (!this.isClientSide || (i & 4) == 0) && (chunk == null || chunk.isReady())) {  // allow chunk to be null here as chunk.isReady() is false when we send our notification during block placement
                 this.notify(blockposition, iblockdata1, iblockdata, i);
@@ -610,7 +614,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             }
         }
 
-        this.a(i, k, j, i, l, j);
+        //this.a(i, k, j, i, l, j); // Akarin
     }
 
     public void a(BlockPosition blockposition, BlockPosition blockposition1) {
@@ -765,7 +769,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         if (blockposition.isValidLocation()) { // Paper
             if (this.isLoaded(blockposition)) {
                 this.getChunkAtWorldCoords(blockposition).a(enumskyblock, blockposition, i);
-                this.m(blockposition);
+                //this.m(blockposition); // Akarin
             }
         }
     }

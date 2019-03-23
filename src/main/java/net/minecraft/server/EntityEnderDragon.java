@@ -560,6 +560,8 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
         }
 
         ++this.bO;
+        // Akarin start - this handle by client
+        /*
         if (this.bO >= 180 && this.bO <= 200) {
             float f = (this.random.nextFloat() - 0.5F) * 8.0F;
             float f1 = (this.random.nextFloat() - 0.5F) * 4.0F;
@@ -567,6 +569,8 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
 
             this.world.addParticle(Particles.t, this.locX + (double) f, this.locY + 2.0D + (double) f1, this.locZ + (double) f2, 0.0D, 0.0D, 0.0D);
         }
+        */
+        // Akarin end
 
         boolean flag = this.world.getGameRules().getBoolean("doMobLoot");
         short short0 = 500;

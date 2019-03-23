@@ -646,6 +646,8 @@ public abstract class EntityLiving extends Entity {
         int i = (Integer) this.datawatcher.get(EntityLiving.g);
         boolean flag = (Boolean) this.datawatcher.get(EntityLiving.h);
 
+        // Akarin start - this handle by client
+        /*
         if (i > 0) {
             boolean flag1;
 
@@ -667,6 +669,8 @@ public abstract class EntityLiving extends Entity {
                 this.world.addParticle(flag ? Particles.a : Particles.s, this.locX + (this.random.nextDouble() - 0.5D) * (double) this.width, this.locY + this.random.nextDouble() * (double) this.length, this.locZ + (this.random.nextDouble() - 0.5D) * (double) this.width, d0, d1, d2);
             }
         }
+        */
+        // Akarin end
 
     }
 

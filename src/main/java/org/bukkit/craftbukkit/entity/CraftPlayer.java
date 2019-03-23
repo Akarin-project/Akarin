@@ -6,6 +6,8 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.BaseEncoding;
+import com.koloboke.collect.map.hash.HashObjObjMap;
+import com.koloboke.collect.map.hash.HashObjObjMaps;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 
@@ -122,7 +124,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private boolean hasPlayedBefore = false;
     private final ConversationTracker conversationTracker = new ConversationTracker();
     private final Set<String> channels = new HashSet<String>();
-    private final Map<UUID, Set<WeakReference<Plugin>>> hiddenPlayers = new HashMap<>();
+    private Map<UUID, Set<WeakReference<Plugin>>> hiddenPlayers; // Akarin
     private static final WeakHashMap<Plugin, WeakReference<Plugin>> pluginWeakReferences = new WeakHashMap<>();
     private int hash = 0;
     private double health = 20;
@@ -1162,7 +1164,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
         hidingPlugins = new HashSet<>();
         hidingPlugins.add(getPluginWeakReference(plugin));
-        hiddenPlayers.put(player.getUniqueId(), hidingPlugins);
+        // Akarin start - copy on write
+        HashObjObjMap<UUID, Set<WeakReference<Plugin>>> toImmutable = HashObjObjMaps.newMutableMap(hiddenPlayers);
+        toImmutable.put(player.getUniqueId(), hidingPlugins);
+        hiddenPlayers = toImmutable;
+        //hiddenPlayers.put(player.getUniqueId(), hidingPlugins);
+        // Akarin end
 
         // Remove this player from the hidden player's EntityTrackerEntry
         EntityPlayer other = ((CraftPlayer) player).getHandle();
@@ -1211,7 +1218,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (!hidingPlugins.isEmpty()) {
             return; // Some other plugins still want the player hidden
         }
-        hiddenPlayers.remove(player.getUniqueId());
+        // Akarin start - copy on write
+        HashObjObjMap<UUID, Set<WeakReference<Plugin>>> toImmutable = HashObjObjMaps.newMutableMap(hiddenPlayers);
+        toImmutable.remove(player.getUniqueId());
+        hiddenPlayers = toImmutable;
+        //hiddenPlayers.remove(player.getUniqueId());
+        // Akarin end
 
         // Paper start
         EntityPlayer other = ((CraftPlayer) player).getHandle();
@@ -1270,7 +1282,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     // Paper end
 
     public void removeDisconnectingPlayer(Player player) {
-        hiddenPlayers.remove(player.getUniqueId());
+        // Akarin start - copy on write
+        HashObjObjMap<UUID, Set<WeakReference<Plugin>>> toImmutable = HashObjObjMaps.newMutableMap(hiddenPlayers);
+        toImmutable.remove(player.getUniqueId());
+        hiddenPlayers = HashObjObjMaps.newImmutableMap(toImmutable);
+        //hiddenPlayers.remove(player.getUniqueId());
+        // Akarin end
     }
 
     @Override
