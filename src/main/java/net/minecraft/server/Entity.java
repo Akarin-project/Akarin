@@ -1229,9 +1229,12 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         if (this.getVehicle() instanceof EntityBoat) {
             this.inWater = false;
         } else if (this.b(TagsFluid.WATER)) {
+            // Akarin start - this handle by client
+            /*
             if (!this.inWater && !this.justCreated) {
                 this.au();
             }
+            */
 
             this.fallDistance = 0.0F;
             this.inWater = true;
@@ -1271,13 +1274,13 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         for (i = 0; (float) i < 1.0F + this.width * 20.0F; ++i) {
             f3 = (this.random.nextFloat() * 2.0F - 1.0F) * this.width;
             f4 = (this.random.nextFloat() * 2.0F - 1.0F) * this.width;
-            //this.world.addParticle(Particles.e, this.locX + (double) f3, (double) (f2 + 1.0F), this.locZ + (double) f4, this.motX, this.motY - (double) (this.random.nextFloat() * 0.2F), this.motZ);
+            this.world.addParticle(Particles.e, this.locX + (double) f3, (double) (f2 + 1.0F), this.locZ + (double) f4, this.motX, this.motY - (double) (this.random.nextFloat() * 0.2F), this.motZ);
         }
 
         for (i = 0; (float) i < 1.0F + this.width * 20.0F; ++i) {
             f3 = (this.random.nextFloat() * 2.0F - 1.0F) * this.width;
             f4 = (this.random.nextFloat() * 2.0F - 1.0F) * this.width;
-            //this.world.addParticle(Particles.R, this.locX + (double) f3, (double) (f2 + 1.0F), this.locZ + (double) f4, this.motX, this.motY, this.motZ);
+            this.world.addParticle(Particles.R, this.locX + (double) f3, (double) (f2 + 1.0F), this.locZ + (double) f4, this.motX, this.motY, this.motZ);
         }
 
     }

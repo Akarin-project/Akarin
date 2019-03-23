@@ -146,9 +146,13 @@ public class EntitySlime extends EntityInsentient implements IMonster {
             this.setSize(0.51000005F * (float) i, 0.51000005F * (float) i);
             this.yaw = this.aS;
             this.aQ = this.aS;
+            // Akarin start - this handle by client
+            /*
             if (this.isInWater() && this.random.nextInt(20) == 0) {
                 this.au();
             }
+            */
+            // Akarin end
         }
 
         super.a(datawatcherobject);
