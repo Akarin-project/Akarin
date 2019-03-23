@@ -91,21 +91,21 @@ public abstract class EntityFireball extends Entity {
             this.locY += this.motY;
             this.locZ += this.motZ;
             ProjectileHelper.a(this, 0.2F);
-            // Akarin start - this handle by client
-            /*
             float f = this.k();
 
             if (this.isInWater()) {
+                // Akarin start - this handle by client
+                /*
                 for (int i = 0; i < 4; ++i) {
                     float f1 = 0.25F;
 
                     this.world.addParticle(Particles.e, this.locX - this.motX * 0.25D, this.locY - this.motY * 0.25D, this.locZ - this.motZ * 0.25D, this.motX, this.motY, this.motZ);
                 }
+                */
+                // Akarin end
 
                 f = 0.8F;
             }
-            */
-            // Akarin end
 
             this.motX += this.dirX;
             this.motY += this.dirY;
@@ -113,7 +113,7 @@ public abstract class EntityFireball extends Entity {
             this.motX *= (double) f;
             this.motY *= (double) f;
             this.motZ *= (double) f;
-            this.world.addParticle(this.i(), this.locX, this.locY + 0.5D, this.locZ, 0.0D, 0.0D, 0.0D); // Akarin - this handle by client
+            //this.world.addParticle(this.i(), this.locX, this.locY + 0.5D, this.locZ, 0.0D, 0.0D, 0.0D); // Akarin - this handle by client
             this.setPosition(this.locX, this.locY, this.locZ);
         }
     }

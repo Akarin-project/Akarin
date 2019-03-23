@@ -146,16 +146,24 @@ public class ItemBucket extends Item {
                     }
                 }
                 // CraftBukkit end
-                if (false && world.worldProvider.isNether() && this.fluidType.a(TagsFluid.WATER)) { // Akarin - this handle by client
+                if (world.worldProvider.isNether() && this.fluidType.a(TagsFluid.WATER)) {
+                    // Akarin start - this handle by client
+                    /*
                     int i = blockposition.getX();
                     int j = blockposition.getY();
                     int k = blockposition.getZ();
+                    */
+                    // Akarin end
 
                     world.a(entityhuman, blockposition, SoundEffects.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.5F, 2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F);
 
+                    // Akarin start - this handle by client
+                    /*
                     for (int l = 0; l < 8; ++l) {
                         world.addParticle(Particles.F, (double) i + Math.random(), (double) j + Math.random(), (double) k + Math.random(), 0.0D, 0.0D, 0.0D);
                     }
+                    */
+                    // Akarin end
                 } else if (iblockdata.getBlock() instanceof IFluidContainer) {
                     if (((IFluidContainer) iblockdata.getBlock()).place(world, blockposition, iblockdata, ((FluidTypeFlowing) this.fluidType).a(false))) {
                         this.a(entityhuman, (GeneratorAccess) world, blockposition);
