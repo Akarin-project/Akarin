@@ -47,8 +47,8 @@ public class UserCache {
     private final Map<UUID, UserCache.UserCacheEntry> e = Maps.newHashMap();
     private final Deque<GameProfile> f = new java.util.concurrent.LinkedBlockingDeque<GameProfile>(); // CraftBukkit
     private final GameProfileRepository g;
-    protected final Gson b;
-    private final File h;
+    protected final Gson b; protected Gson gson() { return this.b; } // Akarin - OBFHELPER
+    private final File h; File file() { return this.h; } // Akarin - OBFHELPER
     private static final ParameterizedType i = new ParameterizedType() {
         public Type[] getActualTypeArguments() {
             return new Type[] { UserCache.UserCacheEntry.class};
@@ -62,6 +62,7 @@ public class UserCache {
             return null;
         }
     };
+    static final ParameterizedType PARAMETERIZED_TYPE = i; // Akarin - OBFHELPER
 
     public UserCache(GameProfileRepository gameprofilerepository, File file) {
         this.g = gameprofilerepository;
@@ -100,6 +101,7 @@ public class UserCache {
         UserCache.c = flag;
     }
 
+    static boolean isOnlineMode() { return d(); } // Akarin - OBFHELPER
     private static boolean d() {
         return UserCache.c;
     }
@@ -279,12 +281,12 @@ public class UserCache {
         return list;
     }
 
-    class UserCacheEntry {
+    static class UserCacheEntry { // Akarin - static
 
         private final GameProfile b;public GameProfile getProfile() { return b; } // Paper - OBFHELPER
-        private final Date c;
+        private final Date c; public Date getExpireDate() { return c; } // Akarin - OBFHELPER
 
-        private UserCacheEntry(GameProfile gameprofile, Date date) {
+        UserCacheEntry(GameProfile gameprofile, Date date) { // Akarin - package
             this.b = gameprofile;
             this.c = date;
         }
@@ -298,7 +300,7 @@ public class UserCache {
         }
     }
 
-    class BanEntrySerializer implements JsonDeserializer<UserCache.UserCacheEntry>, JsonSerializer<UserCache.UserCacheEntry> {
+    static class BanEntrySerializer implements JsonDeserializer<UserCache.UserCacheEntry>, JsonSerializer<UserCache.UserCacheEntry> { // Akarin - static
 
         private BanEntrySerializer() {}
 
@@ -342,7 +344,7 @@ public class UserCache {
                             return null;
                         }
 
-                        return UserCache.this.new UserCacheEntry(new GameProfile(uuid, s1), date);
+                        return new UserCacheEntry(new GameProfile(uuid, s1), date); // Akarin - static
                     } else {
                         return null;
                     }

@@ -180,6 +180,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.V = minecraftsessionservice;
         this.W = gameprofilerepository;
         this.X = usercache;
+        this.userCache = new AkarinUserCache(gameprofilerepository, usercache.file(), usercache.gson()); // Akarin
         // this.universe = file; // CraftBukkit
         // this.serverConnection = new ServerConnection(this); // CraftBukkit // Spigot
         // this.convertable = file == null ? null : new WorldLoaderServer(file.toPath(), file.toPath().resolve("../backups"), datafixer); // CraftBukkit - moved to DedicatedServer.init
@@ -693,7 +694,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         // Spigot start
         if (org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly) {
             LOGGER.info("Saving usercache.json");
-            this.getUserCache().c(false); // Paper
+            this.getModernUserCache().save(false); // Paper // Akarin
         }
         // Spigot end
     }
@@ -1666,6 +1667,13 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     public UserCache getUserCache() {
         return this.X;
     }
+    // Akarin start
+    private final AkarinUserCache userCache;
+    
+    public AkarinUserCache getModernUserCache() {
+        return userCache;
+    }
+    // Akarin end
 
     public ServerPing getServerPing() {
         return this.m;

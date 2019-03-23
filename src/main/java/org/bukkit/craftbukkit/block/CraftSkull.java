@@ -4,8 +4,11 @@ import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.ProfileLookupCallback;
+
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TileEntitySkull;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -74,12 +77,25 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
             return false;
         }
 
-        GameProfile profile = MinecraftServer.getServer().getUserCache().getProfile(name);
+        // Akarin start
+        ProfileLookupCallback callback = new ProfileLookupCallback() {
+            @Override
+            public void onProfileLookupSucceeded(GameProfile gameprofile) {
+                profile = gameprofile;
+            }
+
+            @Override
+            public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
+                ;
+            }
+        };
+        GameProfile profile = MinecraftServer.getServer().getModernUserCache().acquire(name, callback);
         if (profile == null) {
             return false;
         }
 
-        this.profile = profile;
+        //this.profile = profile;
+        // Akarin end
         return true;
     }
 

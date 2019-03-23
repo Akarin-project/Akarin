@@ -5,6 +5,7 @@ import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.common.io.BaseEncoding;
 import com.koloboke.collect.map.hash.HashObjObjMap;
 import com.koloboke.collect.map.hash.HashObjObjMaps;
@@ -18,6 +19,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -124,7 +126,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private boolean hasPlayedBefore = false;
     private final ConversationTracker conversationTracker = new ConversationTracker();
     private final Set<String> channels = new HashSet<String>();
-    private Map<UUID, Set<WeakReference<Plugin>>> hiddenPlayers; // Akarin
+    private Map<UUID, Set<WeakReference<Plugin>>> hiddenPlayers = Collections.emptyMap(); // Akarin
     private static final WeakHashMap<Plugin, WeakReference<Plugin>> pluginWeakReferences = new WeakHashMap<>();
     private int hash = 0;
     private double health = 20;

@@ -3,6 +3,10 @@ package net.minecraft.server;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.ProfileLookupCallback;
+
+import net.minecraft.server.UserCache.UserCacheEntry;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -394,8 +398,8 @@ public class Village {
             NBTTagCompound nbttagcompound2 = nbttaglist1.getCompound(j);
 
             if (nbttagcompound2.hasKey("UUID") && this.a != null && this.a.getMinecraftServer() != null) {
-                UserCache usercache = this.a.getMinecraftServer().getUserCache();
-                GameProfile gameprofile = usercache.a(UUID.fromString(nbttagcompound2.getString("UUID")));
+                AkarinUserCache usercache = this.a.getMinecraftServer().getModernUserCache(); // Akarin
+                GameProfile gameprofile = usercache.peek(nbttagcompound2.getString("Name")); // Akarin
 
                 if (gameprofile != null) {
                     this.j.put(gameprofile.getName(), nbttagcompound2.getInt("S"));
@@ -443,16 +447,31 @@ public class Village {
         while (iterator1.hasNext()) {
             String s = (String) iterator1.next();
             NBTTagCompound nbttagcompound2 = new NBTTagCompound();
-            UserCache usercache = this.a.getMinecraftServer().getUserCache();
+            AkarinUserCache usercache = this.a.getMinecraftServer().getModernUserCache(); // Akarin
 
             try {
-                GameProfile gameprofile = usercache.getProfile(s);
+                // Akarin start
+                ProfileLookupCallback callback = new ProfileLookupCallback() {
+                    @Override
+                    public void onProfileLookupSucceeded(GameProfile gameprofile) {
+                        nbttagcompound2.setString("UUID", gameprofile.getId().toString());
+                        nbttagcompound2.setInt("S", (Integer) j.get(s));
+                        nbttaglist1.add((NBTBase) nbttagcompound2);
+                    }
 
-                if (gameprofile != null) {
-                    nbttagcompound2.setString("UUID", gameprofile.getId().toString());
-                    nbttagcompound2.setInt("S", (Integer) this.j.get(s));
-                    nbttaglist1.add((NBTBase) nbttagcompound2);
-                }
+                    @Override
+                    public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
+                        ;
+                    }
+                };
+                usercache.acquire(s, callback);
+
+                //if (gameprofile != null) {
+                //    nbttagcompound2.setString("UUID", gameprofile.getId().toString());
+                //    nbttagcompound2.setInt("S", (Integer) this.j.get(s));
+                //    nbttaglist1.add((NBTBase) nbttagcompound2);
+                //}
+                // Akarin end
             } catch (RuntimeException runtimeexception) {
                 ;
             }

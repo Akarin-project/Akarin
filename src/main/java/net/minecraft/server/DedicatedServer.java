@@ -251,7 +251,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             }
 
             if (this.aX()) {
-                this.getUserCache().c();
+                this.getModernUserCache().load(); // Akarin
             }
 
             if (!NameReferencingFileConverter.a(this.propertyManager)) {

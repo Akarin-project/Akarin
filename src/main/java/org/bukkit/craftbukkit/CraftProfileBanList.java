@@ -14,6 +14,8 @@ import org.apache.commons.lang.Validate;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.ProfileLookupCallback;
+
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 
@@ -28,7 +30,7 @@ public class CraftProfileBanList implements org.bukkit.BanList {
     public org.bukkit.BanEntry getBanEntry(String target) {
         Validate.notNull(target, "Target cannot be null");
 
-        GameProfile profile = MinecraftServer.getServer().getUserCache().getProfile(target);
+        GameProfile profile = MinecraftServer.getServer().getModernUserCache().acquire(target);
         if (profile == null) {
             return null;
         }
@@ -45,7 +47,30 @@ public class CraftProfileBanList implements org.bukkit.BanList {
     public org.bukkit.BanEntry addBan(String target, String reason, Date expires, String source) {
         Validate.notNull(target, "Ban target cannot be null");
 
-        GameProfile profile = MinecraftServer.getServer().getUserCache().getProfile(target);
+        // Akarin start
+        ProfileLookupCallback callback = new ProfileLookupCallback() {
+            @Override
+            public void onProfileLookupSucceeded(GameProfile profile) {
+                GameProfileBanEntry entry = new GameProfileBanEntry(profile, new Date(),
+                        StringUtils.isBlank(source) ? null : source, expires,
+                        StringUtils.isBlank(reason) ? null : reason);
+
+                list.add(entry);
+
+                try {
+                    list.save();
+                } catch (IOException ex) {
+                    Bukkit.getLogger().log(Level.SEVERE, "Failed to save banned-players.json, {0}", ex.getMessage());
+                }
+            }
+
+            @Override
+            public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
+                ;
+            }
+        };
+        MinecraftServer.getServer().getModernUserCache().acquire(target, callback);
+        /*
         if (profile == null) {
             return null;
         }
@@ -61,8 +86,10 @@ public class CraftProfileBanList implements org.bukkit.BanList {
         } catch (IOException ex) {
             Bukkit.getLogger().log(Level.SEVERE, "Failed to save banned-players.json, {0}", ex.getMessage());
         }
+        */
 
-        return new CraftProfileBanEntry(profile, entry, list);
+        return null;
+        // Akarin end
     }
 
     @Override
@@ -81,7 +108,7 @@ public class CraftProfileBanList implements org.bukkit.BanList {
     public boolean isBanned(String target) {
         Validate.notNull(target, "Target cannot be null");
 
-        GameProfile profile = MinecraftServer.getServer().getUserCache().getProfile(target);
+        GameProfile profile = MinecraftServer.getServer().getModernUserCache().acquire(target);// Akarin
         if (profile == null) {
             return false;
         }
@@ -93,7 +120,20 @@ public class CraftProfileBanList implements org.bukkit.BanList {
     public void pardon(String target) {
         Validate.notNull(target, "Target cannot be null");
 
-        GameProfile profile = MinecraftServer.getServer().getUserCache().getProfile(target);
-        list.remove(profile);
+        // Akarin start
+        ProfileLookupCallback callback = new ProfileLookupCallback() {
+            @Override
+            public void onProfileLookupSucceeded(GameProfile profile) {
+                list.remove(profile);
+            }
+
+            @Override
+            public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
+                ;
+            }
+        };
+        GameProfile profile = MinecraftServer.getServer().getModernUserCache().acquire(target, callback);
+        //list.remove(profile);
+        // Akarin end
     }
 }

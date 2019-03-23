@@ -170,4 +170,9 @@ public class AkarinGlobalConfig {
     private static void lazyThreadAssertion() {
         lazyThreadAssertion = getBoolean("core.lazy-thread-assertion", lazyThreadAssertion);
     }
+    
+    public static int userCacheExpireDays = 30;
+    private static void userCacheExpireDays() {
+        userCacheExpireDays = getSeconds(getString("core.user-cache-expire-time", "30d"));
+    }
 }

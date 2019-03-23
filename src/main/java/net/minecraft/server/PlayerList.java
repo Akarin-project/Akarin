@@ -97,11 +97,10 @@ public abstract class PlayerList {
     public void a(NetworkManager networkmanager, EntityPlayer entityplayer) {
         entityplayer.loginTime = System.currentTimeMillis(); // Paper
         GameProfile gameprofile = entityplayer.getProfile();
-        UserCache usercache = this.server.getUserCache();
-        GameProfile gameprofile1 = usercache.a(gameprofile.getId());
+        AkarinUserCache usercache = this.server.getModernUserCache(); // Akarin
+        GameProfile gameprofile1 = usercache.peek(gameprofile.getName()); // Akarin
         String s = gameprofile1 == null ? gameprofile.getName() : gameprofile1.getName();
-
-        usercache.a(gameprofile);
+        usercache.offer(gameprofile); // Akarin
         NBTTagCompound nbttagcompound = this.a(entityplayer);
         // CraftBukkit start - Better rename detection
         if (nbttagcompound != null && nbttagcompound.hasKey("bukkit")) {

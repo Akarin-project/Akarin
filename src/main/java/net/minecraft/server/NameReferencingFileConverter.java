@@ -95,7 +95,7 @@ public class NameReferencingFileConverter {
                 a(NameReferencingFileConverter.b, (Map) map);
                 ProfileLookupCallback profilelookupcallback = new ProfileLookupCallback() {
                     public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                        minecraftserver.getUserCache().a(gameprofile);
+                        minecraftserver.getModernUserCache().offer(gameprofile); // Akarin
                         String[] astring = (String[]) map.get(gameprofile.getName().toLowerCase(Locale.ROOT));
 
                         if (astring == null) {
@@ -194,7 +194,7 @@ public class NameReferencingFileConverter {
                 List<String> list = Files.readLines(NameReferencingFileConverter.c, StandardCharsets.UTF_8);
                 ProfileLookupCallback profilelookupcallback = new ProfileLookupCallback() {
                     public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                        minecraftserver.getUserCache().a(gameprofile);
+                        minecraftserver.getModernUserCache().offer(gameprofile); // Akarin
                         oplist.add(new OpListEntry(gameprofile, minecraftserver.j(), false));
                     }
 
@@ -239,7 +239,7 @@ public class NameReferencingFileConverter {
                 List<String> list = Files.readLines(NameReferencingFileConverter.d, StandardCharsets.UTF_8);
                 ProfileLookupCallback profilelookupcallback = new ProfileLookupCallback() {
                     public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                        minecraftserver.getUserCache().a(gameprofile);
+                        minecraftserver.getModernUserCache().offer(gameprofile); // Akarin
                         whitelist.add(new WhiteListEntry(gameprofile));
                     }
 
@@ -277,7 +277,7 @@ public class NameReferencingFileConverter {
                 final List<GameProfile> list = Lists.newArrayList();
                 ProfileLookupCallback profilelookupcallback = new ProfileLookupCallback() {
                     public void onProfileLookupSucceeded(GameProfile gameprofile1) {
-                        minecraftserver.getUserCache().a(gameprofile1);
+                        minecraftserver.getModernUserCache().offer(gameprofile1); // Akarin
                         list.add(gameprofile1);
                     }
 
@@ -324,7 +324,7 @@ public class NameReferencingFileConverter {
                 final String[] astring = (String[]) list.toArray(new String[list.size()]);
                 ProfileLookupCallback profilelookupcallback = new ProfileLookupCallback() {
                     public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                        dedicatedserver.getUserCache().a(gameprofile);
+                        dedicatedserver.getModernUserCache().offer(gameprofile); // Akarin
                         UUID uuid = gameprofile.getId();
 
                         if (uuid == null) {

@@ -3,8 +3,12 @@ package com.destroystokyo.paper.profile;
 import com.destroystokyo.paper.PaperConfig;
 import com.google.common.base.Charsets;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.ProfileLookupCallback;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
+
+import net.minecraft.server.AkarinUserCache;
+import net.minecraft.server.EntityHuman;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.UserCache;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
@@ -143,7 +147,9 @@ public class CraftPlayerProfile implements PlayerProfile {
         }
         MinecraftServer server = MinecraftServer.getServer();
         String name = profile.getName();
-        UserCache userCache = server.getUserCache();
+        // Akarin start
+        AkarinUserCache userCache = server.getModernUserCache();
+        /*
         if (profile.getId() == null) {
             final GameProfile profile;
             boolean isOnlineMode = server.getOnlineMode() || (SpigotConfig.bungee && PaperConfig.bungeeOnlineMode);
@@ -165,7 +171,31 @@ public class CraftPlayerProfile implements PlayerProfile {
                 this.profile = profile;
             }
         }
-        return this.profile.isComplete();
+        */
+        ProfileLookupCallback callback = new ProfileLookupCallback() {
+            @Override
+            public void onProfileLookupSucceeded(GameProfile gameprofile) {
+                profile = gameprofile;
+            }
+
+            @Override
+            public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
+                ;
+            }
+        };
+        
+        if (lookupName) {
+            userCache.acquire(name, callback, true);
+        } else {
+            GameProfile peeked = userCache.peek(name);
+            if (peeked.getName() == null) {
+                userCache.acquire(name, callback, true);
+            } else {
+                this.profile = peeked;
+            }
+        }
+        return true;
+        // Akarin end
     }
 
     public boolean complete(boolean textures) {
