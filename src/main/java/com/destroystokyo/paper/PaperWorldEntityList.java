@@ -7,6 +7,7 @@ import net.minecraft.server.IAnimal;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.World;
 import net.minecraft.server.WorldServer;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -90,7 +91,8 @@ public class PaperWorldEntityList extends ArrayList<Entity> {
     }
 
     public void updateEntityCount(Entity entity, int amt) {
-        if (!(entity instanceof IAnimal)) return;
+        // Only count natural spawns so that mob
+        if (!(entity instanceof IAnimal) || entity.spawnReason != SpawnReason.NATURAL) return;
 
         if (entity instanceof EntityInsentient) {
             EntityInsentient entityinsentient = (EntityInsentient) entity;

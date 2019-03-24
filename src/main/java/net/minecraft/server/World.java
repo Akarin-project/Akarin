@@ -1089,6 +1089,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
     public boolean addEntity(Entity entity, SpawnReason spawnReason) { // Changed signature, added SpawnReason
         // Paper start
+        if (entity.spawnReason == null) entity.spawnReason = spawnReason;
         if (regionLimited != null) {
             return regionLimited.addEntity(entity, spawnReason);
         }

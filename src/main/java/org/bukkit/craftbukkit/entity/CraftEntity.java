@@ -845,5 +845,9 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     public boolean fromMobSpawner() {
         return getHandle().spawnedViaMobSpawner;
     }
+
+    public org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason getEntitySpawnReason() {
+        return getHandle().spawnReason;
+    }
     // Paper end
 }

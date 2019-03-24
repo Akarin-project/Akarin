@@ -64,6 +64,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         }
     };
     List<Entity> entitySlice = null;
+    public org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason spawnReason;
     // Paper end
     static boolean isLevelAtLeast(NBTTagCompound tag, int level) {
         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
@@ -1687,6 +1688,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             if (origin != null) {
                 nbttagcompound.set("Paper.Origin", this.createList(origin.getX(), origin.getY(), origin.getZ()));
             }
+            if (spawnReason != null) {
+                nbttagcompound.setString("Paper.SpawnReason", spawnReason.name());
+            }
             // Save entity's from mob spawner status
             if (spawnedViaMobSpawner) {
                 nbttagcompound.setBoolean("Paper.FromMobSpawner", true);
@@ -1840,6 +1844,26 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             }
 
             spawnedViaMobSpawner = nbttagcompound.getBoolean("Paper.FromMobSpawner"); // Restore entity's from mob spawner status
+            if (nbttagcompound.hasKey("Paper.SpawnReason")) {
+                String spawnReasonName = nbttagcompound.getString("Paper.SpawnReason");
+                try {
+                    spawnReason = org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.valueOf(spawnReasonName);
+                } catch (Exception ignored) {
+                    LogManager.getLogger().error("Unknown SpawnReason " + spawnReasonName + " for " + this);
+                }
+            }
+            if (spawnReason == null) {
+                if (spawnedViaMobSpawner) {
+                    spawnReason = org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER;
+                } else if (this instanceof EntityInsentient && this instanceof IAnimal && !((EntityInsentient) this).isTypeNotPersistent()) {
+                    if (!nbttagcompound.getBoolean("PersistenceRequired")) {
+                        spawnReason = org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.NATURAL;
+                    }
+                }
+            }
+            if (spawnReason == null) {
+                spawnReason = org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT;
+            }
             // Paper end
 
         } catch (Throwable throwable) {

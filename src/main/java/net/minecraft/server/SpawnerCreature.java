@@ -158,7 +158,7 @@ public final class SpawnerCreature {
                                                 float f1 = (float) l3 + 0.5F;
                                                 EntityHuman entityhuman1 = worldserver.a((double) f, (double) f1, -1.0D);
 
-                                                if (entityhuman1 != null) {
+                                                if (entityhuman1 != null && worldserver.isLoadedAndInBounds(blockposition_mutableblockposition)) { // Paper - don't load chunks for mob spawn
                                                     double d0 = entityhuman1.d((double) f, (double) k3, (double) f1);
 
                                                     if (d0 > 576.0D && blockposition.distanceSquared((double) f, (double) k3, (double) f1) >= 576.0D) {
@@ -171,7 +171,7 @@ public final class SpawnerCreature {
                                                             i4 = biomebase_biomemeta.c + worldserver.random.nextInt(1 + biomebase_biomemeta.d - biomebase_biomemeta.c);
                                                         }
 
-                                                    if (worldserver.isLoadedAndInBounds(blockposition_mutableblockposition) && worldserver.a(enumcreaturetype, biomebase_biomemeta, (BlockPosition) blockposition_mutableblockposition)) { // Paper - don't load chunks for mob spawn
+                                                        if (worldserver.a(enumcreaturetype, biomebase_biomemeta, (BlockPosition) blockposition_mutableblockposition)) {
                                                             EntityPositionTypes.Surface entitypositiontypes_surface = EntityPositionTypes.a(biomebase_biomemeta.b);
                                                             if (entitypositiontypes_surface != null && a(entitypositiontypes_surface, worldserver, blockposition_mutableblockposition, biomebase_biomemeta.b)) {
                                                                 EntityInsentient entityinsentient;
