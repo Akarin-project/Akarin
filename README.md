@@ -25,6 +25,7 @@ Get Akarin
 ### Download
 #### Recommended
 + [**Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/ver/master) - Checkout the 'Artifacts' tab of the latest build *Login required*
++ [**Melon Jenkins**](https://ci.melon.cat/job/Akarin/)
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
