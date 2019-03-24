@@ -72,7 +72,7 @@ public class WorldManager implements IWorldAccess {
         Iterator<? extends EntityHuman> iterator = list.iterator();
         while (iterator.hasNext()) {
             EntityHuman human = iterator.next();
-            if (!(human instanceof EntityPlayer) || human == entity) continue;
+            if (!(human instanceof EntityPlayer)) continue;
             EntityPlayer entityplayer = (EntityPlayer) human;
             // Paper end
 

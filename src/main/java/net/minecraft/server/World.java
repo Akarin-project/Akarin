@@ -1,6 +1,8 @@
 	package net.minecraft.server;
 
 import co.aikar.timings.Timings;
+import io.akarin.server.core.AkarinWorldAccessor;
+
 import com.destroystokyo.paper.antixray.ChunkPacketBlockController; // Paper - Anti-Xray
 import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray; // Paper - Anti-Xray
 import com.destroystokyo.paper.event.server.ServerExceptionEvent;
@@ -97,6 +99,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     public WorldProvider worldProvider;
     protected NavigationListener u = new NavigationListener();
     protected List<IWorldAccess> v;
+    private AkarinWorldAccessor worldAccessor; // Akarin
     protected IChunkProvider chunkProvider;
     protected final IDataManager dataManager;
     public WorldData worldData;
@@ -193,7 +196,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
         this.ticksPerMonsterSpawns = this.getServer().getTicksPerMonsterSpawns(); // CraftBukkit
         // CraftBukkit end
-        this.v = new CopyOnWriteArrayList<IWorldAccess>(new IWorldAccess[] { this.u}); // Akarin - ArrayList -> CopyOnWriteArrayList
+        this.v = Lists.newArrayList(); // Akarin
         this.allowMonsters = true;
         this.allowAnimals = true;
         this.E = new int['\u8000'];
@@ -580,9 +583,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void notify(BlockPosition blockposition, IBlockData iblockdata, IBlockData iblockdata1, int i) {
+        // Akarin start
+        /*
         for (int j = 0; j < this.v.size(); ++j) {
             ((IWorldAccess) this.v.get(j)).a(this, blockposition, iblockdata, iblockdata1, i);
         }
+        */
+        worldAccessor.a(this, blockposition, iblockdata, iblockdata1, i);
+        // Akarin end
 
     }
 
@@ -1048,9 +1056,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     // Paper end
 
     public void a(@Nullable EntityHuman entityhuman, double d0, double d1, double d2, SoundEffect soundeffect, SoundCategory soundcategory, float f, float f1) {
+        // Akarin start
+        /*
         for (int i = 0; i < this.v.size(); ++i) {
             ((IWorldAccess) this.v.get(i)).a(entityhuman, soundeffect, soundcategory, d0, d1, d2, f, f1);
         }
+        */
+        worldAccessor.a(entityhuman, soundeffect, soundcategory, d0, d1, d2, f, f1);
+        // Akarin end
 
     }
 
@@ -1136,9 +1149,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     protected void b(Entity entity) {
+        // Akarin start
+        /*
         for (int i = 0; i < this.v.size(); ++i) {
             ((IWorldAccess) this.v.get(i)).a(entity);
         }
+        */
+        worldAccessor.b(entity);
+        // Akarin end
 
         entity.valid = true; // CraftBukkit
         entity.shouldBeRemoved = false; // Paper - shouldn't be removed after being re-added
@@ -1146,9 +1164,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     protected void c(Entity entity) {
+        // Akarin start
+        /*
         for (int i = 0; i < this.v.size(); ++i) {
             ((IWorldAccess) this.v.get(i)).b(entity);
         }
+        */
+        worldAccessor.b(entity);
+        // Akarin end
 
         new com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
         entity.valid = false; // CraftBukkit
@@ -1230,7 +1253,8 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void addIWorldAccess(IWorldAccess iworldaccess) {
-        this.v.add(iworldaccess);
+        worldAccessor = new AkarinWorldAccessor((WorldManager) iworldaccess, this.u); // Akarin
+        //this.v.add(iworldaccess); // Akarin
     }
 
     public int a(float f) {
@@ -2933,9 +2957,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void a(int i, BlockPosition blockposition, int j) {
+        // Akarin start
+        /*
         for (int k = 0; k < this.v.size(); ++k) {
             ((IWorldAccess) this.v.get(k)).a(i, blockposition, j);
         }
+        */
+        worldAccessor.a(i, blockposition, j);
+        // Akarin end
 
     }
 
@@ -2945,9 +2974,14 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
     public void a(@Nullable EntityHuman entityhuman, int i, BlockPosition blockposition, int j) {
         try {
+            // Akarin start
+            /*
             for (int k = 0; k < this.v.size(); ++k) {
                 ((IWorldAccess) this.v.get(k)).a(entityhuman, i, blockposition, j);
             }
+            */
+            worldAccessor.a(entityhuman, i, blockposition, j);
+            // Akarin end
 
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Playing level event");
@@ -2990,11 +3024,16 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void c(int i, BlockPosition blockposition, int j) {
+        // Akarin start
+        /*
         for (int k = 0; k < this.v.size(); ++k) {
             IWorldAccess iworldaccess = (IWorldAccess) this.v.get(k);
 
             iworldaccess.b(i, blockposition, j);
         }
+        */
+        worldAccessor.b(i, blockposition, j);
+        // Akarin end
 
     }
 

@@ -88,6 +88,7 @@ public class AkarinUserCache {
         ProfileLookupCallback callbackHandler = new ProfileLookupCallback() {
             @Override
             public void onProfileLookupSucceeded(GameProfile gameprofile) {
+                LOGGER.warn("Failed to lookup player {}, using local UUID.", gameprofile.getName());
                 if (async)
                     callback.onProfileLookupSucceeded(gameprofile);
                 else
