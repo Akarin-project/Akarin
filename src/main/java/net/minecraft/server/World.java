@@ -1155,7 +1155,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             ((IWorldAccess) this.v.get(i)).a(entity);
         }
         */
-        worldAccessor.b(entity);
+        worldAccessor.a(entity);
         // Akarin end
 
         entity.valid = true; // CraftBukkit
