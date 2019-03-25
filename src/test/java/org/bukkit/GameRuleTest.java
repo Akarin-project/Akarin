@@ -3,8 +3,12 @@ package org.bukkit;
 import java.util.Map;
 import java.util.TreeMap;
 import net.minecraft.server.GameRules;
+import net.minecraft.server.GameRules.GameRuleDefinition;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.koloboke.collect.map.hash.HashObjObjMap;
 
 public class GameRuleTest {
 
@@ -21,7 +25,7 @@ public class GameRuleTest {
 
     @Test
     public void testMinecraftRules() {
-        TreeMap<String, GameRules.GameRuleDefinition> minecraftRules = GameRules.getGameRules();
+        TreeMap<String, GameRuleDefinition> minecraftRules = GameRules.getGameRules();
 
         for (Map.Entry<String, GameRules.GameRuleDefinition> entry : minecraftRules.entrySet()) {
             GameRule<?> bukkitRule = GameRule.getByName(entry.getKey());
