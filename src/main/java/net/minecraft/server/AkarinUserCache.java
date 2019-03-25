@@ -107,7 +107,7 @@ public class AkarinUserCache {
         Runnable find = () -> profileRepo.findProfilesByNames(new String[] { keyUsername }, Agent.MINECRAFT, callbackHandler);
         if (async) {
             MCUtil.scheduleAsyncTask(find);
-            return null; // TODO: future
+            return null;
         } else {
             find.run();
             return gameProfile[0];

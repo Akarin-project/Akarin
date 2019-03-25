@@ -51,7 +51,7 @@ public final class MCUtil {
     }
 
     public static boolean isMainThread() {
-        return MinecraftServer.getServer().isMainThread();
+        return ThreadAssertion.isMainThread() && MinecraftServer.getServer().isMainThread(); // Akarin
     }
 
     private static class DelayedRunnable implements Runnable {
