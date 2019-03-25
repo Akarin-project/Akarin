@@ -21,7 +21,7 @@ import net.minecraft.server.WorldManager;
 public class AkarinWorldAccessor implements IWorldAccess {
     private final WorldManager worldManager;
     private final NavigationListener navigationListener;
-    private IWorldAccess[] customAccessors;
+    private IWorldAccess[] customAccessors = new IWorldAccess[0];
     private boolean hasCustomAccessor;
     
     public void add(IWorldAccess worldAccessor) {

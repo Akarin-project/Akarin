@@ -283,7 +283,7 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     public void saveChunk(IChunkAccess ichunkaccess, boolean unloaded) { // Spigot
-        try (co.aikar.timings.Timing timed = world.timings.chunkSaveData.startTiming()) { // Paper - Timings
+        try (co.aikar.timings.Timing timed = world.timings.chunkSaveData.startTimingUnsafe()) { // Paper - Timings
             ichunkaccess.setLastSaved(this.world.getTime());
             this.chunkLoader.saveChunk(this.world, ichunkaccess, unloaded); // Spigot
         } catch (IOException ioexception) {

@@ -11,7 +11,7 @@ public class PlayerConnectionUtils {
 
             iasynctaskhandler.ensuresMainThread(() -> {
                 if (t0 instanceof PlayerConnection && ((PlayerConnection) t0).processedDisconnect) return; // CraftBukkit
-                try (Timing ignored = timing.startTiming()) { // Paper
+                try (Timing ignored = timing.startTimingUnsafe()) { // Paper
                 packet.a(t0);
             } // Paper - timings
             });

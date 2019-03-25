@@ -54,7 +54,7 @@ class PaperLightingQueue {
             if (isOutOfTime(maxTickTime, startTime)) {
                 return true;
             }
-            try (Timing ignored = chunk.world.timings.lightingQueueTimer.startTiming()) {
+            try (Timing ignored = chunk.world.timings.lightingQueueTimer.startTimingUnsafe()) {
                 Runnable lightUpdate;
                 while ((lightUpdate = this.poll()) != null) {
                     lightUpdate.run();

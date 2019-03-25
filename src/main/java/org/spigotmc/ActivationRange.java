@@ -110,7 +110,7 @@ public class ActivationRange
      */
     public static void activateEntities(World world)
     {
-        MinecraftTimings.entityActivationCheckTimer.startTiming();
+        MinecraftTimings.entityActivationCheckTimer.startTimingUnsafe();
         final int miscActivationRange = world.spigotConfig.miscActivationRange;
         final int animalActivationRange = world.spigotConfig.animalActivationRange;
         final int monsterActivationRange = world.spigotConfig.monsterActivationRange;
@@ -147,7 +147,7 @@ public class ActivationRange
                 }
             }
         }
-        MinecraftTimings.entityActivationCheckTimer.stopTiming();
+        MinecraftTimings.entityActivationCheckTimer.stopTimingUnsafe();
     }
 
     /**

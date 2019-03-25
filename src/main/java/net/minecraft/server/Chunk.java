@@ -981,7 +981,7 @@ public class Chunk implements IChunkAccess {
             server.getPluginManager().callEvent(new org.bukkit.event.world.ChunkLoadEvent(this.bukkitChunk, this.needsDecoration));
 
             if (this.needsDecoration) {
-                this.world.timings.syncChunkLoadPopulateTimer.startTiming(); // Paper
+                this.world.timings.syncChunkLoadPopulateTimer.startTimingUnsafe(); // Paper
                 BlockSand.instaFall = true;
                 java.util.Random random = new java.util.Random();
                 random.setSeed(world.getSeed());
@@ -1002,7 +1002,7 @@ public class Chunk implements IChunkAccess {
                 }
                 BlockSand.instaFall = false;
                 server.getPluginManager().callEvent(new org.bukkit.event.world.ChunkPopulateEvent(bukkitChunk));
-                this.world.timings.syncChunkLoadPopulateTimer.stopTiming(); // Paper
+                this.world.timings.syncChunkLoadPopulateTimer.stopTimingUnsafe(); // Paper
             }
         }
         // CraftBukkit end

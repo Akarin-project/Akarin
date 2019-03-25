@@ -77,13 +77,13 @@ public class CraftTask implements BukkitTask, Runnable { // Spigot
 
     @Override
     public void run() {
-        if (timings != null && isSync()) timings.startTiming(); // Paper
+        if (timings != null && isSync()) timings.startTimingUnsafe(); // Paper
         if (rTask != null) {
             rTask.run();
         } else {
             cTask.accept(this);
         }
-        if (timings != null && isSync()) timings.stopTiming(); // Paper
+        if (timings != null && isSync()) timings.stopTimingUnsafe(); // Paper
     }
 
     long getPeriod() {

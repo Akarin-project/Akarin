@@ -1841,7 +1841,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     // CraftBukkit end
 
     private void handleCommand(String s) {
-        MinecraftTimings.playerCommandTimer.startTiming(); // Paper
+        MinecraftTimings.playerCommandTimer.startTimingUnsafe(); // Paper
         // CraftBukkit start - whole method
         if ( org.spigotmc.SpigotConfig.logCommands ) // Spigot
         this.LOGGER.info(this.player.getName() + " issued server command: " + s);
@@ -1865,7 +1865,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             java.util.logging.Logger.getLogger(PlayerConnection.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             return;
         } finally {
-            MinecraftTimings.playerCommandTimer.stopTiming(); // Paper
+            MinecraftTimings.playerCommandTimer.stopTimingUnsafe(); // Paper
         }
         // this.minecraftServer.getCommandDispatcher().a(this.player.getCommandListener(), s);
         // CraftBukkit end

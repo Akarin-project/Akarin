@@ -1263,7 +1263,7 @@ public abstract class PlayerList {
     public void savePlayers(Integer interval) {
         MCUtil.ensureMain("Save Players", () -> { // Paper - ensure main
         long now = MinecraftServer.currentTick;
-        MinecraftTimings.savePlayers.startTiming(); // Paper
+        MinecraftTimings.savePlayers.startTimingUnsafe(); // Paper
         int numSaved = 0; // Paper
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer = this.players.get(i);
@@ -1272,7 +1272,7 @@ public abstract class PlayerList {
                 if (interval != null && ++numSaved <= com.destroystokyo.paper.PaperConfig.maxPlayerAutoSavePerTick) { break; } // Paper
             }
         }
-        MinecraftTimings.savePlayers.stopTiming(); // Paper
+        MinecraftTimings.savePlayers.stopTimingUnsafe(); // Paper
         return null; }); // Paper - ensure main
     }
     // Paper end

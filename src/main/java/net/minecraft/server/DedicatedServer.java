@@ -467,7 +467,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
     }
 
     public void handleCommandQueue() {
-        MinecraftTimings.serverCommandTimer.startTiming(); // Spigot
+        MinecraftTimings.serverCommandTimer.startTimingUnsafe(); // Spigot
         // Paper start - use proper queue
         ServerCommand servercommand;
         while ((servercommand = this.serverCommandQueue.poll()) != null) {
@@ -484,7 +484,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             // CraftBukkit end
         }
 
-        MinecraftTimings.serverCommandTimer.stopTiming(); // Spigot
+        MinecraftTimings.serverCommandTimer.stopTimingUnsafe(); // Spigot
     }
 
     public boolean Q() {

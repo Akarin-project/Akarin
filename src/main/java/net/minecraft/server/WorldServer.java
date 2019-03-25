@@ -271,10 +271,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         // CraftBukkit start - Only call spawner if we have players online and the world allows for mobs or animals
         long time = this.worldData.getTime();
         if (this.getGameRules().getBoolean("doMobSpawning") && this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES && (this.allowMonsters || this.allowAnimals) && (this instanceof WorldServer && this.players.size() > 0)) {
-            timings.mobSpawn.startTiming(); // Spigot
+            timings.mobSpawn.startTimingUnsafe(); // Spigot
             this.spawnerCreature.a(this, this.allowMonsters && (this.ticksPerMonsterSpawns != 0 && time % this.ticksPerMonsterSpawns == 0L), this.allowAnimals && (this.ticksPerAnimalSpawns != 0 && time % this.ticksPerAnimalSpawns == 0L), this.worldData.getTime() % 400L == 0L);
             this.getChunkProvider().a(this, this.allowMonsters && (this.ticksPerMonsterSpawns != 0 && time % this.ticksPerMonsterSpawns == 0L), this.allowAnimals && (this.ticksPerAnimalSpawns != 0 && time % this.ticksPerAnimalSpawns == 0L));
-            timings.mobSpawn.stopTiming(); // Spigot
+            timings.mobSpawn.stopTimingUnsafe(); // Spigot
             // CraftBukkit end
         }
 
@@ -530,7 +530,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 }
 
                 //this.methodProfiler.exitEnter("tickBlocks"); // Akarin - remove caller
-                timings.chunkTicksBlocks.startTiming(); // Paper
+                timings.chunkTicksBlocks.startTimingUnsafe(); // Paper
                 if (i > 0) {
                     ChunkSection[] achunksection = chunk.getSections();
                     int i1 = achunksection.length;
@@ -562,7 +562,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                         }
                     }
                 }
-                timings.chunkTicksBlocks.stopTiming(); // Paper
+                timings.chunkTicksBlocks.stopTimingUnsafe(); // Paper
             }
 
             //this.methodProfiler.exit(); // Akarin - remove caller
@@ -868,7 +868,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
         if (chunkproviderserver.d()) {
             if (flag) org.bukkit.Bukkit.getPluginManager().callEvent(new org.bukkit.event.world.WorldSaveEvent(getWorld())); // CraftBukkit // Paper - Incremental Auto Saving - Only fire event on full save
-            timings.worldSave.startTiming(); // Paper
+            timings.worldSave.startTimingUnsafe(); // Paper
             if (flag || server.serverAutoSave) { // Paper
             if (iprogressupdate != null) {
                 iprogressupdate.a(new ChatMessage("menu.savingLevel", new Object[0]));
@@ -880,9 +880,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             }
             } // Paper
 
-            timings.worldSaveChunks.startTiming(); // Paper
+            timings.worldSaveChunks.startTimingUnsafe(); // Paper
             chunkproviderserver.a(flag);
-            timings.worldSaveChunks.stopTiming(); // Paper
+            timings.worldSaveChunks.stopTimingUnsafe(); // Paper
             // CraftBukkit - ArrayList -> Collection
             /* //Paper start - disable vanilla chunk GC
             java.util.Collection<Chunk> list = chunkproviderserver.a();
@@ -896,7 +896,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 }
             }*/
             // Paper end
-            timings.worldSave.stopTiming(); // Paper
+            timings.worldSave.stopTimingUnsafe(); // Paper
         }
     }
 
@@ -909,7 +909,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     }
 
     protected void a() throws ExceptionWorldConflict {
-        timings.worldSaveLevel.startTiming(); // Paper
+        timings.worldSaveLevel.startTimingUnsafe(); // Paper
         this.checkSession();
         Iterator iterator = this.server.getWorlds().iterator();
 
@@ -933,7 +933,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.worldData.c(this.server.getBossBattleCustomData().c());
         this.dataManager.saveWorldData(this.worldData, this.server.getPlayerList().t());
         this.h().a();
-        timings.worldSaveLevel.stopTiming(); // Paper
+        timings.worldSaveLevel.stopTimingUnsafe(); // Paper
     }
 
     // CraftBukkit start
