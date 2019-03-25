@@ -121,7 +121,7 @@ public abstract class MobSpawnerAbstract {
                         }
                     }
                     // Paper end
-                    Entity entity = ChunkRegionLoader.a(nbttagcompound, world, d3, d4, d5, false);
+                    Entity entity = ChunkRegionLoader.spawnEntity(nbttagcompound, world, d3, d4, d5, false, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER); // Paper
 
                     if (entity == null) {
                         this.i();

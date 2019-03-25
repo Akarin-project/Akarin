@@ -23,6 +23,9 @@
  */
 package co.aikar.timings;
 
+import javax.annotation.Nonnull; // Akarin - javax.annotation
+import javax.annotation.Nullable; // Akarin - javax.annotation
+
 /**
  * Provides an ability to time sections of code within the Minecraft Server
  */
@@ -32,6 +35,7 @@ public interface Timing extends AutoCloseable {
      *
      * @return Timing
      */
+    @Nonnull // Akarin - javax.annotation
     Timing startTiming();
     default Timing startTiming(boolean assertThread) { return startTiming(); }; // Akarin
     default Timing startTimingUnsafe() { return startTiming(); }; // Akarin
@@ -51,6 +55,7 @@ public interface Timing extends AutoCloseable {
      *
      * @return Timing
      */
+    @Nonnull // Akarin - javax.annotation
     Timing startTimingIfSync();
     default Timing startTimingIfSync(boolean assertThread) { return startTimingIfSync(); }; // Akarin
 
@@ -64,8 +69,9 @@ public interface Timing extends AutoCloseable {
     void stopTimingIfSync();
 
     /**
-     * Stops timing and disregards current timing data.
+     * @deprecated Doesn't do anything - Removed
      */
+    @Deprecated
     void abort();
 
     /**
@@ -73,6 +79,7 @@ public interface Timing extends AutoCloseable {
      *
      * @return TimingHandler
      */
+    @Nullable
     TimingHandler getTimingHandler();
 
     @Override

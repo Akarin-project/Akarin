@@ -26,17 +26,25 @@ package co.aikar.timings;
 import co.aikar.util.LoadingIntMap;
 import io.akarin.server.core.AkarinGlobalConfig;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import org.bukkit.Bukkit;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.annotation.Nonnull; // Akarin - javax.annotation
+import javax.annotation.Nullable; // Akarin - javax.annotation
+
+import org.bukkit.Bukkit;
 
 class TimingHandler implements Timing {
 
     private static AtomicInteger idPool = new AtomicInteger(1);
+    static Deque<TimingHandler> TIMING_STACK = new ArrayDeque<>();
     final int id = idPool.getAndIncrement();
 
-    final String name;
+    final TimingIdentifier identifier;
     private final boolean verbose;
 
     private final Int2ObjectOpenHashMap<TimingData> children = new LoadingIntMap<>(TimingData::new);
@@ -49,18 +57,11 @@ class TimingHandler implements Timing {
     private boolean added;
     private boolean timed;
     private boolean enabled;
-    private TimingHandler parent;
     private boolean unsafe; // Akarin
 
-    TimingHandler(TimingIdentifier id) {
-        if (id.name.startsWith("##")) {
-            verbose = true;
-            this.name = id.name.substring(3);
-        } else {
-            this.name = id.name;
-            verbose = false;
-        }
-
+    TimingHandler(@Nonnull TimingIdentifier id) { // Akarin - javax.annotation
+        this.identifier = id;
+        this.verbose = id.name.startsWith("##");
         this.record = new TimingData(this.id);
         this.groupHandler = id.groupHandler;
 
@@ -85,15 +86,17 @@ class TimingHandler implements Timing {
         }
     }
 
+    @Nonnull // Akarin - javax.annotation
     @Override
-    // Akarin start
     public Timing startTimingIfSync() {
+        // Akarin start
         return startTiming(false);
     }
+    @Nonnull // Akarin - javax.annotation
     @Override
-    // Akarin end
     public Timing startTimingIfSync(boolean assertThread) {
         startTiming(assertThread);
+        // Akarin end
         return this;
     }
 
@@ -101,20 +104,31 @@ class TimingHandler implements Timing {
     public void stopTimingIfSync() {
         stopTiming();
     }
-    
-    // Akarin start
-    @Override
+
+    @Nonnull // Akarin - javax.annotation
     public Timing startTiming() {
+        // Akarin start
         return startTiming(false);
     }
 
     @Override
     public Timing startTimingUnsafe() {
         if (enabled && ++timingDepth == 1) {
-            start = System.nanoTime();
-            parent = TimingsManager.CURRENT;
-            TimingsManager.CURRENT = this;
             unsafe = true;
+            // Akarin end
+            start = System.nanoTime();
+            TIMING_STACK.addLast(this);
+        }
+        return this;
+    }
+    // Akarin start
+    @Override
+    public Timing startTiming(boolean assertThread) {
+        if (enabled && (ThreadAssertion.isMainThread() || Bukkit.isPrimaryThread()) && ++timingDepth == 1) {
+            start = System.nanoTime();
+            TIMING_STACK.addLast(this);
+            if (assertThread && AkarinGlobalConfig.lazyThreadAssertion)
+                ThreadAssertion.setMainThread(true);
         }
         return this;
     }
@@ -122,52 +136,47 @@ class TimingHandler implements Timing {
     @Override
     public void stopTimingUnsafe() {
         if (enabled && timingDepth > 0 && --timingDepth == 0 && start != 0) {
-            addDiff(System.nanoTime() - start);
-            start = 0;
-            unsafe = false;
-        }
-    }
-
-    @Override
-    public Timing startTiming(boolean assertThread) {
-        if (enabled && (ThreadAssertion.isMainThread() || Bukkit.isPrimaryThread()) /*&& ++timingDepth == 1*/) {
-            if (AkarinGlobalConfig.lazyThreadAssertion && assertThread) ThreadAssertion.setMainThread(true);
-            if (++timingDepth != 1) return this;
-            // Akarin end
-            start = System.nanoTime();
-            parent = TimingsManager.CURRENT;
-            TimingsManager.CURRENT = this;
-        }
-        return this;
-    }
-
-    @Override
-    public void stopTiming() {
-        // Akarin start
-        if (enabled && timingDepth > 0 && (ThreadAssertion.isMainThread() || Bukkit.isPrimaryThread()) /*&& --timingDepth == 0 && start != 0*/) {
-            if (AkarinGlobalConfig.lazyThreadAssertion) ThreadAssertion.setMainThread(false);
-            if (--timingDepth != 0 || start == 0) return;
-            unsafe = false;
-            // Akarin end
-            addDiff(System.nanoTime() - start);
-            start = 0;
-        }
-    }
-
-    @Override
-    public void abort() {
-        if (enabled && timingDepth > 0) {
-            start = 0;
-        }
-    }
-
-    void addDiff(long diff) {
-        if (TimingsManager.CURRENT == this) {
-            TimingsManager.CURRENT = parent;
-            if (parent != null) {
-                parent.children.get(id).add(diff);
+            TimingHandler last = TIMING_STACK.removeLast();
+            if (last != this) {
+                Logger.getGlobal().log(Level.SEVERE, "TIMING_STACK_CORRUPTION - Report this to Paper! ( " + this.identifier + ":" + last +")", new Throwable());
+                TIMING_STACK.addLast(last); // Add it back
             }
+            addDiff(System.nanoTime() - start, TIMING_STACK.peekLast());
+
+            start = 0;
+            unsafe = false;
         }
+    }
+    // Akarin end
+
+    public void stopTiming() {
+        if (enabled && timingDepth > 0 && (ThreadAssertion.isMainThread() || Bukkit.isPrimaryThread()) && --timingDepth == 0 && start != 0) { // Akarin
+            TimingHandler last = TIMING_STACK.removeLast();
+            if (last != this) {
+                Logger.getGlobal().log(Level.SEVERE, "TIMING_STACK_CORRUPTION - Report this to Paper! ( " + this.identifier + ":" + last +")", new Throwable());
+                TIMING_STACK.addLast(last); // Add it back
+            }
+            addDiff(System.nanoTime() - start, TIMING_STACK.peekLast());
+
+            start = 0;
+            // Akarin start
+            if (AkarinGlobalConfig.lazyThreadAssertion)
+                ThreadAssertion.setMainThread(false);
+            unsafe = false;
+            // Akarin end
+        }
+    }
+
+    @Override
+    public final void abort() {
+
+    }
+
+    void addDiff(long diff, @Nullable TimingHandler parent) {
+        if (parent != null) {
+            parent.children.get(id).add(diff);
+        }
+
         record.add(diff);
         if (!added) {
             added = true;
@@ -175,15 +184,13 @@ class TimingHandler implements Timing {
             TimingsManager.HANDLERS.add(this);
         }
         if (groupHandler != null) {
-            groupHandler.addDiff(diff);
+            groupHandler.addDiff(diff, parent);
             groupHandler.children.get(id).add(diff);
         }
     }
 
     /**
      * Reset this timer, setting all values to zero.
-     *
-     * @param full
      */
     void reset(boolean full) {
         record.reset();
@@ -197,6 +204,7 @@ class TimingHandler implements Timing {
         checkEnabled();
     }
 
+    @Nonnull // Akarin - javax.annotation
     @Override
     public TimingHandler getTimingHandler() {
         return this;
@@ -213,8 +221,7 @@ class TimingHandler implements Timing {
     }
 
     /**
-     * This is simply for the Closeable interface so it can be used with
-     * try-with-resources ()
+     * This is simply for the Closeable interface so it can be used with try-with-resources ()
      */
     @Override
     public void close() {
@@ -233,6 +240,7 @@ class TimingHandler implements Timing {
         return enabled;
     }
 
+    @Nonnull // Akarin - javax.annotation
     TimingData[] cloneChildren() {
         final TimingData[] clonedChildren = new TimingData[children.size()];
         int i = 0;
