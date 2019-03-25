@@ -1253,7 +1253,10 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     }
 
     public void addIWorldAccess(IWorldAccess iworldaccess) {
-        worldAccessor = new AkarinWorldAccessor((WorldManager) iworldaccess, this.u); // Akarin
+        if (worldAccessor != null)
+            worldAccessor.add(iworldaccess);
+        else
+            worldAccessor = new AkarinWorldAccessor((WorldManager) iworldaccess, this.u); // Akarin
         //this.v.add(iworldaccess); // Akarin
     }
 
