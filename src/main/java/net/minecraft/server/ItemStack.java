@@ -301,6 +301,12 @@ public final class ItemStack {
                         }
                     }
 
+                    // SPIGOT-4678
+                    if (this.item instanceof ItemSign && ItemSign.openSign) {
+                        ItemSign.openSign = false;
+                        entityhuman.openSign((TileEntitySign) world.getTileEntity(new BlockActionContext(itemactioncontext).getClickPosition()));
+                    }
+
                     // SPIGOT-1288 - play sound stripped from ItemBlock
                     if (this.item instanceof ItemBlock) {
                         SoundEffectType soundeffecttype = ((ItemBlock) this.item).getBlock().getStepSound();

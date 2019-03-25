@@ -1113,7 +1113,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
                 this.methodProfiler.exit();
                 this.methodProfiler.enter("tracker");
-                worldserver.getTracker().updatePlayers();
+                if (playerList.players.size() > 0) worldserver.getTracker().updatePlayers(); // Paper - No players, why spend time tracking them? (See patch)
                 this.methodProfiler.exit();
                 this.methodProfiler.exit();
                 worldserver.explosionDensityCache.clear(); // Paper - Optimize explosions

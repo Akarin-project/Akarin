@@ -92,7 +92,11 @@ public class PaperWorldEntityList extends ArrayList<Entity> {
 
     public void updateEntityCount(Entity entity, int amt) {
         // Only count natural spawns so that mob
-        if (!(entity instanceof IAnimal) || entity.spawnReason != SpawnReason.NATURAL) return;
+        if (!(entity instanceof IAnimal) || (
+            !world.paperConfig.countAllMobsForSpawning &&
+            entity.spawnReason != SpawnReason.NATURAL &&
+            entity.spawnReason != SpawnReason.CHUNK_GEN
+        )) return;
 
         if (entity instanceof EntityInsentient) {
             EntityInsentient entityinsentient = (EntityInsentient) entity;

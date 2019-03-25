@@ -1131,7 +1131,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             while (iterator.hasNext()) {
                 Entity entity1 = (Entity) iterator.next();
 
-                a(entity1, generatoraccess);
+                a(entity1, generatoraccess, reason); // Paper
             }
         }
 

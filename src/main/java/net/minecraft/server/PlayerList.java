@@ -196,7 +196,7 @@ public abstract class PlayerList {
 
         if (nbttagcompound != null && nbttagcompound.hasKeyOfType("RootVehicle", 10)) {
             NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("RootVehicle");
-            Entity entity = ChunkRegionLoader.a(nbttagcompound1.getCompound("Entity"), worldserver, true);
+            Entity entity = ChunkRegionLoader.spawnEntity(nbttagcompound1.getCompound("Entity"), worldserver, true, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.MOUNT); // Paper
 
             if (entity != null) {
                 UUID uuid = nbttagcompound1.a("Attach");
@@ -663,9 +663,14 @@ public abstract class PlayerList {
         // this.a(entityplayer1, entityplayer, worldserver); // CraftBukkit - removed
         BlockPosition blockposition1;
 
+        // Paper start
+        boolean isBedSpawn = false;
+        boolean isRespawn = false;
+        // Paper end
+
         // CraftBukkit start - fire PlayerRespawnEvent
         if (location == null) {
-            boolean isBedSpawn = false;
+            //boolean isBedSpawn = false; Paper - moved up
             CraftWorld cworld = (CraftWorld) this.server.server.getWorld(entityplayer.spawnWorld);
             if (cworld != null && blockposition != null) {
                 blockposition1 = EntityHuman.getBed(cworld.getHandle(), blockposition, flag1);
@@ -695,6 +700,7 @@ public abstract class PlayerList {
 
             location = respawnEvent.getRespawnLocation();
             entityplayer.reset();
+            isRespawn = true; // Paper
         } else {
             location.setWorld(server.getWorldServer(dimensionmanager).getWorld());
         }
@@ -757,6 +763,13 @@ public abstract class PlayerList {
         if (entityplayer.playerConnection.isDisconnected()) {
             this.savePlayerFile(entityplayer);
         }
+
+        // Paper start
+        if (isRespawn) {
+            cserver.getPluginManager().callEvent(new com.destroystokyo.paper.event.player.PlayerPostRespawnEvent(entityplayer.getBukkitEntity(), location, isBedSpawn));
+        }
+        // Paper end
+
         // CraftBukkit end
         return entityplayer1;
     }
