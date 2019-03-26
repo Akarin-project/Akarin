@@ -1,41 +1,27 @@
 package io.akarin.server.core;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
-import net.minecraft.server.MinecraftServer;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-public class AkarinAsyncExecutor extends Thread {
-    private final static Logger LOGGER = LogManager.getLogger("Akarin");
-    private final static int STD_TICK_TIME = 50;
+public class AkarinAsyncExecutor {
+    private static final Executor singleExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("Akarin Single Async Executor Thread - %1$d").build());
+    private static final Executor asyncExecutor = Executors.newFixedThreadPool(4, new ThreadFactoryBuilder().setNameFormat("Akarin Async Executor Thread - %1$d").build());
     
-    public static AkarinAsyncExecutor initalise() {
-        return Singleton.instance;
+    /**
+     * Posts a task to be executed asynchronously in a single thread
+     * @param run
+     */
+    public static void scheduleSingleAsyncTask(Runnable run) {
+        singleExecutor.execute(run);
     }
     
-    private static class Singleton {
-        private static final AkarinAsyncExecutor instance;
-        
-        static {
-            instance = new AkarinAsyncExecutor();
-            instance.setName("Akarin Slack Scheduler Thread");
-            instance.setDaemon(true);
-            instance.start();
-            LOGGER.info("Async executor started");
-        }
+    /**
+     * Posts a task to be executed asynchronously
+     * @param run
+     */
+    public static void scheduleAsyncTask(Runnable run) {
+        asyncExecutor.execute(run);
     }
-    
-    @Override
-    public void run() {
-        MinecraftServer server = MinecraftServer.getServer();
-        
-        while (server.isRunning()) {
-            try {
-                Thread.sleep(STD_TICK_TIME);
-            } catch (InterruptedException interrupted) {
-                continue;
-            }
-        }
-    }
-    
 }

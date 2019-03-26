@@ -1,6 +1,8 @@
 package net.minecraft.server;
 
 import co.aikar.timings.Timings;
+import io.akarin.server.core.AkarinAsyncExecutor;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -446,7 +448,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
             int i = this.random.nextInt(this.players.size());
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
-            MCUtil.scheduleAsyncTask(() -> { // Akarin
+            AkarinAsyncExecutor.scheduleAsyncTask(() -> { // Akarin
             int j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
             int k = MathHelper.floor(entityhuman.locY) + this.random.nextInt(11) - 5;
             int l = MathHelper.floor(entityhuman.locZ) + this.random.nextInt(11) - 5;
@@ -481,7 +483,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                 int k = chunk.locZ * 16;
 
                 //this.methodProfiler.exitEnter("checkNextLight"); // Akarin - remove caller
-                MCUtil.scheduleAsyncTask(chunk::x); // Akarin 
+                AkarinAsyncExecutor.scheduleAsyncTask(chunk::x); // Akarin 
                 //this.methodProfiler.exitEnter("tickChunk"); // Akarin - remove caller
                 chunk.d(false);
                 if ( !chunk.areNeighborsLoaded( 1 ) ) continue; // Spigot

@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 
+import io.akarin.server.core.AkarinAsyncExecutor;
 import io.akarin.server.core.AkarinGlobalConfig;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -297,7 +298,7 @@ public class Chunk implements IChunkAccess {
         // Akarin start
         };
         if (AkarinGlobalConfig.enableAsyncLighting)
-            MCUtil.scheduleAsyncTask(runnable);
+            AkarinAsyncExecutor.scheduleAsyncTask(runnable);
         else
             runnable.run();
         // Akarin end
@@ -1534,7 +1535,7 @@ public class Chunk implements IChunkAccess {
     public void runOrQueueLightUpdate(Runnable runnable) {
         // Akarin start
         if (AkarinGlobalConfig.enableAsyncLighting) {
-            MCUtil.scheduleAsyncTask(runnable);
+            AkarinAsyncExecutor.scheduleAsyncTask(runnable);
             return;
         }
         // Akarin end

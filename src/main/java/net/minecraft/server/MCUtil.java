@@ -27,7 +27,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 public final class MCUtil {
-    private static final Executor asyncExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("Akarin Async Task Handler Thread - %1$d").build()); // Akarin
+    private static final Executor asyncExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("Paper Async Task Handler Thread - %1$d").build());
 
     private MCUtil() {}
 

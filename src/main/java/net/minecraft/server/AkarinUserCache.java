@@ -33,6 +33,8 @@ import com.mojang.authlib.Agent;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.ProfileLookupCallback;
+
+import io.akarin.server.core.AkarinAsyncExecutor;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.UserCache.UserCacheEntry;
 
@@ -106,7 +108,7 @@ public class AkarinUserCache {
 
         Runnable find = () -> profileRepo.findProfilesByNames(new String[] { keyUsername }, Agent.MINECRAFT, callbackHandler);
         if (async) {
-            MCUtil.scheduleAsyncTask(find);
+            AkarinAsyncExecutor.scheduleAsyncTask(find);
             return null;
         } else {
             find.run();
@@ -265,7 +267,7 @@ public class AkarinUserCache {
         };
         
         if (async)
-            MCUtil.scheduleAsyncTask(save);
+            AkarinAsyncExecutor.scheduleAsyncTask(save);
         else
             save.run();
     }
