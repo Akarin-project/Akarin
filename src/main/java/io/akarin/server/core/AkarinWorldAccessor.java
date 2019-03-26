@@ -2,9 +2,10 @@ package io.akarin.server.core;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.Lists;
 
-import lombok.RequiredArgsConstructor;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityHuman;
@@ -17,14 +18,26 @@ import net.minecraft.server.SoundCategory;
 import net.minecraft.server.SoundEffect;
 import net.minecraft.server.WorldManager;
 
-@RequiredArgsConstructor
 public class AkarinWorldAccessor implements IWorldAccess {
-    private final WorldManager worldManager;
+    private @Nullable WorldManager worldManager;
     private final NavigationListener navigationListener;
     private IWorldAccess[] customAccessors = new IWorldAccess[0];
     private boolean hasCustomAccessor;
     
+    public AkarinWorldAccessor(WorldManager worldManager, NavigationListener navigationListener) {
+        this.worldManager = worldManager;
+        this.navigationListener = navigationListener;
+    }
+    
+    public AkarinWorldAccessor(NavigationListener navigationListener) {
+        this.navigationListener = navigationListener;
+    }
+    
     public void add(IWorldAccess worldAccessor) {
+        if (worldManager == null && worldAccessor instanceof WorldManager) {
+            worldManager = (WorldManager) worldAccessor;
+            return;
+        }
         List<IWorldAccess> accessors = Lists.newArrayList(customAccessors);
         accessors.add(worldAccessor);
         customAccessors = accessors.toArray(new IWorldAccess[accessors.size()]);
