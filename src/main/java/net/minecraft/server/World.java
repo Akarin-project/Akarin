@@ -28,6 +28,9 @@ import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
 import com.google.common.collect.Maps;
+import com.koloboke.collect.map.hash.HashObjObjMaps;
+import com.koloboke.collect.set.hash.HashObjSets;
+
 import java.util.ArrayList;
 import java.util.HashMap; // Paper
 import java.util.Map;
@@ -77,13 +80,13 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     };
     */ // Paper end
     // Spigot end
-    protected final Set<Entity> g = com.google.common.collect.Sets.newHashSet(); public Set<Entity> getEntityUnloadQueue() { return g; };// Paper - OBFHELPER
+    protected final Set<Entity> g = HashObjSets.newMutableSet(); public Set<Entity> getEntityUnloadQueue() { return g; };// Paper - OBFHELPER // Akarin
     //public final List<TileEntity> tileEntityList = Lists.newArrayList(); // Paper - remove unused list
     public final List<TileEntity> tileEntityListTick = Lists.newArrayList();
     private final List<TileEntity> c = Lists.newArrayList();
-    private final Set<TileEntity> tileEntityListUnload = com.google.common.collect.Sets.newHashSet(); // Paper
+    private final Set<TileEntity> tileEntityListUnload = HashObjSets.newMutableSet(); // Paper // Akarin
     public final List<EntityHuman> players = Lists.newArrayList();
-    public final Map<String, EntityHuman> playersByName = Maps.newHashMap(); // Paper - World EntityHuman Lookup Optimizations
+    public final Map<String, EntityHuman> playersByName = HashObjObjMaps.newMutableMap(); // Paper - World EntityHuman Lookup Optimizations // Akarin
     public final List<Entity> k = Lists.newArrayList();
     protected final IntHashMap<Entity> entitiesById = new IntHashMap<>();
     private final long F = 16777215L;
