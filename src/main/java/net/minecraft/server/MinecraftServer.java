@@ -794,7 +794,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
                 // Spigot start
                 org.spigotmc.WatchdogThread.hasStarted = true; // Paper
-                io.akarin.server.core.AkarinAsyncExecutor.initalise(); // Akarin
+                io.akarin.server.core.AkarinAsyncScheduler.initalise(); // Akarin
                 Arrays.fill( recentTps, 20 );
                 long start = System.nanoTime(), curTime, wait, tickSection = start; // Paper - Further improve server tick loop
                 lastTick = start - TICK_TIME; // Paper
