@@ -74,7 +74,6 @@ public class Chunk implements IChunkAccess {
     private int D;
     private final AtomicInteger E;
     private final ChunkCoordIntPair F;
-    private final AkarinAsyncLighting lightHandler; // Akarin
 
     // CraftBukkit start - Neighbor loaded cache for chunk lighting and entity ticking
     private volatile int neighbors = 0x1 << 12; // Akarin - volatile
@@ -179,7 +178,6 @@ public class Chunk implements IChunkAccess {
         // CraftBukkit start
         this.bukkitChunk = new org.bukkit.craftbukkit.CraftChunk(this);
         this.chunkKey = ChunkCoordIntPair.a(this.locX, this.locZ);
-        this.lightHandler = new AkarinAsyncLighting(world, sections, heightMap); // Akarin
     }
 
     public org.bukkit.Chunk bukkitChunk;
