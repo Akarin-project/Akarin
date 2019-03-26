@@ -540,7 +540,7 @@ public class CraftScheduler implements BukkitScheduler {
            task.setNext(null);
         }
         this.head = lastTask;
-        if (!this.isAsyncScheduler) MinecraftTimings.bukkitSchedulerPendingTimer.stopTiming(Unsafe); // Paper
+        if (!this.isAsyncScheduler) MinecraftTimings.bukkitSchedulerPendingTimer.stopTimingUnsafe(); // Paper
     }
 
     private boolean isReady(final int currentTick) {

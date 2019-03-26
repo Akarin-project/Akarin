@@ -95,19 +95,19 @@ public class ChunkSection {
         return this.yPos;
     }
 
-    public void a(int i, int j, int k, int l) {
+    public synchronized void a(int i, int j, int k, int l) { // Akarin - synchronized
         this.skyLight.a(i, j, k, l);
     }
 
-    public int c(int i, int j, int k) {
+    public synchronized int c(int i, int j, int k) { // Akarin - synchronized
         return this.skyLight.a(i, j, k);
     }
 
-    public void b(int i, int j, int k, int l) {
+    public synchronized void b(int i, int j, int k, int l) { // Akarin - synchronized
         this.emittedLight.a(i, j, k, l);
     }
 
-    public int d(int i, int j, int k) {
+    public synchronized int d(int i, int j, int k) { // Akarin - synchronized
         return this.emittedLight.a(i, j, k);
     }
 

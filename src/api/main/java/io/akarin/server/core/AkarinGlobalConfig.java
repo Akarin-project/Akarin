@@ -180,4 +180,9 @@ public class AkarinGlobalConfig {
     private static void blockbreakAnimationVisibleDistance() {
         blockbreakAnimationVisibleDistance = Math.sqrt(getDouble("alternative.block-break-animation-visible-distance", 32.00));
     }
+    
+    public static boolean enableAsyncLighting = true;
+    private static void enableAsyncLighting() {
+        enableAsyncLighting = getBoolean("core.async-lighting.enable", enableAsyncLighting);
+    }
 }

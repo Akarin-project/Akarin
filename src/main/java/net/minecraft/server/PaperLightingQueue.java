@@ -1,6 +1,8 @@
 package net.minecraft.server;
 
 import co.aikar.timings.Timing;
+import io.akarin.server.core.AkarinGlobalConfig;
+
 import com.destroystokyo.paper.PaperConfig;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 
@@ -19,7 +21,7 @@ class PaperLightingQueue {
 
         START:
         for (World world : MinecraftServer.getServer().getWorlds()) {
-            if (!world.paperConfig.queueLightUpdates) {
+            if (!world.paperConfig.queueLightUpdates || AkarinGlobalConfig.enableAsyncLighting) { // Akarin
                 continue;
             }
 
@@ -71,7 +73,7 @@ class PaperLightingQueue {
          * Flushes lighting updates to unload the chunk
          */
         void processUnload() {
-            if (!chunk.world.paperConfig.queueLightUpdates) {
+            if (!chunk.world.paperConfig.queueLightUpdates || AkarinGlobalConfig.enableAsyncLighting) { // Akarin
                 return;
             }
             processQueue(0, 0); // No timeout

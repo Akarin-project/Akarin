@@ -446,11 +446,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
             int i = this.random.nextInt(this.players.size());
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
+            MCUtil.scheduleAsyncTask(() -> { // Akarin
             int j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
             int k = MathHelper.floor(entityhuman.locY) + this.random.nextInt(11) - 5;
             int l = MathHelper.floor(entityhuman.locZ) + this.random.nextInt(11) - 5;
 
             this.r(new BlockPosition(j, k, l));
+            }); // Akarin
         }
 
         //this.methodProfiler.exit(); // Akarin - remove caller
@@ -472,14 +474,14 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
             //this.methodProfiler.enter(* // Akarin - remove caller
 
-            for (Iterator iterator1 = this.manager.b(); iterator1.hasNext(); this.methodProfiler.exit()) {
+            for (Iterator iterator1 = this.manager.b(); iterator1.hasNext(); /*this.methodProfiler.exit()*/) { // Akarin - remove caller
                 //this.methodProfiler.enter(* // Akarin - remove caller
                 Chunk chunk = (Chunk) iterator1.next();
                 int j = chunk.locX * 16;
                 int k = chunk.locZ * 16;
 
                 //this.methodProfiler.exitEnter("checkNextLight"); // Akarin - remove caller
-                chunk.x();
+                MCUtil.scheduleAsyncTask(chunk::x); // Akarin 
                 //this.methodProfiler.exitEnter("tickChunk"); // Akarin - remove caller
                 chunk.d(false);
                 if ( !chunk.areNeighborsLoaded( 1 ) ) continue; // Spigot

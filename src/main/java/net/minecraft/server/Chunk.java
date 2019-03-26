@@ -11,6 +11,8 @@ import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
+
+import io.akarin.server.core.AkarinGlobalConfig;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.shorts.ShortList;
@@ -40,9 +42,9 @@ public class Chunk implements IChunkAccess {
 
     private static final Logger d = LogManager.getLogger();
     public static final ChunkSection a = null; public static final ChunkSection EMPTY_CHUNK_SECTION = Chunk.a; // Paper - OBFHELPER
-    private final ChunkSection[] sections;
+    private volatile ChunkSection[] sections; // Akarin - volatile
     private final BiomeBase[] f;
-    private final boolean[] g;
+    private final BitSet g; // Akarin
     private final Map<BlockPosition, NBTTagCompound> h;
     private boolean i;public boolean isLoaded() { return i; } // Paper - OBFHELPER
     public final World world;
@@ -51,7 +53,7 @@ public class Chunk implements IChunkAccess {
     private static final Logger logger = LogManager.getLogger(); // Paper
     public final int locX;
     public final int locZ;
-    private boolean l;
+    private volatile boolean l; // Akarin
     private final ChunkConverter m;
     public final Map<BlockPosition, TileEntity> tileEntities;
     public final List<Entity>[] entitySlices; // Spigot
@@ -63,7 +65,7 @@ public class Chunk implements IChunkAccess {
     private boolean u;
     private boolean v;public boolean hasEntities() { return v; } // Paper - OBFHELPER
     private long lastSaved;
-    private boolean x; public boolean isModified() { return x; } // Paper - OBFHELPER
+    private volatile boolean x; public boolean isModified() { return x; } // Paper - OBFHELPER // Akarin - volatile
     private int y;
     private long z;
     private int A;
@@ -72,9 +74,10 @@ public class Chunk implements IChunkAccess {
     private int D;
     private final AtomicInteger E;
     private final ChunkCoordIntPair F;
+    private final AkarinAsyncLighting lightHandler; // Akarin
 
     // CraftBukkit start - Neighbor loaded cache for chunk lighting and entity ticking
-    private int neighbors = 0x1 << 12;
+    private volatile int neighbors = 0x1 << 12; // Akarin - volatile
     public long chunkKey;
     // Paper start
     public final co.aikar.util.Counter<String> entityCounts = new co.aikar.util.Counter<>();
@@ -137,7 +140,7 @@ public class Chunk implements IChunkAccess {
 
     public Chunk(World world, int i, int j, BiomeBase[] abiomebase, ChunkConverter chunkconverter, TickList<Block> ticklist, TickList<FluidType> ticklist1, long k) {
         this.sections = new ChunkSection[16];
-        this.g = new boolean[256];
+        this.g = new BitSet(256); // Akarin
         this.h = Maps.newHashMap();
         this.heightMap = Maps.newEnumMap(HeightMap.Type.class);
         this.tileEntities = new TileEntityHashMap(); // Paper
@@ -176,6 +179,7 @@ public class Chunk implements IChunkAccess {
         // CraftBukkit start
         this.bukkitChunk = new org.bukkit.craftbukkit.CraftChunk(this);
         this.chunkKey = ChunkCoordIntPair.a(this.locX, this.locZ);
+        this.lightHandler = new AkarinAsyncLighting(world, sections, heightMap); // Akarin
     }
 
     public org.bukkit.Chunk bukkitChunk;
@@ -250,6 +254,7 @@ public class Chunk implements IChunkAccess {
     }
 
     public void initLighting() {
+        Runnable runnable = () -> { // Akarin
         int i = this.b();
 
         this.y = Integer.MAX_VALUE;
@@ -291,10 +296,19 @@ public class Chunk implements IChunkAccess {
         }
 
         this.x = true;
+        // Akarin start
+        };
+        if (AkarinGlobalConfig.enableAsyncLighting)
+            MCUtil.scheduleAsyncTask(runnable);
+        else
+            runnable.run();
+        // Akarin end
     }
 
     private void c(int i, int j) {
-        this.g[i + j * 16] = true;
+        synchronized (this) { // Akarin - synchronized
+        this.g.set(i + j * 16);
+        } // Akarin - synchronized
         this.l = true;
     }
 
@@ -303,8 +317,15 @@ public class Chunk implements IChunkAccess {
         if (this.areNeighborsLoaded(1)) { // Paper
             for (int i = 0; i < 16; ++i) {
                 for (int j = 0; j < 16; ++j) {
-                    if (this.g[i + j * 16]) {
-                        this.g[i + j * 16] = false;
+                    // Akarin start
+                    int index = i + j * 16;
+                    boolean has;
+                    synchronized (this) {
+                        if (has = this.g.get(index))
+                            this.g.set(index);
+                    }
+                    if (has) {
+                        // Akarin end
                         int k = this.a(HeightMap.Type.LIGHT_BLOCKING, i, j);
                         int l = this.locX * 16 + i;
                         int i1 = this.locZ * 16 + j;
@@ -1513,6 +1534,12 @@ public class Chunk implements IChunkAccess {
 
     // Paper start
     public void runOrQueueLightUpdate(Runnable runnable) {
+        // Akarin start
+        if (AkarinGlobalConfig.enableAsyncLighting) {
+            MCUtil.scheduleAsyncTask(runnable);
+            return;
+        }
+        // Akarin end
         if (this.world.paperConfig.queueLightUpdates) {
             lightingQueue.add(runnable);
         } else {
