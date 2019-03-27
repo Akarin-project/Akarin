@@ -131,7 +131,7 @@ public class IntHashMap<V> {
 
         return inthashmap_inthashmapentry == null ? null : inthashmap_inthashmapentry.b;
         */
-        return map.get(i);
+        return map.remove(i);
         // Akarin end
     }
 
