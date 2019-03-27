@@ -51,14 +51,11 @@ public class ServerConnection {
     // Akarin start
     private final List<NetworkManager> pendingRemoval = Lists.newArrayList();
     private void addPending() {
-        // Akarin start
-        /*
-        synchronized (this.pending) {
+        synchronized (this.g) { // Akarin
             this.g.addAll(pending); // Paper - OBFHELPER - List of network managers
-            pending.clear();
+            //pending.clear(); // Akarin - move down
         }
-        */
-        // Akarin end
+        pending.clear(); // Akarin - move from above
     }
     // Paper end
 
@@ -101,7 +98,7 @@ public class ServerConnection {
                     channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30)).addLast("legacy_query", new LegacyPingHandler(ServerConnection.this)).addLast("splitter", new PacketSplitter()).addLast("decoder", new PacketDecoder(EnumProtocolDirection.SERVERBOUND)).addLast("prepender", new PacketPrepender()).addLast("encoder", new PacketEncoder(EnumProtocolDirection.CLIENTBOUND));
                     NetworkManager networkmanager = new NetworkManager(EnumProtocolDirection.SERVERBOUND);
 
-                    //pending.add(networkmanager); // Paper // Akarin
+                    pending.add(networkmanager); // Paper
                     channel.pipeline().addLast("packet_handler", networkmanager);
                     networkmanager.setPacketListener(new HandshakeListener(ServerConnection.this.e, networkmanager));
                 }
@@ -134,7 +131,7 @@ public class ServerConnection {
         } {
             // Akarin end
             // Spigot Start
-            //addPending(); // Paper // Akarin
+            addPending(); // Paper
             // This prevents players from 'gaming' the server, and strategically relogging to increase their position in the tick order
             if ( org.spigotmc.SpigotConfig.playerShuffle > 0 && MinecraftServer.currentTick % org.spigotmc.SpigotConfig.playerShuffle == 0 )
             {
