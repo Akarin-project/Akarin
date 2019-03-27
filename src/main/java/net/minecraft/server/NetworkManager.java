@@ -249,12 +249,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     // Akarin start
     private final void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
     private final void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
-        if (!packet.canDispatchImmediately()) {
-            synchronized (this) {
-                this.pendingChunkQueue.add((PacketPlayOutMapChunk) packet);
-            }
-            return;
-        }
+        if (!packet.canDispatchImmediately())
+            this.pendingChunkQueue.add((PacketPlayOutMapChunk) packet);
         // Akarin end
         EnumProtocol enumprotocol = EnumProtocol.a(packet);
         EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
@@ -309,14 +305,12 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     private boolean o() { // void -> boolean
         if (this.channel != null && this.channel.isOpen() && this.channel.isRegistered() && !this.pendingChunkQueue.isEmpty()) {
             // Akarin start
-            synchronized (this) {
-                Iterator<PacketPlayOutMapChunk> iterator = this.pendingChunkQueue.iterator();
-                while (iterator.hasNext()) {
-                    PacketPlayOutMapChunk packet = iterator.next();
-                    if (packet.isReady()) {
-                        this.dispatchPacket(packet, null);
-                        iterator.remove();
-                    }
+            Iterator<PacketPlayOutMapChunk> iterator = this.pendingChunkQueue.iterator();
+            while (iterator.hasNext()) {
+                PacketPlayOutMapChunk packet = iterator.next();
+                if (packet.isReady()) {
+                    this.dispatchPacket(packet, null);
+                    iterator.remove();
                 }
             }
             /*
