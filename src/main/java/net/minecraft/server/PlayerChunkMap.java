@@ -459,7 +459,7 @@ public class PlayerChunkMap {
     }
 
     public void a(PlayerChunk playerchunk) {
-        org.spigotmc.AsyncCatcher.catchOp("Async Player Chunk Add"); // Paper
+        //org.spigotmc.AsyncCatcher.catchOp("Async Player Chunk Add"); // Paper // Akarin
         this.f.add(playerchunk);
     }
 
