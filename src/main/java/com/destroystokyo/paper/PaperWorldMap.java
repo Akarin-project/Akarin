@@ -12,10 +12,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PaperWorldMap extends HashMap<DimensionManager, WorldServer> {
-    private final List<WorldServer> worlds = new ArrayList<>();
-    private final List<WorldServer> worldsIterable = new ArrayList<WorldServer>() {
+    private final List<WorldServer> worlds = new CopyOnWriteArrayList<>(); // Akarin
+    private final List<WorldServer> worldsIterable = new CopyOnWriteArrayList<WorldServer>() { // Akarin
         @Override
         public Iterator<WorldServer> iterator() {
             Iterator<WorldServer> iterator = super.iterator();

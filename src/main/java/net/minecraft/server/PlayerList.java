@@ -5,6 +5,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
+
+import io.akarin.server.core.AkarinAsyncExecutor;
 import io.netty.buffer.Unpooled;
 import java.io.File;
 import java.net.SocketAddress;
@@ -1057,14 +1059,15 @@ public abstract class PlayerList {
     }
 
     public void sendAll(Packet<?> packet) {
-        for (int i = 0; i < this.players.size(); ++i) {
-            ((EntityPlayer) this.players.get(i)).playerConnection.sendPacket(packet);
+        for (EntityHuman player : this.players) { // Akarin - iterate safety
+            ((EntityPlayer) player).playerConnection.sendPacket(packet); // Akarin
         }
 
     }
 
     // CraftBukkit start - add a world/entity limited version
     public void sendAll(Packet packet, EntityHuman entityhuman) {
+        AkarinAsyncExecutor.scheduleAsyncTask(() -> { // Akarin
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer =  this.players.get(i);
             if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSee(((EntityPlayer) entityhuman).getBukkitEntity())) {
@@ -1072,12 +1075,15 @@ public abstract class PlayerList {
             }
             ((EntityPlayer) this.players.get(i)).playerConnection.sendPacket(packet);
         }
+        }); // Akarin
     }
 
     public void sendAll(Packet packet, World world) {
-        for (int i = 0; i < world.players.size(); ++i) {
-            ((EntityPlayer) world.players.get(i)).playerConnection.sendPacket(packet);
+        AkarinAsyncExecutor.scheduleAsyncTask(() -> { // Akarin
+        for (EntityHuman player : world.players) { // Akarin - iterate safety
+            ((EntityPlayer) player).playerConnection.sendPacket(packet); // Akarin
         }
+        }); // Akarin
 
     }
     // CraftBukkit end
@@ -1230,8 +1236,8 @@ public abstract class PlayerList {
         }
 
         List<? extends EntityHuman> players1 = world == null ? players : world.players;
-        for (int j = 0; j < players1.size(); ++j) {
-            EntityHuman entity = players1.get(j);
+        for (EntityHuman entity : players1) { // Akarin - iterate safety
+            //EntityHuman entity = players1.get(j); // Akarin
             if (!(entity instanceof EntityPlayer)) continue;
             EntityPlayer entityplayer = (EntityPlayer) entity;
             // Paper end

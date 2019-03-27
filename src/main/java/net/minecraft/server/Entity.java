@@ -30,6 +30,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
 import co.aikar.timings.MinecraftTimings; // Paper
 import co.aikar.timings.Timing; // Paper
+import io.akarin.server.core.AkarinAsyncExecutor;
+
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.vehicle.VehicleBlockCollisionEvent;

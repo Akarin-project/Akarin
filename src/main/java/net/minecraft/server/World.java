@@ -85,7 +85,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     public final List<TileEntity> tileEntityListTick = Lists.newArrayList();
     private final List<TileEntity> c = Lists.newArrayList();
     private final Set<TileEntity> tileEntityListUnload = HashObjSets.newMutableSet(); // Paper // Akarin
-    public final List<EntityHuman> players = Lists.newArrayList();
+    public final List<EntityHuman> players = Lists.newCopyOnWriteArrayList(); // Akarin - iterate safety
     public final Map<String, EntityHuman> playersByName = HashObjObjMaps.newMutableMap(); // Paper - World EntityHuman Lookup Optimizations // Akarin
     public final List<Entity> k = Lists.newArrayList();
     protected final IntHashMap<Entity> entitiesById = new IntHashMap<>();

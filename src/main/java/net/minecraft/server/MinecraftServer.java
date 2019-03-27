@@ -89,7 +89,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     private boolean isRunning = true;
     private boolean isRestarting = false; // Paper - flag to signify we're attempting to restart
     private boolean isStopped;
-    private int ticks;
+    private int ticks; public int currentTick() { return this.ticks; } // Akarin - OBFHELPER
     protected final Proxy c;
     private IChatBaseComponent w;
     private int x;
@@ -1035,7 +1035,9 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         org.bukkit.craftbukkit.chunkio.ChunkIOExecutor.tick();
         MinecraftTimings.chunkIOTickTimer.stopTimingUnsafe(); // Spigot // Akarin
 
-        MinecraftTimings.timeUpdateTimer.startTimingUnsafe(); // Spigot // Akarin
+        // Akarin start
+        /*
+        MinecraftTimings.timeUpdateTimer.startTimingUnsafe(); // Spigot
         // Send time updates to everyone, it will get the right time from the world the player is in.
         // Paper start - optimize time updates
         for (final WorldServer world : this.getWorlds()) {
@@ -1055,7 +1057,9 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             }
         }
         // Paper end
-        MinecraftTimings.timeUpdateTimer.stopTimingUnsafe(); // Spigot // Akarin
+        MinecraftTimings.timeUpdateTimer.stopTimingUnsafe(); // Spigot
+        */
+        // Akarin end
 
         // WorldServer worldserver; // CraftBukkit - dropped down
         long i;
@@ -1068,9 +1072,13 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             TileEntityHopper.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper
             i = SystemUtils.getMonotonicNanos();
             if (true || worldserver.worldProvider.getDimensionManager() == DimensionManager.OVERWORLD || this.getAllowNether()) { // CraftBukkit
+                // Akarin start
+                /*
                 this.methodProfiler.a(() -> {
                     return "dim-" + worldserver.worldProvider.getDimensionManager().getDimensionID();
                 });
+                */
+                // Akarin end
                 /* Drop global time updates
                 if (this.ticks % 20 == 0) {
                     //this.methodProfiler.enter(* // Akarin - remove caller

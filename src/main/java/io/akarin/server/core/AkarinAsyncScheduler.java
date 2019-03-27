@@ -5,8 +5,12 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.server.EntityHuman;
+import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NetworkManager;
+import net.minecraft.server.PacketPlayOutUpdateTime;
+import net.minecraft.server.WorldServer;
 
 public class AkarinAsyncScheduler extends Thread {
     private final static Logger LOGGER = LogManager.getLogger("Akarin");
@@ -42,6 +46,26 @@ public class AkarinAsyncScheduler extends Thread {
                         player.sendPacketQueue();
                 }
             }
+            
+            // Send time updates to everyone, it will get the right time from the world the player is in.
+            // Paper start - optimize time updates
+            for (final WorldServer world : server.getWorlds()) {
+                final boolean doDaylight = world.getGameRules().getBoolean("doDaylightCycle");
+                final long dayTime = world.getDayTime();
+                long worldTime = world.getTime();
+                final PacketPlayOutUpdateTime worldPacket = new PacketPlayOutUpdateTime(worldTime, dayTime, doDaylight);
+                for (EntityHuman entityhuman : world.players) {
+                    if (!(entityhuman instanceof EntityPlayer) || (server.currentTick() + entityhuman.getId()) % 20 != 0) {
+                        continue;
+                    }
+                    EntityPlayer entityplayer = (EntityPlayer) entityhuman;
+                    long playerTime = entityplayer.getPlayerTime();
+                    PacketPlayOutUpdateTime packet = (playerTime == dayTime) ? worldPacket :
+                        new PacketPlayOutUpdateTime(worldTime, playerTime, doDaylight);
+                    entityplayer.playerConnection.sendPacket(packet); // Add support for per player time
+                }
+            }
+            // Paper end
             
             try {
                 long sleepFixed = STD_TICK_TIME - (System.currentTimeMillis() - currentLoop);
