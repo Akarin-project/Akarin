@@ -45,14 +45,20 @@ public class ServerConnection {
     private final MinecraftServer e;
     public volatile boolean c;
     private final List<ChannelFuture> f = Collections.synchronizedList(Lists.newArrayList());
-    private final List<NetworkManager> g = Collections.synchronizedList(Lists.newArrayList());
+    private final List<NetworkManager> g = Lists.newArrayList(); public final List<NetworkManager> getNetworkManagers() { return this.g; }// Akarin
     // Paper start - prevent blocking on adding a new network manager while the server is ticking
     private final List<NetworkManager> pending = Collections.synchronizedList(Lists.<NetworkManager>newArrayList());
+    // Akarin start
+    private final List<NetworkManager> pendingRemoval = Lists.newArrayList();
     private void addPending() {
-        synchronized (pending) {
+        // Akarin start
+        /*
+        synchronized (this.pending) {
             this.g.addAll(pending); // Paper - OBFHELPER - List of network managers
             pending.clear();
         }
+        */
+        // Akarin end
     }
     // Paper end
 
@@ -95,7 +101,7 @@ public class ServerConnection {
                     channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30)).addLast("legacy_query", new LegacyPingHandler(ServerConnection.this)).addLast("splitter", new PacketSplitter()).addLast("decoder", new PacketDecoder(EnumProtocolDirection.SERVERBOUND)).addLast("prepender", new PacketPrepender()).addLast("encoder", new PacketEncoder(EnumProtocolDirection.CLIENTBOUND));
                     NetworkManager networkmanager = new NetworkManager(EnumProtocolDirection.SERVERBOUND);
 
-                    pending.add(networkmanager); // Paper
+                    //pending.add(networkmanager); // Paper // Akarin
                     channel.pipeline().addLast("packet_handler", networkmanager);
                     networkmanager.setPacketListener(new HandshakeListener(ServerConnection.this.e, networkmanager));
                 }
@@ -123,8 +129,12 @@ public class ServerConnection {
         List list = this.g;
 
         synchronized (this.g) {
+            // Akarin start
+            this.g.removeAll(pendingRemoval);
+        } {
+            // Akarin end
             // Spigot Start
-            addPending(); // Paper
+            //addPending(); // Paper // Akarin
             // This prevents players from 'gaming' the server, and strategically relogging to increase their position in the tick order
             if ( org.spigotmc.SpigotConfig.playerShuffle > 0 && MinecraftServer.currentTick % org.spigotmc.SpigotConfig.playerShuffle == 0 )
             {
@@ -162,7 +172,7 @@ public class ServerConnection {
                         // Fix a race condition where a NetworkManager could be unregistered just before connection.
                         if (networkmanager.preparing) continue;
                         // Spigot End
-                        iterator.remove();
+                        pendingRemoval.add(networkmanager); // Akarin
                         networkmanager.handleDisconnection();
                     }
                 }

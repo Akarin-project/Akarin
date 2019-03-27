@@ -1,9 +1,12 @@
 package io.akarin.server.core;
 
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.NetworkManager;
 
 public class AkarinAsyncScheduler extends Thread {
     private final static Logger LOGGER = LogManager.getLogger("Akarin");
@@ -31,6 +34,14 @@ public class AkarinAsyncScheduler extends Thread {
         
         while (server.isRunning()) {
             long currentLoop = System.currentTimeMillis();
+            
+            List<NetworkManager> networkManagers = server.getServerConnection().getNetworkManagers();
+            if (!networkManagers.isEmpty()) {
+                synchronized (networkManagers) {
+                    for (NetworkManager player : networkManagers)
+                        player.sendPacketQueue();
+                }
+            }
             
             try {
                 long sleepFixed = STD_TICK_TIME - (System.currentTimeMillis() - currentLoop);

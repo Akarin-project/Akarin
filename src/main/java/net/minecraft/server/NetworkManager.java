@@ -250,7 +250,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     private final void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
     private final void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
         if (!packet.canDispatchImmediately()) {
-            this.pendingChunkQueue.add((PacketPlayOutMapChunk) packet);
+            synchronized (this) {
+                this.pendingChunkQueue.add((PacketPlayOutMapChunk) packet);
+            }
             return;
         }
         // Akarin end
@@ -303,16 +305,18 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     // Paper start - Async-Anti-Xray - Stop dispatching further packets and return false if the peeked packet is a chunk packet which is not ready
-    private boolean sendPacketQueue() { return this.o(); } // OBFHELPER // void -> boolean
+    public boolean sendPacketQueue() { return this.o(); } // OBFHELPER // void -> boolean // Akarin - public
     private boolean o() { // void -> boolean
-        if (this.channel != null && this.channel.isOpen()) {
+        if (this.channel != null && this.channel.isOpen() && this.channel.isRegistered() && !this.pendingChunkQueue.isEmpty()) {
             // Akarin start
-            Iterator<PacketPlayOutMapChunk> iterator = this.pendingChunkQueue.iterator();
-            while (iterator.hasNext()) {
-                PacketPlayOutMapChunk packet = iterator.next();
-                if (packet.isReady()) {
-                    this.dispatchPacket(packet, null);
-                    iterator.remove();
+            synchronized (this) {
+                Iterator<PacketPlayOutMapChunk> iterator = this.pendingChunkQueue.iterator();
+                while (iterator.hasNext()) {
+                    PacketPlayOutMapChunk packet = iterator.next();
+                    if (packet.isReady()) {
+                        this.dispatchPacket(packet, null);
+                        iterator.remove();
+                    }
                 }
             }
             /*
@@ -348,7 +352,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     // Paper end
 
     public void a() {
-        this.o();
+        //this.o(); // Akarin - move to scheduler
         if (this.packetListener instanceof ITickable) {
             ((ITickable) this.packetListener).tick();
         }
