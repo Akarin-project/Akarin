@@ -51,7 +51,7 @@ public final class MinecraftTimings {
      */
     public static Timing getPluginTaskTimings(BukkitTask bukkitTask, long period) {
         if (!bukkitTask.isSync()) {
-            return null;
+            return NullTimingHandler.NULL;
         }
         Plugin plugin;
 
