@@ -41,7 +41,7 @@ import org.bukkit.Bukkit;
 class TimingHandler implements Timing {
 
     private static AtomicInteger idPool = new AtomicInteger(1);
-    static Deque<TimingHandler> TIMING_STACK = new ArrayDeque<>();
+    private static Deque<TimingHandler> TIMING_STACK = new ArrayDeque<>();
     final int id = idPool.getAndIncrement();
 
     final TimingIdentifier identifier;
@@ -151,10 +151,16 @@ class TimingHandler implements Timing {
 
     public void stopTiming() {
         if (enabled && timingDepth > 0 && (ThreadAssertion.isMainThread() || Bukkit.isPrimaryThread()) && --timingDepth == 0 && start != 0) { // Akarin
-            TimingHandler last = TIMING_STACK.removeLast();
-            if (last != this) {
-                Logger.getGlobal().log(Level.SEVERE, "TIMING_STACK_CORRUPTION - Report this to Paper! ( " + this.identifier + ":" + last +")", new Throwable());
-                TIMING_STACK.addLast(last); // Add it back
+            TimingHandler last;
+            while ((last = TIMING_STACK.removeLast()) != this) {
+                last.timingDepth = 0;
+                String reportTo;
+                if ("minecraft".equals(last.identifier.group)) {
+                    reportTo = "Paper! This is a potential bug in Paper";
+                } else {
+                    reportTo = "the plugin " + last.identifier.group + "(Look for errors above this in the logs)";
+                }
+                Logger.getGlobal().log(Level.SEVERE, "TIMING_STACK_CORRUPTION - Report this to " + reportTo + " (" + last.identifier +" did not stopTiming)", new Throwable());
             }
             addDiff(System.nanoTime() - start, TIMING_STACK.peekLast());
 

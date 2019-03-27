@@ -1,6 +1,8 @@
 package org.bukkit.craftbukkit.scheduler;
 
 import java.util.function.Consumer;
+
+import co.aikar.timings.NullTimingHandler;
 import org.bukkit.Bukkit;
 import co.aikar.timings.MinecraftTimings; // Paper
 import co.aikar.timings.Timing; // Paper
@@ -57,7 +59,7 @@ public class CraftTask implements BukkitTask, Runnable { // Spigot
         }
         this.id = id;
         this.period = period;
-        timings = task != null ? MinecraftTimings.getPluginTaskTimings(this, period) : null; // Paper
+        timings = task != null ? MinecraftTimings.getPluginTaskTimings(this, period) : NullTimingHandler.NULL; // Paper
     }
 
     @Override
@@ -77,13 +79,13 @@ public class CraftTask implements BukkitTask, Runnable { // Spigot
 
     @Override
     public void run() {
-        if (timings != null && isSync()) timings.startTimingUnsafe(); // Paper
+        try (Timing ignored = timings.startTiming()) { // Paper
         if (rTask != null) {
             rTask.run();
         } else {
             cTask.accept(this);
         }
-        if (timings != null && isSync()) timings.stopTimingUnsafe(); // Paper
+        } // Paper
     }
 
     long getPeriod() {
