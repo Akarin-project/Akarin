@@ -1,28 +1,30 @@
 package net.minecraft.server;
 
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.util.concurrent.TimeUnit;
 
 public class BiomeCache {
 
     private final WorldChunkManager a;
-    private final LoadingCache<ChunkCoordIntPair, BiomeCache.a> b;
+    private final com.github.benmanes.caffeine.cache.LoadingCache<ChunkCoordIntPair, net.minecraft.server.BiomeCache.a> b; // Akarin - caffeine
 
     public BiomeCache(WorldChunkManager worldchunkmanager) {
-        this.b = CacheBuilder.newBuilder().expireAfterAccess(30000L, TimeUnit.MILLISECONDS).build(new CacheLoader<ChunkCoordIntPair, BiomeCache.a>() {
+        // Akarin start - caffeine
+        this.b = com.github.benmanes.caffeine.cache.Caffeine.newBuilder().expireAfterAccess(30L, TimeUnit.SECONDS).build(new com.github.benmanes.caffeine.cache.CacheLoader<ChunkCoordIntPair, BiomeCache.a>() {
+            @Override
             public BiomeCache.a load(ChunkCoordIntPair chunkcoordintpair) throws Exception {
                 return BiomeCache.this.new a(chunkcoordintpair.x, chunkcoordintpair.z);
             }
         });
+        // Akarin end
         this.a = worldchunkmanager;
     }
 
     public BiomeCache.a a(int i, int j) {
         i >>= 4;
         j >>= 4;
-        return (BiomeCache.a) this.b.getUnchecked(new ChunkCoordIntPair(i, j));
+        return (BiomeCache.a) this.b.get(new ChunkCoordIntPair(i, j)); // Akarin - caffeine
     }
 
     public BiomeBase a(int i, int j, BiomeBase biomebase) {

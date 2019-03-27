@@ -7,6 +7,10 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+
+import net.minecraft.server.BiomeCache.a;
+import net.minecraft.server.WorldGenEnder.Spike;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -14,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 public class WorldGenDecoratorSpike extends WorldGenDecorator<WorldGenFeatureDecoratorEmptyConfiguration> {
 
-    private static final LoadingCache<Long, WorldGenEnder.Spike[]> a = CacheBuilder.newBuilder().expireAfterWrite(5L, TimeUnit.MINUTES).build(new WorldGenDecoratorSpike.a());
+    private static final com.github.benmanes.caffeine.cache.LoadingCache<Long, Spike[]> a = com.github.benmanes.caffeine.cache.Caffeine.newBuilder().expireAfterAccess(5L, TimeUnit.MINUTES).build(new WorldGenDecoratorSpike.a()); // Akarin - caffeine
 
     public WorldGenDecoratorSpike() {}
 
@@ -40,10 +44,10 @@ public class WorldGenDecoratorSpike extends WorldGenDecorator<WorldGenFeatureDec
         Random random = new Random(generatoraccess.getSeed());
         long i = random.nextLong() & 65535L;
 
-        return (WorldGenEnder.Spike[]) WorldGenDecoratorSpike.a.getUnchecked(i);
+        return (WorldGenEnder.Spike[]) WorldGenDecoratorSpike.a.get(i); // Akarin - caffeine
     }
 
-    static class a extends CacheLoader<Long, WorldGenEnder.Spike[]> {
+    static class a implements com.github.benmanes.caffeine.cache.CacheLoader<Long, WorldGenEnder.Spike[]> { // Akarin - caffeine
 
         private a() {}
 

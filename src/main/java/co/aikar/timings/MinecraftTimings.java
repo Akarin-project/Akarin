@@ -1,10 +1,11 @@
 package co.aikar.timings;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.google.common.collect.MapMaker;
 import net.minecraft.server.*;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
-
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.bukkit.craftbukkit.scheduler.CraftTask;
 
 import java.util.Map;
@@ -39,7 +40,7 @@ public final class MinecraftTimings {
     public static final Timing antiXrayUpdateTimer = Timings.ofSafe("anti-xray - update");
     public static final Timing antiXrayObfuscateTimer = Timings.ofSafe("anti-xray - obfuscate");
 
-    private static final Map<Class<?>, String> taskNameCache = new MapMaker().weakKeys().makeMap();
+    private static final Cache<Class<?>, String> taskNameCache = com.github.benmanes.caffeine.cache.Caffeine.newBuilder().weakKeys().build(); // Akarin - caffeine
 
     private MinecraftTimings() {}
 
@@ -64,7 +65,7 @@ public final class MinecraftTimings {
             plugin = TimingsManager.getPluginByClassloader(taskClass);
         }
 
-        final String taskname = taskNameCache.computeIfAbsent(taskClass, clazz ->
+        final String taskname = taskNameCache.get(taskClass, clazz -> // Akarin - caffeine
                 clazz.isAnonymousClass() || clazz.isLocalClass()
                         ? clazz.getName()
                         : clazz.getCanonicalName());

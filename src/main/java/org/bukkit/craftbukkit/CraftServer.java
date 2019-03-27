@@ -186,7 +186,7 @@ public final class CraftServer implements Server {
     private YamlConfiguration configuration;
     private YamlConfiguration commandsConfiguration;
     private final Yaml yaml = new Yaml(new SafeConstructor());
-    private final Map<UUID, OfflinePlayer> offlinePlayers = new MapMaker().weakValues().makeMap();
+    private final com.github.benmanes.caffeine.cache.Cache<UUID, OfflinePlayer> offlinePlayers = com.github.benmanes.caffeine.cache.Caffeine.newBuilder().weakValues().build(); // Akarin - caffeine
     private final EntityMetadataStore entityMetadata = new EntityMetadataStore();
     private final PlayerMetadataStore playerMetadata = new PlayerMetadataStore();
     private final WorldMetadataStore worldMetadata = new WorldMetadataStore();
@@ -1468,7 +1468,7 @@ public final class CraftServer implements Server {
                 result = getOfflinePlayer(profile);
             }
         } else {
-            offlinePlayers.remove(result.getUniqueId());
+            offlinePlayers.invalidate(result.getUniqueId()); // Akarin - caffeine
         }
 
         return result;
@@ -1480,13 +1480,13 @@ public final class CraftServer implements Server {
 
         OfflinePlayer result = getPlayer(id);
         if (result == null) {
-            result = offlinePlayers.get(id);
+            result = offlinePlayers.getIfPresent(id);
             if (result == null) {
                 result = new CraftOfflinePlayer(this, new GameProfile(id, null));
                 offlinePlayers.put(id, result);
             }
         } else {
-            offlinePlayers.remove(id);
+            offlinePlayers.invalidate(id); // Akarin - caffeine
         }
 
         return result;

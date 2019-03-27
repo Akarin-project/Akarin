@@ -138,7 +138,7 @@ public class BlockPortal extends Block {
     public ShapeDetector.ShapeDetectorCollection c(GeneratorAccess generatoraccess, BlockPosition blockposition) {
         EnumDirection.EnumAxis enumdirection_enumaxis = EnumDirection.EnumAxis.Z;
         BlockPortal.Shape blockportal_shape = new BlockPortal.Shape(generatoraccess, blockposition, EnumDirection.EnumAxis.X);
-        LoadingCache<BlockPosition, ShapeDetectorBlock> loadingcache = ShapeDetector.a(generatoraccess, true);
+        com.github.benmanes.caffeine.cache.LoadingCache<BlockPosition, ShapeDetectorBlock> loadingcache = ShapeDetector.a(generatoraccess, true); // Akarin - caffeine
 
         if (!blockportal_shape.d()) {
             enumdirection_enumaxis = EnumDirection.EnumAxis.X;

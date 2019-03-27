@@ -45,23 +45,23 @@ public class ShapeDetector {
     }
 
     @Nullable
-    private ShapeDetector.ShapeDetectorCollection a(BlockPosition blockposition, EnumDirection enumdirection, EnumDirection enumdirection1, LoadingCache<BlockPosition, ShapeDetectorBlock> loadingcache) {
+    private ShapeDetector.ShapeDetectorCollection a(BlockPosition blockposition, EnumDirection enumdirection, EnumDirection enumdirection1, com.github.benmanes.caffeine.cache.LoadingCache<BlockPosition, ShapeDetectorBlock> loadingcache) { // Akarin - caffeine
         for (int i = 0; i < this.d; ++i) {
             for (int j = 0; j < this.c; ++j) {
                 for (int k = 0; k < this.b; ++k) {
-                    if (!this.a[k][j][i].test(loadingcache.getUnchecked(a(blockposition, enumdirection, enumdirection1, i, j, k)))) {
+                    if (!this.a[k][j][i].test(loadingcache.get(a(blockposition, enumdirection, enumdirection1, i, j, k)))) { // Akarin - caffeine
                         return null;
                     }
                 }
             }
         }
 
-        return new ShapeDetector.ShapeDetectorCollection(blockposition, enumdirection, enumdirection1, loadingcache, this.d, this.c, this.b);
+        return new ShapeDetector.ShapeDetectorCollection(blockposition, enumdirection, enumdirection1, loadingcache, this.d, this.c, this.b); // Akarin - caffeine
     }
 
     @Nullable
     public ShapeDetector.ShapeDetectorCollection a(IWorldReader iworldreader, BlockPosition blockposition) {
-        LoadingCache<BlockPosition, ShapeDetectorBlock> loadingcache = a(iworldreader, false);
+        com.github.benmanes.caffeine.cache.LoadingCache<BlockPosition, ShapeDetectorBlock> loadingcache = a(iworldreader, false); // Akarin - caffeine
         int i = Math.max(Math.max(this.d, this.c), this.b);
         Iterator iterator = BlockPosition.a(blockposition, blockposition.a(i - 1, i - 1, i - 1)).iterator();
 
@@ -92,8 +92,8 @@ public class ShapeDetector {
         return null;
     }
 
-    public static LoadingCache<BlockPosition, ShapeDetectorBlock> a(IWorldReader iworldreader, boolean flag) {
-        return CacheBuilder.newBuilder().build(new ShapeDetector.BlockLoader(iworldreader, flag));
+    public static com.github.benmanes.caffeine.cache.LoadingCache<BlockPosition, ShapeDetectorBlock> a(IWorldReader iworldreader, boolean flag) { // Akarin - caffeine
+        return com.github.benmanes.caffeine.cache.Caffeine.newBuilder().build(new ShapeDetector.BlockLoader(iworldreader, flag)); // Akarin - caffeine
     }
 
     protected static BlockPosition a(BlockPosition blockposition, EnumDirection enumdirection, EnumDirection enumdirection1, int i, int j, int k) {
@@ -113,12 +113,12 @@ public class ShapeDetector {
         private final BlockPosition a;
         private final EnumDirection b;
         private final EnumDirection c;
-        private final LoadingCache<BlockPosition, ShapeDetectorBlock> d;
+        private final com.github.benmanes.caffeine.cache.LoadingCache<BlockPosition, ShapeDetectorBlock> d; // Akarin - caffeine
         private final int e;
         private final int f;
         private final int g;
 
-        public ShapeDetectorCollection(BlockPosition blockposition, EnumDirection enumdirection, EnumDirection enumdirection1, LoadingCache<BlockPosition, ShapeDetectorBlock> loadingcache, int i, int j, int k) {
+        public ShapeDetectorCollection(BlockPosition blockposition, EnumDirection enumdirection, EnumDirection enumdirection1, com.github.benmanes.caffeine.cache.LoadingCache<BlockPosition, ShapeDetectorBlock> loadingcache, int i, int j, int k) { // Akarin - caffeine
             this.a = blockposition;
             this.b = enumdirection;
             this.c = enumdirection1;
@@ -150,7 +150,7 @@ public class ShapeDetector {
         }
 
         public ShapeDetectorBlock a(int i, int j, int k) {
-            return (ShapeDetectorBlock) this.d.getUnchecked(ShapeDetector.a(this.a, this.getFacing(), this.c(), i, j, k));
+            return (ShapeDetectorBlock) this.d.get(ShapeDetector.a(this.a, this.getFacing(), this.c(), i, j, k)); // Akarin - caffeine
         }
 
         public String toString() {
@@ -158,7 +158,7 @@ public class ShapeDetector {
         }
     }
 
-    static class BlockLoader extends CacheLoader<BlockPosition, ShapeDetectorBlock> {
+    static class BlockLoader implements com.github.benmanes.caffeine.cache.CacheLoader<BlockPosition, ShapeDetectorBlock> { // Akarin - caffeine
 
         private final IWorldReader a;
         private final boolean b;

@@ -38,10 +38,10 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
                     .setNameFormat("Head Conversion Thread - %1$d")
                     .build()
     );
-    public static final LoadingCache<String, GameProfile> skinCache = CacheBuilder.newBuilder()
+    public static final com.github.benmanes.caffeine.cache.LoadingCache<String, GameProfile> skinCache = com.github.benmanes.caffeine.cache.Caffeine.newBuilder() // Akarin - caffeine
             .maximumSize( 5000 )
             .expireAfterAccess( 60, TimeUnit.MINUTES )
-            .build( new CacheLoader<String, GameProfile>()
+            .build( new com.github.benmanes.caffeine.cache.CacheLoader<String, GameProfile>()
             {
                 @Override
                 public GameProfile load(String key) throws Exception
@@ -216,7 +216,7 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
                     Callable<GameProfile> callable = new Callable<GameProfile>() {
                         @Override
                         public GameProfile call() {
-                            final GameProfile profile = skinCache.getUnchecked(gameprofile.getName().toLowerCase(java.util.Locale.ROOT));
+                            final GameProfile profile = skinCache.get(gameprofile.getName().toLowerCase(java.util.Locale.ROOT)); // Akarin - caffeine
                             MinecraftServer.getServer().processQueue.add(new Runnable() {
                                 @Override
                                 public void run() {
