@@ -27,12 +27,14 @@ public class AkarinAsyncScheduler extends Thread {
     
     @Override
     public void run() {
-        long currentLoop = System.currentTimeMillis();
         MinecraftServer server = MinecraftServer.getServer();
         
         while (server.isRunning()) {
+            long currentLoop = System.currentTimeMillis();
+            
             try {
-                Thread.sleep(STD_TICK_TIME - (System.currentTimeMillis() - currentLoop));
+                long sleepFixed = STD_TICK_TIME - (System.currentTimeMillis() - currentLoop);
+                Thread.sleep(sleepFixed);
             } catch (InterruptedException interrupted) {
                 continue;
             }
