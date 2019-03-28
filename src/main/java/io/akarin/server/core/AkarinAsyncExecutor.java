@@ -9,8 +9,17 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class AkarinAsyncExecutor {
     private static final ExecutorService singleExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("Akarin Single Async Executor Thread - %1$d").build());
-    private static final ExecutorService asyncExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 4, new ThreadFactoryBuilder().setNameFormat("Akarin Async Executor Thread - %1$d").build());
-    
+    private static final ExecutorService asyncExecutor = Executors.newFixedThreadPool(getnThreads(), new ThreadFactoryBuilder().setNameFormat("Akarin Async Executor Thread - %1$d").build());
+
+    private static int getnThreads(){
+        int processors = Runtime.getRuntime().availableProcessors();
+        if(processors > 2){
+            return processors;
+        }else {
+            return 2;
+        }
+    }
+
     /**
      * Posts a task to be executed asynchronously in a single thread
      * @param run
