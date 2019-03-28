@@ -5,10 +5,14 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NetworkManager;
+import net.minecraft.server.PacketPlayOutPlayerInfo;
 import net.minecraft.server.PacketPlayOutUpdateTime;
 import net.minecraft.server.WorldServer;
 
@@ -32,6 +36,8 @@ public class AkarinAsyncScheduler extends Thread {
         }
     }
     
+    private int playerListTick;
+    
     @Override
     public void run() {
         MinecraftServer server = MinecraftServer.getServer();
@@ -39,6 +45,7 @@ public class AkarinAsyncScheduler extends Thread {
         while (server.isRunning()) {
             long currentLoop = System.currentTimeMillis();
             
+            // Send pending chunk packets
             List<NetworkManager> networkManagers = server.getServerConnection().getNetworkManagers();
             if (!networkManagers.isEmpty()) {
                 synchronized (networkManagers) {
@@ -48,7 +55,6 @@ public class AkarinAsyncScheduler extends Thread {
             }
             
             // Send time updates to everyone, it will get the right time from the world the player is in.
-            // Paper start - optimize time updates
             for (final WorldServer world : server.getWorlds()) {
                 final boolean doDaylight = world.getGameRules().getBoolean("doDaylightCycle");
                 final long dayTime = world.getDayTime();
@@ -65,11 +71,24 @@ public class AkarinAsyncScheduler extends Thread {
                     entityplayer.playerConnection.sendPacket(packet); // Add support for per player time
                 }
             }
-            // Paper end
+            
+            // Send player latency update packets
+            if (++playerListTick > 600) {
+                List<EntityPlayer> players = server.getPlayerList().players;
+                for (EntityPlayer target : players) {
+                    target.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_LATENCY, Iterables.filter(players, new Predicate<EntityPlayer>() {
+                        @Override
+                        public boolean apply(EntityPlayer input) {
+                            return target.getBukkitEntity().canSee(input.getBukkitEntity());
+                        }
+                    })));
+                }
+                playerListTick = 0;
+            }
             
             try {
                 long sleepFixed = STD_TICK_TIME - (System.currentTimeMillis() - currentLoop);
-                Thread.sleep(sleepFixed);
+                if (sleepFixed > 0) Thread.sleep(sleepFixed);
             } catch (InterruptedException interrupted) {
                 continue;
             }

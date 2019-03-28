@@ -1037,7 +1037,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
 
         // Akarin start
         /*
-        MinecraftTimings.timeUpdateTimer.startTimingUnsafe(); // Spigot
+        MinecraftTimings.timeUpdateTimer.startTiming(); // Spigot
         // Send time updates to everyone, it will get the right time from the world the player is in.
         // Paper start - optimize time updates
         for (final WorldServer world : this.getWorlds()) {
@@ -1057,7 +1057,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
             }
         }
         // Paper end
-        MinecraftTimings.timeUpdateTimer.stopTimingUnsafe(); // Spigot
+        MinecraftTimings.timeUpdateTimer.stopTiming(); // Spigot
         */
         // Akarin end
 
@@ -1137,9 +1137,13 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.getServerConnection().c();
         MinecraftTimings.connectionTimer.stopTimingUnsafe(); // Spigot // Akarin
         //this.methodProfiler.exitEnter("players"); // Akarin
-        MinecraftTimings.playerListTimer.startTimingUnsafe(); // Spigot // Akarin
+        // Akarin start
+        /*
+        MinecraftTimings.playerListTimer.startTiming(); // Spigot
         this.playerList.tick();
-        MinecraftTimings.playerListTimer.stopTimingUnsafe(); // Spigot // Akarin
+        MinecraftTimings.playerListTimer.stopTiming(); // Spigot
+        */
+        // Akarin end
         //this.methodProfiler.exitEnter("tickables"); // Akarin
 
         MinecraftTimings.tickablesTimer.startTimingUnsafe(); // Spigot // Akarin
