@@ -87,6 +87,15 @@ public class AkarinAsyncScheduler extends Thread {
                 playerListTick = 0;
             }
             
+            // Save players data
+            int playerSaveInterval = com.destroystokyo.paper.PaperConfig.playerAutoSaveRate;
+            if (playerSaveInterval < 0) {
+                playerSaveInterval = server.autosavePeriod;
+            }
+            if (playerSaveInterval > 0) {
+                server.getPlayerList().savePlayers(playerSaveInterval);
+            }
+            
             try {
                 long sleepFixed = STD_TICK_TIME - (System.currentTimeMillis() - currentLoop);
                 if (sleepFixed > 0) Thread.sleep(sleepFixed);

@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 
 import io.akarin.server.core.AkarinAsyncExecutor;
+import io.akarin.server.core.AkarinAsyncScheduler;
 import io.netty.buffer.Unpooled;
 import java.io.File;
 import java.net.SocketAddress;
@@ -343,21 +344,35 @@ public abstract class PlayerList {
         return nbttagcompound1;
     }
 
+    // Akarin start
     protected void savePlayerFile(EntityPlayer entityplayer) {
+        savePlayerFile(entityplayer, true);
+    }
+    // Akarin end
+    protected void savePlayerFile(EntityPlayer entityplayer, boolean async) {
         if (!entityplayer.getBukkitEntity().isPersistent()) return; // CraftBukkit
         entityplayer.lastSave = MinecraftServer.currentTick; // Paper
-        this.playerFileData.save(entityplayer);
+        //this.playerFileData.save(entityplayer); // Akarin - moved down
         ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) entityplayer.getStatisticManager(); // CraftBukkit
 
         if (serverstatisticmanager != null) {
-            serverstatisticmanager.a();
+            //serverstatisticmanager.a(); // Akarin - moved down
         }
 
         AdvancementDataPlayer advancementdataplayer = (AdvancementDataPlayer) entityplayer.getAdvancementData(); // CraftBukkit
 
+        Map<MinecraftKey, AdvancementProgress> advancements = advancementdataplayer.toSerializableMap(); // Akarin
         if (advancementdataplayer != null) {
             advancementdataplayer.c();
         }
+        // Akarin start
+        AkarinAsyncExecutor.scheduleSingleAsyncTask(() -> {
+            this.playerFileData.save(entityplayer);
+            if (serverstatisticmanager != null)
+                serverstatisticmanager.a();
+            advancementdataplayer.save(advancements);
+        });
+        // Akarin end
 
     }
 
@@ -654,6 +669,7 @@ public abstract class PlayerList {
         entityplayer1.copyFrom(entityplayer, flag);
         entityplayer1.e(entityplayer.getId());
         entityplayer1.a(entityplayer.getMainHand());
+        synchronized (entityplayer.getScoreboardTags()) { // Akarin
         Iterator iterator = entityplayer.getScoreboardTags().iterator();
 
         while (iterator.hasNext()) {
@@ -661,6 +677,7 @@ public abstract class PlayerList {
 
             entityplayer1.addScoreboardTag(s);
         }
+        } // Akarin
 
         // WorldServer worldserver = this.server.getWorldServer(entityplayer.dimension);  // CraftBukkit - handled later
 
@@ -1267,19 +1284,19 @@ public abstract class PlayerList {
     }
 
     public void savePlayers(Integer interval) {
-        MCUtil.ensureMain("Save Players", () -> { // Paper - ensure main
+        //MCUtil.ensureMain("Save Players", () -> { // Paper - ensure main // Akarin
         long now = MinecraftServer.currentTick;
-        MinecraftTimings.savePlayers.startTimingUnsafe(); // Paper
+        //MinecraftTimings.savePlayers.startTiming(); // Paper // Akarin
         int numSaved = 0; // Paper
         for (int i = 0; i < this.players.size(); ++i) {
             EntityPlayer entityplayer = this.players.get(i);
             if (interval == null || now - entityplayer.lastSave >= interval) {
-                this.savePlayerFile(entityplayer);
+                this.savePlayerFile(entityplayer, false);
                 if (interval != null && ++numSaved <= com.destroystokyo.paper.PaperConfig.maxPlayerAutoSavePerTick) { break; } // Paper
             }
         }
-        MinecraftTimings.savePlayers.stopTimingUnsafe(); // Paper
-        return null; }); // Paper - ensure main
+        //MinecraftTimings.savePlayers.stopTiming(); // Paper // Akarin
+        //return null; }); // Paper - ensure main // Akarin
     }
     // Paper end
 

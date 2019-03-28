@@ -2,6 +2,9 @@ package net.minecraft.server;
 
 import com.mojang.datafixers.DataFixTypes;
 import com.mojang.datafixers.DataFixer;
+
+import io.akarin.server.core.AkarinAsyncExecutor;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -29,6 +32,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
     private final DefinedStructureManager g;
     protected final DataFixer a;
     private UUID uuid = null; // CraftBukkit
+    final Object playerFileLock = new Object(); // Akarin
 
     public WorldNBTStorage(File file, String s, @Nullable MinecraftServer minecraftserver, DataFixer datafixer) {
         this.a = datafixer;
@@ -192,22 +196,37 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
         this.saveWorldData(worlddata, (NBTTagCompound) null);
     }
 
+    // Akarin start
     public void save(EntityHuman entityhuman) {
+        save(entityhuman, true);
+    }
+    // Akarin end
+    public void save(EntityHuman entityhuman, boolean async) {
         if(!com.destroystokyo.paper.PaperConfig.savePlayerData) return; // Paper - Make player data saving configurable
+        Runnable runnable = () -> { // Akarin
         try {
             NBTTagCompound nbttagcompound = entityhuman.save(new NBTTagCompound());
             File file = new File(this.playerDir, entityhuman.bu() + ".dat.tmp");
             File file1 = new File(this.playerDir, entityhuman.bu() + ".dat");
 
+            synchronized (playerFileLock) { // Akarin
             NBTCompressedStreamTools.a(nbttagcompound, (OutputStream) (new FileOutputStream(file)));
             if (file1.exists()) {
                 file1.delete();
             }
 
             file.renameTo(file1);
+            } // Akarin
         } catch (Exception exception) {
             WorldNBTStorage.b.error("Failed to save player data for {}", entityhuman.getName(), exception); // Paper
         }
+        // Akarin start
+        };
+        if (async)
+            AkarinAsyncExecutor.scheduleSingleAsyncTask(runnable);
+        else
+            runnable.run();
+        // Akarin end
 
     }
 
@@ -219,6 +238,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             File file = new File(this.playerDir, entityhuman.bu() + ".dat");
             // Spigot Start
             boolean usingWrongFile = false;
+            synchronized (playerFileLock) { // Akarin
             boolean normalFile = file.exists() && file.isFile(); // Akarin - ensures normal file
             if ( org.bukkit.Bukkit.getOnlineMode() && !normalFile ) // Paper - Check online mode first // Akarin - ensures normal file
             {
@@ -239,6 +259,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             {
                 file.renameTo( new File( file.getPath() + ".offline-read" ) );
             }
+            } // Akarin
             // Spigot End
         } catch (Exception exception) {
             WorldNBTStorage.b.warn("Failed to load player data for {}", entityhuman.getDisplayName().getString());
@@ -266,11 +287,13 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
     // CraftBukkit start
     public NBTTagCompound getPlayerData(String s) {
         try {
+            synchronized (playerFileLock) { // Akarin
             File file1 = new File(this.playerDir, s + ".dat");
 
             if (file1.exists()) {
                 return NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file1)));
             }
+            } // Akarin
         } catch (Exception exception) {
             b.warn("Failed to load player data for " + s);
         }
