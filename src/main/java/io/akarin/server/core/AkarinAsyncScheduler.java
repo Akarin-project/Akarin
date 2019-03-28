@@ -31,6 +31,7 @@ public class AkarinAsyncScheduler extends Thread {
             instance = new AkarinAsyncScheduler();
             instance.setName("Akarin Async Scheduler Thread");
             instance.setDaemon(true);
+            instance.setPriority(MIN_PRIORITY);
             instance.start();
             LOGGER.info("Async executor started");
         }
