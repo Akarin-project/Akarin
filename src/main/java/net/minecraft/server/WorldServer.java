@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -460,7 +461,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     protected void l() {
         //this.methodProfiler.enter(* // Akarin - remove caller
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
-            int i = this.random.nextInt(this.players.size());
+            int i = ThreadLocalRandom.current().nextInt(this.players.size()); // Akarin - ThreadLocalRandom
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
             int j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
             int k = MathHelper.floor(entityhuman.locY) + this.random.nextInt(11) - 5;
