@@ -3,6 +3,7 @@ jdk:
   - oraclejdk8
 install: true
 script:
+  - chmod +x ./scripts/inst.sh
   - ./scripts/inst.sh --setup --fast
 after_success:
   - rm -rf push
