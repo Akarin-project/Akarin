@@ -463,6 +463,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
             int i = ThreadLocalRandom.current().nextInt(this.players.size()); // Akarin - ThreadLocalRandom
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
+            if (entityhuman == null) return;
             int j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
             int k = MathHelper.floor(entityhuman.locY) + this.random.nextInt(11) - 5;
             int l = MathHelper.floor(entityhuman.locZ) + this.random.nextInt(11) - 5;
