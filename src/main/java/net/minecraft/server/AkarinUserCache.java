@@ -96,6 +96,8 @@ public class AkarinUserCache {
                             PropertyMap offlineProperties = offlineProfile.getProperties();
                             for (Property property : gameprofile.getProperties().get("textures"))
                                 offlineProperties.put("textures", property);
+
+                            callback.onProfileLookupSucceeded(offlineProfile);
                         }
 
                         @Override
@@ -107,7 +109,11 @@ public class AkarinUserCache {
                     profileRepo.findProfilesByNames(new String[] { keyUsername }, Agent.MINECRAFT, skinHandler);
                 };
                 
-                AkarinAsyncExecutor.scheduleAsyncTask(lookupTextures);
+                if (async)
+                    AkarinAsyncExecutor.scheduleAsyncTask(lookupTextures);
+                else
+                    lookupTextures.run();
+            } else {
                 callback.onProfileLookupSucceeded(offlineProfile);
             }
         }
