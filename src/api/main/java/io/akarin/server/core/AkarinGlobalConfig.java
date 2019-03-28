@@ -185,4 +185,9 @@ public class AkarinGlobalConfig {
     private static void enableAsyncLighting() {
         enableAsyncLighting = getBoolean("core.async-lighting.enable", enableAsyncLighting);
     }
+
+    public static String yggdrasilServerURL = "https://api.mojang.com/";
+    private static void yggdrasilServerURL() {
+        yggdrasilServerURL = getString("alternative.yggdrasil.url", yggdrasilServerURL);
+    }
 }

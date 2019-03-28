@@ -18,7 +18,10 @@ import java.util.Set;
 
 public class YggdrasilGameProfileRepository implements GameProfileRepository {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final String BASE_URL = "https://api.mojang.com/";
+    // Akarin Start
+    //private static final String BASE_URL = "https://api.mojang.com/";
+    private static final String BASE_URL = io.akarin.server.core.AkarinGlobalConfig.yggdrasilServerURL; //Akarin
+    // Akarin End
     private static final String SEARCH_PAGE_URL = BASE_URL + "profiles/";
     private static final int ENTRIES_PER_PAGE = 2;
     private static final int MAX_FAIL_COUNT = 3;
