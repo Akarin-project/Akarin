@@ -89,6 +89,7 @@ public class AkarinUserCache {
             String usernameKey = username.toLowerCase(Locale.ROOT);
             GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(usernameKey), usernameKey);
             callback.onProfileLookupSucceeded(offlineProfile);
+            return offlineProfile;
         }
 
         GameProfile[] gameProfile = new GameProfile[1];
