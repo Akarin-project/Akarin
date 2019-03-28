@@ -33,6 +33,8 @@ import com.mojang.authlib.Agent;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.ProfileLookupCallback;
+import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 
 import io.akarin.server.core.AkarinAsyncExecutor;
 import io.akarin.server.core.AkarinGlobalConfig;
@@ -83,8 +85,32 @@ public class AkarinUserCache {
     }
 
     public static GameProfile lookup(GameProfileRepository profileRepo, String keyUsername, ProfileLookupCallback callback, boolean async) {
-        if (!isOnlineMode())
-            callback.onProfileLookupSucceeded(new GameProfile(EntityHuman.getOfflineUUID(keyUsername.toLowerCase(Locale.ROOT)), keyUsername));
+        if (!isOnlineMode()) {
+            GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(keyUsername.toLowerCase(Locale.ROOT)), keyUsername);
+            if (AkarinGlobalConfig.enableOfflineSkins) {
+                // Capature textures from online profile
+                Runnable lookupTextures = () -> {
+                    ProfileLookupCallback skinHandler = new ProfileLookupCallback() {
+                        @Override
+                        public void onProfileLookupSucceeded(GameProfile gameprofile) {
+                            PropertyMap offlineProperties = offlineProfile.getProperties();
+                            for (Property property : gameprofile.getProperties().get("textures"))
+                                offlineProperties.put("textures", property);
+                        }
+
+                        @Override
+                        public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
+                            LOGGER.warn("Failed to lookup skin for player {}.", gameprofile.getName());
+                        }
+                    };
+                    
+                    profileRepo.findProfilesByNames(new String[] { keyUsername }, Agent.MINECRAFT, skinHandler);
+                };
+                
+                AkarinAsyncExecutor.scheduleAsyncTask(lookupTextures);
+                callback.onProfileLookupSucceeded(offlineProfile);
+            }
+        }
 
         GameProfile[] gameProfile = new GameProfile[1];
         ProfileLookupCallback callbackHandler = new ProfileLookupCallback() {

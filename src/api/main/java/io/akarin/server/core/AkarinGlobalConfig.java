@@ -185,4 +185,9 @@ public class AkarinGlobalConfig {
     private static void enableAsyncLighting() {
         enableAsyncLighting = getBoolean("core.async-lighting.enable", enableAsyncLighting);
     }
+    
+    public static boolean enableOfflineSkins = false;
+    private static void enableOfflineSkins() {
+        enableOfflineSkins = getBoolean("alternative.offline-mode-skins", enableOfflineSkins);
+    }
 }
