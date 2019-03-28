@@ -84,38 +84,11 @@ public class AkarinUserCache {
         return new UserCacheEntry(entry.getProfile(), createExpireDate(true));
     }
 
-    public static GameProfile lookup(GameProfileRepository profileRepo, String keyUsername, ProfileLookupCallback callback, boolean async) {
+    public static GameProfile lookup(GameProfileRepository profileRepo, String username, ProfileLookupCallback callback, boolean async) {
         if (!isOnlineMode()) {
-            GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(keyUsername.toLowerCase(Locale.ROOT)), keyUsername);
-            if (AkarinGlobalConfig.enableOfflineSkins) {
-                // Capature textures from online profile
-                Runnable lookupTextures = () -> {
-                    ProfileLookupCallback skinHandler = new ProfileLookupCallback() {
-                        @Override
-                        public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                            PropertyMap offlineProperties = offlineProfile.getProperties();
-                            for (Property property : gameprofile.getProperties().get("textures"))
-                                offlineProperties.put("textures", property);
-
-                            callback.onProfileLookupSucceeded(offlineProfile);
-                        }
-
-                        @Override
-                        public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
-                            LOGGER.warn("Failed to lookup skin for player {}.", gameprofile.getName());
-                        }
-                    };
-                    
-                    profileRepo.findProfilesByNames(new String[] { keyUsername }, Agent.MINECRAFT, skinHandler);
-                };
-                
-                if (async)
-                    AkarinAsyncExecutor.scheduleAsyncTask(lookupTextures);
-                else
-                    lookupTextures.run();
-            } else {
-                callback.onProfileLookupSucceeded(offlineProfile);
-            }
+            String usernameKey = username.toLowerCase(Locale.ROOT);
+            GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(usernameKey), usernameKey);
+            callback.onProfileLookupSucceeded(offlineProfile);
         }
 
         GameProfile[] gameProfile = new GameProfile[1];
@@ -132,13 +105,13 @@ public class AkarinUserCache {
             public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
                 LOGGER.warn("Failed to lookup player {}, using local UUID.", gameprofile.getName());
                 if (async)
-                    callback.onProfileLookupSucceeded(new GameProfile(EntityHuman.getOfflineUUID(keyUsername), keyUsername));
+                    callback.onProfileLookupSucceeded(new GameProfile(EntityHuman.getOfflineUUID(username.toLowerCase(Locale.ROOT)), username));
                 else
-                    gameProfile[0] = new GameProfile(EntityHuman.getOfflineUUID(keyUsername), keyUsername);
+                    gameProfile[0] = new GameProfile(EntityHuman.getOfflineUUID(username), username);
             }
         };
 
-        Runnable find = () -> profileRepo.findProfilesByNames(new String[] { keyUsername }, Agent.MINECRAFT, callbackHandler);
+        Runnable find = () -> profileRepo.findProfilesByNames(new String[] { username }, Agent.MINECRAFT, callbackHandler);
         if (async) {
             AkarinAsyncExecutor.scheduleAsyncTask(find);
             return null;
@@ -158,15 +131,15 @@ public class AkarinUserCache {
         this.load();
     }
 
-    GameProfile lookupAndCache(String keyUsername, ProfileLookupCallback callback, boolean async) {
-        return lookupAndCache(keyUsername, callback, createExpireDate(false), async);
+    GameProfile lookupAndCache(String username, ProfileLookupCallback callback, boolean async) {
+        return lookupAndCache(username, callback, createExpireDate(false), async);
     }
 
-    GameProfile lookupAndCache(String keyUsername, ProfileLookupCallback callback, Date date, boolean async) {
+    GameProfile lookupAndCache(String username, ProfileLookupCallback callback, Date date, boolean async) {
         ProfileLookupCallback callbackHandler = new ProfileLookupCallback() {
             @Override
             public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                profiles.put(keyUsername, new UserCacheEntry(gameprofile, date));
+                profiles.put(isOnlineMode() ? username : username.toLowerCase(Locale.ROOT), new UserCacheEntry(gameprofile, date));
                 if (async)
                     callback.onProfileLookupSucceeded(gameprofile);
                 
@@ -180,7 +153,7 @@ public class AkarinUserCache {
             }
         };
         
-        return lookup(profileHandler, keyUsername, callbackHandler, async);
+        return lookup(profileHandler, username, callbackHandler, async);
     }
     
     public GameProfile acquire(String username) {
@@ -195,13 +168,13 @@ public class AkarinUserCache {
         if (StringUtils.isBlank(username))
             return null;
 
-        String keyUsername = isOnlineMode() ? username : username.toLowerCase(Locale.ROOT);
-        UserCacheEntry entry = profiles.getIfPresent(keyUsername);
+        String usernameKey = isOnlineMode() ? username : username.toLowerCase(Locale.ROOT);
+        UserCacheEntry entry = profiles.getIfPresent(usernameKey);
 
         if (entry != null) {
             if (isExpired(entry)) {
-                profiles.invalidate(keyUsername);
-                return lookupAndCache(keyUsername, callback, async);
+                profiles.invalidate(usernameKey);
+                return lookupAndCache(username, callback, async);
             } else {
                 if (async) {
                     callback.onProfileLookupSucceeded(entry.getProfile());
@@ -211,7 +184,7 @@ public class AkarinUserCache {
                 }
             }
         }
-        return lookupAndCache(keyUsername, callback, async);
+        return lookupAndCache(username, callback, async);
     }
     
     @Nullable
