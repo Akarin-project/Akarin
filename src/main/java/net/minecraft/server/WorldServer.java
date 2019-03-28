@@ -389,12 +389,17 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             entityhuman.a(false, false, true);
         }
 
+        // Akarin start
+        /*
         if (this.getGameRules().getBoolean("doWeatherCycle")) {
             this.b();
         }
+        */
+        // Akarin end
 
     }
 
+    public void clearWeather() { this.b(); } // Akarin
     private void b() {
         // CraftBukkit start
         this.worldData.setStorm(false);

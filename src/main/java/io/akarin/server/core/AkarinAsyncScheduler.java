@@ -86,6 +86,10 @@ public class AkarinAsyncScheduler extends Thread {
 
                         world.worldData.setDayTime(i - i % 24000L);
                     }
+                    
+                    if (world.getGameRules().getBoolean("doWeatherCycle")) {
+                        world.clearWeather();
+                    }
                 }
             }
             
