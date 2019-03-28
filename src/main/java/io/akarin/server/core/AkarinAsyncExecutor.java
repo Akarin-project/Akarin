@@ -9,15 +9,16 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class AkarinAsyncExecutor {
     private static final ExecutorService singleExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("Akarin Single Async Executor Thread - %1$d").build());
-    private static final ExecutorService asyncExecutor = Executors.newFixedThreadPool(getnThreads(), new ThreadFactoryBuilder().setNameFormat("Akarin Async Executor Thread - %1$d").build());
+    private static final ExecutorService asyncExecutor = Executors.newFixedThreadPool(getNThreads(), new ThreadFactoryBuilder().setNameFormat("Akarin Async Executor Thread - %1$d").build());
 
-    private static int getnThreads(){
-        int processors = Runtime.getRuntime().availableProcessors();
-        if(processors > 2){
+    private static int getNThreads(){
+            int processors = Runtime.getRuntime().availableProcessors() / 2;
+
+            if (processors < 2)
+                return 2;
+            if (processors > 8)
+                return 8;
             return processors;
-        }else {
-            return 2;
-        }
     }
 
     /**
