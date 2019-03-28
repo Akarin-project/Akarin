@@ -10,10 +10,12 @@ import com.google.common.collect.Iterables;
 
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityPlayer;
+import net.minecraft.server.EnumDifficulty;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NetworkManager;
 import net.minecraft.server.PacketPlayOutPlayerInfo;
 import net.minecraft.server.PacketPlayOutUpdateTime;
+import net.minecraft.server.World;
 import net.minecraft.server.WorldServer;
 
 public class AkarinAsyncScheduler extends Thread {
@@ -55,10 +57,10 @@ public class AkarinAsyncScheduler extends Thread {
                 }
             }
             
-            // Send time updates to everyone, it will get the right time from the world the player is in.
-            for (final WorldServer world : server.getWorlds()) {
-                final boolean doDaylight = world.getGameRules().getBoolean("doDaylightCycle");
-                final long dayTime = world.getDayTime();
+            for (WorldServer world : server.getWorlds()) {
+                // Send time updates to everyone, it will get the right time from the world the player is in.
+                boolean doDaylight = world.getGameRules().getBoolean("doDaylightCycle");
+                long dayTime = world.getDayTime();
                 long worldTime = world.getTime();
                 final PacketPlayOutUpdateTime worldPacket = new PacketPlayOutUpdateTime(worldTime, dayTime, doDaylight);
                 for (EntityHuman entityhuman : world.players) {
@@ -70,6 +72,20 @@ public class AkarinAsyncScheduler extends Thread {
                     PacketPlayOutUpdateTime packet = (playerTime == dayTime) ? worldPacket :
                         new PacketPlayOutUpdateTime(worldTime, playerTime, doDaylight);
                     entityplayer.playerConnection.sendPacket(packet); // Add support for per player time
+                }
+                
+                // Hardcore difficulty lock
+                if (world.getWorldData().isHardcore() && world.getDifficulty() != EnumDifficulty.HARD) {
+                    world.getWorldData().setDifficulty(EnumDifficulty.HARD);
+                }
+                
+                // Sleeping time management
+                if (world.everyoneDeeplySleeping()) {
+                    if (world.getGameRules().getBoolean("doDaylightCycle")) {
+                        long i = world.worldData.getDayTime() + 24000L;
+
+                        world.worldData.setDayTime(i - i % 24000L);
+                    }
                 }
             }
             

@@ -254,17 +254,25 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     public void doTick(BooleanSupplier booleansupplier) {
         this.P = true;
         super.doTick(booleansupplier);
+        // Akarin start
+        /*
         if (this.getWorldData().isHardcore() && this.getDifficulty() != EnumDifficulty.HARD) {
             this.getWorldData().setDifficulty(EnumDifficulty.HARD);
         }
+        */
+        // Akarin end
 
         this.chunkProvider.getChunkGenerator().getWorldChunkManager().tick();
         if (this.everyoneDeeplySleeping()) {
+            // Akarin start
+            /*
             if (this.getGameRules().getBoolean("doDaylightCycle")) {
                 long i = this.worldData.getDayTime() + 24000L;
 
                 this.worldData.setDayTime(i - i % 24000L);
             }
+            */
+            // Akarin end
 
             this.i();
         }
