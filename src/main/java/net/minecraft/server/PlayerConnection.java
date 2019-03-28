@@ -1744,7 +1744,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             // Paper Start
             if (!org.spigotmc.AsyncCatcher.shuttingDown && !ThreadAssertion.isMainThread() && !org.bukkit.Bukkit.isPrimaryThread()) {
                 final String fCommandLine = s;
-                MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Command Dispatched Async: " + fCommandLine);
+                MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Command Dispatched Async: " + fCommandLine); // Akarin
                 MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Please notify author of plugin causing this execution to fix this bug! see: http://bit.ly/1oSiM6C", new Throwable());
                 Waitable wait = new Waitable() {
                     @Override
@@ -1754,6 +1754,8 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                     }
                 };
                 minecraftServer.processQueue.add(wait);
+                // Akarin start
+                /*
                 try {
                     wait.get();
                     return;
@@ -1762,6 +1764,8 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 } catch (Exception e) {
                     throw new RuntimeException("Exception processing chat command", e.getCause());
                 }
+                */
+                // Akarin end
             }
             // Paper End
             this.handleCommand(s);
