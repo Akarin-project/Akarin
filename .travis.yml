@@ -4,7 +4,7 @@ jdk:
 install: true
 script:
   - chmod +x ./scripts/inst.sh
-  - ./scripts/inst.sh --setup --fast
+  - ./scripts/inst.sh --setup --remote
 after_success:
   - rm -rf push
   - mkdir push
