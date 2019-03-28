@@ -399,7 +399,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     }
 
-    public void clearWeather() { this.b(); } // Akarin
+    public void clearWeather() { this.b(); } // Akarin - OBFHLPER
     private void b() {
         // CraftBukkit start
         this.worldData.setStorm(false);
@@ -456,25 +456,24 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return this.getChunkProvider().isLoaded(i, j);
     }
 
+    public void randomLightUpdates() { this.l(); } // Akarin - OBFHELPER
     protected void l() {
         //this.methodProfiler.enter(* // Akarin - remove caller
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
             int i = this.random.nextInt(this.players.size());
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
-            AkarinAsyncExecutor.scheduleAsyncTask(() -> { // Akarin
             int j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
             int k = MathHelper.floor(entityhuman.locY) + this.random.nextInt(11) - 5;
             int l = MathHelper.floor(entityhuman.locZ) + this.random.nextInt(11) - 5;
 
             this.r(new BlockPosition(j, k, l));
-            }); // Akarin
         }
 
         //this.methodProfiler.exit(); // Akarin - remove caller
     }
 
     protected void n_() {
-        this.l();
+        //this.l(); // Akarin
         if (this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
             Iterator iterator = this.manager.b();
 

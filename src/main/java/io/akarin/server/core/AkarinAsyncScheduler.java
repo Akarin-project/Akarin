@@ -91,6 +91,9 @@ public class AkarinAsyncScheduler extends Thread {
                         world.clearWeather();
                     }
                 }
+                
+                // Random light updates
+                world.randomLightUpdates();
             }
             
             // Send player latency update packets
