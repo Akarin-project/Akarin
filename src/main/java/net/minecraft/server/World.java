@@ -641,12 +641,12 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
     public void applyPhysics(BlockPosition blockposition, Block block) {
         if (captureBlockStates) { return; } // Paper - Cancel all physics during placement
-        this.a(blockposition.shiftX(-1), block, blockposition); // Akarin - west
-        this.a(blockposition.shiftX(2), block, blockposition); // Akarin - east
-        this.a(blockposition.shiftX(-1).shiftY(-1), block, blockposition); // Akarin - down
-        this.a(blockposition.shiftY(2), block, blockposition); // Akarin - up
-        this.a(blockposition.shiftY(-1).shiftZ(-1), block, blockposition); // Akarin - north
-        this.a(blockposition.shiftZ(2), block, blockposition); // Akarin - south
+        this.a(blockposition.west(), block, blockposition);
+        this.a(blockposition.east(), block, blockposition);
+        this.a(blockposition.down(), block, blockposition);
+        this.a(blockposition.up(), block, blockposition);
+        this.a(blockposition.north(), block, blockposition);
+        this.a(blockposition.south(), block, blockposition);
     }
 
     public void a(BlockPosition blockposition, Block block, EnumDirection enumdirection) {

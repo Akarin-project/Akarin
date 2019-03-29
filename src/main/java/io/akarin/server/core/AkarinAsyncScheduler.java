@@ -2,8 +2,6 @@ package io.akarin.server.core;
 
 import java.util.List;
 
-import javax.swing.text.html.parser.Entity;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
