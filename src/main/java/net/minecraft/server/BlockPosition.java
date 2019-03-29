@@ -20,6 +20,20 @@ public class BlockPosition extends BaseBlockPosition {
     private static final long i = (1L << BlockPosition.c) - 1L;
     private static final long j = (1L << BlockPosition.f) - 1L;
     private static final long k = (1L << BlockPosition.d) - 1L;
+    // Akarin start
+    protected BlockPosition shiftX(int x) {
+        this.x = this.x + x;
+        return this;
+    }
+    protected BlockPosition shiftY(int y) {
+        this.y = this.y + y;
+        return this;
+    }
+    protected BlockPosition shiftZ(int z) {
+        this.z = this.z + z;
+        return this;
+    }
+    // Akarin end
 
     public BlockPosition(int i, int j, int k) {
         super(i, j, k);

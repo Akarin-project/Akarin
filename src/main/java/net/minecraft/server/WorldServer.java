@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -254,17 +255,25 @@ public class WorldServer extends World implements IAsyncTaskHandler {
     public void doTick(BooleanSupplier booleansupplier) {
         this.P = true;
         super.doTick(booleansupplier);
+        // Akarin start
+        /*
         if (this.getWorldData().isHardcore() && this.getDifficulty() != EnumDifficulty.HARD) {
             this.getWorldData().setDifficulty(EnumDifficulty.HARD);
         }
+        */
+        // Akarin end
 
         this.chunkProvider.getChunkGenerator().getWorldChunkManager().tick();
         if (this.everyoneDeeplySleeping()) {
+            // Akarin start
+            /*
             if (this.getGameRules().getBoolean("doDaylightCycle")) {
                 long i = this.worldData.getDayTime() + 24000L;
 
                 this.worldData.setDayTime(i - i % 24000L);
             }
+            */
+            // Akarin end
 
             this.i();
         }
@@ -381,12 +390,17 @@ public class WorldServer extends World implements IAsyncTaskHandler {
             entityhuman.a(false, false, true);
         }
 
+        // Akarin start
+        /*
         if (this.getGameRules().getBoolean("doWeatherCycle")) {
             this.b();
         }
+        */
+        // Akarin end
 
     }
 
+    public void clearWeather() { this.b(); } // Akarin - OBFHLPER
     private void b() {
         // CraftBukkit start
         this.worldData.setStorm(false);
@@ -443,25 +457,25 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return this.getChunkProvider().isLoaded(i, j);
     }
 
+    public void randomLightUpdates() { this.l(); } // Akarin - OBFHELPER
     protected void l() {
         //this.methodProfiler.enter(* // Akarin - remove caller
         if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
-            int i = this.random.nextInt(this.players.size());
+            int i = ThreadLocalRandom.current().nextInt(this.players.size()); // Akarin - ThreadLocalRandom
             EntityHuman entityhuman = (EntityHuman) this.players.get(i);
-            AkarinAsyncExecutor.scheduleAsyncTask(() -> { // Akarin
+            if (entityhuman == null) return;
             int j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
             int k = MathHelper.floor(entityhuman.locY) + this.random.nextInt(11) - 5;
             int l = MathHelper.floor(entityhuman.locZ) + this.random.nextInt(11) - 5;
 
             this.r(new BlockPosition(j, k, l));
-            }); // Akarin
         }
 
         //this.methodProfiler.exit(); // Akarin - remove caller
     }
 
     protected void n_() {
-        this.l();
+        //this.l(); // Akarin
         if (this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
             Iterator iterator = this.manager.b();
 
