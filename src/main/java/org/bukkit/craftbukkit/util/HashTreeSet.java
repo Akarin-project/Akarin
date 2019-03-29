@@ -5,15 +5,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 public class HashTreeSet<V> implements Set<V> {
 
     private Set<V> hash = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<V>(); //Paper - Replace java.util.HashSet with ObjectOpenHashSet
-    // Akarin Start
-    //private TreeSet<V> tree = new TreeSet<V>();
-    private ConcurrentSkipListSet<V> tree = new ConcurrentSkipListSet<V>();
-    // Akarin End
+    private TreeSet<V> tree = new TreeSet<V>();
 
     public HashTreeSet() {
 
