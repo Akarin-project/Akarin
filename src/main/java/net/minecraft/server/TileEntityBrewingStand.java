@@ -98,7 +98,7 @@ public class TileEntityBrewingStand extends TileEntityContainer implements IWorl
 
         if (this.fuelLevel <= 0 && itemstack.getItem() == Items.BLAZE_POWDER) {
             // CraftBukkit start
-            BrewingStandFuelEvent event = new BrewingStandFuelEvent(world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ()), CraftItemStack.asCraftMirror(itemstack), 20);
+            BrewingStandFuelEvent event = new BrewingStandFuelEvent(world.getWorld().getBlockAt(position), CraftItemStack.asCraftMirror(itemstack), 20); // Akarin
             this.world.getServer().getPluginManager().callEvent(event);
 
             if (event.isCancelled()) {
@@ -201,7 +201,7 @@ public class TileEntityBrewingStand extends TileEntityContainer implements IWorl
         // CraftBukkit start
         InventoryHolder owner = this.getOwner();
         if (owner != null) {
-            BrewEvent event = new BrewEvent(world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ()), (org.bukkit.inventory.BrewerInventory) owner.getInventory(), this.fuelLevel);
+            BrewEvent event = new BrewEvent(world.getWorld().getBlockAt(position), (org.bukkit.inventory.BrewerInventory) owner.getInventory(), this.fuelLevel); // Akarin
             org.bukkit.Bukkit.getPluginManager().callEvent(event);
             if (event.isCancelled()) {
                 return;

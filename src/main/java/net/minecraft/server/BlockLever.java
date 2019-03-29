@@ -70,7 +70,7 @@ public class BlockLever extends BlockAttachable {
         } else {
             // CraftBukkit start - Interact Lever
             boolean powered = !flag; // Old powered state
-            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition); // Akarin
             int old = (powered) ? 15 : 0;
             int current = (!powered) ? 15 : 0;
 

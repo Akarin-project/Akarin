@@ -118,7 +118,7 @@ public class DispenserRegistry {
                 // CraftBukkit start
                 World world = isourceblock.getWorld();
                 ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
-                org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
                 BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector(0, 0, 0));
@@ -168,7 +168,7 @@ public class DispenserRegistry {
                 // CraftBukkit start
                 World world = isourceblock.getWorld();
                 ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
-                org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
                 BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector(d0, d1, d2));
@@ -220,7 +220,7 @@ public class DispenserRegistry {
 
                 // CraftBukkit start
                 ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
-                org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
                 BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector(d3, d4, d5));
@@ -278,7 +278,7 @@ public class DispenserRegistry {
                 IBlockData iblockdata = world.getType(blockposition);
                 Material material = iblockdata.getMaterial();
                 if (world.isEmpty(blockposition) || !material.isBuildable() || material.isReplaceable() || ((iblockdata.getBlock() instanceof IFluidContainer) && ((IFluidContainer) iblockdata.getBlock()).canPlace(world, blockposition, iblockdata, itembucket.fluidType))) {
-                    org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                    org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                     CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
 
                     BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector(x, y, z));
@@ -347,7 +347,7 @@ public class DispenserRegistry {
                         Item item = fluidtype.b();
 
                         // CraftBukkit start
-                        org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                        org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                         CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
 
                         BlockDispenseEvent event = new BlockDispenseEvent(bukkitBlock, craftItem.clone(), new org.bukkit.util.Vector(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
@@ -393,7 +393,7 @@ public class DispenserRegistry {
                 World world = isourceblock.getWorld();
 
                 // CraftBukkit start
-                org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
 
                 BlockDispenseEvent event = new BlockDispenseEvent(bukkitBlock, craftItem.clone(), new org.bukkit.util.Vector(0, 0, 0));
@@ -449,7 +449,7 @@ public class DispenserRegistry {
                 World world = isourceblock.getWorld();
                 BlockPosition blockposition = isourceblock.getBlockPosition().shift((EnumDirection) isourceblock.e().get(BlockDispenser.FACING));
                 // CraftBukkit start
-                org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
 
                 BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector(0, 0, 0));
@@ -511,7 +511,7 @@ public class DispenserRegistry {
 
                 // CraftBukkit start
                 ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
-                org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
                 BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector((double) blockposition.getX() + 0.5D, (double) blockposition.getY(), (double) blockposition.getZ() + 0.5D));
@@ -563,7 +563,7 @@ public class DispenserRegistry {
                 BlockPosition blockposition = isourceblock.getBlockPosition().shift(enumdirection);
 
                 // CraftBukkit start
-                org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
 
                 BlockDispenseEvent event = new BlockDispenseEvent(bukkitBlock, craftItem.clone(), new org.bukkit.util.Vector(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
@@ -610,7 +610,7 @@ public class DispenserRegistry {
                 BlockPumpkinCarved blockpumpkincarved = (BlockPumpkinCarved) Blocks.CARVED_PUMPKIN;
 
                 // CraftBukkit start
-                org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
 
                 BlockDispenseEvent event = new BlockDispenseEvent(bukkitBlock, craftItem.clone(), new org.bukkit.util.Vector(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
@@ -843,7 +843,7 @@ public class DispenserRegistry {
                 EnumDirection enumdirection1 = isourceblock.getWorld().isEmpty(blockposition.down()) ? enumdirection : EnumDirection.UP;
 
                 // CraftBukkit start
-                org.bukkit.block.Block bukkitBlock = isourceblock.getWorld().getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+                org.bukkit.block.Block bukkitBlock = isourceblock.getWorld().getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
                 CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
 
                 BlockDispenseEvent event = new BlockDispenseEvent(bukkitBlock, craftItem.clone(), new org.bukkit.util.Vector(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
@@ -918,7 +918,7 @@ public class DispenserRegistry {
             // EntityBoat entityboat = new EntityBoat(world, d0, d1 + d3, d2);
             // CraftBukkit start
             ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
-            org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+            org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
             CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
             BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector(d0, d1 + d3, d2));

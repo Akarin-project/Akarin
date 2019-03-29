@@ -29,8 +29,8 @@ public class BlockDragonEgg extends BlockFalling {
 
             if (world.getType(blockposition1).isAir()) {
                 // CraftBukkit start
-                org.bukkit.block.Block from = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
-                org.bukkit.block.Block to = world.getWorld().getBlockAt(blockposition1.getX(), blockposition1.getY(), blockposition1.getZ());
+                org.bukkit.block.Block from = world.getWorld().getBlockAt(blockposition); // Akarin
+                org.bukkit.block.Block to = world.getWorld().getBlockAt(blockposition1); // Akarin
                 BlockFromToEvent event = new BlockFromToEvent(from, to);
                 org.bukkit.Bukkit.getPluginManager().callEvent(event);
 

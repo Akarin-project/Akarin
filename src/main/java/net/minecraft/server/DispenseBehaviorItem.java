@@ -56,7 +56,7 @@ public class DispenseBehaviorItem implements IDispenseBehavior {
         entityitem.motZ += world.random.nextGaussian() * 0.007499999832361937D * (double) i;
 
         // CraftBukkit start
-        org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+        org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
         CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
 
         BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector(entityitem.motX, entityitem.motY, entityitem.motZ));

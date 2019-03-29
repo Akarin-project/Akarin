@@ -430,7 +430,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             // CraftBukkit start - capture blockstates
             CraftBlockState blockstate = null;
             if (this.captureBlockStates) {
-                blockstate = (CraftBlockState) world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()).getState(); // Paper - use CB getState to get a suitable snapshot
+                blockstate = (CraftBlockState) world.getBlockAt(blockposition).getState(); // Paper - use CB getState to get a suitable snapshot // Akarin
                 this.capturedBlockStates.add(blockstate);
             }
             // CraftBukkit end
@@ -531,7 +531,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 iblockdata1.b(this, blockposition, j); // Don't call an event for the old block to limit event spam
                 CraftWorld world = ((WorldServer) this).getWorld();
                 if (world != null && ((WorldServer)this).hasPhysicsEvent && !io.akarin.server.core.AkarinGlobalConfig.fixPhysicsEventBehaviour) { // Paper // Akarin - fixes physics event
-                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftBlockData.fromData(iblockdata));
+                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition), CraftBlockData.fromData(iblockdata)); // Akarin
                     this.getServer().getPluginManager().callEvent(event);
 
                     if (event.isCancelled()) {
@@ -641,12 +641,12 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
     public void applyPhysics(BlockPosition blockposition, Block block) {
         if (captureBlockStates) { return; } // Paper - Cancel all physics during placement
-        this.a(blockposition.west(), block, blockposition);
-        this.a(blockposition.east(), block, blockposition);
-        this.a(blockposition.down(), block, blockposition);
-        this.a(blockposition.up(), block, blockposition);
-        this.a(blockposition.north(), block, blockposition);
-        this.a(blockposition.south(), block, blockposition);
+        this.a(blockposition.shiftX(-1), block, blockposition); // Akarin - west
+        this.a(blockposition.shiftX(2), block, blockposition); // Akarin - east
+        this.a(blockposition.shiftX(-1).shiftY(-1), block, blockposition); // Akarin - down
+        this.a(blockposition.shiftY(2), block, blockposition); // Akarin - up
+        this.a(blockposition.shiftY(-1).shiftZ(-1), block, blockposition); // Akarin - north
+        this.a(blockposition.shiftZ(2), block, blockposition); // Akarin - south
     }
 
     public void a(BlockPosition blockposition, Block block, EnumDirection enumdirection) {
@@ -685,7 +685,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
                 // CraftBukkit start
                 CraftWorld world = ((WorldServer) this).getWorld();
                 if (world != null && ((WorldServer)this).hasPhysicsEvent) { // Paper
-                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftBlockData.fromData(iblockdata), world.getBlockAt(blockposition1.getX(), blockposition1.getY(), blockposition1.getZ()));
+                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition), CraftBlockData.fromData(iblockdata), world.getBlockAt(blockposition)); // Akarin
                     this.getServer().getPluginManager().callEvent(event);
 
                     if (event.isCancelled()) {

@@ -216,7 +216,7 @@ public abstract class TileEntity implements KeyedObject { // Paper
         // Paper end
         if (world == null) return null;
         // Spigot start
-        org.bukkit.block.Block block = world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
+        org.bukkit.block.Block block = world.getWorld().getBlockAt(position); // Akarin
         if (block == null) {
             org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "No block for owner at %s %d %d %d", new Object[]{world.getWorld(), position.getX(), position.getY(), position.getZ()});
             return null;

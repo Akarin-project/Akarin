@@ -27,7 +27,7 @@ public class BlockPressurePlateWeighted extends BlockPressurePlateAbstract {
             if (entity instanceof EntityHuman) {
                 cancellable = org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerInteractEvent((EntityHuman) entity, org.bukkit.event.block.Action.PHYSICAL, blockposition, null, null, null);
             } else {
-                cancellable = new EntityInteractEvent(entity.getBukkitEntity(), world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
+                cancellable = new EntityInteractEvent(entity.getBukkitEntity(), world.getWorld().getBlockAt(blockposition)); // Akarin
                 world.getServer().getPluginManager().callEvent((EntityInteractEvent) cancellable);
             }
 

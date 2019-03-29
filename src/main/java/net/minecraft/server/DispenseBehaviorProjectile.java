@@ -18,7 +18,7 @@ public abstract class DispenseBehaviorProjectile extends DispenseBehaviorItem {
         // iprojectile.shoot((double) enumdirection.getAdjacentX(), (double) ((float) enumdirection.getAdjacentY() + 0.1F), (double) enumdirection.getAdjacentZ(), this.getPower(), this.a());
         // CraftBukkit start
         ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
-        org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+        org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
         CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
         BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector((double) enumdirection.getAdjacentX(), (double) ((float) enumdirection.getAdjacentY() + 0.1F), (double) enumdirection.getAdjacentZ()));

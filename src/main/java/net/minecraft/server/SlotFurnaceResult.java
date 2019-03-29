@@ -73,7 +73,7 @@ public class SlotFurnaceResult extends Slot {
                 // CraftBukkit start - fire FurnaceExtractEvent
                 Player player = (Player) a.getBukkitEntity();
                 TileEntityFurnace furnace = ((TileEntityFurnace) this.inventory);
-                org.bukkit.block.Block block = a.world.getWorld().getBlockAt(furnace.position.getX(), furnace.position.getY(), furnace.position.getZ());
+                org.bukkit.block.Block block = a.world.getWorld().getBlockAt(furnace.position); // Akarin
 
                 if (b != 0) {
                     FurnaceExtractEvent event = new FurnaceExtractEvent(player, block, org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(itemstack.getItem()), b, i);

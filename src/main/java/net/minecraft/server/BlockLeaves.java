@@ -23,7 +23,7 @@ public class BlockLeaves extends Block {
     public void b(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (!(Boolean) iblockdata.get(BlockLeaves.PERSISTENT) && (Integer) iblockdata.get(BlockLeaves.DISTANCE) == 7) {
             // CraftBukkit start
-            LeavesDecayEvent event = new LeavesDecayEvent(world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
+            LeavesDecayEvent event = new LeavesDecayEvent(world.getWorld().getBlockAt(blockposition)); // Akarin
             world.getServer().getPluginManager().callEvent(event);
 
             if (event.isCancelled() || world.getType(blockposition).getBlock() != this) {

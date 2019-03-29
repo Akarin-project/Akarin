@@ -433,7 +433,7 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
                                 // CraftBukkit start - Add blocks to list rather than destroying them
                                 // flag1 = this.world.setAir(blockposition) || flag1;
                                 flag1 = true;
-                                destroyedBlocks.add(craftWorld.getBlockAt(k1, l1, i2));
+                                destroyedBlocks.add(craftWorld.getBlockAt(blockposition)); // Akarin
                                 // CraftBukkit end
                             } else {
                                 flag = true;

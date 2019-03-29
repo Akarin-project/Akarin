@@ -363,7 +363,7 @@ public class TileEntityFurnace extends TileEntityContainer implements IWorldInve
             CraftItemStack source = CraftItemStack.asCraftMirror(itemstack);
             org.bukkit.inventory.ItemStack result = CraftItemStack.asBukkitCopy(itemstack1);
 
-            FurnaceSmeltEvent furnaceSmeltEvent = new FurnaceSmeltEvent(this.world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ()), source, result);
+            FurnaceSmeltEvent furnaceSmeltEvent = new FurnaceSmeltEvent(this.world.getWorld().getBlockAt(position), source, result); // Akarin
             this.world.getServer().getPluginManager().callEvent(furnaceSmeltEvent);
 
             if (furnaceSmeltEvent.isCancelled()) {

@@ -79,7 +79,7 @@ public abstract class BlockButtonAbstract extends BlockAttachable {
         } else {
             // CraftBukkit start
             boolean powered = ((Boolean) iblockdata.get(POWERED));
-            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition); // Akarin
             int old = (powered) ? 15 : 0;
             int current = (!powered) ? 15 : 0;
 
@@ -132,7 +132,7 @@ public abstract class BlockButtonAbstract extends BlockAttachable {
                 this.b(iblockdata, world, blockposition);
             } else {
                 // CraftBukkit start
-                org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+                org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition); // Akarin
 
                 BlockRedstoneEvent eventRedstone = new BlockRedstoneEvent(block, 15, 0);
                 world.getServer().getPluginManager().callEvent(eventRedstone);
@@ -162,7 +162,7 @@ public abstract class BlockButtonAbstract extends BlockAttachable {
 
         // CraftBukkit start - Call interact event when arrows turn on wooden buttons
         if (flag1 != flag && flag) {
-            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition); // Akarin
             boolean allowed = false;
 
             // If all of the events are cancelled block the button press, else allow
@@ -187,7 +187,7 @@ public abstract class BlockButtonAbstract extends BlockAttachable {
         if (flag != flag1) {
             // CraftBukkit start
             boolean powered = flag1;
-            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition); // Akarin
             int old = (powered) ? 15 : 0;
             int current = (!powered) ? 15 : 0;
 

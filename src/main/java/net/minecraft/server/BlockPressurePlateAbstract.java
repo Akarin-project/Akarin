@@ -68,11 +68,11 @@ public abstract class BlockPressurePlateAbstract extends Block {
         boolean flag1 = j > 0;
 
         // CraftBukkit start - Interact Pressure Plate
-        org.bukkit.World bworld = world.getWorld();
+        org.bukkit.craftbukkit.CraftWorld bworld = world.getWorld(); // Akarin - CraftWorld
         org.bukkit.plugin.PluginManager manager = world.getServer().getPluginManager();
 
         if (flag != flag1) {
-            BlockRedstoneEvent eventRedstone = new BlockRedstoneEvent(bworld.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), i, j);
+            BlockRedstoneEvent eventRedstone = new BlockRedstoneEvent(bworld.getBlockAt(blockposition), i, j); // Akarin
             manager.callEvent(eventRedstone);
 
             flag1 = eventRedstone.getNewCurrent() > 0;

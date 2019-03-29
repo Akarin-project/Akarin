@@ -190,14 +190,14 @@ public class Explosion {
 
         if (this.b) {
             // CraftBukkit start
-            org.bukkit.World bworld = this.world.getWorld();
+            org.bukkit.craftbukkit.CraftWorld bworld = this.world.getWorld(); // Akarin - CraftWorld
             org.bukkit.entity.Entity explode = this.source == null ? null : this.source.getBukkitEntity();
             Location location = new Location(bworld, this.posX, this.posY, this.posZ);
 
             List<org.bukkit.block.Block> blockList = Lists.newArrayList();
             for (int i1 = this.blocks.size() - 1; i1 >= 0; i1--) {
                 BlockPosition cpos = (BlockPosition) this.blocks.get(i1);
-                org.bukkit.block.Block bblock = bworld.getBlockAt(cpos.getX(), cpos.getY(), cpos.getZ());
+                org.bukkit.block.Block bblock = bworld.getBlockAt(cpos); // Akarin
                 if (bblock.getType() != org.bukkit.Material.AIR) {
                     blockList.add(bblock);
                 }

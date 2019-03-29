@@ -340,7 +340,7 @@ public class BlockPortal extends Block {
 
         // CraftBukkit start - return boolean
         public boolean createPortal() {
-            org.bukkit.World bworld = this.a.getMinecraftWorld().getWorld();
+            org.bukkit.craftbukkit.CraftWorld bworld = this.a.getMinecraftWorld().getWorld(); // Akarin
 
             // Copy below for loop
             for (int i = 0; i < this.width; ++i) {
@@ -348,7 +348,7 @@ public class BlockPortal extends Block {
 
                 for (int j = 0; j < this.height; ++j) {
                     BlockPosition pos = blockposition.up(j);
-                    blocks.add(bworld.getBlockAt(pos.getX(), pos.getY(), pos.getZ()));
+                    blocks.add(bworld.getBlockAt(pos)); // Akarin
                 }
             }
 

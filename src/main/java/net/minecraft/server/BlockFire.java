@@ -218,8 +218,8 @@ public class BlockFire extends Block {
             //IBlockData iblockdata = world.getType(blockposition); // Paper
 
             // CraftBukkit start
-            org.bukkit.block.Block theBlock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
-            org.bukkit.block.Block sourceBlock = world.getWorld().getBlockAt(sourceposition.getX(), sourceposition.getY(), sourceposition.getZ());
+            org.bukkit.block.Block theBlock = world.getWorld().getBlockAt(blockposition); // Akarin
+            org.bukkit.block.Block sourceBlock = world.getWorld().getBlockAt(sourceposition); // Akarin
 
             BlockBurnEvent event = new BlockBurnEvent(theBlock, sourceBlock);
             world.getServer().getPluginManager().callEvent(event);

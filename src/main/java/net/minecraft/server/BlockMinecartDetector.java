@@ -59,7 +59,7 @@ public class BlockMinecartDetector extends BlockMinecartTrackAbstract {
 
         // CraftBukkit start
         if (flag != flag1) {
-            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+            org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition); // Akarin
 
             BlockRedstoneEvent eventRedstone = new BlockRedstoneEvent(block, flag ? 15 : 0, flag1 ? 15 : 0);
             world.getServer().getPluginManager().callEvent(eventRedstone);

@@ -62,7 +62,7 @@ public class PortalTravelAgent {
                         // Paper start
                         BlockPosition pos = new BlockPosition(k1, l1, i2);
                         nmsBlocks.put(pos, flag2 ? Blocks.OBSIDIAN.getBlockData() : Blocks.AIR.getBlockData());
-                        bukkitBlocks.add(this.world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()));
+                        bukkitBlocks.add(this.world.getWorld().getBlockAt(pos)); // Akarin
                         // Paper end
                     }
                 }
@@ -452,7 +452,7 @@ public class PortalTravelAgent {
                         // Paper start
                         BlockPosition pos = new BlockPosition(j3, l3, i4);
                         nmsBlocks.put(pos, flag1 ? Blocks.OBSIDIAN.getBlockData() : Blocks.AIR.getBlockData());
-                        bukkitBlocks.add(this.world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()));
+                        bukkitBlocks.add(this.world.getWorld().getBlockAt(pos)); // Akarin
                         // Paper end
                     }
                 }
@@ -466,7 +466,7 @@ public class PortalTravelAgent {
                     // Paper start
                     BlockPosition pos = new BlockPosition(blockposition_mutableblockposition.getX(), blockposition_mutableblockposition.getY(), blockposition_mutableblockposition.getZ());
                     nmsBlocks.put(pos, Blocks.OBSIDIAN.getBlockData());
-                    bukkitBlocks.add(this.world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()));
+                    bukkitBlocks.add(this.world.getWorld().getBlockAt(pos)); // Akarin
                     // Paper end
                 }
             }
@@ -481,7 +481,7 @@ public class PortalTravelAgent {
                 // Paper start
                 BlockPosition pos = new BlockPosition(blockposition_mutableblockposition.getX(), blockposition_mutableblockposition.getY(), blockposition_mutableblockposition.getZ());
                 nmsBlocks.put(pos, iblockdata);
-                bukkitBlocks.add(this.world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()));
+                bukkitBlocks.add(this.world.getWorld().getBlockAt(pos)); // Akarin
                 // Paper end
             }
         }

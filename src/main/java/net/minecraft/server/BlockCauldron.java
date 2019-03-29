@@ -217,7 +217,7 @@ public class BlockCauldron extends Block {
     private boolean changeLevel(World world, BlockPosition blockposition, IBlockData iblockdata, int i, Entity entity, CauldronLevelChangeEvent.ChangeReason reason) {
         int newLevel = Integer.valueOf(MathHelper.clamp(i, 0, 3));
         CauldronLevelChangeEvent event = new CauldronLevelChangeEvent(
-                world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()),
+                world.getWorld().getBlockAt(blockposition), // Akarin
                 (entity == null) ? null : entity.getBukkitEntity(), reason, iblockdata.get(BlockCauldron.LEVEL), newLevel
         );
         world.getServer().getPluginManager().callEvent(event);

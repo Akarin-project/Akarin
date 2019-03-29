@@ -45,7 +45,7 @@ public class ItemMinecart extends Item {
             // CraftBukkit start
             // EntityMinecartAbstract entityminecartabstract = EntityMinecartAbstract.a(world, d0, d1 + d3, d2, ((ItemMinecart) itemstack.getItem()).b);
             ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
-            org.bukkit.block.Block block2 = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+            org.bukkit.block.Block block2 = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
             CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
             BlockDispenseEvent event = new BlockDispenseEvent(block2, craftItem.clone(), new org.bukkit.util.Vector(d0, d1 + d3, d2));

@@ -168,9 +168,9 @@ public class BlockDoor extends Block {
         // CraftBukkit start
         BlockPosition otherHalf = blockposition.shift(iblockdata.get(BlockDoor.HALF) == BlockPropertyDoubleBlockHalf.LOWER ? EnumDirection.UP : EnumDirection.DOWN);
 
-        org.bukkit.World bworld = world.getWorld();
-        org.bukkit.block.Block bukkitBlock = bworld.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
-        org.bukkit.block.Block blockTop = bworld.getBlockAt(otherHalf.getX(), otherHalf.getY(), otherHalf.getZ());
+        org.bukkit.craftbukkit.CraftWorld bworld = world.getWorld(); // Akarin - CraftWorld
+        org.bukkit.block.Block bukkitBlock = bworld.getBlockAt(blockposition); // Akarin
+        org.bukkit.block.Block blockTop = bworld.getBlockAt(otherHalf); // Akarin
 
         int power = bukkitBlock.getBlockPower();
         int powerTop = blockTop.getBlockPower();

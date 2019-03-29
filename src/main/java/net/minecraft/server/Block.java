@@ -186,7 +186,7 @@ public class Block implements IMaterial {
             if (io.akarin.server.core.AkarinGlobalConfig.fixPhysicsEventBehaviour && ((WorldServer) generatoraccess).hasPhysicsEvent) {
                 CraftWorld world = ((WorldServer) generatoraccess).getWorld();
                 if (world != null) {
-                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftBlockData.fromData(iblockdata), world.getBlockAt(sourceBlockPosition.getX(), sourceBlockPosition.getY(), sourceBlockPosition.getZ()));
+                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition), CraftBlockData.fromData(iblockdata), world.getBlockAt(sourceBlockPosition)); // Akarin
                     ((WorldServer) generatoraccess).getServer().getPluginManager().callEvent(event);
 
                     if (event.isCancelled()) {

@@ -85,7 +85,7 @@ public class BlockSponge extends Block {
         // CraftBukkit start
         List<CraftBlockState> blocks = blockList.getList(); // Is a clone
         if (!blocks.isEmpty()) {
-            final org.bukkit.block.Block bblock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+            final org.bukkit.block.Block bblock = world.getWorld().getBlockAt(blockposition); // Akarin
 
             SpongeAbsorbEvent event = new SpongeAbsorbEvent(bblock, (List<org.bukkit.block.BlockState>) (List) blocks);
             world.getServer().getPluginManager().callEvent(event);

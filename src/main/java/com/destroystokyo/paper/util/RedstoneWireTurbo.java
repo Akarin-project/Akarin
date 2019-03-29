@@ -881,7 +881,7 @@ public class RedstoneWireTurbo {
         // egg82's amendment
         // Adding Bukkit's BlockRedstoneEvent - er.. event.
         if (i != j) {
-            BlockRedstoneEvent event = new BlockRedstoneEvent(worldIn.getWorld().getBlockAt(upd.self.getX(), upd.self.getY(), upd.self.getZ()), i, j);
+            BlockRedstoneEvent event = new BlockRedstoneEvent(worldIn.getWorld().getBlockAt(upd.self), i, j); // Akarin
             worldIn.getServer().getPluginManager().callEvent(event);
             j = event.getNewCurrent();
         }

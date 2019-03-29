@@ -189,7 +189,7 @@ public class ContainerEnchantTable extends Container {
                         offers[j] = (enchantment != null) ? new EnchantmentOffer(enchantment, this.i[j], this.costs[j]) : null;
                     }
 
-                    PrepareItemEnchantEvent event = new PrepareItemEnchantEvent(player, this.getBukkitView(), this.world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ()), item, offers, i);
+                    PrepareItemEnchantEvent event = new PrepareItemEnchantEvent(player, this.getBukkitView(), this.world.getWorld().getBlockAt(position), item, offers, i); // Akarin
                     event.setCancelled(!itemstack.canEnchant());
                     this.world.getServer().getPluginManager().callEvent(event);
 
@@ -251,7 +251,7 @@ public class ContainerEnchantTable extends Container {
                     }
                     CraftItemStack item = CraftItemStack.asCraftMirror(itemstack);
 
-                    EnchantItemEvent event = new EnchantItemEvent((Player) entityhuman.getBukkitEntity(), this.getBukkitView(), this.world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ()), item, this.costs[i], enchants, i);
+                    EnchantItemEvent event = new EnchantItemEvent((Player) entityhuman.getBukkitEntity(), this.getBukkitView(), this.world.getWorld().getBlockAt(position), item, this.costs[i], enchants, i); // Akarin
                     this.world.getServer().getPluginManager().callEvent(event);
 
                     int level = event.getExpLevelCost();

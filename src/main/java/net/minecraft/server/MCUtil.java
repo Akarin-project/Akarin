@@ -269,7 +269,7 @@ public final class MCUtil {
     }
 
     public static org.bukkit.block.Block toBukkitBlock(World world, BlockPosition pos) {
-        return world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
+        return world.getWorld().getBlockAt(pos); // Akarin
     }
 
     public static BlockPosition toBlockPosition(Location loc) {

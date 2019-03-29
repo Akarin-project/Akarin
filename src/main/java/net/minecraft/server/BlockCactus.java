@@ -94,7 +94,7 @@ public class BlockCactus extends Block {
     }
 
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity) {
-        CraftEventFactory.blockDamage = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()); // CraftBukkit
+        CraftEventFactory.blockDamage = world.getWorld().getBlockAt(blockposition); // CraftBukkit // Akarin
         entity.damageEntity(DamageSource.CACTUS, 1.0F);
         CraftEventFactory.blockDamage = null; // CraftBukkit
     }

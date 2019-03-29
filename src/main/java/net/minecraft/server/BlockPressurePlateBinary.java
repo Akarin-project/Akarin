@@ -65,14 +65,14 @@ public class BlockPressurePlateBinary extends BlockPressurePlateAbstract {
 
                 // CraftBukkit start - Call interact event when turning on a pressure plate
                 if (this.getPower(world.getType(blockposition)) == 0) {
-                    org.bukkit.World bworld = world.getWorld();
+                    org.bukkit.craftbukkit.CraftWorld bworld = world.getWorld(); // Akarin - CraftWorld
                     org.bukkit.plugin.PluginManager manager = world.getServer().getPluginManager();
                     org.bukkit.event.Cancellable cancellable;
 
                     if (entity instanceof EntityHuman) {
                         cancellable = org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerInteractEvent((EntityHuman) entity, org.bukkit.event.block.Action.PHYSICAL, blockposition, null, null, null);
                     } else {
-                        cancellable = new EntityInteractEvent(entity.getBukkitEntity(), bworld.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
+                        cancellable = new EntityInteractEvent(entity.getBukkitEntity(), bworld.getBlockAt(blockposition)); // Akarin
                         manager.callEvent((EntityInteractEvent) cancellable);
                     }
 

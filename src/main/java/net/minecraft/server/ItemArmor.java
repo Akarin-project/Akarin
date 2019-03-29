@@ -36,7 +36,7 @@ public class ItemArmor extends Item {
             ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
             // CraftBukkit start
             World world = isourceblock.getWorld();
-            org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
+            org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
             CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
             BlockDispenseArmorEvent event = new BlockDispenseArmorEvent(block, craftItem.clone(), (org.bukkit.craftbukkit.entity.CraftLivingEntity) entityliving.bukkitEntity);

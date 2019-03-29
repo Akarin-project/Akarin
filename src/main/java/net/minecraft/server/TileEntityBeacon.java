@@ -147,7 +147,7 @@ public class TileEntityBeacon extends TileEntityContainer implements IWorldInven
             EntityHuman entityhuman;
 
             // Paper start - BeaconEffectEvent
-            org.bukkit.block.Block block = world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
+            org.bukkit.block.Block block = world.getWorld().getBlockAt(position); // Akarin
             PotionEffect effect = CraftPotionUtil.toBukkit(new MobEffect(effects, i, b0, true, true));
             // Paper end
 

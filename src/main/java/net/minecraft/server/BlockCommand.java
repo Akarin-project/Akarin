@@ -33,7 +33,7 @@ public class BlockCommand extends BlockTileEntity {
                 boolean flag = world.isBlockIndirectlyPowered(blockposition);
                 boolean flag1 = tileentitycommand.d();
                 // CraftBukkit start
-                org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+                org.bukkit.block.Block bukkitBlock = world.getWorld().getBlockAt(blockposition); // Akarin
                 int old = flag1 ? 15 : 0;
                 int current = flag ? 15 : 0;
 

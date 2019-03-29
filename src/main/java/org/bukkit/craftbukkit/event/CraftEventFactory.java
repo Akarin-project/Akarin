@@ -296,7 +296,7 @@ public class CraftEventFactory {
 
         Block blockClicked = null;
         if (position != null) {
-            blockClicked = craftWorld.getBlockAt(position.getX(), position.getY(), position.getZ());
+            blockClicked = craftWorld.getBlockAt(position); // Akarin
         } else {
             switch (action) {
                 case LEFT_CLICK_BLOCK:
@@ -586,7 +586,7 @@ public class CraftEventFactory {
         CraftBlockState state = CraftBlockState.getBlockState(world, target, flag);
         state.setData(block);
 
-        BlockSpreadEvent event = new BlockSpreadEvent(world.getWorld().getBlockAt(target.getX(), target.getY(), target.getZ()), world.getWorld().getBlockAt(source.getX(), source.getY(), source.getZ()), state);
+        BlockSpreadEvent event = new BlockSpreadEvent(world.getWorld().getBlockAt(target), world.getWorld().getBlockAt(source), state); // Akarin
         Bukkit.getPluginManager().callEvent(event);
 
         if (!event.isCancelled()) {
@@ -926,7 +926,7 @@ public class CraftEventFactory {
     }
 
     public static boolean handleBlockGrowEvent(World world, BlockPosition pos, IBlockData newData, int flag) {
-        Block block = world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
+        Block block = world.getWorld().getBlockAt(pos); // Akarin
         CraftBlockState state = (CraftBlockState) block.getState();
         state.setData(newData);
 
@@ -977,7 +977,7 @@ public class CraftEventFactory {
     }
 
     public static EntityChangeBlockEvent callEntityChangeBlockEvent(Entity entity, BlockPosition position, IBlockData newBlock, boolean cancelled) {
-        Block block = entity.world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
+        Block block = entity.world.getWorld().getBlockAt(position); // Akarin
 
         EntityChangeBlockEvent event = new EntityChangeBlockEvent(entity.getBukkitEntity(), block, CraftBlockData.fromData(newBlock));
         event.setCancelled(cancelled);
@@ -1096,13 +1096,13 @@ public class CraftEventFactory {
     }
 
     public static BlockRedstoneEvent callRedstoneChange(World world, BlockPosition pos, int oldCurrent, int newCurrent) {
-        BlockRedstoneEvent event = new BlockRedstoneEvent(world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), oldCurrent, newCurrent);
+        BlockRedstoneEvent event = new BlockRedstoneEvent(world.getWorld().getBlockAt(pos), oldCurrent, newCurrent); // Akarin
         world.getServer().getPluginManager().callEvent(event);
         return event;
     }
 
     public static NotePlayEvent callNotePlayEvent(World world, BlockPosition pos, BlockPropertyInstrument instrument, int note) {
-        NotePlayEvent event = new NotePlayEvent(world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), org.bukkit.Instrument.getByType((byte) instrument.ordinal()), new org.bukkit.Note(note));
+        NotePlayEvent event = new NotePlayEvent(world.getWorld().getBlockAt(pos), org.bukkit.Instrument.getByType((byte) instrument.ordinal()), new org.bukkit.Note(note)); // Akarin
         world.getServer().getPluginManager().callEvent(event);
         return event;
     }
@@ -1114,8 +1114,8 @@ public class CraftEventFactory {
     }
 
     public static BlockIgniteEvent callBlockIgniteEvent(World world, BlockPosition block, BlockPosition source) {
-        org.bukkit.World bukkitWorld = world.getWorld();
-        Block igniter = bukkitWorld.getBlockAt(source.getX(), source.getY(), source.getZ());
+        org.bukkit.craftbukkit.CraftWorld bukkitWorld = world.getWorld(); // Akarin
+        Block igniter = bukkitWorld.getBlockAt(source); // Akarin
         IgniteCause cause;
         switch (igniter.getType()) {
             case LAVA:
@@ -1129,7 +1129,7 @@ public class CraftEventFactory {
                 cause = IgniteCause.SPREAD;
         }
 
-        BlockIgniteEvent event = new BlockIgniteEvent(bukkitWorld.getBlockAt(block.getX(), block.getY(), block.getZ()), cause, igniter);
+        BlockIgniteEvent event = new BlockIgniteEvent(bukkitWorld.getBlockAt(block), cause, igniter); // Akarin
         if (isWorldGen(world)) return event; // Paper - do not call during world gen
         world.getServer().getPluginManager().callEvent(event);
         return event;
@@ -1170,7 +1170,7 @@ public class CraftEventFactory {
     }
 
     public static BlockIgniteEvent callBlockIgniteEvent(World world, BlockPosition pos, IgniteCause cause, Entity igniter) {
-        BlockIgniteEvent event = new BlockIgniteEvent(world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), cause, igniter.getBukkitEntity());
+        BlockIgniteEvent event = new BlockIgniteEvent(world.getWorld().getBlockAt(pos), cause, igniter.getBukkitEntity()); // Akarin
         world.getServer().getPluginManager().callEvent(event);
         return event;
     }
@@ -1316,7 +1316,7 @@ public class CraftEventFactory {
      */
     public static SpawnerSpawnEvent callSpawnerSpawnEvent(Entity spawnee, BlockPosition pos) {
         org.bukkit.craftbukkit.entity.CraftEntity entity = spawnee.getBukkitEntity();
-        BlockState state = entity.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()).getState();
+        BlockState state = ((CraftWorld) entity.getWorld()).getBlockAt(pos).getState(); // Akarin
         if (!(state instanceof org.bukkit.block.CreatureSpawner)) {
             state = null;
         }

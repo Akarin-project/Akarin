@@ -77,7 +77,7 @@ public class BlockRedstoneTorch extends BlockTorch {
 
         // CraftBukkit start
         org.bukkit.plugin.PluginManager manager = world.getServer().getPluginManager();
-        org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+        org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition); // Akarin
         int oldCurrent = ((Boolean) iblockdata.get(BlockRedstoneTorch.LIT)).booleanValue() ? 15 : 0;
 
         BlockRedstoneEvent event = new BlockRedstoneEvent(block, oldCurrent, oldCurrent);

@@ -35,7 +35,7 @@ public class CraftRayTraceResult {
         Block hitBlock = null;
         BlockPosition nmsBlockPos = nmsHitResult.getBlockPosition();
         if (nmsBlockPos != null && world != null) {
-            hitBlock = world.getBlockAt(nmsBlockPos.getX(), nmsBlockPos.getY(), nmsBlockPos.getZ());
+            hitBlock = world.getBlockAt(nmsBlockPos.getX(), nmsBlockPos.getY(), nmsBlockPos.getZ()); // Akarin
         }
         return new RayTraceResult(hitPosition, hitBlock, hitBlockFace);
     }

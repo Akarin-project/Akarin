@@ -47,7 +47,7 @@ public class ItemLeash extends Item {
                     entityleash = EntityLeash.a(world, blockposition);
 
                     // CraftBukkit start - fire HangingPlaceEvent
-                    HangingPlaceEvent event = new HangingPlaceEvent((org.bukkit.entity.Hanging) entityleash.getBukkitEntity(), entityhuman != null ? (org.bukkit.entity.Player) entityhuman.getBukkitEntity() : null, world.getWorld().getBlockAt(i, j, k), org.bukkit.block.BlockFace.SELF);
+                    HangingPlaceEvent event = new HangingPlaceEvent((org.bukkit.entity.Hanging) entityleash.getBukkitEntity(), entityhuman != null ? (org.bukkit.entity.Player) entityhuman.getBukkitEntity() : null, world.getWorld().getBlockAt(blockposition), org.bukkit.block.BlockFace.SELF); // Akarin
                     world.getServer().getPluginManager().callEvent(event);
 
                     if (event.isCancelled()) {

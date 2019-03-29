@@ -1,6 +1,8 @@
 package net.minecraft.server;
 
 import javax.annotation.Nullable;
+
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
 
 public class BlockTrapdoor extends BlockFacingHorizontal implements IFluidSource, IFluidContainer {
@@ -91,7 +93,7 @@ public class BlockTrapdoor extends BlockFacingHorizontal implements IFluidSource
             if (flag != (Boolean) iblockdata.get(BlockTrapdoor.c)) {
                 // CraftBukkit start
                 org.bukkit.World bworld = world.getWorld();
-                org.bukkit.block.Block bblock = bworld.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+                org.bukkit.block.Block bblock = ((CraftWorld) bworld).getBlockAt(blockposition); // Akarin
 
                 int power = bblock.getBlockPower();
                 int oldPower = (Boolean) iblockdata.get(OPEN) ? 15 : 0;

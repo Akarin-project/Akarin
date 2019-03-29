@@ -137,7 +137,7 @@ public class BlockTripwireHook extends Block {
         }
 
         // CraftBukkit start
-        org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+        org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition); // Akarin
 
         BlockRedstoneEvent eventRedstone = new BlockRedstoneEvent(block, 15, 0);
         world.getServer().getPluginManager().callEvent(eventRedstone);

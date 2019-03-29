@@ -336,7 +336,7 @@ public class BlockRedstoneWire extends Block {
 
         // CraftBukkit start
         if (i != j) {
-            BlockRedstoneEvent event = new BlockRedstoneEvent(world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), i, j);
+            BlockRedstoneEvent event = new BlockRedstoneEvent(world.getWorld().getBlockAt(blockposition), i, j); // Akarin
             world.getServer().getPluginManager().callEvent(event);
 
             j = event.getNewCurrent();
