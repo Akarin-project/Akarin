@@ -39,6 +39,7 @@ import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.util.FileUtil;
+import org.checkerframework.common.reflection.qual.NewInstance;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -58,9 +59,10 @@ public final class SimplePluginManager implements PluginManager {
     private final Map<String, Plugin> lookupNames = HashObjObjMaps.newMutableMap(); // Akarin
     private File updateDirectory;
     private final SimpleCommandMap commandMap;
-    private Map<String, Permission> permissions = HashObjObjMaps.newMutableMap(); // Akarin
+    private Map<String, Permission> permissions = Collections.emptyMap(); // Akarin
     private HashIntObjMap<Set<Permission>> defaultPerms = HashIntObjMaps.newImmutableMap(HashObjSets.newImmutableSetOf(0, 1), HashObjSets.newImmutableSetOf(HashObjSets.newMutableSet(), HashObjSets.newMutableSet())); // Akarin
     private final Map<String, Map<Permissible, Boolean>> permSubs = HashObjObjMaps.newMutableMap(); // Akarin
+    private final Object permSubsLock = new Object();
     private final Map<Boolean, Map<Permissible, Boolean>> defSubs = HashObjObjMaps.newMutableMap(); // Akarin
     private boolean useTimings = false;
 
@@ -730,6 +732,7 @@ public final class SimplePluginManager implements PluginManager {
 
     public void subscribeToPermission(@Nonnull String permission, @Nonnull Permissible permissible) { // Akarin - javax.annotation
         String name = permission.toLowerCase(java.util.Locale.ENGLISH);
+        synchronized (permSubsLock) { // Akarin
         Map<Permissible, Boolean> map = permSubs.get(name);
 
         if (map == null) {
@@ -738,10 +741,12 @@ public final class SimplePluginManager implements PluginManager {
         }
 
         map.put(permissible, true);
+        } // Akarin
     }
 
     public void unsubscribeFromPermission(@Nonnull String permission, @Nonnull Permissible permissible) { // Akarin - javax.annotation
         String name = permission.toLowerCase(java.util.Locale.ENGLISH);
+        synchronized (permSubsLock) { // Akarin
         Map<Permissible, Boolean> map = permSubs.get(name);
 
         if (map != null) {
@@ -751,11 +756,13 @@ public final class SimplePluginManager implements PluginManager {
                 permSubs.remove(name);
             }
         }
+        } // Akarin
     }
 
     @Nonnull // Akarin - javax.annotation
     public Set<Permissible> getPermissionSubscriptions(@Nonnull String permission) { // Akarin - javax.annotation
         String name = permission.toLowerCase(java.util.Locale.ENGLISH);
+        synchronized (permSubsLock) { // Akarin
         Map<Permissible, Boolean> map = permSubs.get(name);
 
         if (map == null) {
@@ -763,6 +770,7 @@ public final class SimplePluginManager implements PluginManager {
         } else {
             return ImmutableSet.copyOf(map.keySet());
         }
+        } // Akarin
     }
 
     public void subscribeToDefaultPerms(boolean op, @Nonnull Permissible permissible) { // Akarin - javax.annotation
