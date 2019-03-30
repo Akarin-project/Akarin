@@ -60,6 +60,7 @@ public final class SimplePluginManager implements PluginManager {
     private File updateDirectory;
     private final SimpleCommandMap commandMap;
     private Map<String, Permission> permissions = Collections.emptyMap(); // Akarin
+    private final Object permissionsLock = new Object();
     private HashIntObjMap<Set<Permission>> defaultPerms = HashIntObjMaps.newImmutableMap(HashObjSets.newImmutableSetOf(0, 1), HashObjSets.newImmutableSetOf(HashObjSets.newMutableSet(), HashObjSets.newMutableSet())); // Akarin
     private final Map<String, Map<Permissible, Boolean>> permSubs = HashObjObjMaps.newMutableMap(); // Akarin
     private final Object permSubsLock = new Object();
@@ -502,7 +503,7 @@ public final class SimplePluginManager implements PluginManager {
             lookupNames.clear();
             HandlerList.unregisterAll();
             fileAssociations.clear();
-            permissions.clear();
+            synchronized (permissionsLock) { permissions = Collections.emptyMap(); } // Akarin 
             // Akarin start
             //defaultPerms.get(true).clear();
             //defaultPerms.get(false).clear();
@@ -646,9 +647,11 @@ public final class SimplePluginManager implements PluginManager {
         }
 
         // Akarin start
-        HashObjObjMap<String, Permission> toImmutable = HashObjObjMaps.newUpdatableMap(permissions);
-        toImmutable.put(name, perm);
-        permissions = HashObjObjMaps.newImmutableMap(toImmutable);
+        synchronized (permissionsLock) {
+            HashObjObjMap<String, Permission> toImmutable = HashObjObjMaps.newUpdatableMap(permissions);
+            toImmutable.put(name, perm);
+            permissions = HashObjObjMaps.newImmutableMap(toImmutable);
+        }
         // Akarin end
         calculatePermissionDefault(perm, dirty);
     }
@@ -664,9 +667,11 @@ public final class SimplePluginManager implements PluginManager {
 
     public void removePermission(@Nonnull String name) { // Akarin - javax.annotation
         // Akarin start
-        HashObjObjMap<String, Permission> toImmutable = HashObjObjMaps.newMutableMap(permissions);
-        toImmutable.remove(name.toLowerCase(java.util.Locale.ENGLISH));
-        permissions = HashObjObjMaps.newImmutableMap(toImmutable);
+        synchronized (permissionsLock) {
+            HashObjObjMap<String, Permission> toImmutable = HashObjObjMaps.newMutableMap(permissions);
+            toImmutable.remove(name.toLowerCase(java.util.Locale.ENGLISH));
+            permissions = HashObjObjMaps.newImmutableMap(toImmutable);
+        }
         // Akarin end
     }
 
@@ -827,7 +832,7 @@ public final class SimplePluginManager implements PluginManager {
 
     // Paper start
     public void clearPermissions() {
-        permissions = Collections.emptyMap(); // Akarin
+        synchronized (permissionsLock) { permissions = Collections.emptyMap(); } // Akarin
         // Akarin start
         //defaultPerms.get(true).clear();
         //defaultPerms.get(false).clear();
