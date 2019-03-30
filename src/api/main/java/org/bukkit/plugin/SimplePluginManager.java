@@ -60,7 +60,7 @@ public final class SimplePluginManager implements PluginManager {
     private final SimpleCommandMap commandMap;
     private Map<String, Permission> permissions = Collections.emptyMap(); // Akarin
     private final Object permissionsLock = new Object();
-    private HashIntObjMap<Set<Permission>> defaultPerms = HashIntObjMaps.newImmutableMap(HashObjSets.newImmutableSetOf(0, 1), HashObjSets.newImmutableSetOf(HashObjSets.newMutableSet(), HashObjSets.newMutableSet())); // Akarin
+    private HashIntObjMap<Set<Permission>> defaultPerms; // Akarin
     private final Map<String, Map<Permissible, Boolean>> permSubs = HashObjObjMaps.newMutableMap(); // Akarin
     private final Object permSubsLock = new Object();
     private final Map<Boolean, Map<Permissible, Boolean>> defSubs = HashObjObjMaps.newMutableMap(); // Akarin
@@ -70,8 +70,12 @@ public final class SimplePluginManager implements PluginManager {
         server = instance;
         this.commandMap = commandMap;
 
-        //defaultPerms.put(true, HashObjSets.newMutableSet()); // Akarin
-        //defaultPerms.put(false, HashObjSets.newMutableSet()); // Akarin
+        // Akarin start
+        HashIntObjMap<Set<Permission>> defaultPerms = HashIntObjMaps.newUpdatableMap();
+        defaultPerms.put(1, HashObjSets.newUpdatableSet());
+        defaultPerms.put(0, HashObjSets.newUpdatableSet());
+        this.defaultPerms = defaultPerms;
+        // Akarin end
     }
 
     /**
