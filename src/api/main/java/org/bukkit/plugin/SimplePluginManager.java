@@ -39,7 +39,6 @@ import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.util.FileUtil;
-import org.checkerframework.common.reflection.qual.NewInstance;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
