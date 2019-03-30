@@ -363,14 +363,15 @@ public abstract class PlayerList {
 
         Map<MinecraftKey, AdvancementProgress> advancements = advancementdataplayer.toSerializableMap(); // Akarin
         if (advancementdataplayer != null) {
-            advancementdataplayer.c();
+            //advancementdataplayer.c(); // Akarin - moved down
         }
         // Akarin start
         AkarinAsyncExecutor.scheduleSingleAsyncTask(() -> {
             this.playerFileData.save(entityplayer);
             if (serverstatisticmanager != null)
                 serverstatisticmanager.a();
-            advancementdataplayer.save(advancements);
+            if (advancementdataplayer != null)
+                advancementdataplayer.save(advancements);
         });
         // Akarin end
 

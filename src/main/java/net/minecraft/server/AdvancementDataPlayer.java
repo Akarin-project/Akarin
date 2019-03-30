@@ -204,13 +204,18 @@ public class AdvancementDataPlayer {
 
     // Akarin start - copied from below
     public Map<MinecraftKey, AdvancementProgress> toSerializableMap() {
-        return org.spigotmc.SpigotConfig.disableAdvancementSaving ?
-                HashObjObjMaps.newImmutableMap(
-                        Collections2.transform(data.keySet(), Advancement::getName),
-                        data.values().stream()
-                                     .filter(AdvancementProgress::b)
-                                     .collect(Collectors.toSet())
-                ) : Collections.emptyMap();
+        Map<MinecraftKey, AdvancementProgress> map = HashObjObjMaps.newMutableMap();
+        Iterator<Entry<Advancement, AdvancementProgress>> iterator = this.data.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Entry<Advancement, AdvancementProgress> entry = iterator.next();
+            AdvancementProgress advancementprogress = (AdvancementProgress) entry.getValue();
+
+            if (advancementprogress.b()) {
+                map.put(((Advancement) entry.getKey()).getName(), advancementprogress);
+            }
+        }
+        return map;
     }
     public void save(Map<MinecraftKey, AdvancementProgress> serializableMap) {
         if (this.e.getParentFile() != null) {
@@ -226,7 +231,7 @@ public class AdvancementDataPlayer {
     // Akarin end
     public void c() {
         if (org.spigotmc.SpigotConfig.disableAdvancementSaving) return;
-        Map<MinecraftKey, AdvancementProgress> map = HashObjObjMaps.newMutableMap(); // Akarin
+        Map<MinecraftKey, AdvancementProgress> map = Maps.newHashMap();
         Iterator iterator = this.data.entrySet().iterator();
 
         while (iterator.hasNext()) {
