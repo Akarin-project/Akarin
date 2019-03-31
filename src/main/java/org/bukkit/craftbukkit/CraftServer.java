@@ -710,7 +710,7 @@ public final class CraftServer implements Server {
         //org.spigotmc.AsyncCatcher.catchOp( "command dispatch" ); // Spigot // Akarin
 
         // Paper Start
-        if (!org.spigotmc.AsyncCatcher.shuttingDown && !ThreadAssertion.isMainThread() && !Bukkit.isPrimaryThread()) { // Akarin
+        if (!org.spigotmc.AsyncCatcher.shuttingDown && !ThreadAssertion.is() && !Bukkit.isPrimaryThread()) { // Akarin
             final CommandSender fSender = sender;
             final String fCommandLine = commandLine;
             Bukkit.getLogger().log(Level.SEVERE, "Command Dispatched Async: " + commandLine);
@@ -1724,7 +1724,7 @@ public final class CraftServer implements Server {
 
     @Override
     public boolean isPrimaryThread() {
-        return ThreadAssertion.isMainThread() || Thread.currentThread().equals(console.primaryThread);
+        return ThreadAssertion.is() || Thread.currentThread().equals(console.primaryThread);
     }
 
     @Override

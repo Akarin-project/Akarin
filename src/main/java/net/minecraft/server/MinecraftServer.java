@@ -1728,7 +1728,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
     }
 
     public boolean isMainThread() {
-        return ThreadAssertion.isMainThread() || Thread.currentThread() == this.serverThread; // Akarin
+        return ThreadAssertion.is() || Thread.currentThread() == this.serverThread; // Akarin
     }
 
     public int aw() {

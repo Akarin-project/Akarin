@@ -1742,7 +1742,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
         if (!async && s.startsWith("/")) {
             // Paper Start
-            if (!org.spigotmc.AsyncCatcher.shuttingDown && !ThreadAssertion.isMainThread() && !org.bukkit.Bukkit.isPrimaryThread()) {
+            if (!org.spigotmc.AsyncCatcher.shuttingDown && !ThreadAssertion.is() && !org.bukkit.Bukkit.isPrimaryThread()) {
                 final String fCommandLine = s;
                 MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Command Dispatched Async: " + fCommandLine); // Akarin
                 MinecraftServer.LOGGER.log(org.apache.logging.log4j.Level.ERROR, "Please notify author of plugin causing this execution to fix this bug! see: http://bit.ly/1oSiM6C", new Throwable());

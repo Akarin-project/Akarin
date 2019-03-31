@@ -3,11 +3,15 @@ package co.aikar.timings;
 public class ThreadAssertion {
     private static boolean mainThread;
     
-    public static boolean isMainThread() {
+    public static boolean is() {
         return mainThread;
     }
     
-    static boolean setMainThread(boolean is) {
-        return mainThread = is;
+    static void start() {
+        mainThread = false;
+    }
+    
+    public static void close() {
+        mainThread = false;
     }
 }

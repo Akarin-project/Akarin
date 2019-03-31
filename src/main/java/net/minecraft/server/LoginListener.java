@@ -4,6 +4,8 @@ import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
+
+import co.aikar.timings.ThreadAssertion;
 import io.netty.channel.ChannelFuture;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -200,6 +202,7 @@ public class LoginListener implements PacketLoginInListener, ITickable {
             authenticatorPool.execute(new Runnable() {
                 @Override
                 public void run() {
+                    ThreadAssertion.close(); // Akarin
                     try {
                         initUUID();
                         new LoginHandler().fireEvents();
@@ -228,6 +231,7 @@ public class LoginListener implements PacketLoginInListener, ITickable {
             // Paper start - Cache authenticator threads
             authenticatorPool.execute(new Runnable() {
                 public void run() {
+                    ThreadAssertion.close(); // Akarin
                     GameProfile gameprofile = LoginListener.this.i;
 
                     try {
@@ -358,6 +362,7 @@ public class LoginListener implements PacketLoginInListener, ITickable {
 
             // Proceed with login
             authenticatorPool.execute(() -> {
+                ThreadAssertion.close(); // Akarin
                 try {
                     new LoginHandler().fireEvents();
                 } catch (Exception ex) {

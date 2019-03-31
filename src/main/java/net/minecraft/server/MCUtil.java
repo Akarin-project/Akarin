@@ -51,7 +51,7 @@ public final class MCUtil {
     }
 
     public static boolean isMainThread() {
-        return ThreadAssertion.isMainThread() && MinecraftServer.getServer().isMainThread(); // Akarin
+        return ThreadAssertion.is() && MinecraftServer.getServer().isMainThread(); // Akarin
     }
 
     private static class DelayedRunnable implements Runnable {
@@ -118,7 +118,7 @@ public final class MCUtil {
      * @return
      */
     public static void ensureMain(String reason, Runnable run) {
-        if (/*AsyncCatcher.enabled &&*/ !ThreadAssertion.isMainThread() && Thread.currentThread() != MinecraftServer.getServer().primaryThread) { // Akarin
+        if (/*AsyncCatcher.enabled &&*/ !ThreadAssertion.is() && Thread.currentThread() != MinecraftServer.getServer().primaryThread) { // Akarin
             if (reason != null) {
                 new IllegalStateException("Asynchronous " + reason + "!").printStackTrace();
             }
@@ -143,7 +143,7 @@ public final class MCUtil {
      * @return
      */
     public static <T> T ensureMain(String reason, Supplier<T> run) {
-        if (/*AsyncCatcher.enabled &&*/ !ThreadAssertion.isMainThread() && Thread.currentThread() != MinecraftServer.getServer().primaryThread) { // Akarin
+        if (/*AsyncCatcher.enabled &&*/ !ThreadAssertion.is() && Thread.currentThread() != MinecraftServer.getServer().primaryThread) { // Akarin
             if (reason != null) {
                 new IllegalStateException("Asynchronous " + reason + "! Blocking thread until it returns ").printStackTrace();
             }
@@ -287,6 +287,7 @@ public final class MCUtil {
      * @param run
      */
     public static void scheduleAsyncTask(Runnable run) {
+        ThreadAssertion.close(); // Akarin
         asyncExecutor.execute(run);
     }
 

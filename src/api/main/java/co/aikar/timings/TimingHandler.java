@@ -57,7 +57,6 @@ class TimingHandler implements Timing {
     private boolean added;
     private boolean timed;
     private boolean enabled;
-    private boolean unsafe; // Akarin
 
     TimingHandler(@Nonnull TimingIdentifier id) { // Akarin - javax.annotation
         this.identifier = id;
@@ -114,7 +113,7 @@ class TimingHandler implements Timing {
     @Override
     public Timing startTimingUnsafe() {
         if (enabled && ++timingDepth == 1) {
-            unsafe = true;
+            ThreadAssertion.close();
             // Akarin end
             start = System.nanoTime();
             TIMING_STACK.addLast(this);
@@ -124,11 +123,11 @@ class TimingHandler implements Timing {
     // Akarin start
     @Override
     public Timing startTiming(boolean assertThread) {
-        if (enabled && (ThreadAssertion.isMainThread() || Bukkit.isPrimaryThread()) && ++timingDepth == 1) {
+        if (enabled && (ThreadAssertion.is() || Bukkit.isPrimaryThread()) && ++timingDepth == 1) {
             start = System.nanoTime();
             TIMING_STACK.addLast(this);
             if (assertThread && AkarinGlobalConfig.lazyThreadAssertion)
-                ThreadAssertion.setMainThread(true);
+                ThreadAssertion.start();
         }
         return this;
     }
@@ -144,13 +143,13 @@ class TimingHandler implements Timing {
             addDiff(System.nanoTime() - start, TIMING_STACK.peekLast());
 
             start = 0;
-            unsafe = false;
+            ThreadAssertion.close();
         }
     }
     // Akarin end
 
     public void stopTiming() {
-        if (enabled && timingDepth > 0 && (ThreadAssertion.isMainThread() || Bukkit.isPrimaryThread()) && --timingDepth == 0 && start != 0) { // Akarin
+        if (enabled && timingDepth > 0 && (ThreadAssertion.is() || Bukkit.isPrimaryThread()) && --timingDepth == 0 && start != 0) { // Akarin
             TimingHandler last;
             while ((last = TIMING_STACK.removeLast()) != this) {
                 last.timingDepth = 0;
@@ -167,8 +166,7 @@ class TimingHandler implements Timing {
             start = 0;
             // Akarin start
             if (AkarinGlobalConfig.lazyThreadAssertion)
-                ThreadAssertion.setMainThread(false);
-            unsafe = false;
+                ThreadAssertion.close();
             // Akarin end
         }
     }
@@ -231,7 +229,7 @@ class TimingHandler implements Timing {
      */
     @Override
     public void close() {
-        if (unsafe) stopTimingUnsafe(); else stopTimingIfSync(); // Akarin
+        if (ThreadAssertion.is()) stopTimingUnsafe(); else stopTimingIfSync(); // Akarin
     }
 
     public boolean isSpecial() {

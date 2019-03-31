@@ -11,7 +11,7 @@ public class AsyncCatcher
 
     public static void catchOp(String reason)
     {
-        if ( enabled && !ThreadAssertion.isMainThread() && Thread.currentThread() != MinecraftServer.getServer().primaryThread )
+        if ( enabled && !ThreadAssertion.is() && Thread.currentThread() != MinecraftServer.getServer().primaryThread )
         {
             throw new IllegalStateException( "Asynchronous " + reason + "!" );
         }
