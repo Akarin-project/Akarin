@@ -8,7 +8,7 @@ public class ThreadAssertion {
     }
     
     static void start() {
-        mainThread = false;
+        mainThread = true;
     }
     
     public static void close() {
