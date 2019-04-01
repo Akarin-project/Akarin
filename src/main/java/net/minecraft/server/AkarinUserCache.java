@@ -33,9 +33,6 @@ import com.mojang.authlib.Agent;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.ProfileLookupCallback;
-import com.mojang.authlib.properties.Property;
-import com.mojang.authlib.properties.PropertyMap;
-
 import io.akarin.server.core.AkarinAsyncExecutor;
 import io.akarin.server.core.AkarinGlobalConfig;
 import net.minecraft.server.UserCache.UserCacheEntry;
@@ -58,7 +55,7 @@ public class AkarinUserCache {
     protected final Gson gson;
     private final File userCacheFile;
     
-    private static boolean isOnlineMode() {
+    protected static boolean isOnlineMode() {
         return UserCache.isOnlineMode() || (SpigotConfig.bungee && PaperConfig.bungeeOnlineMode);
     }
 
@@ -79,19 +76,12 @@ public class AkarinUserCache {
     private static boolean isExpired(UserCacheEntry entry) {
         return System.currentTimeMillis() >= entry.getExpireDate().getTime();
     }
-
+ 
     private static UserCacheEntry refreshExpireDate(UserCacheEntry entry) {
         return new UserCacheEntry(entry.getProfile(), createExpireDate(true));
     }
 
     private static GameProfile lookup(GameProfileRepository profileRepo, String username, ProfileLookupCallback callback, boolean async) {
-        if (!isOnlineMode()) {
-            String usernameKey = username.toLowerCase(Locale.ROOT);
-            GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(usernameKey), usernameKey);
-            if (async) callback.onProfileLookupSucceeded(offlineProfile);
-            return offlineProfile;
-        }
-
         GameProfile[] gameProfile = new GameProfile[1];
         ProfileLookupCallback callbackHandler = new ProfileLookupCallback() {
             @Override
@@ -167,14 +157,20 @@ public class AkarinUserCache {
     
     public GameProfile acquire(String username, ProfileLookupCallback callback, boolean async) {
         if (StringUtils.isBlank(username))
-            return null;
-
-        String usernameKey = isOnlineMode() ? username : username.toLowerCase(Locale.ROOT);
-        UserCacheEntry entry = profiles.getIfPresent(usernameKey);
+            throw new UnsupportedOperationException("Blank username");
+        
+        if (!isOnlineMode()) {
+            String usernameOffline = username.toLowerCase(Locale.ROOT);
+            GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(usernameOffline), username);
+            if (async) callback.onProfileLookupSucceeded(offlineProfile);
+            return offlineProfile;
+        }
+        
+        UserCacheEntry entry = profiles.getIfPresent(username);
 
         if (entry != null) {
             if (isExpired(entry)) {
-                profiles.invalidate(usernameKey);
+                profiles.invalidate(username);
                 return lookupAndCache(username, callback, async);
             } else {
                 if (async) {

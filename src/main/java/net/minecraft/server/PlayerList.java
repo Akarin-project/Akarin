@@ -533,7 +533,7 @@ public abstract class PlayerList {
 
         for (int i = 0; i < this.players.size(); ++i) {
             entityplayer = (EntityPlayer) this.players.get(i);
-            if (entityplayer.getUniqueID().equals(uuid)) {
+            if (AkarinUserCache.isOnlineMode() ? entityplayer.getUniqueID().equals(uuid) : entityplayer.getName().equals(gameprofile.getName())) { // Akarin - resolve offline servers
                 list.add(entityplayer);
             }
         }

@@ -269,7 +269,7 @@ public class NameReferencingFileConverter {
 
     public static String a(final MinecraftServer minecraftserver, String s) {
         if (!UtilColor.b(s) && s.length() <= 16) {
-            GameProfile gameprofile = minecraftserver.getUserCache().getProfile(s);
+            GameProfile gameprofile = minecraftserver.getModernUserCache().acquire(s); // Akarin
 
             if (gameprofile != null && gameprofile.getId() != null) {
                 return gameprofile.getId().toString();
