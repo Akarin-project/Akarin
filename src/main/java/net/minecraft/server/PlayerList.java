@@ -8,6 +8,7 @@ import com.mojang.authlib.GameProfile;
 
 import io.akarin.server.core.AkarinAsyncExecutor;
 import io.akarin.server.core.AkarinAsyncScheduler;
+import io.akarin.server.core.AkarinGlobalConfig;
 import io.netty.buffer.Unpooled;
 import java.io.File;
 import java.net.SocketAddress;
@@ -549,11 +550,48 @@ public abstract class PlayerList {
         // in the event, check with plugins to see if it's ok, and THEN kick
         // depending on the outcome.
         SocketAddress socketaddress = loginlistener.networkManager.getSocketAddress();
+        // Akarin start - disallow before login event
+        if (AkarinGlobalConfig.disallowBeforeLogin) {
+            if (getProfileBans().isBanned(gameprofile) && !getProfileBans().get(gameprofile).hasExpired()) {
+                GameProfileBanEntry gameprofilebanentry = (GameProfileBanEntry) this.k.get(gameprofile);
+
+                chatmessage = new ChatMessage("multiplayer.disconnect.banned.reason", new Object[] { gameprofilebanentry.getReason()});
+                if (gameprofilebanentry.getExpires() != null) {
+                    chatmessage.addSibling(new ChatMessage("multiplayer.disconnect.banned.expiration", new Object[] { PlayerList.g.format(gameprofilebanentry.getExpires())}));
+                }
+
+                // return chatmessage;
+                if (!gameprofilebanentry.hasExpired()) CraftChatMessage.fromComponent(chatmessage);
+                return null;
+            } else if (!this.isWhitelisted(gameprofile)) {
+                chatmessage = new ChatMessage("multiplayer.disconnect.not_whitelisted", new Object[0]);
+                //event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, org.spigotmc.SpigotConfig.whitelistMessage); // Spigot // Paper - moved to isWhitelisted
+            } else if (getIPBans().isBanned(socketaddress) && !getIPBans().get(socketaddress).hasExpired()) {
+                IpBanEntry ipbanentry = this.l.get(socketaddress);
+
+                chatmessage = new ChatMessage("multiplayer.disconnect.banned_ip.reason", new Object[] { ipbanentry.getReason()});
+                if (ipbanentry.getExpires() != null) {
+                    chatmessage.addSibling(new ChatMessage("multiplayer.disconnect.banned_ip.expiration", new Object[] { PlayerList.g.format(ipbanentry.getExpires())}));
+                }
+
+                // return chatmessage;
+                loginlistener.disconnect(chatmessage);
+                return null;
+            } else {
+                // return this.players.size() >= this.maxPlayers && !this.f(gameprofile) ? new ChatMessage("multiplayer.disconnect.server_full", new Object[0]) : null;
+                if (this.players.size() >= this.maxPlayers && !this.f(gameprofile)) {
+                    loginlistener.disconnect(org.spigotmc.SpigotConfig.serverFullMessage);
+                    return null;
+                }
+            }
+        }
+        // Akarin end
 
         EntityPlayer entity = new EntityPlayer(this.server, this.server.getWorldServer(DimensionManager.OVERWORLD), gameprofile, new PlayerInteractManager(this.server.getWorldServer(DimensionManager.OVERWORLD)));
         Player player = entity.getBukkitEntity();
         PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, ((java.net.InetSocketAddress) socketaddress).getAddress(), ((java.net.InetSocketAddress) loginlistener.networkManager.getRawAddress()).getAddress());
 
+        if (!AkarinGlobalConfig.disallowBeforeLogin) {// Akarin - disallow before login event
         if (getProfileBans().isBanned(gameprofile) && !getProfileBans().get(gameprofile).hasExpired()) {
             GameProfileBanEntry gameprofilebanentry = (GameProfileBanEntry) this.k.get(gameprofile);
 
@@ -583,6 +621,7 @@ public abstract class PlayerList {
                 event.disallow(PlayerLoginEvent.Result.KICK_FULL, org.spigotmc.SpigotConfig.serverFullMessage); // Spigot
             }
         }
+        } // Akarin - disallow before login event
 
         cserver.getPluginManager().callEvent(event);
         if (event.getResult() != PlayerLoginEvent.Result.ALLOWED) {
@@ -1221,8 +1260,8 @@ public abstract class PlayerList {
         event = new com.destroystokyo.paper.event.profile.ProfileWhitelistVerifyEvent(MCUtil.toBukkit(gameprofile), this.getHasWhitelist(), isWhitelisted, isOp, org.spigotmc.SpigotConfig.whitelistMessage);
         event.callEvent();
         if (!event.isWhitelisted()) {
-            if (loginEvent != null) {
-                loginEvent.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, event.getKickMessage() == null ? org.spigotmc.SpigotConfig.whitelistMessage : event.getKickMessage());
+            if (true || loginEvent != null) { // Akarin - disallow before login event
+                loginEvent.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, event == null ? org.spigotmc.SpigotConfig.whitelistMessage : (event.getKickMessage() == null ? org.spigotmc.SpigotConfig.whitelistMessage : event.getKickMessage())); // Akarin - disallow before login event
             }
             return false;
         }
