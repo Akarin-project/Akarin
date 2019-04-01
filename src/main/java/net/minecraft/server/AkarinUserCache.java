@@ -58,11 +58,11 @@ public class AkarinUserCache {
     protected final Gson gson;
     private final File userCacheFile;
     
-    public static boolean isOnlineMode() {
+    private static boolean isOnlineMode() {
         return UserCache.isOnlineMode() || (SpigotConfig.bungee && PaperConfig.bungeeOnlineMode);
     }
 
-    public static Date createExpireDate(boolean force) {
+    private static Date createExpireDate(boolean force) {
         long now = System.currentTimeMillis();
         if (force || (now - lastWarpExpireDate) > RECREATE_DATE_INTERVAL) {
             lastWarpExpireDate = now;
@@ -76,15 +76,15 @@ public class AkarinUserCache {
         return lastExpireDate;
     }
 
-    public static boolean isExpired(UserCacheEntry entry) {
+    private static boolean isExpired(UserCacheEntry entry) {
         return System.currentTimeMillis() >= entry.getExpireDate().getTime();
     }
 
-    public static UserCacheEntry refreshExpireDate(UserCacheEntry entry) {
+    private static UserCacheEntry refreshExpireDate(UserCacheEntry entry) {
         return new UserCacheEntry(entry.getProfile(), createExpireDate(true));
     }
 
-    public static GameProfile lookup(GameProfileRepository profileRepo, String username, ProfileLookupCallback callback, boolean async) {
+    private static GameProfile lookup(GameProfileRepository profileRepo, String username, ProfileLookupCallback callback, boolean async) {
         if (!isOnlineMode()) {
             String usernameKey = username.toLowerCase(Locale.ROOT);
             GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(usernameKey), usernameKey);
@@ -132,11 +132,11 @@ public class AkarinUserCache {
         this.load();
     }
 
-    GameProfile lookupAndCache(String username, ProfileLookupCallback callback, boolean async) {
+    private GameProfile lookupAndCache(String username, ProfileLookupCallback callback, boolean async) {
         return lookupAndCache(username, callback, createExpireDate(false), async);
     }
 
-    GameProfile lookupAndCache(String username, ProfileLookupCallback callback, Date date, boolean async) {
+    private GameProfile lookupAndCache(String username, ProfileLookupCallback callback, Date date, boolean async) {
         ProfileLookupCallback callbackHandler = new ProfileLookupCallback() {
             @Override
             public void onProfileLookupSucceeded(GameProfile gameprofile) {
@@ -187,7 +187,7 @@ public class AkarinUserCache {
         }
         return lookupAndCache(username, callback, async);
     }
-    
+
     @Nullable
     public GameProfile peek(String username) {
         String keyUsername = isOnlineMode() ? username : username.toLowerCase(Locale.ROOT);
@@ -195,11 +195,11 @@ public class AkarinUserCache {
         return entry == null ? null : entry.getProfile();
     }
 
-    void offer(GameProfile profile) {
+    protected void offer(GameProfile profile) {
         offer(profile, createExpireDate(false));
     }
 
-    void offer(GameProfile profile, Date date) {
+    protected void offer(GameProfile profile, Date date) {
         String keyUsername = isOnlineMode() ? profile.getName() : profile.getName().toLowerCase(Locale.ROOT);
         UserCacheEntry entry = profiles.getIfPresent(keyUsername);
 
@@ -219,12 +219,12 @@ public class AkarinUserCache {
             this.save();
     }
 
-    void offer(UserCacheEntry entry) {
+    private void offer(UserCacheEntry entry) {
         if (!isExpired(entry))
             profiles.put(isOnlineMode() ? entry.getProfile().getName() : entry.getProfile().getName().toLowerCase(Locale.ROOT), entry);
     }
 
-    String[] usernames() {
+    protected String[] usernames() {
         return profiles.asMap().keySet().toArray(new String[profiles.asMap().size()]);
     }
 
@@ -250,11 +250,11 @@ public class AkarinUserCache {
         }
     }
     
-    public void save() {
+    protected void save() {
         save(true);
     }
     
-    public void save(boolean async) {
+    protected void save(boolean async) {
         Runnable save = () -> {
             String jsonString = this.gson.toJson(this.entries());
             BufferedWriter writer = null;
@@ -278,7 +278,7 @@ public class AkarinUserCache {
             save.run();
     }
 
-    List<UserCacheEntry> entries() {
+    protected List<UserCacheEntry> entries() {
         return Lists.newArrayList(profiles.asMap().values());
     }
 }
