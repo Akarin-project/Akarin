@@ -564,8 +564,9 @@ public abstract class PlayerList {
                 if (!gameprofilebanentry.hasExpired()) CraftChatMessage.fromComponent(chatmessage);
                 return null;
             } else if (!this.isWhitelisted(gameprofile)) {
-                chatmessage = new ChatMessage("multiplayer.disconnect.not_whitelisted", new Object[0]);
+                //chatmessage = new ChatMessage("multiplayer.disconnect.not_whitelisted", new Object[0]);
                 //event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, org.spigotmc.SpigotConfig.whitelistMessage); // Spigot // Paper - moved to isWhitelisted
+                loginlistener.disconnect(org.spigotmc.SpigotConfig.whitelistMessage);
             } else if (getIPBans().isBanned(socketaddress) && !getIPBans().get(socketaddress).hasExpired()) {
                 IpBanEntry ipbanentry = this.l.get(socketaddress);
 
@@ -1260,8 +1261,8 @@ public abstract class PlayerList {
         event = new com.destroystokyo.paper.event.profile.ProfileWhitelistVerifyEvent(MCUtil.toBukkit(gameprofile), this.getHasWhitelist(), isWhitelisted, isOp, org.spigotmc.SpigotConfig.whitelistMessage);
         event.callEvent();
         if (!event.isWhitelisted()) {
-            if (true || loginEvent != null) { // Akarin - disallow before login event
-                loginEvent.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, event == null ? org.spigotmc.SpigotConfig.whitelistMessage : (event.getKickMessage() == null ? org.spigotmc.SpigotConfig.whitelistMessage : event.getKickMessage())); // Akarin - disallow before login event
+            if (loginEvent != null) {
+                loginEvent.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, event.getKickMessage() == null ? org.spigotmc.SpigotConfig.whitelistMessage : event.getKickMessage());
             }
             return false;
         }
