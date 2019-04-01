@@ -60,7 +60,7 @@ public final class SimplePluginManager implements PluginManager {
     private final SimpleCommandMap commandMap;
     private Map<String, Permission> permissions = Collections.emptyMap(); // Akarin
     private final Object permissionsLock = new Object();
-    private HashIntObjMap<Set<Permission>> defaultPerms; // Akarin
+    private Map<Boolean, Set<Permission>> defaultPerms; // Akarin
     private final Map<String, Map<Permissible, Boolean>> permSubs = HashObjObjMaps.newMutableMap(); // Akarin
     private final Object permSubsLock = new Object();
     private final Map<Boolean, Map<Permissible, Boolean>> defSubs = HashObjObjMaps.newMutableMap(); // Akarin
@@ -71,9 +71,9 @@ public final class SimplePluginManager implements PluginManager {
         this.commandMap = commandMap;
 
         // Akarin start
-        HashIntObjMap<Set<Permission>> defaultPerms = HashIntObjMaps.newUpdatableMap();
-        defaultPerms.put(1, HashObjSets.newUpdatableSet());
-        defaultPerms.put(0, HashObjSets.newUpdatableSet());
+        HashObjObjMap<Boolean, Set<Permission>> defaultPerms = HashObjObjMaps.newUpdatableMap();
+        defaultPerms.put(Boolean.TRUE, HashObjSets.newUpdatableSet());
+        defaultPerms.put(Boolean.FALSE, HashObjSets.newUpdatableSet());
         this.defaultPerms = defaultPerms;
         // Akarin end
     }
@@ -510,7 +510,10 @@ public final class SimplePluginManager implements PluginManager {
             // Akarin start
             //defaultPerms.get(true).clear();
             //defaultPerms.get(false).clear();
-            defaultPerms = HashIntObjMaps.newImmutableMap(HashObjSets.newImmutableSetOf(0, 1), HashObjSets.newImmutableSetOf(HashObjSets.newMutableSet(), HashObjSets.newMutableSet()));
+            HashObjObjMap<Boolean, Set<Permission>> defaultPerms = HashObjObjMaps.newUpdatableMap();
+            defaultPerms.put(Boolean.TRUE, HashObjSets.newUpdatableSet());
+            defaultPerms.put(Boolean.FALSE, HashObjSets.newUpdatableSet());
+            this.defaultPerms = defaultPerms;
             // Akarin end
         }
     }
@@ -661,7 +664,7 @@ public final class SimplePluginManager implements PluginManager {
 
     @Nonnull // Akarin - javax.annotation
     public Set<Permission> getDefaultPermissions(boolean op) {
-        return defaultPerms.get(op ? 1 : 0); // Akarin - primitive type
+        return defaultPerms.get(op);
     }
 
     public void removePermission(@Nonnull Permission perm) { // Akarin - javax.annotation
@@ -681,14 +684,14 @@ public final class SimplePluginManager implements PluginManager {
     public void recalculatePermissionDefaults(@Nonnull Permission perm) { // Akarin - javax.annotation
         if (perm != null && permissions.containsKey(perm.getName().toLowerCase(java.util.Locale.ENGLISH))) {
             // Akarin start
-            HashIntObjMap<Set<Permission>> toImmutable = HashIntObjMaps.newUpdatableMap(defaultPerms);
-            Set<Permission> toImmutableValueOp = HashObjSets.newMutableSet(defaultPerms.get(1));
+            HashObjObjMap<Boolean, Set<Permission>> toImmutable = HashObjObjMaps.newUpdatableMap(defaultPerms);
+            Set<Permission> toImmutableValueOp = HashObjSets.newMutableSet(defaultPerms.get(Boolean.TRUE));
             toImmutableValueOp.remove(perm);
-            toImmutable.put(1, HashObjSets.newImmutableSet(toImmutableValueOp));
+            toImmutable.put(Boolean.TRUE, HashObjSets.newImmutableSet(toImmutableValueOp));
 
-            Set<Permission> toImmutableValue = HashObjSets.newMutableSet(defaultPerms.get(0));
+            Set<Permission> toImmutableValue = HashObjSets.newMutableSet(defaultPerms.get(Boolean.FALSE));
             toImmutableValue.remove(perm);
-            toImmutable.put(0, HashObjSets.newImmutableSet(toImmutableValue));
+            toImmutable.put(Boolean.FALSE, HashObjSets.newImmutableSet(toImmutableValue));
 
             defaultPerms = toImmutable;
             // Akarin end
@@ -700,10 +703,10 @@ public final class SimplePluginManager implements PluginManager {
     private void calculatePermissionDefault(@Nonnull Permission perm, boolean dirty) { // Akarin - javax.annotation
         if ((perm.getDefault() == PermissionDefault.OP) || (perm.getDefault() == PermissionDefault.TRUE)) {
             // Akarin start
-            HashIntObjMap<Set<Permission>> toImmutable = HashIntObjMaps.newUpdatableMap(defaultPerms);
-            Set<Permission> toImmutableValue = HashObjSets.newUpdatableSet(defaultPerms.get(1));
+            HashObjObjMap<Boolean, Set<Permission>> toImmutable = HashObjObjMaps.newUpdatableMap(defaultPerms);
+            Set<Permission> toImmutableValue = HashObjSets.newUpdatableSet(defaultPerms.get(Boolean.TRUE));
             toImmutableValue.add(perm);
-            toImmutable.put(1, HashObjSets.newImmutableSet(toImmutableValue));
+            toImmutable.put(Boolean.TRUE, HashObjSets.newImmutableSet(toImmutableValue));
             defaultPerms = toImmutable;
             // Akarin end
             if (dirty) {
@@ -712,10 +715,10 @@ public final class SimplePluginManager implements PluginManager {
         }
         if ((perm.getDefault() == PermissionDefault.NOT_OP) || (perm.getDefault() == PermissionDefault.TRUE)) {
             // Akarin start
-            HashIntObjMap<Set<Permission>> toImmutable = HashIntObjMaps.newUpdatableMap(defaultPerms);
-            Set<Permission> toImmutableValue = HashObjSets.newUpdatableSet(defaultPerms.get(0));
+            HashObjObjMap<Boolean, Set<Permission>> toImmutable = HashObjObjMaps.newUpdatableMap(defaultPerms);
+            Set<Permission> toImmutableValue = HashObjSets.newUpdatableSet(defaultPerms.get(Boolean.FALSE));
             toImmutableValue.add(perm);
-            toImmutable.put(0, HashObjSets.newImmutableSet(toImmutableValue));
+            toImmutable.put(Boolean.FALSE, HashObjSets.newImmutableSet(toImmutableValue));
             defaultPerms = toImmutable;
             // Akarin end
             if (dirty) {
@@ -839,7 +842,10 @@ public final class SimplePluginManager implements PluginManager {
         // Akarin start
         //defaultPerms.get(true).clear();
         //defaultPerms.get(false).clear();
-        defaultPerms = HashIntObjMaps.newImmutableMap(HashObjSets.newImmutableSetOf(0, 1), HashObjSets.newImmutableSetOf(HashObjSets.newMutableSet(), HashObjSets.newMutableSet()));
+        HashObjObjMap<Boolean, Set<Permission>> defaultPerms = HashObjObjMaps.newUpdatableMap();
+        defaultPerms.put(Boolean.TRUE, HashObjSets.newUpdatableSet());
+        defaultPerms.put(Boolean.FALSE, HashObjSets.newUpdatableSet());
+        this.defaultPerms = defaultPerms;
         // Akarin end
     }
     // Paper end
