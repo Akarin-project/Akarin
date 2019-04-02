@@ -842,6 +842,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void openSign(TileEntitySign tileentitysign) {
+        if (tileentitysign == null) return; // Akarin - fixes a NPE
         tileentitysign.a((EntityHuman) this);
         this.playerConnection.sendPacket(new PacketPlayOutOpenSignEditor(tileentitysign.getPosition()));
     }
