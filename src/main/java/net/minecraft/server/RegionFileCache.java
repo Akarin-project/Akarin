@@ -89,7 +89,8 @@ public class RegionFileCache {
     }
 
     private static final int DEFAULT_SIZE_THRESHOLD = 1024 * 8;
-    private static final int OVERZEALOUS_THRESHOLD = 1024 * 2;
+    private static final int OVERZEALOUS_TOTAL_THRESHOLD = 1024 * 64;
+    private static final int OVERZEALOUS_THRESHOLD = 1024;
     private static int SIZE_THRESHOLD = DEFAULT_SIZE_THRESHOLD;
     private static void resetFilterThresholds() {
         SIZE_THRESHOLD = Math.max(1024 * 4, Integer.getInteger("Paper.FilterThreshhold", DEFAULT_SIZE_THRESHOLD));
@@ -97,6 +98,11 @@ public class RegionFileCache {
     static {
         resetFilterThresholds();
     }
+
+    static boolean isOverzealous() {
+        return SIZE_THRESHOLD == OVERZEALOUS_THRESHOLD;
+    }
+
     private static void writeRegion(File file, int x, int z, NBTTagCompound nbttagcompound) throws IOException {
         RegionFile regionfile = getRegionFile(file, x, z);
 
@@ -146,11 +152,15 @@ public class RegionFileCache {
     private static void filterChunkList(NBTTagCompound level, NBTTagCompound extra, String key) {
         NBTTagList list = level.getList(key, 10);
         NBTTagList newList = extra.getList(key, 10);
+        int totalSize = 0;
         for (Iterator<NBTBase> iterator = list.list.iterator(); iterator.hasNext(); ) {
             NBTBase object = iterator.next();
-            if (getNBTSize(object) > SIZE_THRESHOLD) {
+            int nbtSize = getNBTSize(object);
+            if (nbtSize > SIZE_THRESHOLD || (SIZE_THRESHOLD == OVERZEALOUS_THRESHOLD && totalSize > OVERZEALOUS_TOTAL_THRESHOLD)) {
                 newList.add(object);
                 iterator.remove();
+            } else  {
+                totalSize += nbtSize;
             }
         }
         level.set(key, list);

@@ -29,7 +29,7 @@ public class RegionFile {
     private RandomAccessFile c;private RandomAccessFile getDataFile() { return c; } // Paper - OBFHELPER
     private final int[] d = new int[1024];private int[] offsets = d; // Paper - OBFHELPER
     private final int[] e = new int[1024];private int[] timestamps = e; // Paper - OBFHELPER
-    private List<Boolean> f;
+    private List<Boolean> f; private List<Boolean> getFreeSectors() { return this.f; } // Paper - OBFHELPER
     private int g;
     private long h;
 
@@ -211,32 +211,31 @@ public class RegionFile {
     protected synchronized void a(int i, int j, byte[] abyte, int k) {
         try {
             int l = this.getOffset(i, j);
-            int i1 = l >> 8;
-            int j1 = l & 255;
+            int i1 = l >> 8; final int oldSectorOffset = i1; // Paper - store variable for later
+            int j1 = l & 255; final int oldSectorCount; // Paper - store variable for later
             // Spigot start
             if (j1 == 255) {
                 this.c.seek(i1 * 4096);
                 j1 = (this.c.readInt() + 4) / 4096 + 1;
             }
             // Spigot end
+            oldSectorCount = j1; // Paper - store variable for later (watch out for re-assignments of j1)
             int k1 = (k + 5) / 4096 + 1;
 
             if (k1 >= 256) {
                 // Spigot start
-                if (!USE_SPIGOT_OVERSIZED_METHOD) throw new ChunkTooLargeException(i, j, k1); // Paper - throw error instead
+                if (!USE_SPIGOT_OVERSIZED_METHOD && !RegionFileCache.isOverzealous()) throw new ChunkTooLargeException(i, j, k1); // Paper - throw error instead
                 org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING,"Large Chunk Detected: ({0}, {1}) Size: {2} {3}", new Object[]{i, j, k1, this.b});
                 if (!ENABLE_EXTENDED_SAVE) return;
                 // Spigot end
             }
 
-            if (i1 != 0 && j1 == k1) {
+            if (false && i1 != 0 && j1 == k1) { // Paper - We never want to overrite old data
                 this.a(i1, abyte, k);
             } else {
                 int l1;
 
-                for (l1 = 0; l1 < j1; ++l1) {
-                    this.f.set(i1 + l1, true);
-                }
+                // Paper - We do not free old sectors until we are done writing the new chunk data
 
                 l1 = this.f.indexOf(true);
                 int i2 = 0;
@@ -263,13 +262,13 @@ public class RegionFile {
 
                 if (i2 >= k1) {
                     i1 = l1;
-                    this.a(i, j, l1 << 8 | (k1 > 255 ? 255 : k1)); // Spigot
+                    //this.a(i, j, l1 << 8 | (k1 > 255 ? 255 : k1)); // Spigot // Paper - We only write to header after we've written chunk data
 
                     for (j2 = 0; j2 < k1; ++j2) {
                         this.f.set(i1 + j2, false);
                     }
 
-                    this.a(i1, abyte, k);
+                    this.writeChunk(i, j,i1 << 8 | (k1 > 255 ? 255 : k1), i1, abyte, k); // Paper - Ensure we do not corrupt region files
                 } else {
                     this.c.seek(this.c.length());
                     i1 = this.f.size();
@@ -280,9 +279,14 @@ public class RegionFile {
                     }
 
                     this.g += 4096 * k1;
-                    this.a(i1, abyte, k);
-                    this.a(i, j, i1 << 8 | (k1 > 255 ? 255 : k1)); // Spigot
+                    this.writeChunk(i, j, i1 << 8 | (k1 > 255 ? 255 : k1), i1, abyte, k); // Paper - Ensure we do not corrupt region files
                 }
+
+                // Paper start - Now that we've written the new chunk we can free the old data
+                for (int off = 0; off < oldSectorCount; ++off) {
+                    this.getFreeSectors().set(oldSectorOffset + off, true);
+                }
+                // Paper end
             }
 
             this.b(i, j, (int) (SystemUtils.getTimeMillis() / 1000L));
@@ -292,10 +296,10 @@ public class RegionFile {
 
     }
 
+    private void writeChunkData(final int sectorOffset, final byte[] data, final int dataLength) throws IOException { this.a(sectorOffset, data, dataLength); } // Paper - OBFHELPER
     private void a(int i, byte[] abyte, int j) throws IOException {
         this.c.seek((long) (i * 4096));
-        this.c.writeInt(j + 1);
-        this.c.writeByte(2);
+        this.writeIntAndByte(j + 1, (byte)2); // Paper - Avoid 4 io write calls
         this.c.write(abyte, 0, j);
     }
 
@@ -311,16 +315,17 @@ public class RegionFile {
         return this.getOffset(i, j) != 0;
     }
 
+    private void updateChunkHeader(final int x, final int z, final int offset) throws IOException { this.a(x, z, offset); } // Paper - OBFHELPER
     private void a(int i, int j, int k) throws IOException {
         this.d[i + j * 32] = k;
         this.c.seek((long) ((i + j * 32) * 4));
-        this.c.writeInt(k);
+        this.writeInt(k); // Paper - Avoid 3 io write calls
     }
 
     private void b(int i, int j, int k) throws IOException {
         this.e[i + j * 32] = k;
         this.c.seek((long) (4096 + (i + j * 32) * 4));
-        this.c.writeInt(k);
+        this.writeInt(k); // Paper - Avoid 3 io write calls
     }
 
     public void close() throws IOException {
@@ -331,6 +336,40 @@ public class RegionFile {
     }
 
     // Paper start
+    private static final boolean FLUSH_ON_SAVE = Boolean.getBoolean("paper.flush-on-save");
+    private void syncRegionFile() throws IOException {
+        if (!FLUSH_ON_SAVE) {
+            return;
+        }
+        this.getDataFile().getFD().sync(); // rethrow exception as we want to avoid corrupting a regionfile
+    }
+
+    private final java.nio.ByteBuffer scratchBuffer = java.nio.ByteBuffer.allocate(8);
+
+    private void writeInt(final int value) throws IOException {
+        synchronized (scratchBuffer) {
+            this.scratchBuffer.putInt(0, value);
+            this.getDataFile().write(this.scratchBuffer.array(), 0, 4);
+        }
+    }
+
+    // writes v1 then v2
+    private void writeIntAndByte(final int v1, final byte v2) throws IOException {
+        synchronized (scratchBuffer) {
+            this.scratchBuffer.putInt(0, v1);
+            this.scratchBuffer.put(4, v2);
+            this.getDataFile().write(this.scratchBuffer.array(), 0, 5);
+        }
+    }
+
+    private void writeChunk(final int x, final int z, final int chunkHeaderData,
+                            final int chunkOffset, final byte[] chunkData, final int chunkDataLength) throws IOException {
+        this.writeChunkData(chunkOffset, chunkData, chunkDataLength);
+        this.syncRegionFile(); // Sync is required to ensure the previous data is written successfully
+        this.updateChunkHeader(x, z, chunkHeaderData);
+        this.syncRegionFile(); // Ensure header changes go through
+    }
+
     public synchronized void deleteChunk(int j1) {
         backup();
         int k = offsets[j1];
@@ -501,31 +540,26 @@ public class RegionFile {
             int length = out.size();
 
             RegionFile.this.a(this.b, this.c, bytes, length); // Paper - change to bytes/length
-            // Paper end
         }
     }
 
+    private static final byte[] compressionBuffer = new byte[1024 * 64]; // 64k fits most standard chunks input size even, ideally 1 pass through zlib
+    private static final java.util.zip.Deflater deflater = new java.util.zip.Deflater();
+    // since file IO is single threaded, no benefit to using per-region file buffers/synchronization, we can change that later if it becomes viable.
     private static DirectByteArrayOutputStream compressData(byte[] buf, int length) throws IOException {
-        final java.util.zip.Deflater deflater;
-        if (length > 1024 * 512) {
-            deflater = new java.util.zip.Deflater(9);
-        } else if (length > 1024 * 128) {
-            deflater = new java.util.zip.Deflater(8);
-        } else {
-            deflater = new java.util.zip.Deflater(6);
+        synchronized (deflater) {
+            deflater.setInput(buf, 0, length);
+            deflater.finish();
+
+            DirectByteArrayOutputStream out = new DirectByteArrayOutputStream(length);
+            while (!deflater.finished()) {
+                out.write(compressionBuffer, 0, deflater.deflate(compressionBuffer));
+            }
+            out.close();
+            deflater.reset();
+            return out;
         }
-
-
-        deflater.setInput(buf, 0, length);
-        deflater.finish();
-
-        DirectByteArrayOutputStream out = new DirectByteArrayOutputStream(length);
-        byte[] buffer = new byte[1024 * (length > 1024 * 124 ? 32 : 16)];
-        while (!deflater.finished()) {
-            out.write(buffer, 0, deflater.deflate(buffer));
-        }
-        out.close();
-        deflater.end();
-        return out;
     }
+    // Paper end
+
 }

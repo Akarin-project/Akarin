@@ -71,8 +71,8 @@ public class PaperConfig {
         commands = new HashMap<String, Command>();
         commands.put("paper", new PaperCommand("paper"));
 
-        version = getInt("config-version", 17);
-        set("config-version", 17);
+        version = getInt("config-version", 18);
+        set("config-version", 18);
         readConfig(PaperConfig.class, null);
     }
 

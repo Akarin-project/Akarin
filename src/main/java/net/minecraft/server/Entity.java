@@ -501,7 +501,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
             this.aa();
         }
         */
-        this.checkAndDoHeightDamage();
+        this.performVoidDamage();
         // Paper end
 
         if (!this.world.isClientSide) {
@@ -513,9 +513,12 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     }
 
     // Paper start
-    protected void checkAndDoHeightDamage() {
-        if (this.locY < -64.0D || (this.world.paperConfig.netherVoidTopDamage && this.world.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER && this.locY >= 128.0D)) {
-            this.kill();
+    protected void performVoidDamage() {
+        if (this.locY < -64.0D || (this.world.getWorld().getEnvironment() == org.bukkit.World.Environment.NETHER
+            && world.paperConfig.doNetherTopVoidDamage()
+            && this.locY >= world.paperConfig.netherVoidTopDamageHeight)) {
+
+            this.doVoidDamage();
         }
     }
     // Paper end
@@ -587,7 +590,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
         this.fireTicks = 0;
     }
 
-    protected final void kill() { this.aa(); } // Paper - OBFHELPER
+    protected final void doVoidDamage() { this.aa(); } // Paper - OBFHELPER
     protected void aa() {
         this.die();
     }
@@ -1890,7 +1893,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     }
 
     // Paper start
-    private java.lang.ref.WeakReference<Chunk> currentChunk = null;
+    java.lang.ref.WeakReference<Chunk> currentChunk = null;
 
     public void setCurrentChunk(Chunk chunk) {
         this.currentChunk = chunk != null ? new java.lang.ref.WeakReference<>(chunk) : null;

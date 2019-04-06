@@ -200,7 +200,7 @@ public abstract class EntityMinecartAbstract extends Entity implements INamableT
             this.aa();
         }
         */
-        this.checkAndDoHeightDamage();
+        this.performVoidDamage();
         // Paper end
 
         int i;

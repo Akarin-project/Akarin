@@ -20,11 +20,19 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
-import org.omg.CORBA.DefinitionKind;
-
 public class GameRules {
 
-    private static final TreeMap<String, GameRules.GameRuleDefinition> a = (TreeMap<String, GameRules.GameRuleDefinition>) SystemUtils.a(new TreeMap<String, GameRules.GameRuleDefinition>(), (treemap) -> { // Akarin - fixes decompile error
+    // Paper start - Optimize GameRules
+    private static final int RULES_SIZE = 256;
+
+    private static <K, V> java.util.LinkedHashMap<K, V> linkedMapOf(final int capacity, final TreeMap<K, V> map) {
+        final java.util.LinkedHashMap<K, V> ret = new java.util.LinkedHashMap<>(capacity);
+        ret.putAll(map);
+        return ret;
+    }
+
+    private static final java.util.LinkedHashMap<String, GameRuleDefinition> a = GameRules.linkedMapOf(RULES_SIZE, SystemUtils.a(new TreeMap(), (treemap) -> { // Paper - decompile fix
+        // Paper end
         treemap.put("doFireTick", new GameRules.GameRuleDefinition("true", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
         treemap.put("mobGriefing", new GameRules.GameRuleDefinition("true", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
         treemap.put("keepInventory", new GameRules.GameRuleDefinition("false", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
@@ -58,12 +66,10 @@ public class GameRules {
         treemap.put("doLimitedCrafting", new GameRules.GameRuleDefinition("false", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
         treemap.put("maxCommandChainLength", new GameRules.GameRuleDefinition("65536", GameRules.EnumGameRuleType.NUMERICAL_VALUE));
         treemap.put("announceAdvancements", new GameRules.GameRuleDefinition("true", GameRules.EnumGameRuleType.BOOLEAN_VALUE));
-    });
-    private final HashObjObjMap<String, GameRules.GameRuleValue> b = HashObjObjMaps.newImmutableMap(Maps.transformValues(GameRules.a, GameRules.GameRuleDefinition::a)); // Akarin
+    })); // Paper - Optimize GameRules
+    private final java.util.LinkedHashMap<String, GameRuleValue> b = new java.util.LinkedHashMap<>(RULES_SIZE); // Paper - Optimize GameRules
 
     public GameRules() {
-        // Akarin start
-        /*
         Iterator iterator = GameRules.a.entrySet().iterator();
 
         while (iterator.hasNext()) {
@@ -71,8 +77,6 @@ public class GameRules {
 
             this.b.put(entry.getKey(), ((GameRules.GameRuleDefinition) entry.getValue()).a());
         }
-        */
-        // Akarin end
 
     }
 
@@ -127,7 +131,7 @@ public class GameRules {
         return (GameRules.GameRuleValue) this.b.get(s);
     }
 
-    public static TreeMap<String, GameRuleDefinition> getGameRules() {
+    public static java.util.LinkedHashMap<String, GameRuleDefinition> getGameRules() { // Paper - Optimize GameRules
         return GameRules.a;
     }
 
@@ -144,7 +148,7 @@ public class GameRules {
         private final Supplier<ArgumentType<?>> d;
         private final BiFunction<CommandContext<CommandListenerWrapper>, String, String> e;
 
-        private EnumGameRuleType(Supplier supplier, BiFunction<CommandContext<CommandListenerWrapper>, String, String> bifunction) { // Akarin - fixes decompile error
+        private EnumGameRuleType(Supplier supplier, BiFunction<CommandContext<CommandListenerWrapper>, String, String> bifunction) { // Paper - decompile fix
             this.d = supplier;
             this.e = bifunction;
         }

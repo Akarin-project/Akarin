@@ -259,6 +259,7 @@ public abstract class EntityInsentient extends EntityLiving {
 
     public void tick() {
         super.tick();
+        if (isTypeNotPersistent() && hasBeenCounted == this.isPersistent()) ((com.destroystokyo.paper.PaperWorldEntityList) this.world.entityList).updateEntityCount(this, hasBeenCounted ? -1 : 1); // Paper - adjust count if persistence state changes
         if (!this.world.isClientSide) {
             this.dl();
             if (this.ticksLived % 5 == 0) {
