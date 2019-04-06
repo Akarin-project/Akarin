@@ -437,7 +437,7 @@ public class CraftEventFactory {
                 } // Paper end - End iteration skip check - All tweaking ends here
             }
         // Spigot end
-        } else {
+        } else if (!(entity instanceof EntityPlayer)) {
             event = CraftEventFactory.callEntitySpawnEvent(entity);
         }
 

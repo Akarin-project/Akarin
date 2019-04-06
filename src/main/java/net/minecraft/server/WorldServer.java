@@ -80,6 +80,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.P();
         this.Q();
         this.getWorldBorder().a(minecraftserver.au());
+        MCUtil.scheduleAsyncTask(() -> this.getChunkProvider().chunkLoader.getPersistentStructureLegacy(worldProvider.getDimensionManager(), worldMaps)); // Paper
     }
 
     public WorldServer i_() {

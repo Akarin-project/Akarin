@@ -38,10 +38,19 @@ import org.bukkit.event.world.StructureGrowEvent;
 public final class ItemStack {
 
     private static final Logger c = LogManager.getLogger();
-    public static final ItemStack a = new ItemStack((Item) null);
+    public static final ItemStack a = new ItemStack((Item) null);public static final ItemStack NULL_ITEM = a; // Paper - OBFHELPER
     public static final DecimalFormat b = D();
     private int count;
     private int e;
+    // Paper start
+    private org.bukkit.craftbukkit.inventory.CraftItemStack bukkitStack;
+    public org.bukkit.inventory.ItemStack getBukkitStack() {
+        if (bukkitStack == null || bukkitStack.getHandle() != this) {
+            bukkitStack = org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(this);
+        }
+        return bukkitStack;
+    }
+    // Paper end
     @Deprecated
     private Item item;
     NBTTagCompound tag; // Paper -> package private
@@ -232,15 +241,7 @@ public final class ItemStack {
                     enuminteractionresult = EnumInteractionResult.FAIL; // cancel placement
                     // PAIL: Remove this when MC-99075 fixed
                     placeEvent.getPlayer().updateInventory();
-
-                    // Paper start
-                    for (Map.Entry<BlockPosition, TileEntity> e : world.capturedTileEntities.entrySet()) {
-                        if (e.getValue() instanceof TileEntityLootable) {
-                            ((TileEntityLootable) e.getValue()).setLootTable(null);
-                        }
-                    }
-                    // Paper end
-
+                    world.capturedTileEntities.clear(); // Paper - clear out tile entities as chests and such will pop loot
                     // revert back all captured blocks
                     for (BlockState blockstate : blocks) {
                         blockstate.update(true, false);
@@ -787,6 +788,7 @@ public final class ItemStack {
     // CraftBukkit start
     @Deprecated
     public void setItem(Item item) {
+        this.bukkitStack = null; // Paper
         this.item = item;
     }
     // CraftBukkit end

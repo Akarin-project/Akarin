@@ -129,10 +129,19 @@ public class PaperWorldConfig {
         if (entityTNTHeightNerf != 0) log("TNT Entity Height Limit set to Y: " + entityTNTHeightNerf);
     }
 
-    public boolean netherVoidTopDamage;
-    private void netherVoidTopDamage() {
-        netherVoidTopDamage = getBoolean( "nether-ceiling-void-damage", false );
-        log("Top of the nether void damage: " + netherVoidTopDamage);
+    public int netherVoidTopDamageHeight;
+    public boolean doNetherTopVoidDamage() { return netherVoidTopDamageHeight > 0; }
+    private void netherVoidTopDamageHeight() {
+        netherVoidTopDamageHeight = getInt("nether-ceiling-void-damage-height", 0);
+        log("Top of the nether void damage height: " + netherVoidTopDamageHeight);
+
+        if (PaperConfig.version < 18) {
+            boolean legacy = getBoolean("nether-ceiling-void-damage", false);
+            if (legacy) {
+                netherVoidTopDamageHeight = 128;
+                set("nether-ceiling-void-damage-height", netherVoidTopDamageHeight);
+            }
+        }
     }
 
     public boolean queueLightUpdates;
@@ -543,11 +552,6 @@ public class PaperWorldConfig {
     private void armorStandTick() {
         this.armorStandTick = this.getBoolean("armor-stands-tick", this.armorStandTick);
         log("ArmorStand ticking is " + (this.armorStandTick ? "enabled" : "disabled") + " by default");
-    }
-
-    public boolean optimizeLight = true;
-    private void optimizeLight() {
-        this.optimizeLight = getBoolean("optimize-light", optimizeLight);
     }
 
     public boolean antiXray;

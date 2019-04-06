@@ -1,5 +1,8 @@
 package org.bukkit.craftbukkit.generator;
 
+import java.util.HashSet;
+import java.util.Set;
+import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Blocks;
 import net.minecraft.server.ChunkSection;
 import net.minecraft.server.IBlockData;
@@ -17,6 +20,7 @@ import org.bukkit.material.MaterialData;
 public final class CraftChunkData implements ChunkGenerator.ChunkData {
     private final int maxHeight;
     private final ChunkSection[] sections;
+    private Set<BlockPosition> tiles;
     private World world; // Paper - Anti-Xray
 
     public CraftChunkData(World world) {
@@ -142,6 +146,14 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
         }
         ChunkSection section = getChunkSection(y, true);
         section.setType(x, y & 0xf, z, type);
+
+        if (type.getBlock().isTileEntity()) {
+            if (tiles == null) {
+                tiles = new HashSet<>();
+            }
+
+            tiles.add(new BlockPosition(x, y, z));
+        }
     }
 
     private ChunkSection getChunkSection(int y, boolean create) {
@@ -154,5 +166,9 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
 
     ChunkSection[] getRawChunkData() {
         return sections;
+    }
+
+    Set<BlockPosition> getTiles() {
+        return tiles;
     }
 }

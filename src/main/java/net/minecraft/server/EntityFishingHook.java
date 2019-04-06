@@ -404,6 +404,7 @@ public class EntityFishingHook extends Entity {
             } else {
                 this.h = MathHelper.nextInt(this.random, world.paperConfig.fishingMinTicks, world.paperConfig.fishingMaxTicks); // Paper
                 this.h -= this.aA * 20 * 5;
+                this.h = Math.max(0, this.h); // Paper - Don't allow negative values
             }
         }
 

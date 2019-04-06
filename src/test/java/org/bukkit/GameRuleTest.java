@@ -21,7 +21,7 @@ public class GameRuleTest {
 
     @Test
     public void testMinecraftRules() {
-        TreeMap<String, GameRules.GameRuleDefinition> minecraftRules = GameRules.getGameRules();
+        Map<String, GameRules.GameRuleDefinition> minecraftRules = GameRules.getGameRules(); // Paper - Optimize GameRules
 
         for (Map.Entry<String, GameRules.GameRuleDefinition> entry : minecraftRules.entrySet()) {
             GameRule<?> bukkitRule = GameRule.getByName(entry.getKey());

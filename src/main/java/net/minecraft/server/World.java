@@ -47,7 +47,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     private static final EnumDirection[] a = EnumDirection.values();
     private int b = 63;
     // Spigot start - guard entity list from removals
-    public final com.destroystokyo.paper.PaperWorldEntityList entityList = new com.destroystokyo.paper.PaperWorldEntityList(this);
+    public final List<Entity> entityList = new com.destroystokyo.paper.PaperWorldEntityList(this);
         /* // Paper start
     {
         @Override
@@ -1204,11 +1204,10 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         int i = entity.chunkX;
         int j = entity.chunkZ;
 
-        if (entity.inChunk && this.isChunkLoaded(i, j, true)) {
-            this.getChunkAt(i, j).b(entity);
-        }
+        Chunk chunk = entity.getCurrentChunk(); // Paper
+        if (chunk != null) chunk.removeEntity(entity); // Paper
         entity.shouldBeRemoved = true; // Paper
-        entityList.updateEntityCount(entity, -1); // Paper
+        ((com.destroystokyo.paper.PaperWorldEntityList) entityList).updateEntityCount(entity, -1); // Paper
 
         if (!guardEntityList) { // Spigot - It will get removed after the tick if we are ticking // Paper - always remove from current chunk above
         // CraftBukkit start - Decrement loop variable field if we've already ticked this entity
@@ -1288,20 +1287,17 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
 
         int j;
         // Paper start - Set based removal lists
-        for (Entity e : this.g) {
-            /*
-            j = e.getChunkZ();
-            int k = e.getChunkX();
+        for (Iterator<Entity> it = this.g.iterator(); it.hasNext() ; ) {
+            entity = it.next(); // Paper
+            int k = entity.chunkX;
 
-            if (e.inChunk && this.isChunkLoaded(k, j, true)) {
-                this.getChunkAt(k, j).b(e);
-            }*/
-            Chunk chunk = e.inChunk ? e.getCurrentChunk() : null;
-            if (chunk != null) chunk.removeEntity(e);
-        }
+            j = entity.chunkZ;
+            Chunk chunk = entity.getCurrentChunk(); // Paper
+            if (chunk != null) chunk.removeEntity(entity); // Paper
+        //} // Paper - merge
 
-        for (Entity e : this.g) {
-            this.c(e);
+        //for (Entity e : this.g) { // Paper - merge
+            this.c(entity); // Paper use entity
         }
         // Paper end
 
@@ -1358,15 +1354,11 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             this.methodProfiler.exit();
             this.methodProfiler.enter("remove");
             if (entity.dead) {
-                // Paper start
-                /*
                 j = entity.chunkX;
                 int l = entity.chunkZ;
 
-                if (entity.inChunk && this.isChunkLoaded(j, l, true)) {
-                    this.getChunkAt(j, l).b(entity);
-                }*/
-                Chunk chunk = entity.inChunk ? entity.getCurrentChunk() : null;
+                // Paper start
+                Chunk chunk = entity.getCurrentChunk();
                 if (chunk != null) chunk.removeEntity(entity);
                 // Paper end
 
@@ -1943,12 +1935,13 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
             return null;
         } else {
             // CraftBukkit start
-            if (capturedTileEntities.containsKey(blockposition)) {
-                return capturedTileEntities.get(blockposition);
+            TileEntity tileentity = null; // Paper
+            if (!capturedTileEntities.isEmpty() && (tileentity = capturedTileEntities.get(blockposition)) != null) { // Paper
+                return tileentity; // Paper
             }
             // CraftBukkit end
 
-            TileEntity tileentity = null;
+            //TileEntity tileentity = null; // Paper - move up
 
             if (this.J) {
                 tileentity = this.E(blockposition);

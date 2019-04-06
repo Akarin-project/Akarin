@@ -111,8 +111,12 @@ public class PaperCommand extends Command {
                 break;
             case "ver":
             case "version":
-                org.bukkit.Bukkit.getServer().getCommandMap().getCommand("version").execute(sender, commandLabel, new String[0]);
-                break;
+                Command ver = org.bukkit.Bukkit.getServer().getCommandMap().getCommand("version");
+                if (ver != null) {
+                    ver.execute(sender, commandLabel, new String[0]);
+                    break;
+                }
+                // else - fall through to default
             default:
                 sender.sendMessage(ChatColor.RED + "Usage: " + usageMessage);
                 return false;

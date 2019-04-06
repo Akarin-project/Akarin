@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 public interface IChunkLoader {
 
+    void getPersistentStructureLegacy(DimensionManager dimensionmanager, @Nullable PersistentCollection persistentcollection); // Paper
     void loadEntities(NBTTagCompound nbttagcompound, Chunk chunk); // Paper - Async Chunks
     Object[] loadChunk(GeneratorAccess generatoraccess, int i, int j, Consumer<Chunk> consumer) throws IOException; // Paper - Async Chunks
     @Nullable

@@ -204,10 +204,13 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         }
     }
 
+    private final Object legacyStructureLock = new Object(); // Paper
+    public void getPersistentStructureLegacy(DimensionManager dimensionmanager, @Nullable PersistentCollection persistentcollection) { this.a(dimensionmanager, persistentcollection); } // Paper
     public void a(DimensionManager dimensionmanager, @Nullable PersistentCollection persistentcollection) {
         if (this.e == null) {
+        synchronized (legacyStructureLock){ if (this.e == null) { // Paper
             this.e = PersistentStructureLegacy.a(dimensionmanager, persistentcollection);
-        }
+        } } } // Paper
 
     }
 

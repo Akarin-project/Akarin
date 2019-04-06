@@ -606,6 +606,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         this.x = 0;
         // CraftBukkit Start
         this.server.enablePlugins(org.bukkit.plugin.PluginLoadOrder.POSTWORLD);
+        LoginListener.allowLogins(); // Paper - Allow logins once postworld
         this.server.getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.STARTUP));
         // CraftBukkit end
     }
@@ -927,6 +928,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Paper
         this.slackActivityAccountant.tickStarted(); // Spigot
         long i = SystemUtils.getMonotonicNanos(); long startTime = i; // Paper
+        new com.destroystokyo.paper.event.server.ServerTickStartEvent(this.ticks+1).callEvent(); // Paper
 
         ++this.ticks;
         if (this.S) {
@@ -995,6 +997,11 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         PaperLightingQueue.processQueue(startTime); // Paper
         expiringMaps.removeIf(ExpiringMap::clean); // Paper
         this.slackActivityAccountant.tickEnded(l); // Spigot
+        // Paper start
+        long endTime = System.nanoTime();
+        long remaining = (TICK_TIME - (endTime - lastTick)) - catchupTime;
+        new com.destroystokyo.paper.event.server.ServerTickEndEvent(this.ticks, ((double)(endTime - lastTick) / 1000000D), remaining).callEvent();
+        // Paper end
         co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Paper
     }
 

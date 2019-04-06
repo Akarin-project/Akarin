@@ -563,7 +563,7 @@ public class Chunk implements IChunkAccess {
             } else {
                 if (flag1) {
                     this.initLighting();
-                } else if (!world.paperConfig.optimizeLight || block != block1) { // Paper - Optimize light recalculations
+                } else {
                     this.runOrQueueLightUpdate(() -> { // Paper - Queue light update
                     int i1 = iblockdata.b(this.world, blockposition);
                     int j1 = iblockdata1.b(this.world, blockposition);
@@ -712,40 +712,41 @@ public class Chunk implements IChunkAccess {
         if (k >= this.entitySlices.length) {
             k = this.entitySlices.length - 1;
         }
+        // Paper - remove from any old list if its in one
+        List<Entity> nextSlice = this.entitySlices[k]; // the next list to be added to
+        List<Entity> currentSlice = entity.entitySlice;
+        if (nextSlice == currentSlice) {
+            if (World.DEBUG_ENTITIES) MinecraftServer.LOGGER.warn("Entity was already in this chunk!" + entity, new Throwable());
+            return; // ??? silly plugins
+        }
+        if (currentSlice != null && currentSlice.contains(entity)) {
+            // Still in an old chunk...
+            if (World.DEBUG_ENTITIES) MinecraftServer.LOGGER.warn("Entity is still in another chunk!" + entity, new Throwable());
+            Chunk chunk = entity.getCurrentChunk();
+            if (chunk != null) {
+                chunk.removeEntity(entity);
+            } else {
+                removeEntity(entity);
+            }
+            currentSlice.remove(entity); // Just incase the above did not remove from the previous slice
+        }
+        // Paper end
 
+        if (!entity.inChunk || entity.getCurrentChunk() != this) entityCounts.increment(entity.getMinecraftKeyString()); // Paper
         entity.inChunk = true;
+        entity.setCurrentChunk(this); // Paper
         entity.chunkX = this.locX;
         entity.chunkY = k;
         entity.chunkZ = this.locZ;
-
+        this.entitySlices[k].add(entity);
         // Paper start
-        List<Entity> entitySlice = this.entitySlices[k];
-        boolean inThis = entitySlice.contains(entity);
-        List<Entity> currentSlice = entity.entitySlice;
-        if (inThis || (currentSlice != null && currentSlice.contains(entity))) {
-            if (currentSlice == entitySlice || inThis) {
-                return;
-            } else {
-                Chunk chunk = entity.getCurrentChunk();
-                if (chunk != null) {
-                    chunk.removeEntity(entity);
-                } else {
-                    removeEntity(entity);
-                }
-                currentSlice.remove(entity); // Just incase the above did not remove from this target slice
-            }
-        }
-        entity.entitySlice = entitySlice;
-        entitySlice.add(entity);
-
+        entity.entitySlice = this.entitySlices[k]; // Paper
         this.markDirty();
         if (entity instanceof EntityItem) {
             itemCounts[k]++;
         } else if (entity instanceof IInventory) {
             inventoryEntityCounts[k]++;
         }
-        entity.setCurrentChunk(this);
-        entityCounts.increment(entity.getMinecraftKeyString());
         // Paper end
     }
 
@@ -753,7 +754,7 @@ public class Chunk implements IChunkAccess {
         ((HeightMap) this.heightMap.get(heightmap_type)).a(along);
     }
 
-    public void removeEntity(Entity entity) { b(entity); } // Paper - OBFHELPER
+    public void removeEntity(Entity entity) { this.b(entity); } // Paper - OBFHELPER
     public void b(Entity entity) {
         this.a(entity, entity.chunkY);
     }
@@ -767,17 +768,19 @@ public class Chunk implements IChunkAccess {
             i = this.entitySlices.length - 1;
         }
         // Paper start
-        if (entity.entitySlice == null || !entity.entitySlice.contains(entity) || entitySlices[i] == entity.entitySlice) {
+        if (entity.currentChunk != null && entity.currentChunk.get() == this) entity.setCurrentChunk(null);
+        if (entitySlices[i] == entity.entitySlice) {
             entity.entitySlice = null;
         }
-        if (!this.entitySlices[i].remove(entity)) { return; }
+        if (!this.entitySlices[i].remove(entity)) {
+            return;
+        }
         this.markDirty();
         if (entity instanceof EntityItem) {
             itemCounts[i]--;
         } else if (entity instanceof IInventory) {
             inventoryEntityCounts[i]--;
         }
-        entity.setCurrentChunk(null);
         entityCounts.decrement(entity.getMinecraftKeyString());
         // Paper end
     }
@@ -1051,8 +1054,6 @@ public class Chunk implements IChunkAccess {
                     }
                 }
                 // Spigot End
-                entity.setCurrentChunk(null); // Paper
-                entity.entitySlice = null; // Paper
 
                 // Do not pass along players, as doing so can get them stuck outside of time.
                 // (which for example disables inventory icon updates and prevents block breaking)

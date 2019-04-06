@@ -66,6 +66,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -1326,7 +1327,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable {
             return;
         }
 
-        Map<String, List<Object>> mods = new HashMap<>();
+        Map<String, List<Object>> mods = new LinkedHashMap<>();
         for (Map.Entry<Attribute, AttributeModifier> entry : modifiers.entries()) {
             if (entry.getKey() == null) {
                 continue;

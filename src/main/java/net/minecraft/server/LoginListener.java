@@ -282,6 +282,36 @@ public class LoginListener implements PacketLoginInListener, ITickable {
         }
     }
 
+    // Paper start - Delay async prelogin until plugins are ready
+    private static volatile Object blockingLogins = new Object();
+
+    public static void checkStartupAndBlock() {
+        final Object lock = LoginListener.blockingLogins;
+        if (lock != null) {
+            synchronized (lock) {
+                for (;;) {
+                    if (LoginListener.blockingLogins == null) {
+                        return;
+                    }
+                    try {
+                        lock.wait();
+                    } catch (final InterruptedException ignore) {// handled by the if statement above
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }
+    }
+
+    public static void allowLogins() {
+        final Object lock = LoginListener.blockingLogins;
+        synchronized (lock) {
+            LoginListener.blockingLogins = null;
+            lock.notifyAll();
+        }
+    }
+    // Paper end
+
     // Spigot start
     public class LoginHandler {
 
@@ -292,6 +322,7 @@ public class LoginListener implements PacketLoginInListener, ITickable {
                                 return;
                             }
                             // Paper end
+                            LoginListener.checkStartupAndBlock(); // Paper - Delay async login events until plugins are ready
                             String playerName = i.getName();
                             java.net.InetAddress address = ((java.net.InetSocketAddress) networkManager.getSocketAddress()).getAddress();
                             java.util.UUID uniqueId = i.getId();
