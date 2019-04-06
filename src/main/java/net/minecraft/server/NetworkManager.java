@@ -5,6 +5,7 @@ import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import io.akarin.server.core.AkarinGlobalConfig;
 import io.akarin.server.core.PacketType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -291,12 +292,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         }
 
         // Paper start
+        if (AkarinGlobalConfig.allowExcessiveSigns) { // Akarin
         java.util.List<Packet> extraPackets = packet.getExtraPackets();
         if (extraPackets != null && !extraPackets.isEmpty()) {
             for (Packet extraPacket : extraPackets) {
                 this.dispatchPacket(extraPacket, genericfuturelistener);
             }
         }
+        } // Akarin
         // Paper end
 
     }

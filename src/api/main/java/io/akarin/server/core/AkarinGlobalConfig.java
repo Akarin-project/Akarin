@@ -195,4 +195,9 @@ public class AkarinGlobalConfig {
     private static void disallowBeforeLogin() {
         disallowBeforeLogin = getBoolean("alternative.disallow-before-login-event", disallowBeforeLogin);
     }
+    
+    public static boolean allowExcessiveSigns = false;
+    private static void allowExcessiveSigns() {
+        allowExcessiveSigns = getBoolean("alternative.allow-excessive-signs", allowExcessiveSigns);
+    }
 }

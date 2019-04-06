@@ -2,9 +2,12 @@ package net.minecraft.server;
 
 import com.destroystokyo.paper.antixray.ChunkPacketInfo; // Paper - Anti-Xray
 import com.google.common.collect.Lists;
+
+import io.akarin.server.core.AkarinGlobalConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -24,7 +27,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
     }
 
     // Paper start
-    private final java.util.List<Packet> extraPackets = new java.util.ArrayList<>();
+    private final java.util.List<Packet> extraPackets = AkarinGlobalConfig.allowExcessiveSigns ? new java.util.ArrayList<>() : Collections.emptyList(); // Akarin
     private static final int SKIP_EXCESSIVE_SIGNS_LIMIT = Integer.getInteger("Paper.excessiveSignsLimit", 500);
     public java.util.List<Packet> getExtraPackets() {
         return extraPackets;
@@ -58,12 +61,14 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
 
             if (this.f() || (i & 1 << j) != 0) {
                 // Paper start - send signs separately
+                if (AkarinGlobalConfig.allowExcessiveSigns) { // Akarin
                 if (tileentity instanceof TileEntitySign) {
                     if (SKIP_EXCESSIVE_SIGNS_LIMIT < 0 || ++totalSigns < SKIP_EXCESSIVE_SIGNS_LIMIT) {
                         extraPackets.add(tileentity.getUpdatePacket());
                     }
                     continue;
                 }
+                } // Akarin
                 // Paper end
 
                 NBTTagCompound nbttagcompound = tileentity.aa_();
