@@ -202,7 +202,7 @@ public class AkarinGlobalConfig {
     }
     
     public static boolean ignoreRayTraceForSeatableBlocks = false;
-    private static void ignoreRayTraceForIncompleteBlocks() {
+    private static void ignoreRayTraceForSeatableBlocks() {
         ignoreRayTraceForSeatableBlocks = getBoolean("alternative.ignore-ray-trace-for-seatable-blocks", ignoreRayTraceForSeatableBlocks);
     }
 }
