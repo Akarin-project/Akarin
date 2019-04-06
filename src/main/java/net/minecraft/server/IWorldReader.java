@@ -7,6 +7,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
+import io.akarin.server.core.AkarinGlobalConfig;
+
 public interface IWorldReader extends IBlockAccess {
 
     boolean isEmpty(BlockPosition blockposition);
@@ -112,6 +114,33 @@ public interface IWorldReader extends IBlockAccess {
     }
 
     default Stream<VoxelShape> a(VoxelShape voxelshape, VoxelShape voxelshape1, boolean flag) {
+        // Akarin start
+        return rayTrace(voxelshape, voxelshape1, flag, null);
+    }
+
+    /*
+     * Reference on code by Colin Godsey <crgodsey@gmail.com>
+     * https://github.com/yesdog/Paper/blob/95e5ff5e9a741c21b694fec507d48682606346b1/Spigot-Server-Patches/0424-stair-collision-for-pe-fix.patch
+     */
+    static final VoxelShape slimShape = VoxelShapes.create(0.25, 0, 0.25, 0.75, 0.05, 0.75);
+
+    static boolean canIgnoreRayTrace(IBlockData data) {
+        Block type = data.getBlock();
+        
+        // Pull request if you want to add some more blocks
+        return type instanceof BlockStairs ||
+                type instanceof BlockStepAbstract ||
+                type instanceof BlockCarpet ||
+                type instanceof BlockSnow ||
+                type instanceof BlockAttachable ||
+                type instanceof BlockAnvil ||
+                type instanceof BlockBed ||
+                type instanceof BlockChest ||
+                type instanceof BlockChestTrapped;
+    }
+
+    default Stream<VoxelShape> rayTrace(VoxelShape voxelshape, VoxelShape voxelshape1, boolean flag, @Nullable Entity entity) {
+        // Akarin end
         int i = MathHelper.floor(voxelshape.b(EnumDirection.EnumAxis.X)) - 1;
         int j = MathHelper.f(voxelshape.c(EnumDirection.EnumAxis.X)) + 1;
         int k = MathHelper.floor(voxelshape.b(EnumDirection.EnumAxis.Y)) - 1;
@@ -138,7 +167,7 @@ public interface IWorldReader extends IBlockAccess {
                 if (flag && !flag1 && !worldborder.a((BlockPosition) blockposition_mutableblockposition)) {
                     voxelshape2 = VoxelShapes.b();
                 } else {
-                    voxelshape2 = this.getType(blockposition_mutableblockposition).getCollisionShape(this, blockposition_mutableblockposition);
+                    voxelshape2 = AkarinGlobalConfig.ignoreRayTraceForSeatableBlocks && entity instanceof EntityPlayer && canIgnoreRayTrace(this.getType(blockposition_mutableblockposition)) ? slimShape : this.getType(blockposition_mutableblockposition).getCollisionShape(this, blockposition_mutableblockposition); // Akarin
                 }
 
                 VoxelShape voxelshape3 = voxelshape1.a((double) (-k1), (double) (-l1), (double) (-i2));
@@ -186,7 +215,7 @@ public interface IWorldReader extends IBlockAccess {
             entity.n(!flag1);
         }
 
-        return this.a(voxelshape, voxelshape1, flag1);
+        return this.rayTrace(voxelshape, voxelshape1, flag1, entity); // Akarin
     }
 
     default boolean i(Entity entity) {

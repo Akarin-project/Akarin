@@ -200,4 +200,9 @@ public class AkarinGlobalConfig {
     private static void allowExcessiveSigns() {
         allowExcessiveSigns = getBoolean("alternative.allow-excessive-signs", allowExcessiveSigns);
     }
+    
+    public static boolean ignoreRayTraceForSeatableBlocks = false;
+    private static void ignoreRayTraceForIncompleteBlocks() {
+        ignoreRayTraceForSeatableBlocks = getBoolean("alternative.ignore-ray-trace-for-seatable-blocks", ignoreRayTraceForSeatableBlocks);
+    }
 }
