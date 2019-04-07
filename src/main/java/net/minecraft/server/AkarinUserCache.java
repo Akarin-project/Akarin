@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -130,7 +131,7 @@ public class AkarinUserCache {
         ProfileLookupCallback callbackHandler = new ProfileLookupCallback() {
             @Override
             public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                profiles.put(isOnlineMode() ? username : username.toLowerCase(Locale.ROOT), new UserCacheEntry(gameprofile, date));
+                profiles.put(username, new UserCacheEntry(gameprofile, date));
                 if (async)
                     callback.onProfileLookupSucceeded(gameprofile);
                 
@@ -186,47 +187,50 @@ public class AkarinUserCache {
 
     @Nullable
     public GameProfile peek(String username) {
-        String keyUsername = isOnlineMode() ? username : username.toLowerCase(Locale.ROOT);
-        UserCacheEntry entry = profiles.getIfPresent(keyUsername);
+        if (!isOnlineMode()) {
+            String usernameOffline = username.toLowerCase(Locale.ROOT);
+            GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(usernameOffline), username);
+            return offlineProfile;
+        }
+        
+        UserCacheEntry entry = profiles.getIfPresent(username);
         return entry == null ? null : entry.getProfile();
     }
 
     protected void offer(GameProfile profile) {
+        if (!isOnlineMode())
+            return;
+
         offer(profile, createExpireDate(false));
     }
 
     protected void offer(GameProfile profile, Date date) {
-        String keyUsername = isOnlineMode() ? profile.getName() : profile.getName().toLowerCase(Locale.ROOT);
-        UserCacheEntry entry = profiles.getIfPresent(keyUsername);
+        if (!isOnlineMode())
+            return;
 
-        if (entry != null) {
-            // The offered profile may has an raw case, this only happened on offline servers with old caches,
-            // so replace with an lower-case profile.
-            if (!UserCache.isOnlineMode() && !entry.getProfile().getName().equals(profile.getName()))
-                entry = new UserCacheEntry(new GameProfile(entry.getProfile().getId(), keyUsername), date);
-            else
-                entry = refreshExpireDate(entry);
-        } else {
-            entry = new UserCacheEntry(profile, date);
-        }
+        String username = profile.getName();
+        UserCacheEntry entry = profiles.getIfPresent(username);
+        entry = entry != null ? refreshExpireDate(entry) : new UserCacheEntry(profile, date);
 
-        profiles.put(keyUsername, entry);
+        profiles.put(username, entry);
         if (!SpigotConfig.saveUserCacheOnStopOnly)
             this.save();
     }
 
     private void offer(UserCacheEntry entry) {
-        if (!isExpired(entry))
-            profiles.put(isOnlineMode() ? entry.getProfile().getName() : entry.getProfile().getName().toLowerCase(Locale.ROOT), entry);
+        if (isOnlineMode() && !isExpired(entry))
+            profiles.put(entry.getProfile().getName(), entry);
     }
 
     protected String[] usernames() {
-        return profiles.asMap().keySet().toArray(new String[profiles.asMap().size()]);
+        return isOnlineMode() ? profiles.asMap().keySet().toArray(new String[profiles.asMap().size()]) : new String[0];
     }
 
     protected void load() {
+        if (!isOnlineMode())
+            return;
+        
         BufferedReader reader = null;
-
         try {
             reader = Files.newReader(userCacheFile, Charsets.UTF_8);
             List<UserCacheEntry> entries = this.gson.fromJson(reader, UserCache.PARAMETERIZED_TYPE);
@@ -251,6 +255,9 @@ public class AkarinUserCache {
     }
     
     protected void save(boolean async) {
+        if (!isOnlineMode())
+            return;
+        
         Runnable save = () -> {
             String jsonString = this.gson.toJson(this.entries());
             BufferedWriter writer = null;
@@ -275,6 +282,6 @@ public class AkarinUserCache {
     }
 
     protected List<UserCacheEntry> entries() {
-        return Lists.newArrayList(profiles.asMap().values());
+        return isOnlineMode() ? Lists.newArrayList(profiles.asMap().values()) : Collections.emptyList();
     }
 }
