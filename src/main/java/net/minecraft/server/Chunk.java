@@ -75,6 +75,7 @@ public class Chunk implements IChunkAccess {
     private int D;
     private final AtomicInteger E;
     private final ChunkCoordIntPair F;
+    public final int[] creatureCounts = new int[EnumCreatureType.values().length]; // Akarin
 
     // CraftBukkit start - Neighbor loaded cache for chunk lighting and entity ticking
     private volatile int neighbors = 0x1 << 12; // Akarin - volatile
@@ -766,6 +767,12 @@ public class Chunk implements IChunkAccess {
             itemCounts[k]++;
         } else if (entity instanceof IInventory) {
             inventoryEntityCounts[k]++;
+            // Akarin start
+        } else if (entity instanceof IAnimal) {
+            for (EnumCreatureType type : EnumCreatureType.values())
+                if (type.matches(entity))
+                    creatureCounts[type.ordinal()]++;
+            // Akarin end
         }
         // Paper end
     }
@@ -800,6 +807,14 @@ public class Chunk implements IChunkAccess {
             itemCounts[i]--;
         } else if (entity instanceof IInventory) {
             inventoryEntityCounts[i]--;
+            // Akarin start
+        } else if (entity instanceof IAnimal) {
+            for (EnumCreatureType type : EnumCreatureType.values())
+                if (type.matches(entity)) {
+                    int typeCount = creatureCounts[type.ordinal()];
+                    creatureCounts[type.ordinal()] = typeCount > 1 ? --typeCount : 0;
+                }
+            // Akarin end
         }
         entityCounts.decrement(entity.getMinecraftKeyString());
         // Paper end

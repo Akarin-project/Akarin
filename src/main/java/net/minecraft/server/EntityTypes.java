@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import com.koloboke.collect.map.hash.HashObjObjMaps;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.types.Type;
 
@@ -125,8 +126,8 @@ public class EntityTypes<T extends Entity> {
         EntityTypes<T> entitytypes = entitytypes_a.a(s);
 
         // Paper start
-        if (clsToKeyMap == null ) clsToKeyMap = new java.util.HashMap<>();
-        if (clsToTypeMap == null ) clsToTypeMap = new java.util.HashMap<>();
+        if (clsToKeyMap == null ) clsToKeyMap = HashObjObjMaps.newUpdatableMap(); // Akarin
+        if (clsToTypeMap == null ) clsToTypeMap = HashObjObjMaps.newUpdatableMap(); // Akarin
 
         MinecraftKey key = new MinecraftKey(s);
         Class<? extends T> entityClass = entitytypes_a.getEntityClass();
@@ -249,6 +250,7 @@ public class EntityTypes<T extends Entity> {
         return this.aV;
     }
 
+    public Class<? extends T> entityClass() { return this.c(); } // Akarin
     public Class<? extends T> c() {
         return this.aS;
     }

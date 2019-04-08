@@ -302,6 +302,7 @@ public class PlayerChunk {
         return false;
     }
 
+    public boolean isDone() { return e(); } // Paper - OBFHELPER
     public boolean e() {
         return this.done;
     }

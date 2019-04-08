@@ -1,6 +1,10 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Sets;
+
+import io.akarin.server.core.AkarinCreatureSpanwner;
+import io.akarin.server.core.AkarinGlobalConfig;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -25,6 +29,13 @@ public final class SpawnerCreature {
     public SpawnerCreature() {}
 
     public int a(WorldServer worldserver, boolean flag, boolean flag1, boolean flag2) {
+        // Akarin start
+        if (AkarinGlobalConfig.improvedMobSpawnMechanics) {
+            int before = worldserver.entityList.size();
+            AkarinCreatureSpanwner.spawnMobs(worldserver, flag, flag1, flag2);
+            return worldserver.entityList.size() - before;
+        }
+        // Akarin end
         if (!flag && !flag1) {
             return 0;
         } else {
@@ -253,7 +264,7 @@ public final class SpawnerCreature {
         }
     }
 
-    private static BlockPosition getRandomPosition(World world, int i, int j) {
+    public static BlockPosition getRandomPosition(World world, int i, int j) { // Akarin - public
         Chunk chunk = world.getChunkAt(i, j);
         int k = i * 16 + world.random.nextInt(16);
         int l = j * 16 + world.random.nextInt(16);
@@ -267,6 +278,7 @@ public final class SpawnerCreature {
         return iblockdata.k() ? false : (iblockdata.isPowerSource() ? false : (!fluid.e() ? false : !iblockdata.a(TagsBlock.RAILS)));
     }
 
+    public static boolean isValidSpawnSurface(EntityPositionTypes.Surface entitypositiontypes_surface, IWorldReader iworldreader, BlockPosition blockposition, @Nullable EntityTypes<? extends EntityInsentient> entitytypes) { return a(entitypositiontypes_surface, iworldreader, blockposition, entitytypes); } // Akarin
     public static boolean a(EntityPositionTypes.Surface entitypositiontypes_surface, IWorldReader iworldreader, BlockPosition blockposition, @Nullable EntityTypes<? extends EntityInsentient> entitytypes) {
         if (entitytypes != null && iworldreader.getWorldBorder().a(blockposition)) {
             IBlockData iblockdata = iworldreader.getType(blockposition);

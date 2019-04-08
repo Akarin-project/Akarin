@@ -754,6 +754,7 @@ public abstract class EntityInsentient extends EntityLiving {
         return f + f3;
     }
 
+    public boolean canSpawnHere() { return a((GeneratorAccess) this.world, false); } // Akarin
     public boolean a(GeneratorAccess generatoraccess, boolean flag) {
         IBlockData iblockdata = generatoraccess.getType((new BlockPosition(this)).down());
 
@@ -764,10 +765,12 @@ public abstract class EntityInsentient extends EntityLiving {
         return this.a((IWorldReader) this.world);
     }
 
+    public boolean isNotColliding(IWorldReader iworldreader) { return a(iworldreader); } // Akarin
     public boolean a(IWorldReader iworldreader) {
         return !iworldreader.containsLiquid(this.getBoundingBox()) && iworldreader.getCubes(this, this.getBoundingBox()) && iworldreader.a_(this, this.getBoundingBox());
     }
 
+    public int maxPackSize() { return dg(); } // Akarin
     public int dg() {
         return 4;
     }

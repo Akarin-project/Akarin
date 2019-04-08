@@ -341,6 +341,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return this.P;
     }
 
+    @Nullable public BiomeBase.BiomeMeta getBiomeMetaAt(EnumCreatureType enumcreaturetype, BlockPosition blockposition) { return a(enumcreaturetype, blockposition); } // Akarin
     @Nullable
     public BiomeBase.BiomeMeta a(EnumCreatureType enumcreaturetype, BlockPosition blockposition) {
         List<BiomeBase.BiomeMeta> list = this.getChunkProvider().a(enumcreaturetype, blockposition);
@@ -348,6 +349,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return list.isEmpty() ? null : (BiomeBase.BiomeMeta) WeightedRandom.a(this.random, list);
     }
 
+    public boolean isBiomeMetaValidAt(EnumCreatureType enumcreaturetype, BiomeBase.BiomeMeta biomebase_biomemeta, BlockPosition blockposition) { return this.a(enumcreaturetype, biomebase_biomemeta, blockposition); } // Akarin
     public boolean a(EnumCreatureType enumcreaturetype, BiomeBase.BiomeMeta biomebase_biomemeta, BlockPosition blockposition) {
         List<BiomeBase.BiomeMeta> list = this.getChunkProvider().a(enumcreaturetype, blockposition);
 

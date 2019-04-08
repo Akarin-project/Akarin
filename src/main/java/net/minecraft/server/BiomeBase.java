@@ -587,9 +587,9 @@ public abstract class BiomeBase {
 
     public static class BiomeMeta extends WeightedRandom.WeightedRandomChoice {
 
-        public EntityTypes<? extends EntityInsentient> b;
-        public int c;
-        public int d;
+        public EntityTypes<? extends EntityInsentient> b; public EntityTypes<? extends EntityInsentient> entityType() { return b; } // Akarin
+        public int c; public int getMinPackSize() { return c; } // Akarin - OBFHELPER
+        public int d; public int getMaxPackSize() { return d; } // Akarin - OBFHELPER
 
         public BiomeMeta(EntityTypes<? extends EntityInsentient> entitytypes, int i, int j, int k) {
             super(i);

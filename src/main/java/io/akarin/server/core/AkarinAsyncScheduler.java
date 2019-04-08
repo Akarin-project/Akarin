@@ -15,7 +15,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NetworkManager;
 import net.minecraft.server.PacketPlayOutPlayerInfo;
 import net.minecraft.server.PacketPlayOutUpdateTime;
-import net.minecraft.server.World;
 import net.minecraft.server.WorldServer;
 
 public class AkarinAsyncScheduler extends Thread {

@@ -40,8 +40,8 @@ public class AkarinGlobalConfig {
         config.options().header(HEADER);
         config.options().copyDefaults(true);
 
-        version = getInt("config-version", 2);
-        set("config-version", 2);
+        version = getInt("config-version", 3);
+        set("config-version", 3);
         readConfig(AkarinGlobalConfig.class, null);
     }
 
@@ -178,7 +178,11 @@ public class AkarinGlobalConfig {
     
     public static double blockbreakAnimationVisibleDistance = 1024;
     private static void blockbreakAnimationVisibleDistance() {
-        blockbreakAnimationVisibleDistance = Math.sqrt(getDouble("alternative.block-break-animation-visible-distance", 32.00));
+        double def = 32.00;
+        if (version == 2)
+            def = getDouble("alternative.block-break-animation-visible-distance", def);
+
+        blockbreakAnimationVisibleDistance = Math.sqrt(getDouble("core.block-break-animation-visible-distance", def));
     }
     
     public static boolean enableAsyncLighting = true;
@@ -204,5 +208,10 @@ public class AkarinGlobalConfig {
     public static boolean ignoreRayTraceForSeatableBlocks = false;
     private static void ignoreRayTraceForSeatableBlocks() {
         ignoreRayTraceForSeatableBlocks = getBoolean("alternative.ignore-ray-trace-for-seatable-blocks", ignoreRayTraceForSeatableBlocks);
+    }
+    
+    public static boolean improvedMobSpawnMechanics = false;
+    private static void improvedMobSpawnMechanics() {
+        improvedMobSpawnMechanics = getBoolean("core.improved-mob-spawn-mechanics.enable", improvedMobSpawnMechanics);
     }
 }

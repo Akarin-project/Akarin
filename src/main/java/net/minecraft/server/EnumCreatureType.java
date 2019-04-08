@@ -22,14 +22,17 @@ public enum EnumCreatureType {
         return this.e;
     }
 
+    public int spawnLimit() { return this.b(); } // Akarin
     public int b() {
         return this.f;
     }
 
+    public boolean passive() { return c(); } // Akarin
     public boolean c() {
         return this.g;
     }
 
+    public boolean rare() { return d(); } // Akarin
     public boolean d() {
         return this.h;
     }
