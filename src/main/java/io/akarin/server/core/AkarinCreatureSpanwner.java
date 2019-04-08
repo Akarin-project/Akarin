@@ -44,17 +44,10 @@ public class AkarinCreatureSpanwner {
         mobSpawnRange = (mobSpawnRange > world.spigotConfig.viewDistance) ? (byte) world.spigotConfig.viewDistance : mobSpawnRange;
         mobSpawnRange = (mobSpawnRange > 8) ? 8 : mobSpawnRange;
         
-        if (PlayerNaturallySpawnCreaturesEvent.getHandlerList().getRegisteredListeners().length > 0) {
-            PlayerNaturallySpawnCreaturesEvent event = new PlayerNaturallySpawnCreaturesEvent((Player) player.getBukkitEntity(), mobSpawnRange);
-            new RuntimeException("Warning, one or more plugins is listening PlayerNaturallySpawnCreaturesEvent which is running asynchronously, this will may cause safe issue!").printStackTrace();
-            synchronized (PlayerNaturallySpawnCreaturesEvent.class) {
-                Bukkit.getPluginManager().callEvent(event);
-            }
-            
-            return event.isCancelled() ? 0 : event.getSpawnRadius();
-        }
+        PlayerNaturallySpawnCreaturesEvent event = new PlayerNaturallySpawnCreaturesEvent((Player) player.getBukkitEntity(), mobSpawnRange);
+        Bukkit.getPluginManager().callEvent(event);
         
-        return mobSpawnRange;
+        return event.isCancelled() ? 0 : event.getSpawnRadius();
     }
     
     private static int getCreatureLimit(WorldServer world, EnumCreatureType type) {
@@ -78,19 +71,13 @@ public class AkarinCreatureSpanwner {
         EntityTypes<? extends EntityInsentient> entityType = biomeMeta.entityType();
         org.bukkit.entity.EntityType bType = EntityTypes.clsToTypeMap.get(entityType.entityClass());
         if (bType != null) {
-            if (PreCreatureSpawnEvent.getHandlerList().getRegisteredListeners().length > 0) {
-                PreCreatureSpawnEvent event = new PreCreatureSpawnEvent(
-                        MCUtil.toLocation(world, pos),
-                        bType, SpawnReason.NATURAL
-                        );
-                new RuntimeException("Warning, one or more plugins is listening PlayerNaturallySpawnCreaturesEvent which is running asynchronously, this will may cause safe issue!").printStackTrace();
-                synchronized (PreCreatureSpawnEvent.class) {
-                    Bukkit.getPluginManager().callEvent(event);
-                }
-                
-                if (!event.isCancelled() || event.shouldAbortSpawn())
-                    return null;
-            }
+            PreCreatureSpawnEvent event = new PreCreatureSpawnEvent(
+                    MCUtil.toLocation(world, pos),
+                    bType, SpawnReason.NATURAL
+                    );
+            
+            if (!event.callEvent() || event.shouldAbortSpawn())
+                return null;
         }
         
         EntityInsentient entity = null;
