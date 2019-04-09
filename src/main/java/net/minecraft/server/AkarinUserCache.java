@@ -12,7 +12,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.io.IOUtils;
@@ -42,13 +44,14 @@ public class AkarinUserCache {
     private final static Logger LOGGER = LogManager.getLogger("Akarin");
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
     
-    // Used to reduce date create
+    // To reduce date creation
     private final static long RECREATE_DATE_INTERVAL = TimeUnit.MILLISECONDS.convert(10, TimeUnit.MINUTES);
     private static long lastWarpExpireDate;
     private static Date lastExpireDate;
     
     /**
-     * All user caches, Username -> Entry(profile and expire date included)
+     * All user caches
+     * String username -> UserCacheEntry cacheEntry (profile and expire date)
      */
     private final Cache<String, UserCacheEntry> profiles = Caffeine.newBuilder().maximumSize(SpigotConfig.userCacheCap).build();
     
@@ -66,8 +69,7 @@ public class AkarinUserCache {
             lastWarpExpireDate = now;
             Calendar calendar = Calendar.getInstance();
             
-            calendar.setTimeInMillis(now);
-            calendar.add(Calendar.DAY_OF_YEAR, AkarinGlobalConfig.userCacheExpireDays);
+            calendar.add(Calendar.SECOND, AkarinGlobalConfig.userCacheExpireDays);
             return lastExpireDate = calendar.getTime();
         }
 
@@ -82,35 +84,37 @@ public class AkarinUserCache {
         return new UserCacheEntry(entry.getProfile(), createExpireDate(true));
     }
 
-    private static GameProfile lookup(GameProfileRepository profileRepo, String username, ProfileLookupCallback callback, boolean async) {
+    private static GameProfile lookup(GameProfileRepository profileRepo, String username, @Nonnull Consumer<GameProfile> cachedCallbackHandler, boolean async) {
         GameProfile[] gameProfile = new GameProfile[1];
-        ProfileLookupCallback callbackHandler = new ProfileLookupCallback() {
+        ProfileLookupCallback handler = new ProfileLookupCallback() {
             @Override
             public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                if (async)
-                    callback.onProfileLookupSucceeded(gameprofile);
-                else
-                    gameProfile[0] = gameprofile;
+                cachedCallbackHandler.accept(gameprofile);
+                gameProfile[0] = gameprofile;
             }
 
             @Override
             public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
-                LOGGER.warn("Failed to lookup player {}, using local UUID.", gameprofile.getName());
-                if (async)
-                    callback.onProfileLookupSucceeded(new GameProfile(EntityHuman.getOfflineUUID(username.toLowerCase(Locale.ROOT)), username));
-                else
-                    gameProfile[0] = new GameProfile(EntityHuman.getOfflineUUID(username), username);
+                LOGGER.warn("Failed to lookup profile for player {}, applying offline UUID.", gameprofile.getName());
+                GameProfile offline = createOfflineProfile(username);
+                cachedCallbackHandler.accept(offline);
+                gameProfile[0] = offline;
             }
         };
 
-        Runnable find = () -> profileRepo.findProfilesByNames(new String[] { username }, Agent.MINECRAFT, callbackHandler);
+        Runnable find = () -> profileRepo.findProfilesByNames(new String[]{username}, Agent.MINECRAFT, handler);
         if (async) {
             AkarinAsyncExecutor.scheduleAsyncTask(find);
-            return null;
         } else {
             find.run();
-            return gameProfile[0];
         }
+        return gameProfile[0];
+    }
+    
+    private static GameProfile createOfflineProfile(String username) {
+        String usernameOffline = username.toLowerCase(Locale.ROOT);
+        GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(usernameOffline), username);
+        return offlineProfile;
     }
 
     public AkarinUserCache(GameProfileRepository repo, File file, Gson gson) {
@@ -123,63 +127,48 @@ public class AkarinUserCache {
         this.load();
     }
 
-    private GameProfile lookupAndCache(String username, ProfileLookupCallback callback, boolean async) {
+    private GameProfile lookupAndCache(String username, @Nullable Consumer<GameProfile> callback, boolean async) {
         return lookupAndCache(username, callback, createExpireDate(false), async);
     }
 
-    private GameProfile lookupAndCache(String username, ProfileLookupCallback callback, Date date, boolean async) {
-        ProfileLookupCallback callbackHandler = new ProfileLookupCallback() {
-            @Override
-            public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                profiles.put(username, new UserCacheEntry(gameprofile, date));
-                if (async)
-                    callback.onProfileLookupSucceeded(gameprofile);
-                
-                if(!org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly)
-                    save();
-            }
-
-            @Override
-            public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
-                ;
-            }
+    private GameProfile lookupAndCache(String username, @Nullable Consumer<GameProfile> callback, Date expireDate, boolean async) {
+        Consumer<GameProfile> cachedCallbackHandler = profile -> {
+            profiles.put(username, new UserCacheEntry(profile, expireDate));
+            if (async)
+                callback.accept(profile);
+            
+            if (!org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly)
+                save();
         };
         
-        return lookup(profileHandler, username, callbackHandler, async);
+        return lookup(profileHandler, username, cachedCallbackHandler, async);
     }
     
     public GameProfile acquire(String username) {
         return acquire(username, null, false);
     }
     
-    public GameProfile acquire(String username, ProfileLookupCallback callback) {
+    public GameProfile acquire(String username, @Nonnull Consumer<GameProfile> callback) {
         return acquire(username, callback, true);
     }
     
-    public GameProfile acquire(String username, ProfileLookupCallback callback, boolean async) {
+    public GameProfile acquire(String username, @Nullable Consumer<GameProfile> callback, boolean async) {
         if (StringUtils.isBlank(username))
             throw new UnsupportedOperationException("Blank username");
         
-        if (!isOnlineMode()) {
-            String usernameOffline = username.toLowerCase(Locale.ROOT);
-            GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(usernameOffline), username);
-            if (async) callback.onProfileLookupSucceeded(offlineProfile);
-            return offlineProfile;
-        }
-        
+        if (!isOnlineMode())
+            return createOfflineProfile(username);
+
         UserCacheEntry entry = profiles.getIfPresent(username);
 
         if (entry != null) {
             if (isExpired(entry)) {
                 profiles.invalidate(username);
-                return lookupAndCache(username, callback, async);
             } else {
-                if (async) {
-                    callback.onProfileLookupSucceeded(entry.getProfile());
-                    return null;
-                } else {
-                    return entry.getProfile();
-                }
+                if (async)
+                    callback.accept(entry.getProfile());
+                
+                return entry.getProfile();
             }
         }
         return lookupAndCache(username, callback, async);
@@ -187,43 +176,30 @@ public class AkarinUserCache {
 
     @Nullable
     public GameProfile peek(String username) {
-        if (!isOnlineMode()) {
-            String usernameOffline = username.toLowerCase(Locale.ROOT);
-            GameProfile offlineProfile = new GameProfile(EntityHuman.getOfflineUUID(usernameOffline), username);
-            return offlineProfile;
-        }
+        if (!isOnlineMode())
+            return createOfflineProfile(username);
         
         UserCacheEntry entry = profiles.getIfPresent(username);
         return entry == null ? null : entry.getProfile();
     }
 
     protected void offer(GameProfile profile) {
-        if (!isOnlineMode())
-            return;
-
-        offer(profile, createExpireDate(false));
+        if (isOnlineMode())
+            offer(profile, createExpireDate(false));
     }
 
-    protected void offer(GameProfile profile, Date date) {
-        if (!isOnlineMode())
-            return;
-
+    private void offer(GameProfile profile, Date date) {
         String username = profile.getName();
         UserCacheEntry entry = profiles.getIfPresent(username);
+        // Refresh expire date or create new entry
         entry = entry != null ? refreshExpireDate(entry) : new UserCacheEntry(profile, date);
 
         profiles.put(username, entry);
-        if (!SpigotConfig.saveUserCacheOnStopOnly)
-            this.save();
     }
 
     private void offer(UserCacheEntry entry) {
-        if (isOnlineMode() && !isExpired(entry))
+        if (!isExpired(entry))
             profiles.put(entry.getProfile().getName(), entry);
-    }
-
-    protected String[] usernames() {
-        return isOnlineMode() ? profiles.asMap().keySet().toArray(new String[profiles.asMap().size()]) : new String[0];
     }
 
     protected void load() {
@@ -232,10 +208,14 @@ public class AkarinUserCache {
         
         BufferedReader reader = null;
         try {
-            reader = Files.newReader(userCacheFile, Charsets.UTF_8);
-            List<UserCacheEntry> entries = this.gson.fromJson(reader, UserCache.PARAMETERIZED_TYPE);
             profiles.invalidateAll();
-
+            
+            reader = Files.newReader(userCacheFile, Charsets.UTF_8);
+            List<UserCacheEntry> entries;
+            synchronized (this.userCacheFile) {
+                entries = this.gson.fromJson(reader, UserCache.PARAMETERIZED_TYPE);
+            }
+            
             if (entries != null && !entries.isEmpty())
                 Lists.reverse(entries).forEach(this::offer);
         } catch (FileNotFoundException e) {
@@ -251,10 +231,6 @@ public class AkarinUserCache {
     }
     
     protected void save() {
-        save(true);
-    }
-    
-    protected void save(boolean async) {
         if (!isOnlineMode())
             return;
         
@@ -264,10 +240,11 @@ public class AkarinUserCache {
             
             try {
                 writer = Files.newWriter(this.userCacheFile, Charsets.UTF_8);
-                writer.write(jsonString);
-                return;
+                synchronized (this.userCacheFile) {
+                    writer.write(jsonString);
+                }
             } catch (FileNotFoundException e) {
-                return;
+                ;
             } catch (IOException io) {
                 ;
             } finally {
@@ -275,13 +252,10 @@ public class AkarinUserCache {
             }
         };
         
-        if (async)
-            AkarinAsyncExecutor.scheduleAsyncTask(save);
-        else
-            save.run();
+        AkarinAsyncExecutor.scheduleSingleAsyncTask(save);
     }
 
-    protected List<UserCacheEntry> entries() {
+    private List<UserCacheEntry> entries() {
         return isOnlineMode() ? Lists.newArrayList(profiles.asMap().values()) : Collections.emptyList();
     }
 }

@@ -450,28 +450,13 @@ public class Village {
             AkarinUserCache usercache = this.a.getMinecraftServer().getModernUserCache(); // Akarin
 
             try {
-                // Akarin start
-                ProfileLookupCallback callback = new ProfileLookupCallback() {
-                    @Override
-                    public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                        nbttagcompound2.setString("UUID", gameprofile.getId().toString());
-                        nbttagcompound2.setInt("S", (Integer) j.get(s));
-                        nbttaglist1.add((NBTBase) nbttagcompound2);
-                    }
+                GameProfile gameprofile = usercache.peek(s);
 
-                    @Override
-                    public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
-                        ;
-                    }
-                };
-                usercache.acquire(s, callback);
-
-                //if (gameprofile != null) {
-                //    nbttagcompound2.setString("UUID", gameprofile.getId().toString());
-                //    nbttagcompound2.setInt("S", (Integer) this.j.get(s));
-                //    nbttaglist1.add((NBTBase) nbttagcompound2);
-                //}
-                // Akarin end
+                if (gameprofile != null) {
+                    nbttagcompound2.setString("UUID", gameprofile.getId().toString());
+                    nbttagcompound2.setInt("S", (Integer) this.j.get(s));
+                    nbttaglist1.add((NBTBase) nbttagcompound2);
+                }
             } catch (RuntimeException runtimeexception) {
                 ;
             }

@@ -328,8 +328,8 @@ public class Explosion {
             return this.world.a(vec3d, aabb);
         }
         CacheKey key = new CacheKey(this, aabb);
-        Float blockDensity = this.world.explosionDensityCache.get(key);
-        if (blockDensity == null) {
+        float blockDensity = 0f; // Akarin
+        if (!this.world.explosionDensityCache.containsKey(key)) { // Akarin
             blockDensity = this.world.a(vec3d, aabb);
             this.world.explosionDensityCache.put(key, blockDensity);
         }

@@ -11,6 +11,7 @@ import com.destroystokyo.paper.exception.ServerInternalException;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
+import com.koloboke.collect.map.hash.HashObjObjMaps;
 
 import io.akarin.server.core.AkarinAsyncExecutor;
 import io.akarin.server.core.AkarinGlobalConfig;
@@ -952,7 +953,7 @@ public class Chunk implements IChunkAccess {
             // Paper start
             DuplicateUUIDMode mode = world.paperConfig.duplicateUUIDMode;
             if (mode == DuplicateUUIDMode.WARN || mode == DuplicateUUIDMode.DELETE || mode == DuplicateUUIDMode.SAFE_REGEN) {
-                Map<UUID, Entity> thisChunk = new HashMap<>();
+                Map<UUID, Entity> thisChunk = HashObjObjMaps.newMutableMap(); // Akarin
                 for (Iterator<Entity> iterator = ((List<Entity>) entityslice).iterator(); iterator.hasNext(); ) {
                     Entity entity = iterator.next();
                     if (entity.dead || entity.valid) continue;

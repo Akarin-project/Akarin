@@ -33,6 +33,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bukkit.Bukkit;
 
 public class JsonList<K, V extends JsonListEntry<K>> {
 
@@ -40,7 +41,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
     protected final Gson b;
     private final File c;
     // Paper - replace HashMap is ConcurrentHashMap
-    private final Map<String, V> d = Maps.newConcurrentMap(); private final Map<String, V> getBackingMap() { return this.d; } // Paper - OBFHELPER
+    protected final Map<String, V> d = Maps.newConcurrentMap(); private final Map<String, V> getBackingMap() { return this.d; } // Paper - OBFHELPER
     private boolean e = true;
     private static final ParameterizedType f = new ParameterizedType() {
         public Type[] getActualTypeArguments() {

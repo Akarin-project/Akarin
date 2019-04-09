@@ -3,13 +3,17 @@ package net.minecraft.server;
 // CraftBukkit start
 import java.net.InetAddress;
 import java.util.HashMap;
+
+import com.koloboke.collect.map.hash.HashObjLongMap;
+import com.koloboke.collect.map.hash.HashObjLongMaps;
+import com.koloboke.function.ObjLongPredicate;
 // CraftBukkit end
 
 public class HandshakeListener implements PacketHandshakingInListener {
 
     private static final com.google.gson.Gson gson = new com.google.gson.Gson(); // Spigot
     // CraftBukkit start - add fields
-    private static final HashMap<InetAddress, Long> throttleTracker = new HashMap<InetAddress, Long>();
+    private static final HashObjLongMap<InetAddress> throttleTracker = HashObjLongMaps.newMutableMap();
     private static int throttleCounter = 0;
     // CraftBukkit end
 
@@ -49,13 +53,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
                         throttleCounter = 0;
 
                         // Cleanup stale entries
-                        java.util.Iterator iter = throttleTracker.entrySet().iterator();
-                        while (iter.hasNext()) {
-                            java.util.Map.Entry<InetAddress, Long> entry = (java.util.Map.Entry) iter.next();
-                            if (entry.getValue() > connectionThrottle) {
-                                iter.remove();
-                            }
-                        }
+                        throttleTracker.removeIf((InetAddress, value) -> value > connectionThrottle); // Akarin
                     }
                 }
             } catch (Throwable t) {

@@ -166,6 +166,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                 this.b("127.0.0.1");
             } else {
                 this.setOnlineMode(this.propertyManager.getBoolean("online-mode", true));
+                UserCache.a(this.propertyManager.getBoolean("online-mode", true)); // Akarin
                 this.f(this.propertyManager.getBoolean("prevent-proxy-connections", false));
                 this.b(this.propertyManager.getString("server-ip", ""));
             }
@@ -297,7 +298,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                 this.propertyManager.setProperty("max-build-height", this.getMaxBuildHeight());
                 TileEntitySkull.a(this.getUserCache());
                 TileEntitySkull.a(this.ap());
-                UserCache.a(this.getOnlineMode());
+                //UserCache.a(this.getOnlineMode()); // Akarin
                 DedicatedServer.LOGGER.info("Preparing level \"{}\"", this.getWorld());
                 JsonObject jsonobject = new JsonObject();
 

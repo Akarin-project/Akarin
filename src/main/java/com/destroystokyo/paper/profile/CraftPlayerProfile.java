@@ -1,21 +1,18 @@
 package com.destroystokyo.paper.profile;
 
 import com.destroystokyo.paper.PaperConfig;
-import com.google.common.base.Charsets;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.ProfileLookupCallback;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 
 import net.minecraft.server.AkarinUserCache;
-import net.minecraft.server.EntityHuman;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.UserCache;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.spigotmc.SpigotConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
@@ -172,29 +169,22 @@ public class CraftPlayerProfile implements PlayerProfile {
             }
         }
         */
-        ProfileLookupCallback callback = new ProfileLookupCallback() {
-            @Override
-            public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                profile = gameprofile;
-            }
-
-            @Override
-            public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
-                ;
-            }
-        };
         
-        if (lookupName) {
-            userCache.acquire(name, callback, true);
-        } else {
-            GameProfile peeked = userCache.peek(name);
-            if (peeked.getName() == null) {
-                userCache.acquire(name, callback, true);
+        if (profile.getId() == null) {
+            if (lookupName) {
+                profile = userCache.acquire(name);
             } else {
-                this.profile = peeked;
+                GameProfile peeked = userCache.peek(name);
+                
+                if (peeked != null)
+                    profile = peeked;
             }
         }
-        return true;
+        
+        if (profile.getName() == null)
+            profile = userCache.acquire(name);
+        
+        return profile.isComplete();
         // Akarin end
     }
 

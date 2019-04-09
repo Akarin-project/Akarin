@@ -695,7 +695,7 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
         // Spigot start
         if (org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly) {
             LOGGER.info("Saving usercache.json");
-            this.getModernUserCache().save(false); // Paper // Akarin
+            this.getModernUserCache().save(); // Paper // Akarin - force to single thread to ensure safety
         }
         // Spigot end
     }

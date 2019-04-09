@@ -1,9 +1,12 @@
 package net.minecraft.server;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.mojang.authlib.GameProfile;
 import java.io.File;
 import java.util.Iterator;
+
+import org.bukkit.Bukkit;
 
 public class OpList extends JsonList<GameProfile, OpListEntry> {
 

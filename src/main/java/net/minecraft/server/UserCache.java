@@ -71,7 +71,7 @@ public class UserCache {
 
         gsonbuilder.registerTypeHierarchyAdapter(UserCache.UserCacheEntry.class, new UserCache.BanEntrySerializer());
         this.b = gsonbuilder.create();
-        this.b();
+        //this.b(); // Akarin
     }
 
     private static GameProfile a(GameProfileRepository gameprofilerepository, String s) {

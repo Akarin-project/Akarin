@@ -78,23 +78,7 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
         }
 
         // Akarin start
-        ProfileLookupCallback callback = new ProfileLookupCallback() {
-            @Override
-            public void onProfileLookupSucceeded(GameProfile gameprofile) {
-                profile = gameprofile;
-            }
-
-            @Override
-            public void onProfileLookupFailed(GameProfile gameprofile, Exception ex) {
-                ;
-            }
-        };
-        GameProfile profile = MinecraftServer.getServer().getModernUserCache().acquire(name, callback);
-        if (profile == null) {
-            return false;
-        }
-
-        //this.profile = profile;
+        MinecraftServer.getServer().getModernUserCache().acquire(name, gameProfile -> profile = gameProfile);
         // Akarin end
         return true;
     }

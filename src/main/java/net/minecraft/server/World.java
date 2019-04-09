@@ -28,6 +28,8 @@ import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
 import com.google.common.collect.Maps;
+import com.koloboke.collect.map.hash.HashObjFloatMap;
+import com.koloboke.collect.map.hash.HashObjFloatMaps;
 import com.koloboke.collect.map.hash.HashObjObjMaps;
 import com.koloboke.collect.set.hash.HashObjSets;
 
@@ -176,7 +178,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
     private org.spigotmc.TickLimiter entityLimiter;
     private org.spigotmc.TickLimiter tileLimiter;
     private int tileTickPosition;
-    public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<>(); // Paper - Optimize explosions
+    public final HashObjFloatMap<Explosion.CacheKey> explosionDensityCache = HashObjFloatMaps.newMutableMap();
 
     public CraftWorld getWorld() {
         return this.world;
