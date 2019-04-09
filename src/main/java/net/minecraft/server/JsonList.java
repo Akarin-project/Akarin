@@ -12,7 +12,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.koloboke.collect.map.hash.HashObjObjMaps;
 import com.mojang.authlib.GameProfile;
+
+import io.akarin.server.core.AkarinAsyncExecutor;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -24,10 +27,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+
 import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -41,7 +47,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
     protected final Gson b;
     private final File c;
     // Paper - replace HashMap is ConcurrentHashMap
-    protected final Map<String, V> d = Maps.newConcurrentMap(); private final Map<String, V> getBackingMap() { return this.d; } // Paper - OBFHELPER
+    protected Map<String, V> d = Collections.emptyMap(); private final Map<String, V> getBackingMap() { return this.d; } // Paper - OBFHELPER // Akarin
     private boolean e = true;
     private static final ParameterizedType f = new ParameterizedType() {
         public Type[] getActualTypeArguments() {
@@ -79,7 +85,11 @@ public class JsonList<K, V extends JsonListEntry<K>> {
     }
 
     public void add(V v0) {
-        this.d.put(this.a(v0.getKey()), v0);
+        // Akarin start
+        Map<String, V> toImmutable = HashObjObjMaps.newUpdatableMap(this.getBackingMap());
+        toImmutable.put(this.a(v0.getKey()), v0);
+        this.d = HashObjObjMaps.newImmutableMap(toImmutable);
+        // Akarin end
 
         try {
             this.save();
@@ -101,7 +111,11 @@ public class JsonList<K, V extends JsonListEntry<K>> {
     }
 
     public void remove(K k0) {
-        this.d.remove(this.a(k0));
+        // Akarin start
+        Map<String, V> toImmutable = HashObjObjMaps.newMutableMap(this.getBackingMap());
+        toImmutable.remove(this.a(k0));
+        this.d = HashObjObjMaps.newImmutableMap(toImmutable);
+        // Akarin end
 
         try {
             this.save();
@@ -160,7 +174,11 @@ public class JsonList<K, V extends JsonListEntry<K>> {
             this.d.remove(this.a(k0));
         }*/
 
-        this.getBackingMap().values().removeIf(JsonListEntry::hasExpired);
+        // Akarin start
+        Map<String, V> toImmutable = HashObjObjMaps.newMutableMap(this.getBackingMap());
+        toImmutable.values().removeIf(JsonListEntry::hasExpired);
+        this.d = HashObjObjMaps.newImmutableMap(toImmutable);
+        // Akarin end
         // Paper end
     }
 
@@ -174,6 +192,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
 
     public void save() throws IOException {
         this.removeStaleEntries(); // Paper - remove expired values before saving
+        Runnable runnable = () -> { // Akarin
         Collection<V> collection = this.d.values();
         String s = this.b.toJson(collection);
         BufferedWriter bufferedwriter = null;
@@ -181,9 +200,13 @@ public class JsonList<K, V extends JsonListEntry<K>> {
         try {
             bufferedwriter = Files.newWriter(this.c, StandardCharsets.UTF_8);
             bufferedwriter.write(s);
+        } catch (IOException e) { // Akarin
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to save {0}, {1}", new Object[] {this.c.getName(), e.getMessage()}); // Akarin
         } finally {
             IOUtils.closeQuietly(bufferedwriter);
         }
+        }; // Akarin
+        AkarinAsyncExecutor.scheduleSingleAsyncTask(runnable); // Akarin
 
     }
 
@@ -196,16 +219,17 @@ public class JsonList<K, V extends JsonListEntry<K>> {
                 Collection<JsonListEntry<K>> collection = (Collection) ChatDeserializer.a(this.b, (Reader) bufferedreader, (Type) JsonList.f);
 
                 if (collection != null) {
-                    this.d.clear();
                     Iterator iterator = collection.iterator();
 
+                    Map<String, V> toImmutable = HashObjObjMaps.newUpdatableMap(this.getBackingMap()); // Akarin
                     while (iterator.hasNext()) {
                         JsonListEntry<K> jsonlistentry = (JsonListEntry) iterator.next();
 
                         if (jsonlistentry.getKey() != null) {
-                            this.d.put(this.a((K) jsonlistentry.getKey()), (V) jsonlistentry); // CraftBukkit - fix decompile error
+                            toImmutable.put(this.a((K) jsonlistentry.getKey()), (V) jsonlistentry); // CraftBukkit - fix decompile error // Akarin
                         }
                     }
+                    this.d = HashObjObjMaps.newImmutableMap(toImmutable); // Akarin
                 }
             // Spigot Start
             } catch ( com.google.gson.JsonParseException ex )
