@@ -171,11 +171,6 @@ public class AkarinGlobalConfig {
         lazyThreadAssertion = getBoolean("core.lazy-thread-assertion", lazyThreadAssertion);
     }
     
-    public static int userCacheExpireDays = 30;
-    private static void userCacheExpireDays() {
-        userCacheExpireDays = getSeconds(getString("core.user-cache-expire-time", "30d"));
-    }
-    
     public static double blockbreakAnimationVisibleDistance = 1024;
     private static void blockbreakAnimationVisibleDistance() {
         double def = 32.00;
@@ -213,5 +208,10 @@ public class AkarinGlobalConfig {
     public static boolean improvedMobSpawnMechanics = false;
     private static void improvedMobSpawnMechanics() {
         improvedMobSpawnMechanics = getBoolean("core.improved-mob-spawn-mechanics.enable", improvedMobSpawnMechanics);
+    }
+    
+    public static int userCacheExpireDays = 30;
+    private static void enableModernUserCaches() {
+        userCacheExpireDays = getSeconds(getString("core.user-cache-expire-time", "30d"));
     }
 }

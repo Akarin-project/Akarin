@@ -141,7 +141,8 @@ public class AkarinUserCache {
                 save();
         };
         
-        return lookup(profileHandler, username, cachedCallbackHandler, async);
+        GameProfileRepository repository = MinecraftServer.getServer().getUserCache().gameProfileRepository();
+        return lookup(repository != null ? repository : profileHandler, username, cachedCallbackHandler, async);
     }
     
     public GameProfile acquire(String username) {

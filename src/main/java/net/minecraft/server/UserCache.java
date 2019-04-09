@@ -46,7 +46,7 @@ public class UserCache {
     private final Map<String, UserCache.UserCacheEntry> d = Maps.newHashMap();private final Map<String, UserCache.UserCacheEntry> nameCache = d; // Paper - OBFHELPER
     private final Map<UUID, UserCache.UserCacheEntry> e = Maps.newHashMap();
     private final Deque<GameProfile> f = new java.util.concurrent.LinkedBlockingDeque<GameProfile>(); // CraftBukkit
-    private final GameProfileRepository g;
+    private GameProfileRepository g; public GameProfileRepository gameProfileRepository() { return this.g; } // Akarin - removed final
     protected final Gson b; protected Gson gson() { return this.b; } // Akarin - OBFHELPER
     private final File h; File file() { return this.h; } // Akarin - OBFHELPER
     private static final ParameterizedType i = new ParameterizedType() {
@@ -65,7 +65,7 @@ public class UserCache {
     static final ParameterizedType PARAMETERIZED_TYPE = i; // Akarin - OBFHELPER
 
     public UserCache(GameProfileRepository gameprofilerepository, File file) {
-        this.g = gameprofilerepository;
+        //this.g = gameprofilerepository; // Akarin
         this.h = file;
         GsonBuilder gsonbuilder = new GsonBuilder();
 
