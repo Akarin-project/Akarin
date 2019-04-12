@@ -179,8 +179,8 @@ public class JsonList<K, V extends JsonListEntry<K>> {
     }
 
     public void save() throws IOException {
-        this.removeStaleEntries(); // Paper - remove expired values before saving
         Runnable runnable = () -> { // Akarin
+        this.removeStaleEntries(); // Paper - remove expired values before saving
         Collection<V> collection = this.d.values();
         String s = this.b.toJson(collection);
         BufferedWriter bufferedwriter = null;
