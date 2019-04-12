@@ -14,6 +14,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.mojang.authlib.GameProfile;
 
+import io.akarin.server.core.AkarinAsyncExecutor;
 import io.akarin.server.misc.CopyOnWriteHashMap;
 
 import java.io.BufferedReader;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 
 import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
@@ -178,6 +180,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
 
     public void save() throws IOException {
         this.removeStaleEntries(); // Paper - remove expired values before saving
+        Runnable runnable = () -> { // Akarin
         Collection<V> collection = this.d.values();
         String s = this.b.toJson(collection);
         BufferedWriter bufferedwriter = null;
@@ -185,9 +188,13 @@ public class JsonList<K, V extends JsonListEntry<K>> {
         try {
             bufferedwriter = Files.newWriter(this.c, StandardCharsets.UTF_8);
             bufferedwriter.write(s);
+        } catch (IOException e) { // Akarin
+            Bukkit.getLogger().log(Level.SEVERE, "Failed to save {0}, {1}", new Object[] {this.c.getName(), e.getMessage()}); // Akarin
         } finally {
             IOUtils.closeQuietly(bufferedwriter);
         }
+        }; // Akarin
+        AkarinAsyncExecutor.scheduleSingleAsyncTask(runnable); // Akarin
 
     }
 
