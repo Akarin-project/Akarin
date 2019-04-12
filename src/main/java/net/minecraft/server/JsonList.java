@@ -14,6 +14,8 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.mojang.authlib.GameProfile;
 
+import io.akarin.server.misc.CopyOnWriteHashMap;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -28,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -41,7 +45,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
     protected final Gson b;
     private final File c;
     // Paper - replace HashMap is ConcurrentHashMap
-    protected final Map<String, V> d = Maps.newConcurrentMap(); private final Map<String, V> getBackingMap() { return this.d; } // Paper - OBFHELPER
+    protected final Map<String, V> d = new CopyOnWriteHashMap<String, V>(); private final Map<String, V> getBackingMap() { return this.d; } // Paper - OBFHELPER // Akarin
     private boolean e = true;
     private static final ParameterizedType f = new ParameterizedType() {
         public Type[] getActualTypeArguments() {
