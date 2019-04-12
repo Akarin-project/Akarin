@@ -3,9 +3,11 @@ package io.akarin.server.core;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
-import javax.annotation.Nullable;
+import java.util.concurrent.ThreadLocalRandom;
 
+import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -13,12 +15,12 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent;
 import com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent;
 import com.destroystokyo.paper.exception.ServerInternalException;
+import com.google.common.collect.Maps;
 import com.koloboke.collect.set.hash.HashObjSets;
 
 import io.akarin.server.misc.ChunkCoordOrdinalInt3Tuple;
 import net.minecraft.server.BiomeBase;
 import net.minecraft.server.BlockPosition;
-import net.minecraft.server.Chunk;
 import net.minecraft.server.ChunkCoordIntPair;
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityInsentient;
@@ -29,7 +31,6 @@ import net.minecraft.server.GroupDataEntity;
 import net.minecraft.server.MCUtil;
 import net.minecraft.server.MathHelper;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerChunk;
 import net.minecraft.server.SpawnerCreature;
 import net.minecraft.server.WorldServer;
 
@@ -38,16 +39,48 @@ import net.minecraft.server.WorldServer;
  * https://github.com/yesdog/Paper/blob/0de3dd84b7e6688feb42af4fe6b4f323ce7e3013/Spigot-Server-Patches/0433-alternate-mob-spawning-mechanic.patch
  */
 public class AkarinCreatureSpanwner {
+    private static final Map<ChunkCoordIntPair, int[]> rangeChunks = Maps.newConcurrentMap();
+    
+    public static void increment(ChunkCoordIntPair chunk, EnumCreatureType type) {
+        int[] values = rangeChunks.get(chunk);
+        if (values == null) {
+            values = new int[EnumCreatureType.values().length];;
+            values[type.ordinal()]++;
+            rangeChunks.put(chunk, values);
+        } else {
+            values[type.ordinal()]++;
+        }
+    }
+    
+    public static void decrement(ChunkCoordIntPair chunk, EnumCreatureType type) {
+        int[] values = rangeChunks.get(chunk);
+        if (values == null) {
+            values = new int[EnumCreatureType.values().length];;
+            int count = values[type.ordinal()];
+            values[type.ordinal()] = count > 1 ? --count : 0;
+            rangeChunks.put(chunk, values);
+        } else {
+            int count = values[type.ordinal()];
+            values[type.ordinal()] = count > 1 ? --count : 0;
+        }
+    }
+    
     private static int getSpawnRange(WorldServer world, EntityHuman player) {
         byte mobSpawnRange = world.spigotConfig.mobSpawnRange;
         
         mobSpawnRange = (mobSpawnRange > world.spigotConfig.viewDistance) ? (byte) world.spigotConfig.viewDistance : mobSpawnRange;
         mobSpawnRange = (mobSpawnRange > 8) ? 8 : mobSpawnRange;
         
-        PlayerNaturallySpawnCreaturesEvent event = new PlayerNaturallySpawnCreaturesEvent((Player) player.getBukkitEntity(), mobSpawnRange);
-        Bukkit.getPluginManager().callEvent(event);
+        if (PlayerNaturallySpawnCreaturesEvent.getHandlerList().getRegisteredListeners().length != 0) {
+            PlayerNaturallySpawnCreaturesEvent event = new PlayerNaturallySpawnCreaturesEvent((Player) player.getBukkitEntity(), mobSpawnRange);
+            synchronized (PlayerNaturallySpawnCreaturesEvent.class) {
+                Bukkit.getPluginManager().callEvent(event);
+            }
+            
+            return event.isCancelled() ? 0 : event.getSpawnRadius();
+        }
         
-        return event.isCancelled() ? 0 : event.getSpawnRadius();
+        return mobSpawnRange;
     }
     
     private static int getCreatureLimit(WorldServer world, EnumCreatureType type) {
@@ -95,6 +128,7 @@ public class AkarinCreatureSpanwner {
     private static void spawnMob0(WorldServer world, Set<ChunkCoordIntPair> chunks, EnumCreatureType type, int amount) {
         if (chunks.isEmpty()) return;
         
+        Random rand = ThreadLocalRandom.current();
         final int maxPackIterations = 10; // X attempts per pack, 1 pack per chunk
         Iterator<ChunkCoordIntPair> iterator = chunks.iterator();
         BlockPosition worldSpawn = world.getSpawn();
@@ -103,7 +137,7 @@ public class AkarinCreatureSpanwner {
         
         while (spawned < amount && iterator.hasNext()) {
             ChunkCoordIntPair chunkCoord = iterator.next();
-            int packSize = world.random.nextInt(4) + 1;
+            int packSize = rand.nextInt(4) + 1;
             BlockPosition packCenter = SpawnerCreature.getRandomPosition(world, chunkCoord.x, chunkCoord.z);
             
             if (world.getType(packCenter).isOccluding()) continue;
@@ -122,9 +156,9 @@ public class AkarinCreatureSpanwner {
                 iter++;
                 
                 // random walk
-                x += world.random.nextInt(12) - 6;
-                y += world.random.nextInt(2) - 1;
-                z += world.random.nextInt(12) - 6;
+                x += rand.nextInt(12) - 6;
+                y += rand.nextInt(2) - 1;
+                z += rand.nextInt(12) - 6;
                 blockPointer.setValues(x, y, z);
                 
                 if (worldSpawn.distanceSquared(x + 0.5, y, z + 0.5) < (24 * 24)) continue;
@@ -135,7 +169,7 @@ public class AkarinCreatureSpanwner {
                     if (biomeMeta == null) break;
                     
                     int packRange = 1 + biomeMeta.getMaxPackSize() - biomeMeta.getMinPackSize();
-                    packSize = biomeMeta.getMinPackSize() + world.random.nextInt(packRange);
+                    packSize = biomeMeta.getMinPackSize() + rand.nextInt(packRange);
                     surfaceType = EntityPositionTypes.a(biomeMeta.entityType());
                 }
                 
@@ -143,7 +177,7 @@ public class AkarinCreatureSpanwner {
                 
                 if (entity == null) continue;
                 
-                entity.setPositionRotation(x + 0.5, y, z + 0.5, world.random.nextFloat() * 360.0F, 0.0F);
+                entity.setPositionRotation(x + 0.5, y, z + 0.5, rand.nextFloat() * 360.0F, 0.0F);
                 
                 if (entity.canSpawnHere() && surfaceType != null
                         && SpawnerCreature.isValidSpawnSurface(surfaceType, world, blockPointer, biomeMeta.entityType())
@@ -167,9 +201,11 @@ public class AkarinCreatureSpanwner {
     public static void spawnMobs(WorldServer world, boolean spawnMonsters, boolean spawnPassives, boolean spawnRare) {
         if(!spawnMonsters && !spawnPassives) return;
         
-        int hashOrdinal = world.random.nextInt();
+        AkarinAsyncExecutor.scheduleAsyncTask(() -> {
+        Random rand = ThreadLocalRandom.current();
+        int hashOrdinal = rand.nextInt();
         
-        Set<Chunk> rangeChunks = HashObjSets.newUpdatableSet();
+        //Set<Chunk> rangeChunks = HashObjSets.newUpdatableSet();
         Map<EnumCreatureType, Set<ChunkCoordIntPair>> creatureChunks = new EnumMap<>(EnumCreatureType.class);
         int[] typeNumSpawn = new int[EnumCreatureType.values().length];
         
@@ -201,11 +237,13 @@ public class AkarinCreatureSpanwner {
                     
                     if (!world.getWorldBorder().isInBounds(chunkCoord)) continue;
                     
-                    PlayerChunk pChunk = world.getPlayerChunkMap().getChunk(chunkCoord.x, chunkCoord.z);
-                    
-                    if (pChunk == null || !pChunk.isDone() || pChunk.chunk == null) continue;
-                    
-                    rangeChunks.add(pChunk.chunk);
+                    ChunkCoordIntPair pair = new ChunkCoordIntPair(chunkCoord.x, chunkCoord.z);
+                    int[] cached = rangeChunks.get(pair);
+                    if (cached == null)
+                        rangeChunks.put(pair, new int[EnumCreatureType.values().length]);
+                    else
+                        for (int i = 0; i < cached.length; i++)
+                            cached[i] = 0;
                 }
             }
             
@@ -213,15 +251,11 @@ public class AkarinCreatureSpanwner {
                 int limit = getCreatureLimit(world, type);
                 int creatureTotal = 0;
                 
-                for (Chunk chunk : rangeChunks)
-                    creatureTotal += chunk.creatureCounts[type.ordinal()];
+                for (int[] chunk : rangeChunks.values())
+                    creatureTotal += chunk[type.ordinal()];
                 
                 // if our local count is above the limit, dont qualify our chunks
                 if (creatureTotal >= limit) continue;
-                
-                Set<ChunkCoordIntPair> chunks = creatureChunks.get(type);
-                for (Chunk chunk : rangeChunks)
-                    chunks.add(chunk.getPos());
                 
                 // expect number is rather meaningless, just a ceil
                 int expect = limit - creatureTotal;
@@ -233,7 +267,8 @@ public class AkarinCreatureSpanwner {
             Set<ChunkCoordIntPair> chunks = creatureChunks.get(type);
             
             if (!chunks.isEmpty())
-                spawnMob0(world, chunks, type, typeNumSpawn[type.ordinal()]);
+                MinecraftServer.getServer().ensuresMainThread(() -> spawnMob0(world, chunks, type, typeNumSpawn[type.ordinal()]));
         }
+        });
     }
 }
