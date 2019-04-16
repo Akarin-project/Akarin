@@ -73,6 +73,7 @@ public class AkarinCreatureSpanwner {
         
         if (PlayerNaturallySpawnCreaturesEvent.getHandlerList().getRegisteredListeners().length != 0) {
             PlayerNaturallySpawnCreaturesEvent event = new PlayerNaturallySpawnCreaturesEvent((Player) player.getBukkitEntity(), mobSpawnRange);
+            // prevent concurrent handling, at least
             synchronized (PlayerNaturallySpawnCreaturesEvent.class) {
                 Bukkit.getPluginManager().callEvent(event);
             }

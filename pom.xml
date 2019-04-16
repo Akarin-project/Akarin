@@ -31,7 +31,7 @@
     <dependencies>
         <dependency>
             <groupId>com.destroystokyo.paper</groupId>
-            <artifactId>paper-api</artifactId>
+            <artifactId>akarin-api</artifactId>
             <version>${api.version}</version> <!-- Akarin - allows different implemention version -->
             <scope>compile</scope>
         </dependency>

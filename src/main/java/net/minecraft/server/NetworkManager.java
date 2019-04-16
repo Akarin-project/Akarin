@@ -56,7 +56,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     });
     private final EnumProtocolDirection h;
     private final ConcurrentLinkedQueue<NetworkManager.QueuedPacket> packetQueue = new ConcurrentLinkedQueue<NetworkManager.QueuedPacket>();  private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.packetQueue; } // Paper - OBFHELPER // Akarin
-    private final Queue<PacketPlayOutMapChunk> pendingChunkQueue = Lists.newLinkedList(); // Akarin - remove packet queue
+    private final Queue<PacketPlayOutMapChunk> pendingChunkQueue = Queues.newConcurrentLinkedQueue(); // Akarin - remove packet queue
     private final ReentrantReadWriteLock j = new ReentrantReadWriteLock();
     public Channel channel;
     public SocketAddress socketAddress; public void setSpoofedRemoteAddress(SocketAddress address) { this.socketAddress = address; } // Paper - OBFHELPER
