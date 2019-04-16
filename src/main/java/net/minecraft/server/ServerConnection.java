@@ -47,7 +47,7 @@ public class ServerConnection {
     private final List<ChannelFuture> f = Collections.synchronizedList(Lists.newArrayList());
     private final List<NetworkManager> g = Collections.synchronizedList(Lists.newArrayList()); public final List<NetworkManager> getNetworkManagers() { return this.g; } // Akarin
     // Paper start - prevent blocking on adding a new network manager while the server is ticking
-    private final List<NetworkManager> pending = Collections.synchronizedList(Lists.<NetworkManager>newArrayList());
+    private final List<NetworkManager> pending = Lists.newCopyOnWriteArrayList();
     // Akarin start
     private final List<NetworkManager> pendingRemoval = Lists.newArrayList();
     private void addPending() {
