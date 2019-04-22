@@ -1,14 +1,18 @@
 package org.bukkit.event.block;
 
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
+import io.akarin.server.api.event.WorldAttachedEvent;
+
 /**
  * Represents a block related event.
  */
-public abstract class BlockEvent extends Event {
+public abstract class BlockEvent extends Event implements WorldAttachedEvent {
     protected Block block;
+    @Override @NotNull public World getWorld() { return block.getWorld(); } // Akarin
 
     public BlockEvent(@NotNull final Block theBlock) {
         block = theBlock;

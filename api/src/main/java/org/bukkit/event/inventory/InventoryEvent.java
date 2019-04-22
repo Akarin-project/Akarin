@@ -4,18 +4,33 @@ package org.bukkit.event.inventory;
 import java.util.List;
 
 import org.bukkit.event.HandlerList;
+import org.bukkit.World;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 
+import io.akarin.server.api.event.PlayerAttachedEvent;
+import io.akarin.server.api.event.WorldAttachedEvent;
+
 /**
  * Represents a player related inventory event
  */
-public class InventoryEvent extends Event {
+public class InventoryEvent extends Event implements PlayerAttachedEvent, WorldAttachedEvent {
     private static final HandlerList handlers = new HandlerList();
     protected InventoryView transaction;
+    // Akarin start
+    @NotNull
+    @Override
+    public Player getPlayer() { return (Player) transaction.getPlayer(); } // Akarin
+    @NotNull
+    @Override
+    public World getWorld() { return transaction.getPlayer().getWorld(); } // Akarin
+    @NotNull
+    public HumanEntity getWhoClicked() { return transaction.getPlayer(); } // Akarin
+    // Akarin end
 
     public InventoryEvent(@NotNull InventoryView transaction) {
         this.transaction = transaction;

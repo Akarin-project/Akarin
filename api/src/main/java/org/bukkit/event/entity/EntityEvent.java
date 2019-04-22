@@ -1,15 +1,19 @@
 package org.bukkit.event.entity;
 
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
+import io.akarin.server.api.event.WorldAttachedEvent;
+
 /**
  * Represents an Entity-related event
  */
-public abstract class EntityEvent extends Event {
+public abstract class EntityEvent extends Event implements WorldAttachedEvent { // Akarin
     protected Entity entity;
+    @Override @NotNull public World getWorld() { return entity.getWorld(); } // Akarin
 
     public EntityEvent(@NotNull final Entity what) {
         entity = what;
