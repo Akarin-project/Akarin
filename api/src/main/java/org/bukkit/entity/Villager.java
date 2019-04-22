@@ -4,10 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.server.Village;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.Merchant;
@@ -18,21 +16,6 @@ import org.jetbrains.annotations.Nullable;
  * Represents a villager NPC
  */
 public interface Villager extends Ageable, NPC, InventoryHolder, Merchant {
-
-    /**
-     * Get the nearest village of this villager in range .
-     *
-     * @return The nearest village. null if there is no village in range.
-     */
-    public Village getNearestVillage(@NotNull double xRadius,@NotNull double yRadius,@NotNull double zRadius);
-
-    /**
-     * Get villages which are near by this villager in range.
-     *
-     * @return All the villages in range. Empty List if there is no village in range.
-     */
-    public List<Village> getVillagesInRange(@NotNull double xRadius, @NotNull double yRadius, @NotNull double zRadius);
-
 
     /**
      * Gets the current profession of this villager.

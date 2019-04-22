@@ -652,4 +652,22 @@ public interface Entity extends Metadatable, CommandSender, Nameable {
     @NotNull
     org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason getEntitySpawnReason();
     // Paper end
+
+    // Akarin start
+    /**
+     * Get the nearest village of this entity in range.
+     *
+     * @return The nearest village, null if there is no village in range.
+     */
+    @Nullable
+    public io.akarin.server.api.structure.Village getNearestVillage(double xRadius, double yRadius, double zRadius);
+
+    /**
+     * Get villages which are near by this entity in range.
+     *
+     * @return All the villages in range, an empty list if there is no village in range.
+     */
+    @NotNull
+    public List<io.akarin.server.api.structure.Village> getVillagesInRange(double xRadius, double yRadius, double zRadius);
+    // Akarin end
 }

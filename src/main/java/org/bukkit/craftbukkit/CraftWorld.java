@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import java.io.File;
@@ -14,6 +15,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 import net.minecraft.server.*;
 
@@ -70,6 +73,7 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Consumer;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftWorld implements World {
     public static final int CUSTOM_DIMENSION_OFFSET = 10;
@@ -1887,4 +1891,51 @@ public class CraftWorld implements World {
         return spigot;
     }
     // Spigot end
+
+    // Akarin start
+    @Nullable
+    @Override
+    public io.akarin.server.api.structure.Village getNearestVillage(@NotNull Location location, double xRadius, double yRadius, double zRadius) {
+        List<Village> villages = this.world.getPersistentVillage().getVillages();
+        
+        double nearestRange = -1;
+        Village nearestVillage = null;
+        
+        for (Village village : villages) {
+            BlockPosition center = village.getCenter();
+            double xRange = Math.abs(center.getX() - location.getX());
+            double yRange = Math.abs(center.getY() - location.getY());
+            double zRange = Math.abs(center.getZ() - location.getZ());
+            
+            if (xRange <= xRadius && yRange <= yRadius && zRange <+ zRadius) {
+                double range = Math.sqrt(xRange * xRange + yRange * yRange + zRange * zRange);
+                
+                if (nearestVillage == null || range < nearestRange) {
+                    nearestVillage = village;
+                    nearestRange = range;
+                }
+            }
+        }
+        
+        return nearestVillage == null ? null : nearestVillage.village;
+    }
+
+    @Override
+    public List<io.akarin.server.api.structure.Village> getVillagesInRange(@NotNull Location location, double xRadius, double yRadius, double zRadius) {
+        List<Village> villages = this.world.getPersistentVillage().getVillages();
+        List<io.akarin.server.api.structure.Village> villagesInRange = Lists.newArrayList();
+         
+        for (Village village : villages) {
+            BlockPosition center = village.getCenter();
+            double xRange = Math.abs(center.getX() - location.getX());
+            double yRange = Math.abs(center.getY() - location.getY());
+            double zRange = Math.abs(center.getZ() - location.getZ());
+            
+            if (xRange <= xRadius && yRange <= yRadius && zRange <+ zRadius)
+                villagesInRange.add(village.village);
+        }
+        
+        return villagesInRange;
+    }
+    // Akarin end
 }

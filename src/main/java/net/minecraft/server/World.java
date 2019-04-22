@@ -3092,6 +3092,7 @@ public abstract class World implements IEntityAccess, GeneratorAccess, IIBlockAc
         this.H = i;
     }
 
+    public PersistentVillage getPersistentVillage() { return af(); } // Akarin - OBFHELPER
     public PersistentVillage af() {
         return this.villages;
     }

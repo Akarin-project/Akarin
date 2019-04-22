@@ -33,6 +33,22 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface World extends PluginMessageRecipient, Metadatable {
 
+    // Akarin start
+    /**
+     * Get the nearest village of the location in range.
+     *
+     * @return The nearest village, null if there is no village in range.
+     */
+    public io.akarin.server.api.structure.Village getNearestVillage(@NotNull Location location, double xRadius, double yRadius, double zRadius);
+
+    /**
+     * Get villages which are near by the location in range.
+     *
+     * @return All the villages in range, an empty list if there is no village in range.
+     */
+    public List<io.akarin.server.api.structure.Village> getVillagesInRange(@NotNull Location location, double xRadius, double yRadius, double zRadius);
+    // Akarin end
+
     // Paper start
     /**
      * @return The amount of Entities in this world

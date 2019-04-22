@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.ProfileLookupCallback;
 
+import io.akarin.server.api.structure.CraftVillage;
 import net.minecraft.server.UserCache.UserCacheEntry;
 
 import java.util.Iterator;
@@ -18,7 +19,7 @@ public class Village {
     private World a; private World getWorld() { return a; } // Paper - OBFHELPER
     private final List<VillageDoor> b = Lists.newArrayList();
     private BlockPosition c;
-    private BlockPosition d;private BlockPosition getCenter() { return d; } // Paper - OBFHELPER
+    private BlockPosition d;public BlockPosition getCenter() { return d; } // Paper - OBFHELPER // Akarin - public
     private int e;
     private int f;
     private int g;
@@ -27,6 +28,7 @@ public class Village {
     private final Map<String, Integer> j;
     private final List<Village.Aggressor> k;
     private int l;
+    public CraftVillage village = new CraftVillage(this); // Akarin
 
     private Village() { // Paper - Nothing should call this - world needs to be set.
         this.c = BlockPosition.ZERO;

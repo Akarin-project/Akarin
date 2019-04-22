@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.server.*;
 
 import org.bukkit.Chunk;
@@ -32,6 +34,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.NumberConversions;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class CraftEntity implements org.bukkit.entity.Entity {
     private static PermissibleBase perm;
@@ -866,4 +869,17 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         return getHandle().spawnReason;
     }
     // Paper end
+
+    // Akarin start
+    @Nullable
+    @Override
+    public io.akarin.server.api.structure.Village getNearestVillage(@NotNull double xRadius, @NotNull double yRadius, @NotNull double zRadius) {
+        return entity.world.getWorld().getNearestVillage(getLocation(), xRadius, yRadius, zRadius);
+    }
+
+    @Override
+    public List<io.akarin.server.api.structure.Village> getVillagesInRange(@NotNull double xRadius, @NotNull double yRadius, @NotNull double zRadius) {
+        return entity.world.getWorld().getVillagesInRange(getLocation(), xRadius, yRadius, zRadius);
+    }
+    // Akarin end
 }
