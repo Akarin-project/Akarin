@@ -1,12 +1,15 @@
 package org.bukkit.craftbukkit.entity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.server.EntityVillager;
+
+import net.minecraft.server.*;
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftMerchant;
 import org.bukkit.entity.EntityType;
@@ -15,6 +18,7 @@ import org.bukkit.entity.Villager;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.MerchantRecipe;
+import org.jetbrains.annotations.NotNull;
 
 public class CraftVillager extends CraftAgeable implements Villager, InventoryHolder {
 
@@ -141,6 +145,54 @@ public class CraftVillager extends CraftAgeable implements Villager, InventoryHo
         }
 
         return null;
+    }
+
+    @Override
+    public Village getNearestVillage(@NotNull double xRadius, @NotNull double yRadius, @NotNull double zRadius) {
+        WorldServer nmsWorld = ((CraftWorld) this.getWorld()).getHandle();
+        PersistentVillage allVillage = nmsWorld.af();
+        List<Village> villageList = allVillage.getVillages();
+        Village nearestVillage = null;
+        double nearestRange = Double.NaN;
+        for (Village x : villageList) {
+                BlockPosition p = x.a();
+                double xRange = Math.abs(p.getX()-this.getLocation().getX());
+                double yRange = Math.abs(p.getY()-this.getLocation().getY());
+                double zRange = Math.abs(p.getZ()-this.getLocation().getZ());
+                if(xRange>xRadius||yRange>yRadius||zRange>zRadius){
+                    continue;
+                }else {
+                    if(nearestVillage==null){
+                        nearestVillage = x;
+                        nearestRange = Math.sqrt(Math.pow(xRange,2)+Math.pow(yRange,2)+Math.pow(zRange,2));
+                    }else{
+                        double range = Math.sqrt(Math.pow(xRange,2)+Math.pow(yRange,2)+Math.pow(zRange,2));
+                        if(range<nearestRange) {
+                            nearestVillage = x;
+                            nearestRange = range;
+                        }
+                    }
+                }
+        }
+        return nearestVillage;
+    }
+
+    @Override
+    public List<Village> getVillagesInRange(@NotNull double xRadius, @NotNull double yRadius, @NotNull double zRadius) {
+        WorldServer nmsWorld = ((CraftWorld) this.getWorld()).getHandle();
+        PersistentVillage allVillage = nmsWorld.af();
+        List<Village> villageList = allVillage.getVillages();
+        List<Village> villagesInRange = new ArrayList<>();
+        for(Village x:villageList){
+            BlockPosition p = x.a();
+            double xRange = Math.abs(p.getX()-this.getLocation().getX());
+            double yRange = Math.abs(p.getY()-this.getLocation().getY());
+            double zRange = Math.abs(p.getZ()-this.getLocation().getZ());
+            if(xRange<xRadius&&yRange<yRadius&&zRange<zRadius){
+                villagesInRange.add(x);
+            }
+        }
+        return villagesInRange;
     }
 
     private static int getCareerID(Career career) {
