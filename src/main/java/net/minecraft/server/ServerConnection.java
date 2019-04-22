@@ -14,6 +14,7 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.kqueue.KQueue;
+import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
@@ -43,8 +44,8 @@ public class ServerConnection {
         return new EpollEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Epoll Server IO #%d").setDaemon(true).build());
     });
     // Akarin start
-    public static final LazyInitVar<EpollEventLoopGroup> kQueue = new LazyInitVar<>(() -> {
-        return new EpollEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty KQueue Server IO #%d").setDaemon(true).build());
+    public static final LazyInitVar<KQueueEventLoopGroup> kQueue = new LazyInitVar<>(() -> {
+        return new KQueueEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty KQueue Server IO #%d").setDaemon(true).build());
     });
     // Akarin end
     private final MinecraftServer e;
