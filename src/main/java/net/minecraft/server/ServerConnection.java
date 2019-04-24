@@ -53,15 +53,16 @@ public class ServerConnection {
     private final List<ChannelFuture> f = Collections.synchronizedList(Lists.newArrayList());
     private final List<NetworkManager> g = Collections.synchronizedList(Lists.newArrayList()); public final List<NetworkManager> getNetworkManagers() { return this.g; } // Akarin
     // Paper start - prevent blocking on adding a new network manager while the server is ticking
-    private final Set<NetworkManager> pending = Sets.newConcurrentHashSet(); // Akarin - avoid same signature
+    private final List<NetworkManager> pending = Collections.synchronizedList(Lists.newArrayList());
     // Akarin start
-    public final Set<NetworkManager> pendingRemoval = Sets.newHashSet(); // Akarin - avoid same signature
+    public final List<NetworkManager> pendingRemoval = Lists.newArrayList(); // Akarin - avoid same signature
     private void addPending() {
         /*synchronized (this.g)*/ { // Akarin
             this.g.addAll(pending); // Paper - OBFHELPER - List of network managers
             //pending.clear(); // Akarin - move down
         }
         pending.clear(); // Akarin - move from above
+        // Akarin end
     }
     // Paper end
 
@@ -134,6 +135,7 @@ public class ServerConnection {
         synchronized (this.g) {
             // Akarin start
             this.g.removeAll(pendingRemoval);
+            pendingRemoval.clear();
             addPending();
         } {
             // Akarin end

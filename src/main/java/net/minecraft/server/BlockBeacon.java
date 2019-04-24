@@ -62,7 +62,7 @@ public class BlockBeacon extends BlockTileEntity {
                 IBlockData iblockdata = world.getType(blockposition1);
 
                 if (iblockdata.getBlock() == Blocks.BEACON) {
-                    ((WorldServer) world).postToMainThread(() -> {
+                    //((WorldServer) world).postToMainThread(() -> { // Akarin
                         TileEntity tileentity = world.getTileEntity(blockposition1);
 
                         if (tileentity instanceof TileEntityBeacon) {
@@ -70,7 +70,7 @@ public class BlockBeacon extends BlockTileEntity {
                             world.playBlockAction(blockposition1, Blocks.BEACON, 1, 0);
                         }
 
-                    });
+                    //}); // Akarin
                 }
             }
 
