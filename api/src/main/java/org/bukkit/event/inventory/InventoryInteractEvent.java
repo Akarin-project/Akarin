@@ -1,16 +1,24 @@
 package org.bukkit.event.inventory;
 
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
+
+import io.akarin.server.api.event.PlayerAttachedEvent;
 
 /**
  * An abstract base class for events that describe an interaction between a
  * HumanEntity and the contents of an Inventory.
  */
-public abstract class InventoryInteractEvent extends InventoryEvent implements Cancellable {
+public abstract class InventoryInteractEvent extends InventoryEvent implements Cancellable, PlayerAttachedEvent { // Akarin
     private Result result = Result.DEFAULT;
+    // Akarin start
+    @NotNull
+    @Override
+    public Player getPlayer() { return (Player) transaction.getPlayer(); }
+    // Akarin end
 
     public InventoryInteractEvent(@NotNull InventoryView transaction) {
         super(transaction);

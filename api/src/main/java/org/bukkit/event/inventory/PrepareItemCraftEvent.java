@@ -1,5 +1,6 @@
 package org.bukkit.event.inventory;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.InventoryView;
@@ -7,10 +8,17 @@ import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class PrepareItemCraftEvent extends InventoryEvent {
+import io.akarin.server.api.event.PlayerAttachedEvent;
+
+public class PrepareItemCraftEvent extends InventoryEvent implements PlayerAttachedEvent { // Akarin
     private static final HandlerList handlers = new HandlerList();
     private boolean repair;
     private CraftingInventory matrix;
+    // Akarin start
+    @NotNull
+    @Override
+    public Player getPlayer() { return (Player) transaction.getPlayer(); }
+    // Akarin end
 
     public PrepareItemCraftEvent(@NotNull CraftingInventory what, @NotNull InventoryView view, boolean isRepair) {
         super(view);

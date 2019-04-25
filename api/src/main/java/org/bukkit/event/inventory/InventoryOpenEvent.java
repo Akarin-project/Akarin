@@ -24,7 +24,7 @@ public class InventoryOpenEvent extends InventoryEvent implements Cancellable {
      * @return Player who is involved in this event
      */
     @NotNull
-    public final HumanEntity getWhoClicked() { // Akarin
+    public final HumanEntity getPlayer() {
         return transaction.getPlayer();
     }
 
