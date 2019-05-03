@@ -41,7 +41,7 @@ final class CraftScore implements Score {
     public int getScore() throws IllegalStateException {
         Scoreboard board = objective.checkState().board;
 
-        if (board.getPlayers().contains(entry)) { // Lazy
+        if (board.containsPlayer(entry)) { // Lazy // Akarin
             Map<ScoreboardObjective, ScoreboardScore> scores = board.getPlayerObjectives(entry);
             ScoreboardScore score = scores.get(objective.getHandle());
             if (score != null) { // Lazy
@@ -60,7 +60,7 @@ final class CraftScore implements Score {
     public boolean isScoreSet() throws IllegalStateException {
         Scoreboard board = objective.checkState().board;
 
-        return board.getPlayers().contains(entry) && board.getPlayerObjectives(entry).containsKey(objective.getHandle());
+        return board.containsPlayer(entry) && board.getPlayerObjectives(entry).containsKey(objective.getHandle()); // Akarin
     }
 
     public CraftScoreboard getScoreboard() {
