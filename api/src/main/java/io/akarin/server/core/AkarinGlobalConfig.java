@@ -8,17 +8,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 @SuppressWarnings({"UnusedIsStillUsed", "unused"})
 public class AkarinGlobalConfig {
-    private final static Logger LOGGER = LogManager.getLogger("Akarin");
+    private final static Logger LOGGER = Logger.getLogger("Akarin");
     
     private static File CONFIG_FILE;
     private static final String HEADER = "This is the global configuration file for Akarin.\n"
@@ -37,7 +38,7 @@ public class AkarinGlobalConfig {
             config.load(CONFIG_FILE);
         } catch (IOException ex) {
         } catch (InvalidConfigurationException ex) {
-            LOGGER.error("Could not load akarin.yml, please correct your syntax errors");
+            LOGGER.log(Level.SEVERE, "Could not load akarin.yml, please correct your syntax errors");
             ex.printStackTrace();
             throw Throwables.propagate(ex);
         }
@@ -59,7 +60,7 @@ public class AkarinGlobalConfig {
                     } catch (InvocationTargetException ex) {
                         throw Throwables.propagate(ex.getCause());
                     } catch (Exception ex) {
-                        LOGGER.error("Error invoking " + method);
+                        LOGGER.log(Level.SEVERE, "Error invoking " + method);
                         ex.printStackTrace();
                     }
                 }
@@ -69,7 +70,7 @@ public class AkarinGlobalConfig {
         try {
             config.save(CONFIG_FILE);
         } catch (IOException ex) {
-            LOGGER.error("Could not save " + CONFIG_FILE);
+            LOGGER.log(Level.SEVERE, "Could not save " + CONFIG_FILE);
             ex.printStackTrace();
         }
     }
