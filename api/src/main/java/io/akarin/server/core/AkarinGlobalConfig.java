@@ -219,4 +219,9 @@ public class AkarinGlobalConfig {
     private static void enableModernUserCaches() {
         userCacheExpireDays = getSeconds(getString("core.user-cache-expire-time", "30d"));
     }
+    
+    public static boolean spinningAwaitTicking = true;
+    private static void spinningAwaitTicking() {
+    	spinningAwaitTicking = getBoolean("core.spinning-tick-await", spinningAwaitTicking);
+    }
 }

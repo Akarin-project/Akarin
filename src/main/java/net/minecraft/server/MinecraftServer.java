@@ -17,6 +17,7 @@ import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.datafixers.DataFixer;
 
+import io.akarin.server.core.AkarinGlobalConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
@@ -816,7 +817,14 @@ public abstract class MinecraftServer implements IAsyncTaskHandler, IMojangStati
                         }
                     }
                     if (wait > 0) {
-                        Thread.sleep(wait / 1000000);
+                    	// Akarin start
+                    	if (AkarinGlobalConfig.spinningAwaitTicking) {
+                        	long park = System.nanoTime();
+                        	while ((System.nanoTime() - park) < wait);
+                    	} else {
+                    		Thread.sleep(wait / 1000000);
+                    	}
+                    	// Akarin end
                         curTime = System.nanoTime();
                         wait = TICK_TIME - (curTime - lastTick);
                     }

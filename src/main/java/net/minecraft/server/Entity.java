@@ -604,6 +604,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
     }
 
     public void move(EnumMoveType enummovetype, double d0, double d1, double d2) {
+    	System.out.print("move");
         if (this.noclip) {
             this.a(this.getBoundingBox().d(d0, d1, d2));
             this.recalcPosition();
