@@ -1,4 +1,0 @@
-[submodule "work/Paper"]
-	path = work/Paper
-	url = https://github.com/PaperMC/Paper.git
-	branch = master
