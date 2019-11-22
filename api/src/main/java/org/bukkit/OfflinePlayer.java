@@ -1,7 +1,6 @@
 package org.bukkit;
 
 import java.util.UUID;
-
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Player;
@@ -26,6 +25,7 @@ public interface OfflinePlayer extends ServerOperator, AnimalTamer, Configuratio
      *
      * @return Player name or null if we have not seen a name for this player yet
      */
+    @Override
     @Nullable
     public String getName();
 
@@ -34,6 +34,7 @@ public interface OfflinePlayer extends ServerOperator, AnimalTamer, Configuratio
      *
      * @return Player UUID
      */
+    @Override
     @NotNull
     public UUID getUniqueId();
 

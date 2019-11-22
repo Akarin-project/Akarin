@@ -1,9 +1,8 @@
 package org.bukkit.configuration;
 
+import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Map;
 
 /**
  * Represents a source of configurable options and settings
@@ -23,6 +22,7 @@ public interface Configuration extends ConfigurationSection {
      * @param value Value to set the default to.
      * @throws IllegalArgumentException Thrown if path is null.
      */
+    @Override
     public void addDefault(@NotNull String path, @Nullable Object value);
 
     /**

@@ -39,8 +39,8 @@ public final class NamespacedKey implements com.destroystokyo.paper.Namespaced {
     /**
      * Create a key in a specific namespace.
      *
-     * @param namespace String representing a grouping of keys
-     * @param key Name for this specific key
+     * @param namespace namespace
+     * @param key key
      * @deprecated should never be used by plugins, for internal use only!!
      */
     @Deprecated
@@ -72,7 +72,7 @@ public final class NamespacedKey implements com.destroystokyo.paper.Namespaced {
         Preconditions.checkArgument(key != null, "Key cannot be null");
 
         this.namespace = plugin.getName().toLowerCase(Locale.ROOT);
-        this.key = key.toLowerCase().toLowerCase(Locale.ROOT);
+        this.key = key.toLowerCase(Locale.ROOT);
 
         // Check validity after normalization
         Preconditions.checkArgument(VALID_NAMESPACE.matcher(this.namespace).matches(), "Invalid namespace. Must be [a-z0-9._-]: %s", this.namespace);

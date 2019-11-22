@@ -27,6 +27,7 @@ public final class GS4QueryEvent extends Event {
     private QueryResponse response;
 
     public GS4QueryEvent(@NotNull QueryType queryType, @NotNull InetAddress querierAddress, @NotNull QueryResponse response) {
+        super(true); // should always be called async
         this.queryType = Preconditions.checkNotNull(queryType, "queryType");
         this.querierAddress = Preconditions.checkNotNull(querierAddress, "querierAddress");
         this.response = Preconditions.checkNotNull(response, "response");

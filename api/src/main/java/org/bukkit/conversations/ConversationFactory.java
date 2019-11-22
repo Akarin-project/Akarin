@@ -1,14 +1,13 @@
 package org.bukkit.conversations;
 
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A ConversationFactory is responsible for creating a {@link Conversation}
@@ -226,6 +225,7 @@ public class ConversationFactory {
 
     private class NotPlayerMessagePrompt extends MessagePrompt {
 
+        @Override
         @NotNull
         public String getPromptText(@NotNull ConversationContext context) {
             return playerOnlyMessage;

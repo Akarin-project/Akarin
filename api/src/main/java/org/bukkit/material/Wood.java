@@ -9,7 +9,11 @@ import org.bukkit.TreeSpecies;
  * @see Material#LEGACY_WOOD
  * @see Material#LEGACY_SAPLING
  * @see Material#LEGACY_WOOD_DOUBLE_STEP
+ *
+ * @deprecated all usage of MaterialData is deprecated and subject to removal.
+ * Use {@link org.bukkit.block.data.BlockData}.
  */
+@Deprecated
 public class Wood extends MaterialData {
     protected static final Material DEFAULT_TYPE = Material.LEGACY_WOOD;
     protected static final TreeSpecies DEFAULT_SPECIES = TreeSpecies.GENERIC;
@@ -23,7 +27,7 @@ public class Wood extends MaterialData {
 
     /**
      * Constructs a wood block of the given tree species.
-     * 
+     *
      * @param species the species of the wood block
      */
     public Wood(TreeSpecies species) {

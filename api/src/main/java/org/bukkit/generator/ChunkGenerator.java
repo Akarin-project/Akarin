@@ -17,7 +17,15 @@ import org.jetbrains.annotations.Nullable;
 /**
  * A chunk generator is responsible for the initial shaping of an entire
  * chunk. For example, the nether chunk generator should shape netherrack and
- * soulsand
+ * soulsand.
+ *
+ * By default only one thread will call
+ * {@link #generateChunkData(org.bukkit.World, java.util.Random, int, int, org.bukkit.generator.ChunkGenerator.BiomeGrid)}
+ * at a time, although this may not necessarily be the main server thread.
+ *
+ * If your generator is capable of fully asynchronous generation, then
+ * {@link #isParallelCapable()} should be overriden accordingly to allow
+ * multiple concurrent callers.
  */
 public abstract class ChunkGenerator {
 
@@ -52,7 +60,7 @@ public abstract class ChunkGenerator {
 
     /**
      * Shapes the chunk for the given coordinates.
-     * 
+     *
      * This method must return a ChunkData.
      * <p>
      * Notes:
@@ -64,7 +72,7 @@ public abstract class ChunkGenerator {
      * been returned.
      * <p>
      * This method <b>must</b> return a ChunkData returned by {@link ChunkGenerator#createChunkData(org.bukkit.World)}
-     * 
+     *
      * @param world The world this chunk will be used for
      * @param random The random generator to use
      * @param x The X-coordinate of the chunk
@@ -76,7 +84,10 @@ public abstract class ChunkGenerator {
      */
     @NotNull
     public ChunkData generateChunkData(@NotNull World world, @NotNull Random random, int x, int z, @NotNull BiomeGrid biome) {
-        throw new UnsupportedOperationException("Custom generator is missing required method generateChunkData");
+        // Paper start - More helpful custom chunk gen exceptions
+        final String generatorClass = world.getGenerator() != null ? world.getGenerator().getClass().getName() : "null";
+        throw new UnsupportedOperationException("Custom generator is missing required method generateChunkData: " + generatorClass);
+        // Paper end
     }
 
     /**
@@ -139,14 +150,25 @@ public abstract class ChunkGenerator {
     }
 
     /**
+     * Gets if this ChunkGenerator is parallel capable.
+     *
+     * See {@link ChunkGenerator} for more information.
+     *
+     * @return parallel capable status
+     */
+    public boolean isParallelCapable() {
+        return false;
+    }
+
+    /**
      * Data for a Chunk.
      */
     public static interface ChunkData {
         /**
          * Get the maximum height for the chunk.
-         * 
+         *
          * Setting blocks at or above this height will do nothing.
-         * 
+         *
          * @return the maximum height
          */
         public int getMaxHeight();
@@ -174,7 +196,7 @@ public abstract class ChunkGenerator {
          * @param material the type to set the block to
          */
         public void setBlock(int x, int y, int z, @NotNull MaterialData material);
-        
+
         /**
          * Set the block at x,y,z in the chunk data to material.
          *
@@ -202,7 +224,7 @@ public abstract class ChunkGenerator {
          * @param material the type to set the blocks to
          */
         public void setRegion(int xMin, int yMin, int zMin, int xMax, int yMax, int zMax, @NotNull Material material);
-        
+
         /**
          * Set a region of this chunk from xMin, yMin, zMin (inclusive)
          * to xMax, yMax, zMax (exclusive) to material.
@@ -218,7 +240,7 @@ public abstract class ChunkGenerator {
          * @param material the type to set the blocks to
          */
         public void setRegion(int xMin, int yMin, int zMin, int xMax, int yMax, int zMax, @NotNull MaterialData material);
-        
+
         /**
          * Set a region of this chunk from xMin, yMin, zMin (inclusive) to xMax,
          * yMax, zMax (exclusive) to material.
@@ -247,7 +269,7 @@ public abstract class ChunkGenerator {
          */
         @NotNull
         public Material getType(int x, int y, int z);
-        
+
         /**
          * Get the type and data of the block at x, y, z.
          *
@@ -260,7 +282,7 @@ public abstract class ChunkGenerator {
          */
         @NotNull
         public MaterialData getTypeAndData(int x, int y, int z);
-        
+
         /**
          * Get the type and data of the block at x, y, z.
          *
@@ -273,7 +295,7 @@ public abstract class ChunkGenerator {
          */
         @NotNull
         public BlockData getBlockData(int x, int y, int z);
-        
+
         /**
          * Get the block data at x,y,z in the chunk data.
          *

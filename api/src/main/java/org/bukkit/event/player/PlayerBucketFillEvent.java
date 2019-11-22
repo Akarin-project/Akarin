@@ -15,14 +15,24 @@ import org.jetbrains.annotations.NotNull;
 public class PlayerBucketFillEvent extends PlayerBucketEvent {
     private static final HandlerList handlers = new HandlerList();
 
+    @Deprecated
     public PlayerBucketFillEvent(@NotNull final Player who, @NotNull final Block blockClicked, @NotNull final BlockFace blockFace, @NotNull final Material bucket, @NotNull final ItemStack itemInHand) {
         super(who, blockClicked, blockFace, bucket, itemInHand);
     }
 
+    public PlayerBucketFillEvent(@NotNull final Player who, @NotNull final Block block, @NotNull final Block blockClicked, @NotNull final BlockFace blockFace, @NotNull final Material bucket, @NotNull final ItemStack itemInHand) {
+        super(who, block, blockClicked, blockFace, bucket, itemInHand);
+    }
 
     // Paper start - add EquipmentSlot
+    @Deprecated
     public PlayerBucketFillEvent(@NotNull final Player who, @NotNull final Block blockClicked, @NotNull final BlockFace blockFace, @NotNull final Material bucket, @NotNull final ItemStack itemInHand, @org.jetbrains.annotations.Nullable final EquipmentSlot hand) {
         super(who, blockClicked, blockFace, bucket, itemInHand, hand);
+    }
+
+    // Paper start - add EquipmentSlot
+    public PlayerBucketFillEvent(@NotNull final Player who, @NotNull Block block, @NotNull final Block blockClicked, @NotNull final BlockFace blockFace, @NotNull final Material bucket, @NotNull final ItemStack itemInHand, @org.jetbrains.annotations.Nullable final EquipmentSlot hand) {
+        super(who, block, blockClicked, blockFace, bucket, itemInHand, hand);
     }
     // Paper end
 

@@ -100,14 +100,6 @@ public class MaterialTags {
      */
     public static final MaterialSetTag DYES = new MaterialSetTag(keyFor("dyes"))
         .endsWith("_DYE")
-        .add(Material.BONE_MEAL,
-            Material.CACTUS_GREEN,
-            Material.COCOA_BEANS,
-            Material.DANDELION_YELLOW,
-            Material.INK_SAC,
-            Material.LAPIS_LAZULI,
-            Material.ROSE_RED
-        )
         .ensureSize("DYES", 16);
 
     /**
@@ -181,7 +173,7 @@ public class MaterialTags {
      */
     public static final MaterialSetTag HORSE_ARMORS = new MaterialSetTag(keyFor("horse_armors"))
         .endsWith("_HORSE_ARMOR")
-        .ensureSize("HORSE_ARMORS", 3);
+        .ensureSize("HORSE_ARMORS", 4);
 
     /**
      * Covers the 6 variants of infested blocks.
@@ -316,7 +308,7 @@ public class MaterialTags {
      */
     public static final MaterialSetTag SPAWN_EGGS = new MaterialSetTag(keyFor("spawn_eggs"))
         .endsWith("_SPAWN_EGG")
-        .ensureSize("SPAWN_EGGS", 51);
+        .ensureSize("SPAWN_EGGS", 58);
 
     /**
      * Covers all 16 colors of stained glass.
@@ -364,8 +356,8 @@ public class MaterialTags {
         .ensureSize("PURPUR", 4);
 
     public static final MaterialSetTag SIGNS = new MaterialSetTag(keyFor("signs"))
-        .add(Material.SIGN, Material.WALL_SIGN)
-        .ensureSize("SIGNS", 2);
+        .endsWith("_SIGN")
+        .ensureSize("SIGNS", 12);
 
     public static final MaterialSetTag TORCH = new MaterialSetTag(keyFor("torch"))
         .add(Material.TORCH, Material.WALL_TORCH)

@@ -1,15 +1,15 @@
 package org.bukkit.entity;
 
 import java.net.InetSocketAddress;
-import java.util.Date;
+import java.util.Date; // Paper
 
 import com.destroystokyo.paper.Title;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.Achievement;
-import org.bukkit.BanEntry;
-import org.bukkit.BanList;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.BanEntry; // Paper
+import org.bukkit.BanList; // Paper
+import org.bukkit.Bukkit; // Paper
+import org.bukkit.DyeColor;
 import org.bukkit.Effect;
 import org.bukkit.GameMode;
 import org.bukkit.Instrument;
@@ -27,6 +27,7 @@ import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.event.player.PlayerResourcePackStatusEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.map.MapView;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.PluginMessageRecipient;
@@ -146,6 +147,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      *
      * @param message Message to be displayed
      */
+    @Override
     public void sendRawMessage(@NotNull String message);
 
     /**
@@ -419,6 +421,26 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      * @throws IllegalArgumentException if lines is non-null and has a length less than 4
      */
     public void sendSignChange(@NotNull Location loc, @Nullable String[] lines) throws IllegalArgumentException;
+
+
+    /**
+     * Send a sign change. This fakes a sign change packet for a user at
+     * a certain location. This will not actually change the world in any way.
+     * This method will use a sign at the location's block or a faked sign
+     * sent via
+     * {@link #sendBlockChange(org.bukkit.Location, org.bukkit.Material, byte)}.
+     * <p>
+     * If the client does not have a sign at the given location it will
+     * display an error message to the user.
+     *
+     * @param loc the location of the sign
+     * @param lines the new text on the sign or null to clear it
+     * @param  dyeColor the color of the sign
+     * @throws IllegalArgumentException if location is null
+     * @throws IllegalArgumentException if dyeColor is null
+     * @throws IllegalArgumentException if lines is non-null and has a length less than 4
+     */
+    public void sendSignChange(@NotNull Location loc, @Nullable String[] lines, @NotNull DyeColor dyeColor) throws IllegalArgumentException;
 
     /**
      * Render a map and send it to the player in its entirety. This may be
@@ -1610,6 +1632,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      * Spawns the particle (the number of times specified by count)
      * at the target location.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param location the location to spawn at
      * @param count the number of particles
@@ -1624,6 +1647,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      * Spawns the particle (the number of times specified by count)
      * at the target location.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param x the position on the x axis to spawn at
      * @param y the position on the y axis to spawn at
@@ -1673,6 +1697,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      * randomized positively and negatively by the offset parameters
      * on each axis.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param location the location to spawn at
      * @param count the number of particles
@@ -1691,6 +1716,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      * randomized positively and negatively by the offset parameters
      * on each axis.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param x the position on the x axis to spawn at
      * @param y the position on the y axis to spawn at
@@ -1747,6 +1773,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      * randomized positively and negatively by the offset parameters
      * on each axis.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param location the location to spawn at
      * @param count the number of particles
@@ -1767,6 +1794,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      * randomized positively and negatively by the offset parameters
      * on each axis.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param x the position on the x axis to spawn at
      * @param y the position on the y axis to spawn at
@@ -1830,15 +1858,6 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      * @param affects Whether the player can affect mob spawning
      */
     public void setAffectsSpawning(boolean affects);
-    // Paper end
-
-    /**
-     * Update the list of commands sent to the client.
-     * <br>
-     * Generally useful to ensure the client has a complete list of commands
-     * after permission changes are done.
-     */
-    public void updateCommands();
 
     /**
      * Gets the view distance for this player
@@ -1853,6 +1872,22 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
      * @param viewDistance the player's view distance
      */
     public void setViewDistance(int viewDistance);
+    // Paper end
+
+    /**
+     * Update the list of commands sent to the client.
+     * <br>
+     * Generally useful to ensure the client has a complete list of commands
+     * after permission changes are done.
+     */
+    public void updateCommands();
+
+    /**
+     * Open a {@link Material#WRITTEN_BOOK} for a Player
+     *
+     * @param book The book to open for this player
+     */
+    public void openBook(@NotNull ItemStack book);
 
     // Paper start
     /**

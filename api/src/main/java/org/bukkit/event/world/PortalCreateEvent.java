@@ -1,13 +1,13 @@
 package org.bukkit.event.world;
 
-import org.bukkit.block.Block;
+import java.util.List;
 import org.bukkit.World;
+import org.bukkit.block.BlockState;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Collection;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Called when a portal is created
@@ -15,13 +15,20 @@ import java.util.Collection;
 public class PortalCreateEvent extends WorldEvent implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private boolean cancel = false;
-    private final ArrayList<Block> blocks = new ArrayList<Block>();
-    private CreateReason reason = CreateReason.FIRE;
+    private final List<BlockState> blocks;
+    private final Entity entity;
+    private final CreateReason reason;
 
-    public PortalCreateEvent(@NotNull final Collection<Block> blocks, @NotNull final World world, @NotNull CreateReason reason) {
+    @Deprecated
+    public PortalCreateEvent(@NotNull final List<BlockState> blocks, @NotNull final World world, @NotNull CreateReason reason) {
+        this(blocks, world, null, reason);
+    }
+
+    public PortalCreateEvent(@NotNull final List<BlockState> blocks, @NotNull final World world, @Nullable Entity entity, @NotNull CreateReason reason) {
         super(world);
 
-        this.blocks.addAll(blocks);
+        this.blocks = blocks;
+        this.entity = entity;
         this.reason = reason;
     }
 
@@ -31,14 +38,26 @@ public class PortalCreateEvent extends WorldEvent implements Cancellable {
      * @return array list of all the blocks associated with the created portal
      */
     @NotNull
-    public ArrayList<Block> getBlocks() {
+    public List<BlockState> getBlocks() {
         return this.blocks;
     }
 
+    /**
+     * Returns the Entity that triggered this portal creation (if available)
+     *
+     * @return Entity involved in this event
+     */
+    @Nullable
+    public Entity getEntity() {
+        return entity;
+    }
+
+    @Override
     public boolean isCancelled() {
         return cancel;
     }
 
+    @Override
     public void setCancelled(boolean cancel) {
         this.cancel = cancel;
     }
@@ -69,14 +88,19 @@ public class PortalCreateEvent extends WorldEvent implements Cancellable {
      */
     public enum CreateReason {
         /**
-         * When a portal is created 'traditionally' due to a portal frame
+         * When the blocks inside a portal are created due to a portal frame
          * being set on fire.
          */
         FIRE,
         /**
-         * When a portal is created as a destination for an existing portal
-         * when using the custom PortalTravelAgent
+         * When a nether portal frame and portal is created at the exit of an
+         * entered nether portal.
          */
-        OBC_DESTINATION
+        NETHER_PAIR,
+        /**
+         * When the target end platform is created as a result of a player
+         * entering an end portal.
+         */
+        END_PLATFORM
     }
 }

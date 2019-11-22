@@ -1,7 +1,6 @@
 package org.bukkit.potion;
 
 import java.util.Collection;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
@@ -27,7 +26,6 @@ public class Potion {
      * water bottle.
      *
      * @param type The potion type
-     * @see #Potion(int)
      */
     public Potion(@NotNull PotionType type) {
         Validate.notNull(type, "Null PotionType");
@@ -76,15 +74,6 @@ public class Potion {
     public Potion(@NotNull PotionType type, int level, boolean splash, boolean extended) {
         this(type, level, splash);
         this.extended = extended;
-    }
-
-    /**
-     * @param name Unused, always uses {@link PotionType#WATER}
-     * @deprecated
-     */
-    @Deprecated
-    public Potion(int name) {
-        this(PotionType.WATER);
     }
 
     /**

@@ -1,6 +1,8 @@
 package org.bukkit.event.entity;
 
+import org.bukkit.Chunk;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -49,7 +51,13 @@ public class CreatureSpawnEvent extends EntitySpawnEvent {
         JOCKEY,
         /**
          * When a creature spawns due to chunk generation
+         *
+         * @deprecated no longer called, chunks are generated with entities
+         * already existing. Consider using {@link ChunkLoadEvent},
+         * {@link ChunkLoadEvent#isNewChunk()} and {@link Chunk#getEntities()}
+         * for similar effect.
          */
+        @Deprecated
         CHUNK_GEN,
         /**
          * When a creature spawns from a spawner
@@ -149,6 +157,18 @@ public class CreatureSpawnEvent extends EntitySpawnEvent {
          * When an cow is spawned by shearing a mushroom cow
          */
         SHEARED,
+        /**
+         * When eg an effect cloud is spawned as a result of a creeper exploding
+         */
+        EXPLOSION,
+        /**
+         * When an entity is spawned as part of a raid
+         */
+        RAID,
+        /**
+         * When an entity is spawned as part of a patrol
+         */
+        PATROL,
         /**
          * When a creature is spawned by plugins
          */

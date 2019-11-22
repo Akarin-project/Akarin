@@ -1,11 +1,10 @@
 package org.bukkit;
 
 import com.google.common.base.Preconditions;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * GameRules dictate certain behavior within Minecraft itself
@@ -116,6 +115,11 @@ public final class GameRule<T> {
      * Whether players in spectator mode can generate chunks.
      */
     public static final GameRule<Boolean> SPECTATORS_GENERATE_CHUNKS = new GameRule<>("spectatorsGenerateChunks", Boolean.class);
+
+    /**
+     * Whether pillager raids are enabled or not.
+     */
+    public static final GameRule<Boolean> DISABLE_RAIDS = new GameRule<>("disableRaids", Boolean.class);
 
     // Numerical rules
     /**

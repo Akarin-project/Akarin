@@ -5,18 +5,22 @@ import org.bukkit.block.BlockFace;
 
 /**
  * Material data for the piston base block
+ *
+ * @deprecated all usage of MaterialData is deprecated and subject to removal.
+ * Use {@link org.bukkit.block.data.BlockData}.
  */
+@Deprecated
 public class PistonBaseMaterial extends MaterialData implements Directional, Redstone {
-    
+
     public PistonBaseMaterial(final Material type) {
         super(type);
     }
 
     /**
      * Constructs a PistonBaseMaterial.
-     * 
+     *
      * @param type the material type to use
-     * @param data the raw data value 
+     * @param data the raw data value
      * @deprecated Magic value
      */
     @Deprecated

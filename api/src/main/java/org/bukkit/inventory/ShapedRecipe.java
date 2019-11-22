@@ -4,9 +4,7 @@ import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.commons.lang.Validate;
-
 import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -25,6 +23,7 @@ public class ShapedRecipe implements Recipe, Keyed {
 
     @Deprecated
     public ShapedRecipe(@NotNull ItemStack result) {
+        Preconditions.checkArgument(result.getType() != Material.AIR, "Recipe must have non-AIR result.");
         this.key = NamespacedKey.randomKey();
         new Throwable("Warning: A plugin is creating a recipe using a Deprecated method. This will cause you to receive warnings stating 'Tried to load unrecognized recipe: bukkit:<ID>'. Please ask the author to give their recipe a static key using NamespacedKey.").printStackTrace();
         this.output = new ItemStack(result);
@@ -44,6 +43,7 @@ public class ShapedRecipe implements Recipe, Keyed {
      */
     public ShapedRecipe(@NotNull NamespacedKey key, @NotNull ItemStack result) {
         Preconditions.checkArgument(key != null, "key");
+        Preconditions.checkArgument(result.getType() != Material.AIR, "Recipe must have non-AIR result.");
 
         this.key = key;
         this.output = new ItemStack(result);
@@ -199,6 +199,7 @@ public class ShapedRecipe implements Recipe, Keyed {
      *
      * @return The result stack.
      */
+    @Override
     @NotNull
     public ItemStack getResult() {
         return output.clone();

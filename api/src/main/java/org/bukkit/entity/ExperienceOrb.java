@@ -75,6 +75,10 @@ public interface ExperienceOrb extends Entity {
          */
         EXP_BOTTLE,
         /**
+         * Spawned by a player using a grindstone
+         */
+        GRINDSTONE,
+        /**
          * We do not know why it was spawned
          */
         UNKNOWN

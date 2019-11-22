@@ -111,7 +111,7 @@ class TimingsExport extends Thread {
         );
         if (!TimingsManager.privacy) {
             appendObjectData(parent,
-                pair("server", Bukkit.getServerName()),
+                pair("server", Bukkit.getUnsafe().getTimingsServerName()),
                 pair("motd", Bukkit.getServer().getMotd()),
                 pair("online-mode", Bukkit.getServer().getOnlineMode()),
                 pair("icon", Bukkit.getServer().getServerIcon().getData())
@@ -184,9 +184,9 @@ class TimingsExport extends Thread {
             pair("handlers", handlers),
             pair("worlds", toObjectMapper(TimingHistory.worldMap.entrySet(), input -> pair(input.getValue(), input.getKey()))),
             pair("tileentity",
-                toObjectMapper(tileEntityTypeSet, input -> pair(input.getId(), input.name()))),
+                toObjectMapper(tileEntityTypeSet, input -> pair(input.ordinal(), input.name()))),
             pair("entity",
-                toObjectMapper(entityTypeSet, input -> pair(input.getTypeId(), input.name())))
+                toObjectMapper(entityTypeSet, input -> pair(input.ordinal(), input.name())))
         ));
 
         // Information about loaded plugins
@@ -288,8 +288,8 @@ class TimingsExport extends Thread {
             String hostName = "BrokenHost";
             try {
                 hostName = InetAddress.getLocalHost().getHostName();
-            } catch(Exception ignored) {}
-            con.setRequestProperty("User-Agent", "Paper/" + Bukkit.getServerName() + "/" + hostName);
+            } catch (Exception ignored) {}
+            con.setRequestProperty("User-Agent", "Paper/" + Bukkit.getUnsafe().getTimingsServerName() + "/" + hostName);
             con.setRequestMethod("POST");
             con.setInstanceFollowRedirects(false);
 

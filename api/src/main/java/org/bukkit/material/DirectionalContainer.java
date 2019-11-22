@@ -5,7 +5,11 @@ import org.bukkit.block.BlockFace;
 
 /**
  * Represents a furnace or a dispenser.
+ *
+ * @deprecated all usage of MaterialData is deprecated and subject to removal.
+ * Use {@link org.bukkit.block.data.BlockData}.
  */
+@Deprecated
 public class DirectionalContainer extends MaterialData implements Directional {
 
     public DirectionalContainer(final Material type) {
@@ -22,6 +26,7 @@ public class DirectionalContainer extends MaterialData implements Directional {
         super(type, data);
     }
 
+    @Override
     public void setFacingDirection(BlockFace face) {
         byte data;
 
@@ -46,6 +51,7 @@ public class DirectionalContainer extends MaterialData implements Directional {
         setData(data);
     }
 
+    @Override
     public BlockFace getFacing() {
         byte data = getData();
 

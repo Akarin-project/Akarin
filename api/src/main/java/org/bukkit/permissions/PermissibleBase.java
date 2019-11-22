@@ -31,6 +31,7 @@ public class PermissibleBase implements Permissible {
         recalculatePermissions();
     }
 
+    @Override
     public boolean isOp() {
         if (opable == null) {
             return false;
@@ -39,6 +40,7 @@ public class PermissibleBase implements Permissible {
         }
     }
 
+    @Override
     public void setOp(boolean value) {
         if (opable == null) {
             throw new UnsupportedOperationException("Cannot change op value as no ServerOperator is set");
@@ -47,6 +49,7 @@ public class PermissibleBase implements Permissible {
         }
     }
 
+    @Override
     public boolean isPermissionSet(@NotNull String name) {
         if (name == null) {
             throw new IllegalArgumentException("Permission name cannot be null");
@@ -55,6 +58,7 @@ public class PermissibleBase implements Permissible {
         return permissions.containsKey(name.toLowerCase(java.util.Locale.ENGLISH));
     }
 
+    @Override
     public boolean isPermissionSet(@NotNull Permission perm) {
         if (perm == null) {
             throw new IllegalArgumentException("Permission cannot be null");
@@ -63,6 +67,7 @@ public class PermissibleBase implements Permissible {
         return isPermissionSet(perm.getName());
     }
 
+    @Override
     public boolean hasPermission(@NotNull String inName) {
         if (inName == null) {
             throw new IllegalArgumentException("Permission name cannot be null");
@@ -86,6 +91,7 @@ public class PermissibleBase implements Permissible {
         }
     }
 
+    @Override
     public boolean hasPermission(@NotNull Permission perm) {
         if (perm == null) {
             throw new IllegalArgumentException("Permission cannot be null");
@@ -102,6 +108,7 @@ public class PermissibleBase implements Permissible {
         return perm.getDefault().getValue(isOp());
     }
 
+    @Override
     @NotNull
     public synchronized PermissionAttachment addAttachment(@NotNull Plugin plugin, @NotNull String name, boolean value) { // Paper - synchronized
         if (name == null) {
@@ -120,6 +127,7 @@ public class PermissibleBase implements Permissible {
         return result;
     }
 
+    @Override
     @NotNull
     public synchronized PermissionAttachment addAttachment(@NotNull Plugin plugin) { // Paper - synchronized
         if (plugin == null) {
@@ -136,6 +144,7 @@ public class PermissibleBase implements Permissible {
         return result;
     }
 
+    @Override
     public synchronized void removeAttachment(@NotNull PermissionAttachment attachment) { // Paper - synchronized
         if (attachment == null) {
             throw new IllegalArgumentException("Attachment cannot be null");
@@ -155,6 +164,7 @@ public class PermissibleBase implements Permissible {
         }
     }
 
+    @Override
     public synchronized void recalculatePermissions() { // Paper - synchronized
         clearPermissions();
         Set<Permission> defaults = Bukkit.getServer().getPluginManager().getDefaultPermissions(isOp());
@@ -202,6 +212,7 @@ public class PermissibleBase implements Permissible {
         }
     }
 
+    @Override
     @Nullable
     public synchronized PermissionAttachment addAttachment(@NotNull Plugin plugin, @NotNull String name, boolean value, int ticks) { // Paper
         if (name == null) {
@@ -221,6 +232,7 @@ public class PermissibleBase implements Permissible {
         return result;
     }
 
+    @Override
     @Nullable
     public synchronized PermissionAttachment addAttachment(@NotNull Plugin plugin, int ticks) { // Paper - synchronized
         if (plugin == null) {
@@ -240,6 +252,7 @@ public class PermissibleBase implements Permissible {
         }
     }
 
+    @Override
     @NotNull
     public synchronized Set<PermissionAttachmentInfo> getEffectivePermissions() { // Paper - synchronized
         return new HashSet<PermissionAttachmentInfo>(permissions.values());
@@ -252,6 +265,7 @@ public class PermissibleBase implements Permissible {
             this.attachment = attachment;
         }
 
+        @Override
         public void run() {
             attachment.remove();
         }

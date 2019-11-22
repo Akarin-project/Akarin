@@ -1,7 +1,6 @@
 package org.bukkit.command;
 
 import java.util.List;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -103,6 +102,7 @@ public final class PluginCommand extends Command implements PluginIdentifiableCo
      *
      * @return Plugin that owns this command
      */
+    @Override
     @NotNull
     public Plugin getPlugin() {
         return owningPlugin;

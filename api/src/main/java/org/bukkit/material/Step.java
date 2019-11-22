@@ -2,12 +2,15 @@ package org.bukkit.material;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.bukkit.Material;
 
 /**
  * Represents the different types of steps.
+ *
+ * @deprecated all usage of MaterialData is deprecated and subject to removal.
+ * Use {@link org.bukkit.block.data.BlockData}.
  */
+@Deprecated
 public class Step extends TexturedMaterial {
     private static final List<Material> textures = new ArrayList<Material>();
     static {

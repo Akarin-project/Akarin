@@ -24,7 +24,6 @@
 package co.aikar.timings;
 
 import co.aikar.util.LoadingIntMap;
-import io.akarin.server.core.AkarinGlobalConfig;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import java.util.ArrayDeque;
@@ -33,10 +32,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Nonnull; // Akarin - javax.annotation
-import javax.annotation.Nullable; // Akarin - javax.annotation
-
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 class TimingHandler implements Timing {
 
@@ -50,6 +48,7 @@ class TimingHandler implements Timing {
     private final Int2ObjectOpenHashMap<TimingData> children = new LoadingIntMap<>(TimingData::new);
 
     final TimingData record;
+    private TimingHandler startParent;
     private final TimingHandler groupHandler;
 
     private long start = 0;
@@ -58,7 +57,7 @@ class TimingHandler implements Timing {
     private boolean timed;
     private boolean enabled;
 
-    TimingHandler(@Nonnull TimingIdentifier id) { // Akarin - javax.annotation
+    TimingHandler(@NotNull TimingIdentifier id) {
         this.identifier = id;
         this.verbose = id.name.startsWith("##");
         this.record = new TimingData(this.id);
@@ -85,17 +84,10 @@ class TimingHandler implements Timing {
         }
     }
 
-    @Nonnull // Akarin - javax.annotation
+    @NotNull
     @Override
     public Timing startTimingIfSync() {
-        // Akarin start
-        return startTiming(false);
-    }
-    @Nonnull // Akarin - javax.annotation
-    @Override
-    public Timing startTimingIfSync(boolean assertThread) {
-        startTiming(assertThread);
-        // Akarin end
+        startTiming();
         return this;
     }
 
@@ -104,70 +96,49 @@ class TimingHandler implements Timing {
         stopTiming();
     }
 
-    @Nonnull // Akarin - javax.annotation
+    @NotNull
     public Timing startTiming() {
-        // Akarin start
-        return startTiming(false);
-    }
-
-    @Override
-    public Timing startTimingUnsafe() {
-        if (enabled && ++timingDepth == 1) {
-            ThreadAssertion.close();
-            // Akarin end
-            start = System.nanoTime();
-            TIMING_STACK.addLast(this);
+        if (!enabled || !Bukkit.isPrimaryThread()) {
+            return this;
         }
+        if (++timingDepth == 1) {
+            startParent = TIMING_STACK.peekLast();
+            start = System.nanoTime();
+        }
+        TIMING_STACK.addLast(this);
         return this;
     }
-    // Akarin start
-    @Override
-    public Timing startTiming(boolean assertThread) {
-        if (enabled && (ThreadAssertion.is() || Bukkit.isPrimaryThread()) && ++timingDepth == 1) {
-            start = System.nanoTime();
-            TIMING_STACK.addLast(this);
-            if (assertThread && AkarinGlobalConfig.lazyThreadAssertion)
-                ThreadAssertion.start();
-        }
-        return this;
-    }
-
-    @Override
-    public void stopTimingUnsafe() {
-        if (enabled && timingDepth > 0 && --timingDepth == 0 && start != 0) {
-            TimingHandler last = TIMING_STACK.removeLast();
-            if (last != this) {
-                Logger.getGlobal().log(Level.SEVERE, "TIMING_STACK_CORRUPTION - Report this to Paper! ( " + this.identifier + ":" + last +")", new Throwable());
-                TIMING_STACK.addLast(last); // Add it back
-            }
-            addDiff(System.nanoTime() - start, TIMING_STACK.peekLast());
-
-            start = 0;
-            ThreadAssertion.close();
-        }
-    }
-    // Akarin end
 
     public void stopTiming() {
-        if (enabled && timingDepth > 0 && (ThreadAssertion.is() || Bukkit.isPrimaryThread()) && --timingDepth == 0 && start != 0) { // Akarin
-            TimingHandler last;
-            while ((last = TIMING_STACK.removeLast()) != this) {
-                last.timingDepth = 0;
-                String reportTo;
-                if ("minecraft".equals(last.identifier.group)) {
-                    reportTo = "Paper! This is a potential bug in Paper";
-                } else {
-                    reportTo = "the plugin " + last.identifier.group + "(Look for errors above this in the logs)";
-                }
-                Logger.getGlobal().log(Level.SEVERE, "TIMING_STACK_CORRUPTION - Report this to " + reportTo + " (" + last.identifier +" did not stopTiming)", new Throwable());
-            }
-            addDiff(System.nanoTime() - start, TIMING_STACK.peekLast());
+        if (!enabled || timingDepth <= 0 || start == 0 || !Bukkit.isPrimaryThread()) {
+            return;
+        }
 
+        popTimingStack();
+        if (--timingDepth == 0) {
+            addDiff(System.nanoTime() - start, startParent);
+            startParent = null;
             start = 0;
-            // Akarin start
-            if (AkarinGlobalConfig.lazyThreadAssertion)
-                ThreadAssertion.close();
-            // Akarin end
+        }
+    }
+
+    private void popTimingStack() {
+        TimingHandler last;
+        while ((last = TIMING_STACK.removeLast()) != this) {
+            last.timingDepth = 0;
+            String reportTo;
+            if ("Minecraft".equalsIgnoreCase(last.identifier.group)) {
+                reportTo = "Paper! This is a potential bug in Paper";
+            } else {
+                reportTo = "the plugin " + last.identifier.group + "(Look for errors above this in the logs)";
+            }
+            Logger.getGlobal().log(Level.SEVERE, "TIMING_STACK_CORRUPTION - Report this to " + reportTo + " (" + last.identifier + " did not stopTiming)", new Throwable());
+            boolean found = TIMING_STACK.contains(this);
+            if (!found) {
+                // We aren't even in the stack... Don't pop everything
+                TIMING_STACK.addLast(last);
+                break;
+            }
         }
     }
 
@@ -208,7 +179,7 @@ class TimingHandler implements Timing {
         checkEnabled();
     }
 
-    @Nonnull // Akarin - javax.annotation
+    @NotNull
     @Override
     public TimingHandler getTimingHandler() {
         return this;
@@ -229,7 +200,7 @@ class TimingHandler implements Timing {
      */
     @Override
     public void close() {
-        if (ThreadAssertion.is()) stopTimingUnsafe(); else stopTimingIfSync(); // Akarin
+        stopTimingIfSync();
     }
 
     public boolean isSpecial() {
@@ -244,7 +215,7 @@ class TimingHandler implements Timing {
         return enabled;
     }
 
-    @Nonnull // Akarin - javax.annotation
+    @NotNull
     TimingData[] cloneChildren() {
         final TimingData[] clonedChildren = new TimingData[children.size()];
         int i = 0;

@@ -5,7 +5,11 @@ import org.bukkit.Material;
 
 /**
  * Represents dye
+ *
+ * @deprecated all usage of MaterialData is deprecated and subject to removal.
+ * Use {@link org.bukkit.block.data.BlockData}.
  */
+@Deprecated
 public class Dye extends MaterialData implements Colorable {
     public Dye() {
         super(Material.LEGACY_INK_SACK);
@@ -37,6 +41,7 @@ public class Dye extends MaterialData implements Colorable {
      *
      * @return DyeColor of this dye
      */
+    @Override
     public DyeColor getColor() {
         return DyeColor.getByDyeData(getData());
     }
@@ -46,6 +51,7 @@ public class Dye extends MaterialData implements Colorable {
      *
      * @param color New color of this dye
      */
+    @Override
     public void setColor(DyeColor color) {
         setData(color.getDyeData());
     }

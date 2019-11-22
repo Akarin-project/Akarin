@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Represents a captured state of a creature spawner.
  */
-public interface CreatureSpawner extends BlockState {
+public interface CreatureSpawner extends TileState {
 
     /**
      * Get the spawner's creature type.
@@ -199,4 +199,18 @@ public interface CreatureSpawner extends BlockState {
      * @param spawnRange the new spawn range
      */
     public void setSpawnRange(int spawnRange);
+
+    // Paper start
+    /**
+     * Check if spawner is activated (a player is close enough)
+     *
+     * @return True if a player is close enough to activate it
+     */
+    public boolean isActivated();
+
+    /**
+     * Resets the spawn delay timer within the min/max range
+     */
+    public void resetTimer();
+    // Paper end
 }

@@ -1,5 +1,6 @@
 package org.bukkit.inventory.meta.tags;
 
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -10,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * different complex types. This may be useful for the likes of a
  * UUIDItemTagType:
  * <pre>
- * <code>{@code
+ * {@code
  * public class UUIDItemTagType implements ItemTagType<byte[], UUID> {
  *
  *         {@literal @Override}
@@ -38,11 +39,14 @@ import org.jetbrains.annotations.NotNull;
  *             long secondLong = bb.getLong();
  *             return new UUID(firstLong, secondLong);
  *         }
- *     }}</code></pre>
+ *     }}</pre>
  *
  * @param <T> the primary object type that is stored in the given tag
  * @param <Z> the retrieved object type when applying this item tag type
+ *
+ * @deprecated please use {@link PersistentDataType} as this part of the api is being replaced
  */
+@Deprecated
 public interface ItemTagType<T, Z> {
 
     /*

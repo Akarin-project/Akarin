@@ -1,6 +1,5 @@
 package org.bukkit.potion;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -54,7 +53,7 @@ public enum PotionType {
      * Checks if the potion type has an upgraded state.
      * This refers to whether or not the potion type can be Tier 2,
      * such as Potion of Fire Resistance II.
-     * 
+     *
      * @return true if the potion type can be upgraded;
      */
     public boolean isUpgradeable() {
@@ -64,20 +63,11 @@ public enum PotionType {
     /**
      * Checks if the potion type has an extended state.
      * This refers to the extended duration potions
-     * 
+     *
      * @return true if the potion type can be extended
      */
     public boolean isExtendable() {
         return extendable;
-    }
-
-    /**
-     * @return Damage value associated with this PotionType, broken
-     * @deprecated Non-functional
-     */
-    @Deprecated
-    public int getDamageValue() {
-        return this.ordinal();
     }
 
     public int getMaxLevel() {
@@ -85,20 +75,8 @@ public enum PotionType {
     }
 
     /**
-     * @param damage Damage value associated with a PotionType
-     * @return PotionType for given damage value, broken
-     * @deprecated Non-functional
-     */
-    @Deprecated
-    @Nullable
-    @Contract("_ -> null")
-    public static PotionType getByDamageValue(int damage) {
-        return null;
-    }
-
-    /**
-     * @param effectType EffectType
-     * @return Associated PotionType
+     * @param effectType the effect to get by
+     * @return the matching potion type
      * @deprecated Misleading
      */
     @Deprecated

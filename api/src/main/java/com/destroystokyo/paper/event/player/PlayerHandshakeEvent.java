@@ -36,6 +36,7 @@ public class PlayerHandshakeEvent extends Event implements Cancellable {
      * @param cancelled if this event is enabled
      */
     public PlayerHandshakeEvent(@NotNull String originalHandshake, boolean cancelled) {
+        super(true);
         this.originalHandshake = originalHandshake;
         this.cancelled = cancelled;
     }

@@ -1,11 +1,10 @@
 package org.bukkit.inventory.meta;
 
+import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.collect.Multimap;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -13,6 +12,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.persistence.PersistentDataHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
  * An implementation will handle the creation and application for ItemMeta.
  * This class should not be implemented by a plugin in a live environment.
  */
-public interface ItemMeta extends Cloneable, ConfigurationSerializable {
+public interface ItemMeta extends Cloneable, ConfigurationSerializable, PersistentDataHolder {
 
     /**
      * Checks for existence of a display name.
@@ -99,6 +99,39 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable {
      * @param lore the lore that will be set
      */
     void setLore(@Nullable List<String> lore);
+
+    /**
+     * Checks for existence of custom model data.
+     * <p>
+     * CustomModelData is an integer that may be associated client side with a
+     * custom item model.
+     *
+     * @return true if this has custom model data
+     */
+    boolean hasCustomModelData();
+
+    /**
+     * Gets the custom model data that is set.
+     * <p>
+     * CustomModelData is an integer that may be associated client side with a
+     * custom item model.
+     * <p>
+     * Plugins should check that hasCustomModelData() returns <code>true</code>
+     * before calling this method.
+     *
+     * @return the localized name that is set
+     */
+    int getCustomModelData();
+
+    /**
+     * Sets the custom model data.
+     * <p>
+     * CustomModelData is an integer that may be associated client side with a
+     * custom item model.
+     *
+     * @param data the data to set, or null to clear
+     */
+    void setCustomModelData(@Nullable Integer data);
 
     /**
      * Checks for the existence of any enchantments.
@@ -336,9 +369,21 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable {
      * These tags can also be modified by the client once in creative mode
      *
      * @return the custom tag container
+     * @deprecated this API part has been replaced by the {@link PersistentDataHolder} API.
+     * Please use {@link PersistentDataHolder#getPersistentDataContainer()} instead of this.
      */
     @NotNull
+    @Deprecated
     CustomItemTagContainer getCustomTagContainer();
+
+    /**
+     * Internal use only! Do not use under any circumstances!
+     *
+     * @param version version
+     * @deprecated
+     */
+    @Deprecated
+    void setVersion(int version);
 
     @SuppressWarnings("javadoc")
     @NotNull

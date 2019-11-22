@@ -1,10 +1,9 @@
 package org.bukkit;
 
 import com.google.common.collect.Maps;
+import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Map;
 
 /**
  * Represents various types of worlds that may exist
@@ -18,7 +17,7 @@ public enum WorldType {
     CUSTOMIZED("CUSTOMIZED"),
     BUFFET("BUFFET");
 
-    private final static Map<String, WorldType> BY_NAME = Maps.newHashMap();
+    private static final Map<String, WorldType> BY_NAME = Maps.newHashMap();
     private final String name;
 
     private WorldType(/*@NotNull*/ String name) {

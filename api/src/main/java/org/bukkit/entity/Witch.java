@@ -10,8 +10,8 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Represents a Witch
  */
-// Paper start
-public interface Witch extends Monster, RangedEntity {
+public interface Witch extends Raider, RangedEntity { // Paper
+    // Paper start
     /**
      * Check if Witch is drinking a potion
      *

@@ -1,7 +1,7 @@
 package org.bukkit.event.block;
 
-import org.bukkit.block.Block;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
@@ -51,7 +51,7 @@ public class BlockPhysicsEvent extends BlockEvent implements Cancellable {
 
     /**
      * Gets the source block that triggered this event.
-     * 
+     *
      * Note: This will default to block if not set.
      *
      * @return The source block
@@ -71,10 +71,12 @@ public class BlockPhysicsEvent extends BlockEvent implements Cancellable {
         return changed.getMaterial();
     }
 
+    @Override
     public boolean isCancelled() {
         return cancel;
     }
 
+    @Override
     public void setCancelled(boolean cancel) {
         this.cancel = cancel;
     }

@@ -1,9 +1,9 @@
 package org.bukkit.event.player;
 
-import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FishHook;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,10 +50,12 @@ public class PlayerFishEvent extends PlayerEvent implements Cancellable {
         return hookEntity;
     }
 
+    @Override
     public boolean isCancelled() {
         return cancel;
     }
 
+    @Override
     public void setCancelled(boolean cancel) {
         this.cancel = cancel;
     }
@@ -129,10 +131,14 @@ public class PlayerFishEvent extends PlayerEvent implements Cancellable {
          */
         IN_GROUND,
         /**
-         * When a player fails to catch anything while fishing usually due to
-         * poor aiming or timing.
+         * When a player fails to catch a bite while fishing usually due to
+         * poor timing.
          */
         FAILED_ATTEMPT,
+        /**
+         * When a player reels in their hook without receiving any bites.
+         */
+        REEL_IN,
         /**
          * Called when there is a bite on the hook and it is ready to be reeled
          * in.

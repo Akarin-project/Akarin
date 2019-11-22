@@ -170,20 +170,16 @@ public interface Block extends Metadatable {
      * The return value can be computed as follows:
      * <br>
      * {@code long value = ((long)x & 0x7FFFFFF) | (((long)z & 0x7FFFFFF) << 27) | ((long)y << 54);}
-     * </br>
      * </p>
      *
      * <p>
      * And may be unpacked as follows:
      * <br>
      * {@code int x = (int) ((packed << 37) >> 37);}
-     * </br>
      * <br>
      * {@code int y = (int) (packed >>> 54);}
-     * </br>
      * <br>
      * {@code int z = (int) ((packed << 10) >> 37);}
-     * </br>
      * </p>
      *
      * @return This block's x, y, and z coordinates packed into a long value
@@ -311,7 +307,7 @@ public interface Block extends Metadatable {
     /**
      * Gets the face relation of this block compared to the given block.
      * <p>
-     * For example: 
+     * For example:
      * <pre>{@code
      * Block current = world.getBlockAt(100, 100, 100);
      * Block target = world.getBlockAt(100, 101, 100);
@@ -532,4 +528,16 @@ public interface Block extends Metadatable {
      */
     @NotNull
     BoundingBox getBoundingBox();
+
+    // Paper start
+    /**
+     * Gets the {@link com.destroystokyo.paper.block.BlockSoundGroup} for this block.
+     * <p>
+     * This object contains the block, step, place, hit, and fall sounds.
+     *
+     * @return the sound group for this block
+     */
+    @NotNull
+    com.destroystokyo.paper.block.BlockSoundGroup getSoundGroup();
+    // Paper end
 }

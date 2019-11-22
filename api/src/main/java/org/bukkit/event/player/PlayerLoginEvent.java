@@ -1,7 +1,6 @@
 package org.bukkit.event.player;
 
 import java.net.InetAddress;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +28,7 @@ public class PlayerLoginEvent extends PlayerEvent {
      * @param hostname The hostname that was used to connect to the server
      * @param address The address the player used to connect, provided for
      *     timing issues
-     * @param realAddress The unspoofed, actual address, that the player used to connect
+     * @param realAddress the actual, unspoofed connecting address
      */
     public PlayerLoginEvent(@NotNull final Player player, @NotNull final String hostname, @NotNull final InetAddress address, final @NotNull InetAddress realAddress) { // Spigot
         super(player);
@@ -53,7 +52,7 @@ public class PlayerLoginEvent extends PlayerEvent {
      *     timing issues
      * @param result The result status for this event
      * @param message The message to be displayed if result denies login
-     * @param realAddress The unspoofed, actual address, that the player used to connect
+     * @param realAddress the actual, unspoofed connecting address
      */
     public PlayerLoginEvent(@NotNull final Player player, @NotNull String hostname, @NotNull final InetAddress address, @NotNull final Result result, @NotNull final String message, @NotNull final InetAddress realAddress) { // Spigot
         this(player, hostname, address, realAddress); // Spigot

@@ -1,17 +1,15 @@
 package org.bukkit;
 
-import java.util.HashMap;
-
-import org.apache.commons.lang.Validate;
-
 import com.google.common.collect.Maps;
+import java.util.HashMap;
+import org.apache.commons.lang.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents the art on a painting
  */
-public enum Art {
+public enum Art implements Keyed {
     KEBAB(0, 1, 1),
     AZTEC(1, 1, 1),
     ALBAN(2, 1, 1),
@@ -39,7 +37,8 @@ public enum Art {
     SKELETON(24, 4, 3),
     DONKEY_KONG(25, 4, 3);
 
-    private int id, width, height;
+    private final int id, width, height;
+    private final NamespacedKey key;
     private static final HashMap<String, Art> BY_NAME = Maps.newHashMap();
     private static final HashMap<Integer, Art> BY_ID = Maps.newHashMap();
 
@@ -47,6 +46,7 @@ public enum Art {
         this.id = id;
         this.width = width;
         this.height = height;
+        this.key = NamespacedKey.minecraft(name().toLowerCase(java.util.Locale.ENGLISH));
     }
 
     /**
@@ -76,6 +76,12 @@ public enum Art {
     @Deprecated
     public int getId() {
         return id;
+    }
+
+    @NotNull
+    @Override
+    public NamespacedKey getKey() {
+        return key;
     }
 
     /**

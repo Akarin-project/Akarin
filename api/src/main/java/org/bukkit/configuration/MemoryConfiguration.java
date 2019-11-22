@@ -1,7 +1,6 @@
 package org.bukkit.configuration;
 
 import java.util.Map;
-
 import org.apache.commons.lang.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,6 +41,7 @@ public class MemoryConfiguration extends MemorySection implements Configuration 
         defaults.set(path, value);
     }
 
+    @Override
     public void addDefaults(@NotNull Map<String, Object> defaults) {
         Validate.notNull(defaults, "Defaults may not be null");
 
@@ -50,18 +50,21 @@ public class MemoryConfiguration extends MemorySection implements Configuration 
         }
     }
 
+    @Override
     public void addDefaults(@NotNull Configuration defaults) {
         Validate.notNull(defaults, "Defaults may not be null");
 
         addDefaults(defaults.getValues(true));
     }
 
+    @Override
     public void setDefaults(@NotNull Configuration defaults) {
         Validate.notNull(defaults, "Defaults may not be null");
 
         this.defaults = defaults;
     }
 
+    @Override
     @Nullable
     public Configuration getDefaults() {
         return defaults;
@@ -73,6 +76,7 @@ public class MemoryConfiguration extends MemorySection implements Configuration 
         return null;
     }
 
+    @Override
     @NotNull
     public MemoryConfigurationOptions options() {
         if (options == null) {

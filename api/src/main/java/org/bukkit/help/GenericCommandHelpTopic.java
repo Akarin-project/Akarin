@@ -1,9 +1,9 @@
 package org.bukkit.help;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.ConsoleCommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,6 +59,7 @@ public class GenericCommandHelpTopic extends HelpTopic {
         fullText = sb.toString();
     }
 
+    @Override
     public boolean canSee(@NotNull CommandSender sender) {
         if (!command.isRegistered()) {
             // Unregistered commands should not show up in the help

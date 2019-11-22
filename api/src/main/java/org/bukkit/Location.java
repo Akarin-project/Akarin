@@ -1,9 +1,11 @@
 package org.bukkit;
 
+import com.google.common.base.Preconditions;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import com.google.common.base.Preconditions; // Paper
 import java.util.HashMap;
 import java.util.Map;
-
 import org.bukkit.block.Block;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Entity; // Paper
@@ -29,7 +31,7 @@ import org.bukkit.entity.Player;
  * representation by the implementation.
  */
 public class Location implements Cloneable, ConfigurationSerializable {
-    private World world;
+    private Reference<World> world;
     private double x;
     private double y;
     private double z;
@@ -58,8 +60,11 @@ public class Location implements Cloneable, ConfigurationSerializable {
      * @param yaw The absolute rotation on the x-plane, in degrees
      * @param pitch The absolute rotation on the y-plane, in degrees
      */
-    public Location(@UndefinedNullability final World world, final double x, final double y, final double z, final float yaw, final float pitch) { // Paper
-        this.world = world;
+    public Location(@UndefinedNullability final World world, final double x, final double y, final double z, final float yaw, final float pitch) {
+        if (world != null) {
+            this.world = new WeakReference<>(world);
+        }
+
         this.x = x;
         this.y = y;
         this.z = z;
@@ -73,16 +78,38 @@ public class Location implements Cloneable, ConfigurationSerializable {
      * @param world New world that this location resides in
      */
     public void setWorld(@Nullable World world) {
-        this.world = world;
+        this.world = (world == null) ? null : new WeakReference<>(world);
+    }
+
+    /**
+     * Checks if world in this location is present and loaded.
+     *
+     * @return true if is loaded, otherwise false
+     */
+    public boolean isWorldLoaded() {
+        if (this.world == null) {
+            return false;
+        }
+
+        World world = this.world.get();
+        return world != null && Bukkit.getWorld(world.getUID()) != null;
     }
 
     /**
      * Gets the world that this location resides in
      *
-     * @return World that contains this location
+     * @return World that contains this location, or {@code null} if it is not set
+     * @throws IllegalArgumentException when world is unloaded
+     * @see #isWorldLoaded()
      */
     @UndefinedNullability
     public World getWorld() {
+        if (this.world == null) {
+            return null;
+        }
+
+        World world = this.world.get();
+        Preconditions.checkArgument(world != null, "World unloaded");
         return world;
     }
 
@@ -93,7 +120,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      */
     @NotNull
     public Chunk getChunk() {
-        return world.getChunkAt(this);
+        return getWorld().getChunkAt(this);
     }
 
     /**
@@ -103,7 +130,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      */
     @NotNull
     public Block getBlock() {
-        return world.getBlockAt(this);
+        return getWorld().getBlockAt(this);
     }
 
     /**
@@ -285,7 +312,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
     /**
      * Sets the {@link #getYaw() yaw} and {@link #getPitch() pitch} to point
      * in the direction of the vector.
-     * 
+     *
      * @param vector the direction vector
      * @return the same location
      */
@@ -516,7 +543,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
         return this;
     }
 
-    public boolean isChunkLoaded() { return world.isChunkLoaded(locToBlock(x) >> 4, locToBlock(z) >> 4); } // Paper
+    public boolean isChunkLoaded() { return this.getWorld().isChunkLoaded(locToBlock(x) >> 4, locToBlock(z) >> 4); } // Paper
 
     // Paper start
     /**
@@ -525,6 +552,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      * @return true if a chunk has been generated at this location
      */
     public boolean isGenerated() {
+        World world = this.getWorld();
         Preconditions.checkNotNull(world, "Location has no world!");
         return world.isChunkGenerated(locToBlock(x) >> 4, locToBlock(z) >> 4);
     }
@@ -610,6 +638,33 @@ public class Location implements Cloneable, ConfigurationSerializable {
         return centerLoc;
     }
 
+    // Paper start - Add heightmap api
+
+    /**
+     * Returns a copy of this location except with y = getWorld().getHighestBlockYAt(this.getBlockX(), this.getBlockZ())
+     * @return A copy of this location except with y = getWorld().getHighestBlockYAt(this.getBlockX(), this.getBlockZ())
+     * @throws NullPointerException if {{@link #getWorld()}} is {@code null}
+     */
+    @NotNull
+    public Location toHighestLocation() {
+        return this.toHighestLocation(com.destroystokyo.paper.HeightmapType.LIGHT_BLOCKING);
+    }
+
+    /**
+     * Returns a copy of this location except with y = getWorld().getHighestBlockYAt(this.getBlockX(), this.getBlockZ(), heightmap)
+     * @param heightmap The heightmap to use for finding the highest y location.
+     * @return A copy of this location except with y = getWorld().getHighestBlockYAt(this.getBlockX(), this.getBlockZ(), heightmap)
+     * @throws NullPointerException if {{@link #getWorld()}} is {@code null}
+     * @throws UnsupportedOperationException if {@link World#getHighestBlockYAt(int, int, com.destroystokyo.paper.HeightmapType)} does not support the specified heightmap
+     */
+    @NotNull
+    public Location toHighestLocation(@NotNull final com.destroystokyo.paper.HeightmapType heightmap) {
+        final Location ret = this.clone();
+        ret.setY(this.getWorld().getHighestBlockYAt(this, heightmap));
+        return ret;
+    }
+    // Paper end
+
     /**
      * Creates explosion at this location with given power
      *
@@ -619,7 +674,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      * @return false if explosion was canceled, otherwise true
      */
     public boolean createExplosion(float power) {
-        return world.createExplosion(this, power);
+        return this.getWorld().createExplosion(this, power);
     }
 
     /**
@@ -633,7 +688,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      * @return false if explosion was canceled, otherwise true
      */
     public boolean createExplosion(float power, boolean setFire) {
-        return world.createExplosion(this, power, setFire);
+        return this.getWorld().createExplosion(this, power, setFire);
     }
 
     /**
@@ -646,7 +701,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      * @return false if explosion was canceled, otherwise true
      */
     public boolean createExplosion(float power, boolean setFire, boolean breakBlocks) {
-        return world.createExplosion(this, power, setFire, breakBlocks);
+        return this.getWorld().createExplosion(this, power, setFire, breakBlocks);
     }
 
     /**
@@ -659,7 +714,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      * @return false if explosion was canceled, otherwise true
      */
     public boolean createExplosion(@Nullable Entity source, float power) {
-        return world.createExplosion(source, this, power, true, true);
+        return this.getWorld().createExplosion(source, this, power, true, true);
     }
 
     /**
@@ -674,7 +729,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      * @return false if explosion was canceled, otherwise true
      */
     public boolean createExplosion(@Nullable Entity source, float power, boolean setFire) {
-        return world.createExplosion(source, this, power, setFire, true);
+        return this.getWorld().createExplosion(source, this, power, setFire, true);
     }
 
     /**
@@ -688,7 +743,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      * @return false if explosion was canceled, otherwise true
      */
     public boolean createExplosion(@NotNull Entity source, float power, boolean setFire, boolean breakBlocks) {
-        return world.createExplosion(source, source.getLocation(), power, setFire, breakBlocks);
+        return this.getWorld().createExplosion(source, source.getLocation(), power, setFire, breakBlocks);
     }
 
     /**
@@ -703,6 +758,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      */
     @NotNull
     public Collection<Entity> getNearbyEntities(double x, double y, double z) {
+        World world = this.getWorld();
         if (world == null) {
             throw new IllegalArgumentException("Location has no world");
         }
@@ -925,6 +981,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
      */
     @NotNull
     public <T extends Entity> Collection<T> getNearbyEntitiesByType(@Nullable Class<? extends Entity> clazz, double xRadius, double yRadius, double zRadius, @Nullable Predicate<T> predicate) {
+        World world = this.getWorld();
         if (world == null) {
             throw new IllegalArgumentException("Location has no world");
         }
@@ -941,7 +998,9 @@ public class Location implements Cloneable, ConfigurationSerializable {
         }
         final Location other = (Location) obj;
 
-        if (this.world != other.world && (this.world == null || !this.world.equals(other.world))) {
+        World world = (this.world == null) ? null : this.world.get();
+        World otherWorld = (other.world == null) ? null : other.world.get();
+        if (world != otherWorld && (world == null || !world.equals(otherWorld))) {
             return false;
         }
         if (Double.doubleToLongBits(this.x) != Double.doubleToLongBits(other.x)) {
@@ -966,7 +1025,8 @@ public class Location implements Cloneable, ConfigurationSerializable {
     public int hashCode() {
         int hash = 3;
 
-        hash = 19 * hash + (this.world != null ? this.world.hashCode() : 0);
+        World world = (this.world == null) ? null : this.world.get();
+        hash = 19 * hash + (world != null ? world.hashCode() : 0);
         hash = 19 * hash + (int) (Double.doubleToLongBits(this.x) ^ (Double.doubleToLongBits(this.x) >>> 32));
         hash = 19 * hash + (int) (Double.doubleToLongBits(this.y) ^ (Double.doubleToLongBits(this.y) >>> 32));
         hash = 19 * hash + (int) (Double.doubleToLongBits(this.z) ^ (Double.doubleToLongBits(this.z) >>> 32));
@@ -977,6 +1037,7 @@ public class Location implements Cloneable, ConfigurationSerializable {
 
     @Override
     public String toString() {
+        World world = (this.world == null) ? null : this.world.get();
         return "Location{" + "world=" + world + ",x=" + x + ",y=" + y + ",z=" + z + ",pitch=" + pitch + ",yaw=" + yaw + '}';
     }
 
@@ -1025,11 +1086,15 @@ public class Location implements Cloneable, ConfigurationSerializable {
         return NumberConversions.floor(loc);
     }
 
+    @Override
     @Utility
     @NotNull
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<String, Object>();
-        data.put("world", this.world.getName());
+
+        if (this.world != null) {
+            data.put("world", getWorld().getName());
+        }
 
         data.put("x", this.x);
         data.put("y", this.y);
@@ -1051,9 +1116,12 @@ public class Location implements Cloneable, ConfigurationSerializable {
      */
     @NotNull
     public static Location deserialize(@NotNull Map<String, Object> args) {
-        World world = Bukkit.getWorld((String) args.get("world"));
-        if (world == null) {
-            throw new IllegalArgumentException("unknown world");
+        World world = null;
+        if (args.containsKey("world")) {
+            world = Bukkit.getWorld((String) args.get("world"));
+            if (world == null) {
+                throw new IllegalArgumentException("unknown world");
+            }
         }
 
         return new Location(world, NumberConversions.toDouble(args.get("x")), NumberConversions.toDouble(args.get("y")), NumberConversions.toDouble(args.get("z")), NumberConversions.toFloat(args.get("yaw")), NumberConversions.toFloat(args.get("pitch")));

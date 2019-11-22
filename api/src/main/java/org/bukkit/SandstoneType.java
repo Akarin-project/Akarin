@@ -1,8 +1,7 @@
 package org.bukkit;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
+import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -14,7 +13,7 @@ public enum SandstoneType {
     SMOOTH(0x2);
 
     private final byte data;
-    private final static Map<Byte, SandstoneType> BY_DATA = Maps.newHashMap();
+    private static final Map<Byte, SandstoneType> BY_DATA = Maps.newHashMap();
 
     private SandstoneType(final int data) {
         this.data = (byte) data;

@@ -3,7 +3,6 @@ package org.bukkit.event.entity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.ThrownPotion;
@@ -79,10 +78,12 @@ public class PotionSplashEvent extends ProjectileHitEvent implements Cancellable
         }
     }
 
+    @Override
     public boolean isCancelled() {
         return cancelled;
     }
 
+    @Override
     public void setCancelled(boolean cancel) {
         cancelled = cancel;
     }

@@ -42,8 +42,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
         return profile;
     }
 
-    /**
-     * Changes the PlayerProfile the player will login as
+    /*    * Changes the PlayerProfile the player will login as
      * @param profile The profile to use
      */
     public void setPlayerProfile(@NotNull PlayerProfile profile) {

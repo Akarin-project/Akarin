@@ -20,7 +20,7 @@ public interface Skeleton extends Monster, RangedEntity { // Paper
     public SkeletonType getSkeletonType();
 
     /**
-     * @param type Type to set
+     * @param type type
      * @deprecated Must spawn a new subtype variant
      */
     @Deprecated

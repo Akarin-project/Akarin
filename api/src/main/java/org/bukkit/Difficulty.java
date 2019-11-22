@@ -1,8 +1,7 @@
 package org.bukkit;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
+import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -35,7 +34,7 @@ public enum Difficulty {
     HARD(3);
 
     private final int value;
-    private final static Map<Integer, Difficulty> BY_ID = Maps.newHashMap();
+    private static final Map<Integer, Difficulty> BY_ID = Maps.newHashMap();
 
     private Difficulty(final int value) {
         this.value = value;

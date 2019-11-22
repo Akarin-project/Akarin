@@ -1,25 +1,24 @@
 package org.bukkit.entity;
 
-import org.bukkit.Chunk;
-import org.bukkit.Location;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import org.bukkit.Chunk; // Paper
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Nameable;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.material.Directional;
-import org.bukkit.metadata.Metadatable;
-import org.bukkit.util.BoundingBox;
-import org.bukkit.util.Vector;
-
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import org.bukkit.block.PistonMoveReaction;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.material.Directional;
+import org.bukkit.metadata.Metadatable;
+import org.bukkit.persistence.PersistentDataHolder;
+import org.bukkit.util.BoundingBox;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,9 +26,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Represents a base entity in the world
  */
-public interface Entity extends Metadatable, CommandSender, Nameable {
+public interface Entity extends Metadatable, CommandSender, Nameable, PersistentDataHolder {
 
-    /**
+    /*
      * Gets the entity's current position
      *
      * @return a new copy of Location containing the position of this entity
@@ -249,6 +248,7 @@ public interface Entity extends Metadatable, CommandSender, Nameable {
      *
      * @return Server instance running this Entity
      */
+    @Override
     @NotNull
     public Server getServer();
 
@@ -473,12 +473,18 @@ public interface Entity extends Metadatable, CommandSender, Nameable {
     /**
      * Sets whether the entity has a team colored (default: white) glow.
      *
+     * <b>nb: this refers to the 'Glowing' entity property, not whether a
+     * glowing potion effect is applied</b>
+     *
      * @param flag if the entity is glowing
      */
     void setGlowing(boolean flag);
 
     /**
      * Gets whether the entity is glowing or not.
+     *
+     * <b>nb: this refers to the 'Glowing' entity property, not whether a
+     * glowing potion effect is applied</b>
      *
      * @return whether the entity is glowing
      */
@@ -598,6 +604,18 @@ public interface Entity extends Metadatable, CommandSender, Nameable {
     @NotNull
     BlockFace getFacing();
 
+    /**
+     * Gets the entity's current pose.
+     *
+     * <b>Note that the pose is only updated at the end of a tick, so may be
+     * inconsistent with other methods. eg {@link Player#isSneaking()} being
+     * true does not imply the current pose will be {@link Pose#SNEAKING}</b>
+     *
+     * @return current pose
+     */
+    @NotNull
+    Pose getPose();
+
     // Spigot start
     public class Spigot extends CommandSender.Spigot
     {
@@ -652,22 +670,4 @@ public interface Entity extends Metadatable, CommandSender, Nameable {
     @NotNull
     org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason getEntitySpawnReason();
     // Paper end
-
-    // Akarin start
-    /**
-     * Get the nearest village of this entity in range.
-     *
-     * @return The nearest village, null if there is no village in range.
-     */
-    @Nullable
-    public io.akarin.server.api.structure.Village getNearestVillage(double xRadius, double yRadius, double zRadius);
-
-    /**
-     * Get villages which are near by this entity in range.
-     *
-     * @return All the villages in range, an empty list if there is no village in range.
-     */
-    @NotNull
-    public List<io.akarin.server.api.structure.Village> getVillagesInRange(double xRadius, double yRadius, double zRadius);
-    // Akarin end
 }

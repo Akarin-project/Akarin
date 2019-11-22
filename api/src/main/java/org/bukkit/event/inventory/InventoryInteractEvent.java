@@ -1,24 +1,16 @@
 package org.bukkit.event.inventory;
 
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
-
-import io.akarin.server.api.event.PlayerAttachedEvent;
 
 /**
  * An abstract base class for events that describe an interaction between a
  * HumanEntity and the contents of an Inventory.
  */
-public abstract class InventoryInteractEvent extends InventoryEvent implements Cancellable, PlayerAttachedEvent { // Akarin
+public abstract class InventoryInteractEvent extends InventoryEvent implements Cancellable {
     private Result result = Result.DEFAULT;
-    // Akarin start
-    @NotNull
-    @Override
-    public Player getPlayer() { return (Player) transaction.getPlayer(); }
-    // Akarin end
 
     public InventoryInteractEvent(@NotNull InventoryView transaction) {
         super(transaction);
@@ -67,19 +59,21 @@ public abstract class InventoryInteractEvent extends InventoryEvent implements C
      *
      * @return whether the event is cancelled
      */
+    @Override
     public boolean isCancelled() {
         return getResult() == Result.DENY;
     }
 
     /**
-     * Proxy method to {@link #setResult(Event.Result)} for the Cancellable
-     * interface. {@link #setResult(Event.Result)} is preferred, as it allows
+     * Proxy method to {@link #setResult(org.bukkit.event.Event.Result)} for the Cancellable
+     * interface. {@link #setResult(org.bukkit.event.Event.Result)} is preferred, as it allows
      * you to specify the Result beyond Result.DENY and Result.ALLOW.
      * <p>
      * {@inheritDoc}
      *
      * @param toCancel result becomes DENY if true, ALLOW if false
      */
+    @Override
     public void setCancelled(boolean toCancel) {
         setResult(toCancel ? Result.DENY : Result.ALLOW);
     }

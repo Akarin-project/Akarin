@@ -37,10 +37,12 @@ public class VehicleExitEvent extends VehicleEvent implements Cancellable {
         return exited;
     }
 
+    @Override
     public boolean isCancelled() {
         return cancelled;
     }
 
+    @Override
     public void setCancelled(boolean cancel) {
         // Paper start
         if (cancel && !isCancellable) {

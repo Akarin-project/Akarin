@@ -1,16 +1,15 @@
 package org.bukkit.help;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.Collection;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The HelpMap tracks all help topics registered in a Bukkit server. When the
  * server starts up or is reloaded, help is processed and topics are added in
  * the following order:
- * 
+ *
  * <ol>
  * <li>General topics are loaded from the help.yml
  * <li>Plugins load and optionally call {@code addTopic()}
@@ -37,7 +36,7 @@ public interface HelpMap {
      */
     @NotNull
     public Collection<HelpTopic> getHelpTopics();
-    
+
     /**
      * Adds a topic to the server's help index.
      *

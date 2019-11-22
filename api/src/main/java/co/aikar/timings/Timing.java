@@ -23,8 +23,8 @@
  */
 package co.aikar.timings;
 
-import javax.annotation.Nonnull; // Akarin - javax.annotation
-import javax.annotation.Nullable; // Akarin - javax.annotation
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Provides an ability to time sections of code within the Minecraft Server
@@ -35,10 +35,8 @@ public interface Timing extends AutoCloseable {
      *
      * @return Timing
      */
-    @Nonnull // Akarin - javax.annotation
+    @NotNull
     Timing startTiming();
-    default Timing startTiming(boolean assertThread) { return startTiming(); }; // Akarin
-    default Timing startTimingUnsafe() { return startTiming(); }; // Akarin
 
     /**
      * <p>Stops timing and records the data. Propagates the data up to group handlers.</p>
@@ -46,7 +44,6 @@ public interface Timing extends AutoCloseable {
      * Will automatically be called when this Timing is used with try-with-resources
      */
     void stopTiming();
-    default void stopTimingUnsafe() { stopTiming(); }; // Akarin
 
     /**
      * Starts timing the execution until {@link #stopTiming()} is called.
@@ -55,9 +52,8 @@ public interface Timing extends AutoCloseable {
      *
      * @return Timing
      */
-    @Nonnull // Akarin - javax.annotation
+    @NotNull
     Timing startTimingIfSync();
-    default Timing startTimingIfSync(boolean assertThread) { return startTimingIfSync(); }; // Akarin
 
     /**
      * <p>Stops timing and records the data. Propagates the data up to group handlers.</p>

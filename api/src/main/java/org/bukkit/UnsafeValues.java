@@ -28,6 +28,8 @@ public interface UnsafeValues {
 
     BlockData fromLegacy(Material material, byte data);
 
+    Material getMaterial(String material, int version);
+
     int getDataVersion();
 
     ItemStack modifyItemStack(ItemStack stack, String arguments);
@@ -68,9 +70,22 @@ public interface UnsafeValues {
      */
     boolean removeAdvancement(NamespacedKey key);
 
-    // Paper start - Add legacy check util
+    // Paper start
+    /**
+     * Server name to report to timings v2
+     * @return name
+     */
+    String getTimingsServerName();
+
+    /**
+     * Called once by the version command on first use, then cached.
+     */
+    default com.destroystokyo.paper.util.VersionFetcher getVersionFetcher() {
+        return new com.destroystokyo.paper.util.VersionFetcher.DummyVersionFetcher();
+    }
+
     static boolean isLegacyPlugin(org.bukkit.plugin.Plugin plugin) {
-        return !("1.13".equals(plugin.getDescription().getAPIVersion()));
+        return !"1.13".equals(plugin.getDescription().getAPIVersion()) && !"1.14".equals(plugin.getDescription().getAPIVersion());
     }
     // Paper end
 }

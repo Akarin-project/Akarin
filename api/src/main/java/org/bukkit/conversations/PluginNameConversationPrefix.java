@@ -9,17 +9,17 @@ import org.jetbrains.annotations.NotNull;
  * that displays the plugin name in front of conversation output.
  */
 public class PluginNameConversationPrefix implements ConversationPrefix {
-    
+
     protected String separator;
     protected ChatColor prefixColor;
     protected Plugin plugin;
-    
+
     private String cachedPrefix;
-    
+
     public PluginNameConversationPrefix(@NotNull Plugin plugin) {
         this(plugin, " > ", ChatColor.LIGHT_PURPLE);
     }
-    
+
     public PluginNameConversationPrefix(@NotNull Plugin plugin, @NotNull String separator, @NotNull ChatColor prefixColor) {
         this.separator = separator;
         this.prefixColor = prefixColor;
@@ -34,6 +34,7 @@ public class PluginNameConversationPrefix implements ConversationPrefix {
      * @param context Context information about the conversation.
      * @return An empty string.
      */
+    @Override
     @NotNull
     public String getPrefix(@NotNull ConversationContext context) {
         return cachedPrefix;

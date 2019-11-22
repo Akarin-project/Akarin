@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
  * as it should.
  */
 public abstract class InventoryView {
-    public final static int OUTSIDE = -999;
+    public static final int OUTSIDE = -999;
     /**
      * Represents various extra properties of certain inventory windows.
      */
@@ -98,7 +98,11 @@ public abstract class InventoryView {
         /**
          * The repair's cost in xp levels
          */
-        REPAIR_COST(0, InventoryType.ANVIL);
+        REPAIR_COST(0, InventoryType.ANVIL),
+        /**
+         * The lectern's current open book page
+         */
+        BOOK_PAGE(0, InventoryType.LECTERN);
         int id;
         InventoryType style;
         private Property(int id, /*@NotNull*/ InventoryType appliesTo) {
@@ -325,7 +329,9 @@ public abstract class InventoryView {
         InventoryType.SlotType type = InventoryType.SlotType.CONTAINER;
         if (slot >= 0 && slot < this.getTopInventory().getSize()) {
             switch(this.getType()) {
+            case BLAST_FURNACE:
             case FURNACE:
+            case SMOKER:
                 if (slot == 2) {
                     type = InventoryType.SlotType.RESULT;
                 } else if(slot == 1) {
@@ -352,6 +358,12 @@ public abstract class InventoryView {
                     type = InventoryType.SlotType.CRAFTING;
                 }
                 break;
+            case BEACON:
+                type = InventoryType.SlotType.CRAFTING;
+                break;
+            case ANVIL:
+            case CARTOGRAPHY:
+            case GRINDSTONE:
             case MERCHANT:
                 if (slot == 2) {
                     type = InventoryType.SlotType.RESULT;
@@ -359,11 +371,15 @@ public abstract class InventoryView {
                     type = InventoryType.SlotType.CRAFTING;
                 }
                 break;
-            case BEACON:
-                type = InventoryType.SlotType.CRAFTING;
+            case STONECUTTER:
+                if (slot == 1) {
+                    type = InventoryType.SlotType.RESULT;
+                } else {
+                    type = InventoryType.SlotType.CRAFTING;
+                }
                 break;
-            case ANVIL:
-                if (slot == 2) {
+            case LOOM:
+                if (slot == 3) {
                     type = InventoryType.SlotType.RESULT;
                 } else {
                     type = InventoryType.SlotType.CRAFTING;
@@ -427,7 +443,5 @@ public abstract class InventoryView {
      * @return The title.
      */
     @NotNull
-    public final String getTitle() {
-        return getTopInventory().getTitle();
-    }
+    public abstract String getTitle();
 }

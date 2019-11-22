@@ -2,6 +2,7 @@ package com.destroystokyo.paper.event.server;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import com.destroystokyo.paper.exception.ServerException;
@@ -15,6 +16,7 @@ public class ServerExceptionEvent extends Event {
     @NotNull private ServerException exception;
 
     public ServerExceptionEvent(@NotNull ServerException exception) {
+        super(!Bukkit.isPrimaryThread());
         this.exception = Preconditions.checkNotNull(exception, "exception");
     }
 

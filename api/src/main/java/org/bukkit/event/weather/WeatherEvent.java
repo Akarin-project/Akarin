@@ -4,12 +4,10 @@ import org.bukkit.World;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
-import io.akarin.server.api.event.WorldAttachedEvent;
-
 /**
  * Represents a Weather-related event
  */
-public abstract class WeatherEvent extends Event implements WorldAttachedEvent { // Akarin
+public abstract class WeatherEvent extends Event {
     protected World world;
 
     public WeatherEvent(@NotNull final World where) {

@@ -5,7 +5,11 @@ import org.bukkit.block.BlockFace;
 
 /**
  * Represents a dispenser.
+ *
+ * @deprecated all usage of MaterialData is deprecated and subject to removal.
+ * Use {@link org.bukkit.block.data.BlockData}.
  */
+@Deprecated
 public class Dispenser extends FurnaceAndDispenser {
 
     public Dispenser() {
@@ -31,6 +35,7 @@ public class Dispenser extends FurnaceAndDispenser {
         super(type, data);
     }
 
+    @Override
     public void setFacingDirection(BlockFace face) {
         byte data;
 
@@ -63,6 +68,7 @@ public class Dispenser extends FurnaceAndDispenser {
         setData(data);
     }
 
+    @Override
     public BlockFace getFacing() {
         int data = getData() & 0x7;
 

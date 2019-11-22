@@ -1,5 +1,6 @@
 package org.bukkit;
 
+import com.google.common.collect.ImmutableList;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.Serializable;
@@ -12,8 +13,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-
 import org.bukkit.Warning.WarningState;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarFlag;
@@ -28,12 +29,15 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.server.ServerListPingEvent;
+import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.help.HelpMap;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.loot.LootTable;
 import org.bukkit.map.MapView;
 import org.bukkit.permissions.Permissible;
@@ -44,13 +48,6 @@ import org.bukkit.plugin.messaging.PluginMessageRecipient;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.util.CachedServerIcon;
-
-import com.google.common.collect.ImmutableList;
-import org.bukkit.advancement.Advancement;
-import org.bukkit.generator.ChunkGenerator;
-
-import org.bukkit.inventory.ItemFactory;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -160,27 +157,6 @@ public interface Server extends PluginMessageRecipient {
      */
     @NotNull
     public String getIp();
-
-    /**
-     * Get the name of this server.
-     *
-     * @return the name of this server
-     * @deprecated not a standard server property
-     */
-    @Deprecated
-    @NotNull
-    public String getServerName();
-
-    /**
-     * Get an ID of this server. The ID is a simple generally alphanumeric ID
-     * that can be used for uniquely identifying this server.
-     *
-     * @return the ID of this server
-     * @deprecated not a standard server property
-     */
-    @Deprecated
-    @NotNull
-    public String getServerId();
 
     /**
      * Get world type (level-type setting) for default world.
@@ -814,11 +790,9 @@ public interface Server extends PluginMessageRecipient {
     public HelpMap getHelpMap();
 
     /**
-     * Creates an empty inventory with the specified type and title. If the type
+     * Creates an empty inventory with the specified type. If the type
      * is {@link InventoryType#CHEST}, the new inventory has a size of 27;
-     * otherwise the new inventory has the normal size for its type.<br>
-     * It should be noted that some inventory types do not support titles and
-     * may not render with said titles on the Minecraft client.
+     * otherwise the new inventory has the normal size for its type.
      * <br>
      * {@link InventoryType#WORKBENCH} will not process crafting recipes if
      * created with this method. Use
@@ -1053,12 +1027,12 @@ public interface Server extends PluginMessageRecipient {
 
     /**
      * Create a ChunkData for use in a generator.
-     * 
+     *
      * See {@link ChunkGenerator#generateChunkData(org.bukkit.World, java.util.Random, int, int, org.bukkit.generator.ChunkGenerator.BiomeGrid)}
-     * 
+     *
      * @param world the world to create the ChunkData for
      * @return a new ChunkData for the world
-     * 
+     *
      */
     @NotNull
     public ChunkGenerator.ChunkData createChunkData(@NotNull World world);
@@ -1305,9 +1279,7 @@ public interface Server extends PluginMessageRecipient {
      * no further guarantees are made.
      * @throws IllegalArgumentException if the selector is malformed in any way
      * or a parameter is null
-     * @deprecated draft API
      */
-    @Deprecated
     @NotNull
     List<Entity> selectEntities(@NotNull CommandSender sender, @NotNull String selector) throws IllegalArgumentException;
 
@@ -1426,5 +1398,12 @@ public interface Server extends PluginMessageRecipient {
      */
     @NotNull
     com.destroystokyo.paper.profile.PlayerProfile createProfile(@Nullable UUID uuid, @Nullable String name);
+
+    /**
+     * Get the current internal server tick
+     *
+     * @return Current tick
+     */
+    int getCurrentTick();
     // Paper end
 }

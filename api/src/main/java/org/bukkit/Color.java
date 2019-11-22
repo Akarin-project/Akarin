@@ -1,12 +1,10 @@
 package org.bukkit;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
-
-import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -319,6 +317,7 @@ public final class Color implements ConfigurationSerializable {
         return asRGB() ^ Color.class.hashCode();
     }
 
+    @Override
     @NotNull
     public Map<String, Object> serialize() {
         return ImmutableMap.<String, Object>of(

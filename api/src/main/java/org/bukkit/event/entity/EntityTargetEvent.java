@@ -21,10 +21,12 @@ public class EntityTargetEvent extends EntityEvent implements Cancellable {
         this.reason = reason;
     }
 
+    @Override
     public boolean isCancelled() {
         return cancel;
     }
 
+    @Override
     public void setCancelled(boolean cancel) {
         this.cancel = cancel;
     }
@@ -107,9 +109,6 @@ public class EntityTargetEvent extends EntityEvent implements Cancellable {
         PIG_ZOMBIE_TARGET,
         /**
          * When the target is forgotten for whatever reason.
-         * <p>
-         * Currently only occurs in with spiders when there is a high
-         * brightness.
          */
         FORGOT_TARGET,
         /**
@@ -151,6 +150,10 @@ public class EntityTargetEvent extends EntityEvent implements Cancellable {
          * entity
          */
         CLOSEST_ENTITY,
+        /**
+         * When a raiding entity selects the same target as one of its compatriots.
+         */
+        FOLLOW_LEADER,
         /**
          * When another entity tempts this entity by having a desired item such
          * as wheat in it's hand.

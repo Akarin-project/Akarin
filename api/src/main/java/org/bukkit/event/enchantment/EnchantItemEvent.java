@@ -2,7 +2,7 @@ package org.bukkit.event.enchantment;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import org.apache.commons.lang.Validate;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -25,7 +25,7 @@ public class EnchantItemEvent extends InventoryEvent implements Cancellable {
     private boolean cancelled;
     private final Map<Enchantment,Integer> enchants;
     private final Player enchanter;
-    private int button;
+    private final int button;
 
     public EnchantItemEvent(@NotNull final Player enchanter, @NotNull final InventoryView view, @NotNull final Block table, @NotNull final ItemStack item, final int level, @NotNull final Map<Enchantment, Integer> enchants, final int i) {
         super(view);
@@ -69,7 +69,8 @@ public class EnchantItemEvent extends InventoryEvent implements Cancellable {
     }
 
     /**
-     * Get cost in exp levels of the enchantment
+     * Gets the cost (minimum level) which is displayed as a number on the right
+     * hand side of the enchantment offer.
      *
      * @return experience level cost
      */
@@ -78,11 +79,14 @@ public class EnchantItemEvent extends InventoryEvent implements Cancellable {
     }
 
     /**
-     * Set cost in exp levels of the enchantment
+     * Sets the cost (minimum level) which is displayed as a number on the right
+     * hand side of the enchantment offer.
      *
      * @param level - cost in levels
      */
     public void setExpLevelCost(int level) {
+        Validate.isTrue(level > 0, "The cost must be greater than 0!");
+
         this.level = level;
     }
 
@@ -107,10 +111,12 @@ public class EnchantItemEvent extends InventoryEvent implements Cancellable {
         return button;
     }
 
+    @Override
     public boolean isCancelled() {
         return cancelled;
     }
 
+    @Override
     public void setCancelled(boolean cancel) {
         this.cancelled = cancel;
     }

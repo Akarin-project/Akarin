@@ -67,10 +67,12 @@ public class PlayerPickupItemEvent extends PlayerEvent implements Cancellable {
     }
     // Paper End
 
+    @Override
     public boolean isCancelled() {
         return cancel;
     }
 
+    @Override
     public void setCancelled(boolean cancel) {
         this.cancel = cancel;
         this.flyAtPlayer = !cancel; // Paper

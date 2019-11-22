@@ -1,6 +1,5 @@
 package org.bukkit.event.inventory;
 
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.InventoryView;
@@ -8,20 +7,13 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import io.akarin.server.api.event.PlayerAttachedEvent;
-
 /**
  * Called when an item is put in a slot for repair by an anvil.
  */
-public class PrepareAnvilEvent extends InventoryEvent implements PlayerAttachedEvent { // Akarin
+public class PrepareAnvilEvent extends InventoryEvent {
 
     private static final HandlerList handlers = new HandlerList();
     private ItemStack result;
-    // Akarin start
-    @NotNull
-    @Override
-    public Player getPlayer() { return (Player) transaction.getPlayer(); }
-    // Akarin end
 
     public PrepareAnvilEvent(@NotNull InventoryView inventory, @Nullable ItemStack result) {
         super(inventory);

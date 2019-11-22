@@ -2,13 +2,16 @@ package org.bukkit.material;
 
 import java.util.Arrays;
 import java.util.EnumSet;
-
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 
 /**
  * Represents a vine
+ *
+ * @deprecated all usage of MaterialData is deprecated and subject to removal.
+ * Use {@link org.bukkit.block.data.BlockData}.
  */
+@Deprecated
 public class Vine extends MaterialData {
     private static final int VINE_NORTH = 0x4;
     private static final int VINE_EAST = 0x8;

@@ -1,18 +1,14 @@
 package org.bukkit.event.player;
 
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
-import io.akarin.server.api.event.WorldAttachedEvent;
-
 /**
  * Represents a player related event
  */
-public abstract class PlayerEvent extends Event implements WorldAttachedEvent { // Akarin
+public abstract class PlayerEvent extends Event {
     protected Player player;
-    @Override @NotNull public World getWorld() { return player.getWorld(); } // Akarin
 
     public PlayerEvent(@NotNull final Player who) {
         player = who;

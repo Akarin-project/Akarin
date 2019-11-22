@@ -1,11 +1,11 @@
 package org.bukkit.plugin;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,14 +20,12 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.destroystokyo.paper.event.server.ServerExceptionEvent;
 import com.destroystokyo.paper.exception.ServerEventException;
 import com.destroystokyo.paper.exception.ServerPluginEnableDisableException;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Server;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommandYamlParser;
 import org.bukkit.command.SimpleCommandMap;
@@ -39,43 +37,31 @@ import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.util.FileUtil;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.koloboke.collect.map.hash.HashIntObjMap;
-import com.koloboke.collect.map.hash.HashIntObjMaps;
-import com.koloboke.collect.map.hash.HashObjObjMap;
-import com.koloboke.collect.map.hash.HashObjObjMaps;
-import com.koloboke.collect.set.hash.HashObjSets;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Handles all plugin management from the Server
  */
 public final class SimplePluginManager implements PluginManager {
     private final Server server;
-    private final Map<Pattern, PluginLoader> fileAssociations = HashObjObjMaps.newMutableMap(); // Akarin
+    private final Map<Pattern, PluginLoader> fileAssociations = new HashMap<Pattern, PluginLoader>();
     private final List<Plugin> plugins = new ArrayList<Plugin>();
-    private final Map<String, Plugin> lookupNames = HashObjObjMaps.newMutableMap(); // Akarin
+    private final Map<String, Plugin> lookupNames = new HashMap<String, Plugin>();
     private File updateDirectory;
     private final SimpleCommandMap commandMap;
-    private Map<String, Permission> permissions = Collections.emptyMap(); // Akarin
-    private final Object permissionsLock = new Object();
-    private Map<Boolean, Set<Permission>> defaultPerms; // Akarin
-    private final Map<String, Map<Permissible, Boolean>> permSubs = HashObjObjMaps.newMutableMap(); // Akarin
-    private final Object permSubsLock = new Object();
-    private final Map<Boolean, Map<Permissible, Boolean>> defSubs = HashObjObjMaps.newMutableMap(); // Akarin
+    private final Map<String, Permission> permissions = new HashMap<String, Permission>();
+    private final Map<Boolean, Set<Permission>> defaultPerms = new LinkedHashMap<Boolean, Set<Permission>>();
+    private final Map<String, Map<Permissible, Boolean>> permSubs = new HashMap<String, Map<Permissible, Boolean>>();
+    private final Map<Boolean, Map<Permissible, Boolean>> defSubs = new HashMap<Boolean, Map<Permissible, Boolean>>();
     private boolean useTimings = false;
 
-    public SimplePluginManager(@Nonnull Server instance, @Nonnull SimpleCommandMap commandMap) { // Akarin - javax.annotation
+    public SimplePluginManager(@NotNull Server instance, @NotNull SimpleCommandMap commandMap) {
         server = instance;
         this.commandMap = commandMap;
 
-        // Akarin start
-        HashObjObjMap<Boolean, Set<Permission>> defaultPerms = HashObjObjMaps.newUpdatableMap();
-        defaultPerms.put(Boolean.TRUE, HashObjSets.newUpdatableSet());
-        defaultPerms.put(Boolean.FALSE, HashObjSets.newUpdatableSet());
-        this.defaultPerms = defaultPerms;
-        // Akarin end
+        defaultPerms.put(true, new LinkedHashSet<Permission>());
+        defaultPerms.put(false, new LinkedHashSet<Permission>());
     }
 
     /**
@@ -85,7 +71,8 @@ public final class SimplePluginManager implements PluginManager {
      * @throws IllegalArgumentException Thrown when the given Class is not a
      *     valid PluginLoader
      */
-    public void registerInterface(@Nonnull Class<? extends PluginLoader> loader) throws IllegalArgumentException { // Akarin - javax.annotation
+    @Override
+    public void registerInterface(@NotNull Class<? extends PluginLoader> loader) throws IllegalArgumentException {
         PluginLoader instance;
 
         if (PluginLoader.class.isAssignableFrom(loader)) {
@@ -120,8 +107,9 @@ public final class SimplePluginManager implements PluginManager {
      * @param directory Directory to check for plugins
      * @return A list of all plugins loaded
      */
-    @Nonnull // Akarin - javax.annotation
-    public Plugin[] loadPlugins(@Nonnull File directory) { // Akarin - javax.annotation
+    @Override
+    @NotNull
+    public Plugin[] loadPlugins(@NotNull File directory) {
         Validate.notNull(directory, "Directory cannot be null");
         Validate.isTrue(directory.isDirectory(), "Directory must be a directory");
 
@@ -132,10 +120,10 @@ public final class SimplePluginManager implements PluginManager {
             updateDirectory = new File(directory, server.getUpdateFolder());
         }
 
-        Map<String, File> plugins = HashObjObjMaps.newMutableMap(); // Akarin
-        Set<String> loadedPlugins = HashObjSets.newMutableSet(); // Akarin
-        Map<String, Collection<String>> dependencies = HashObjObjMaps.newMutableMap(); // Akarin
-        Map<String, Collection<String>> softDependencies = HashObjObjMaps.newMutableMap(); // Akarin
+        Map<String, File> plugins = new HashMap<String, File>();
+        Set<String> loadedPlugins = new HashSet<String>();
+        Map<String, Collection<String>> dependencies = new HashMap<String, Collection<String>>();
+        Map<String, Collection<String>> softDependencies = new HashMap<String, Collection<String>>();
 
         // This is where it figures out all possible plugins
         for (File file : directory.listFiles()) {
@@ -329,8 +317,9 @@ public final class SimplePluginManager implements PluginManager {
      * @throws UnknownDependencyException If a required dependency could not
      *     be found
      */
+    @Override
     @Nullable
-    public synchronized Plugin loadPlugin(@Nonnull File file) throws InvalidPluginException, UnknownDependencyException { // Akarin - javax.annotation
+    public synchronized Plugin loadPlugin(@NotNull File file) throws InvalidPluginException, UnknownDependencyException {
         Validate.notNull(file, "File cannot be null");
 
         checkUpdate(file);
@@ -357,7 +346,7 @@ public final class SimplePluginManager implements PluginManager {
         return result;
     }
 
-    private void checkUpdate(@Nonnull File file) { // Akarin - javax.annotation
+    private void checkUpdate(@NotNull File file) {
         if (updateDirectory == null || !updateDirectory.isDirectory()) {
             return;
         }
@@ -376,12 +365,14 @@ public final class SimplePluginManager implements PluginManager {
      * @param name Name of the plugin to check
      * @return Plugin if it exists, otherwise null
      */
+    @Override
     @Nullable
-    public synchronized Plugin getPlugin(@Nonnull String name) { // Akarin - javax.annotation
+    public synchronized Plugin getPlugin(@NotNull String name) {
         return lookupNames.get(name.replace(' ', '_').toLowerCase(java.util.Locale.ENGLISH)); // Paper
     }
 
-    @Nonnull // Akarin - javax.annotation
+    @Override
+    @NotNull
     public synchronized Plugin[] getPlugins() {
         return plugins.toArray(new Plugin[plugins.size()]);
     }
@@ -394,7 +385,8 @@ public final class SimplePluginManager implements PluginManager {
      * @param name Name of the plugin to check
      * @return true if the plugin is enabled, otherwise false
      */
-    public boolean isPluginEnabled(@Nonnull String name) { // Akarin - javax.annotation
+    @Override
+    public boolean isPluginEnabled(@NotNull String name) {
         Plugin plugin = getPlugin(name);
 
         return isPluginEnabled(plugin);
@@ -406,6 +398,7 @@ public final class SimplePluginManager implements PluginManager {
      * @param plugin Plugin to check
      * @return true if the plugin is enabled, otherwise false
      */
+    @Override
     public synchronized boolean isPluginEnabled(@Nullable Plugin plugin) { // Paper - synchronize
         if ((plugin != null) && (plugins.contains(plugin))) {
             return plugin.isEnabled();
@@ -414,7 +407,8 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
-    public synchronized void enablePlugin(@Nonnull final Plugin plugin) { // Paper - synchronize // Akarin - javax.annotation
+    @Override
+    public synchronized void enablePlugin(@NotNull final Plugin plugin) { // Paper - synchronize
         if (!plugin.isEnabled()) {
             List<Command> pluginCommands = PluginCommandYamlParser.parse(plugin);
 
@@ -433,7 +427,7 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
-    // Paper start - close Classloader on disable
+    @Override
     public void disablePlugins() {
         disablePlugins(false);
     }
@@ -446,12 +440,13 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
-    // Paper start - close Classloader on disable
-    public void disablePlugin(@Nonnull final Plugin plugin) { // Akarin - javax.annotation
+    @Override
+    public void disablePlugin(@NotNull final Plugin plugin) {
         disablePlugin(plugin, false);
     }
 
-    public synchronized void disablePlugin(@Nonnull final Plugin plugin, boolean closeClassloader) { // Paper - synchronize // Akarin - javax.annotation
+    @Override
+    public synchronized void disablePlugin(@NotNull final Plugin plugin, boolean closeClassloader) { // Paper - synchronize
         // Paper end - close Classloader on disable
         if (plugin.isEnabled()) {
             try {
@@ -489,6 +484,14 @@ public final class SimplePluginManager implements PluginManager {
                 handlePluginException("Error occurred (in the plugin loader) while unregistering plugin channels for "
                         + plugin.getDescription().getFullName() + " (Is it up to date?)", ex, plugin); // Paper
             }
+
+            try {
+                for (World world : server.getWorlds()) {
+                    world.removePluginChunkTickets(plugin);
+                }
+            } catch (Throwable ex) {
+                server.getLogger().log(Level.SEVERE, "Error occurred (in the plugin loader) while removing chunk tickets for " + plugin.getDescription().getFullName() + " (Is it up to date?)", ex);
+            }
         }
     }
 
@@ -499,6 +502,7 @@ public final class SimplePluginManager implements PluginManager {
     }
     // Paper end
 
+    @Override
     public void clearPlugins() {
         synchronized (this) {
             disablePlugins(true); // Paper - close Classloader on disable
@@ -506,15 +510,9 @@ public final class SimplePluginManager implements PluginManager {
             lookupNames.clear();
             HandlerList.unregisterAll();
             fileAssociations.clear();
-            synchronized (permissionsLock) { permissions = Collections.emptyMap(); } // Akarin 
-            // Akarin start
-            //defaultPerms.get(true).clear();
-            //defaultPerms.get(false).clear();
-            HashObjObjMap<Boolean, Set<Permission>> defaultPerms = HashObjObjMaps.newUpdatableMap();
-            defaultPerms.put(Boolean.TRUE, HashObjSets.newUpdatableSet());
-            defaultPerms.put(Boolean.FALSE, HashObjSets.newUpdatableSet());
-            this.defaultPerms = defaultPerms;
-            // Akarin end
+            permissions.clear();
+            defaultPerms.get(true).clear();
+            defaultPerms.get(false).clear();
         }
     }
     private void fireEvent(Event event) { callEvent(event); } // Paper - support old method incase plugin uses reflection
@@ -526,8 +524,15 @@ public final class SimplePluginManager implements PluginManager {
      *
      * @param event Event details
      */
-    public void callEvent(@Nonnull Event event) { // Akarin - javax.annotation
+    @Override
+    public void callEvent(@NotNull Event event) {
         // Paper - replace callEvent by merging to below method
+        if (event.isAsynchronous() && server.isPrimaryThread()) {
+            throw new IllegalStateException(event.getEventName() + " may only be triggered asynchronously.");
+        } else if (!event.isAsynchronous() && !server.isPrimaryThread()) {
+            throw new IllegalStateException(event.getEventName() + " may only be triggered synchronously.");
+        }
+
         HandlerList handlers = event.getHandlers();
         RegisteredListener[] listeners = handlers.getRegisteredListeners();
 
@@ -563,7 +568,8 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
-    public void registerEvents(@Nonnull Listener listener, @Nonnull Plugin plugin) { // Akarin - javax.annotation
+    @Override
+    public void registerEvents(@NotNull Listener listener, @NotNull Plugin plugin) {
         if (!plugin.isEnabled()) {
             throw new IllegalPluginAccessException("Plugin attempted to register " + listener + " while not enabled");
         }
@@ -574,7 +580,8 @@ public final class SimplePluginManager implements PluginManager {
 
     }
 
-    public void registerEvent(@Nonnull Class<? extends Event> event, @Nonnull Listener listener, @Nonnull EventPriority priority, @Nonnull EventExecutor executor, @Nonnull Plugin plugin) { // Akarin - javax.annotation
+    @Override
+    public void registerEvent(@NotNull Class<? extends Event> event, @NotNull Listener listener, @NotNull EventPriority priority, @NotNull EventExecutor executor, @NotNull Plugin plugin) {
         registerEvent(event, listener, priority, executor, plugin, false);
     }
 
@@ -590,7 +597,8 @@ public final class SimplePluginManager implements PluginManager {
      * @param ignoreCancelled Do not call executor if event was already
      *     cancelled
      */
-    public void registerEvent(@Nonnull Class<? extends Event> event, @Nonnull Listener listener, @Nonnull EventPriority priority, @Nonnull EventExecutor executor, @Nonnull Plugin plugin, boolean ignoreCancelled) { // Akarin - javax.annotation
+    @Override
+    public void registerEvent(@NotNull Class<? extends Event> event, @NotNull Listener listener, @NotNull EventPriority priority, @NotNull EventExecutor executor, @NotNull Plugin plugin, boolean ignoreCancelled) {
         Validate.notNull(listener, "Listener cannot be null");
         Validate.notNull(priority, "Priority cannot be null");
         Validate.notNull(executor, "Executor cannot be null");
@@ -608,8 +616,8 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
-    @Nonnull // Akarin - javax.annotation
-    private HandlerList getEventListeners(@Nonnull Class<? extends Event> type) { // Akarin - javax.annotation
+    @NotNull
+    private HandlerList getEventListeners(@NotNull Class<? extends Event> type) {
         try {
             Method method = getRegistrationClass(type).getDeclaredMethod("getHandlerList");
             method.setAccessible(true);
@@ -619,8 +627,8 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
-    @Nonnull // Akarin - javax.annotation
-    private Class<? extends Event> getRegistrationClass(@Nonnull Class<? extends Event> clazz) { // Akarin - javax.annotation
+    @NotNull
+    private Class<? extends Event> getRegistrationClass(@NotNull Class<? extends Event> clazz) {
         try {
             clazz.getDeclaredMethod("getHandlerList");
             return clazz;
@@ -635,92 +643,64 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
+    @Override
     @Nullable
-    public Permission getPermission(@Nonnull String name) { // Akarin - javax.annotation
+    public Permission getPermission(@NotNull String name) {
         return permissions.get(name.toLowerCase(java.util.Locale.ENGLISH));
     }
 
-    public void addPermission(@Nonnull Permission perm) { // Akarin - javax.annotation
+    @Override
+    public void addPermission(@NotNull Permission perm) {
         addPermission(perm, true);
     }
 
     @Deprecated
-    public void addPermission(@Nonnull Permission perm, boolean dirty) { // Akarin - javax.annotation
+    public void addPermission(@NotNull Permission perm, boolean dirty) {
         String name = perm.getName().toLowerCase(java.util.Locale.ENGLISH);
 
         if (permissions.containsKey(name)) {
             throw new IllegalArgumentException("The permission " + name + " is already defined!");
         }
 
-        // Akarin start
-        synchronized (permissionsLock) {
-            HashObjObjMap<String, Permission> toImmutable = HashObjObjMaps.newUpdatableMap(permissions);
-            toImmutable.put(name, perm);
-            permissions = HashObjObjMaps.newImmutableMap(toImmutable);
-        }
-        // Akarin end
+        permissions.put(name, perm);
         calculatePermissionDefault(perm, dirty);
     }
 
-    @Nonnull // Akarin - javax.annotation
+    @Override
+    @NotNull
     public Set<Permission> getDefaultPermissions(boolean op) {
-        return defaultPerms.get(op);
+        return ImmutableSet.copyOf(defaultPerms.get(op));
     }
 
-    public void removePermission(@Nonnull Permission perm) { // Akarin - javax.annotation
+    @Override
+    public void removePermission(@NotNull Permission perm) {
         removePermission(perm.getName());
     }
 
-    public void removePermission(@Nonnull String name) { // Akarin - javax.annotation
-        // Akarin start
-        synchronized (permissionsLock) {
-            HashObjObjMap<String, Permission> toImmutable = HashObjObjMaps.newMutableMap(permissions);
-            toImmutable.remove(name.toLowerCase(java.util.Locale.ENGLISH));
-            permissions = HashObjObjMaps.newImmutableMap(toImmutable);
-        }
-        // Akarin end
+    @Override
+    public void removePermission(@NotNull String name) {
+        permissions.remove(name.toLowerCase(java.util.Locale.ENGLISH));
     }
 
-    public void recalculatePermissionDefaults(@Nonnull Permission perm) { // Akarin - javax.annotation
+    @Override
+    public void recalculatePermissionDefaults(@NotNull Permission perm) {
         if (perm != null && permissions.containsKey(perm.getName().toLowerCase(java.util.Locale.ENGLISH))) {
-            // Akarin start
-            HashObjObjMap<Boolean, Set<Permission>> toImmutable = HashObjObjMaps.newUpdatableMap(defaultPerms);
-            Set<Permission> toImmutableValueOp = HashObjSets.newMutableSet(defaultPerms.get(Boolean.TRUE));
-            toImmutableValueOp.remove(perm);
-            toImmutable.put(Boolean.TRUE, HashObjSets.newImmutableSet(toImmutableValueOp));
-
-            Set<Permission> toImmutableValue = HashObjSets.newMutableSet(defaultPerms.get(Boolean.FALSE));
-            toImmutableValue.remove(perm);
-            toImmutable.put(Boolean.FALSE, HashObjSets.newImmutableSet(toImmutableValue));
-
-            defaultPerms = toImmutable;
-            // Akarin end
+            defaultPerms.get(true).remove(perm);
+            defaultPerms.get(false).remove(perm);
 
             calculatePermissionDefault(perm, true);
         }
     }
 
-    private void calculatePermissionDefault(@Nonnull Permission perm, boolean dirty) { // Akarin - javax.annotation
+    private void calculatePermissionDefault(@NotNull Permission perm, boolean dirty) {
         if ((perm.getDefault() == PermissionDefault.OP) || (perm.getDefault() == PermissionDefault.TRUE)) {
-            // Akarin start
-            HashObjObjMap<Boolean, Set<Permission>> toImmutable = HashObjObjMaps.newUpdatableMap(defaultPerms);
-            Set<Permission> toImmutableValue = HashObjSets.newUpdatableSet(defaultPerms.get(Boolean.TRUE));
-            toImmutableValue.add(perm);
-            toImmutable.put(Boolean.TRUE, HashObjSets.newImmutableSet(toImmutableValue));
-            defaultPerms = toImmutable;
-            // Akarin end
+            defaultPerms.get(true).add(perm);
             if (dirty) {
                 dirtyPermissibles(true);
             }
         }
         if ((perm.getDefault() == PermissionDefault.NOT_OP) || (perm.getDefault() == PermissionDefault.TRUE)) {
-            // Akarin start
-            HashObjObjMap<Boolean, Set<Permission>> toImmutable = HashObjObjMaps.newUpdatableMap(defaultPerms);
-            Set<Permission> toImmutableValue = HashObjSets.newUpdatableSet(defaultPerms.get(Boolean.FALSE));
-            toImmutableValue.add(perm);
-            toImmutable.put(Boolean.FALSE, HashObjSets.newImmutableSet(toImmutableValue));
-            defaultPerms = toImmutable;
-            // Akarin end
+            defaultPerms.get(false).add(perm);
             if (dirty) {
                 dirtyPermissibles(false);
             }
@@ -741,9 +721,9 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
-    public void subscribeToPermission(@Nonnull String permission, @Nonnull Permissible permissible) { // Akarin - javax.annotation
+    @Override
+    public void subscribeToPermission(@NotNull String permission, @NotNull Permissible permissible) {
         String name = permission.toLowerCase(java.util.Locale.ENGLISH);
-        synchronized (permSubsLock) { // Akarin
         Map<Permissible, Boolean> map = permSubs.get(name);
 
         if (map == null) {
@@ -752,12 +732,11 @@ public final class SimplePluginManager implements PluginManager {
         }
 
         map.put(permissible, true);
-        } // Akarin
     }
 
-    public void unsubscribeFromPermission(@Nonnull String permission, @Nonnull Permissible permissible) { // Akarin - javax.annotation
+    @Override
+    public void unsubscribeFromPermission(@NotNull String permission, @NotNull Permissible permissible) {
         String name = permission.toLowerCase(java.util.Locale.ENGLISH);
-        synchronized (permSubsLock) { // Akarin
         Map<Permissible, Boolean> map = permSubs.get(name);
 
         if (map != null) {
@@ -767,13 +746,12 @@ public final class SimplePluginManager implements PluginManager {
                 permSubs.remove(name);
             }
         }
-        } // Akarin
     }
 
-    @Nonnull // Akarin - javax.annotation
-    public Set<Permissible> getPermissionSubscriptions(@Nonnull String permission) { // Akarin - javax.annotation
+    @Override
+    @NotNull
+    public Set<Permissible> getPermissionSubscriptions(@NotNull String permission) {
         String name = permission.toLowerCase(java.util.Locale.ENGLISH);
-        synchronized (permSubsLock) { // Akarin
         Map<Permissible, Boolean> map = permSubs.get(name);
 
         if (map == null) {
@@ -781,10 +759,10 @@ public final class SimplePluginManager implements PluginManager {
         } else {
             return ImmutableSet.copyOf(map.keySet());
         }
-        } // Akarin
     }
 
-    public void subscribeToDefaultPerms(boolean op, @Nonnull Permissible permissible) { // Akarin - javax.annotation
+    @Override
+    public void subscribeToDefaultPerms(boolean op, @NotNull Permissible permissible) {
         Map<Permissible, Boolean> map = defSubs.get(op);
 
         if (map == null) {
@@ -795,7 +773,8 @@ public final class SimplePluginManager implements PluginManager {
         map.put(permissible, true);
     }
 
-    public void unsubscribeFromDefaultPerms(boolean op, @Nonnull Permissible permissible) { // Akarin - javax.annotation
+    @Override
+    public void unsubscribeFromDefaultPerms(boolean op, @NotNull Permissible permissible) {
         Map<Permissible, Boolean> map = defSubs.get(op);
 
         if (map != null) {
@@ -807,7 +786,8 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
-    @Nonnull // Akarin - javax.annotation
+    @Override
+    @NotNull
     public Set<Permissible> getDefaultPermSubscriptions(boolean op) {
         Map<Permissible, Boolean> map = defSubs.get(op);
 
@@ -818,11 +798,13 @@ public final class SimplePluginManager implements PluginManager {
         }
     }
 
-    @Nonnull // Akarin - javax.annotation
+    @Override
+    @NotNull
     public Set<Permission> getPermissions() {
         return new HashSet<Permission>(permissions.values());
     }
 
+    @Override
     public boolean useTimings() {
         return co.aikar.timings.Timings.isTimingsEnabled(); // Spigot
     }
@@ -838,15 +820,9 @@ public final class SimplePluginManager implements PluginManager {
 
     // Paper start
     public void clearPermissions() {
-        synchronized (permissionsLock) { permissions = Collections.emptyMap(); } // Akarin
-        // Akarin start
-        //defaultPerms.get(true).clear();
-        //defaultPerms.get(false).clear();
-        HashObjObjMap<Boolean, Set<Permission>> defaultPerms = HashObjObjMaps.newUpdatableMap();
-        defaultPerms.put(Boolean.TRUE, HashObjSets.newUpdatableSet());
-        defaultPerms.put(Boolean.FALSE, HashObjSets.newUpdatableSet());
-        this.defaultPerms = defaultPerms;
-        // Akarin end
+        permissions.clear();
+        defaultPerms.get(true).clear();
+        defaultPerms.get(false).clear();
     }
     // Paper end
 

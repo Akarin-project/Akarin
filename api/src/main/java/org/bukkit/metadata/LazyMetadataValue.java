@@ -2,7 +2,6 @@ package org.bukkit.metadata;
 
 import java.lang.ref.SoftReference;
 import java.util.concurrent.Callable;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -58,13 +57,14 @@ public class LazyMetadataValue extends MetadataValueAdapter {
     /**
      * Protected special constructor used by FixedMetadataValue to bypass
      * standard setup.
-     * 
+     *
      * @param owningPlugin the owning plugin
      */
     protected LazyMetadataValue(@NotNull Plugin owningPlugin) {
         super(owningPlugin);
     }
 
+    @Override
     @Nullable
     public Object value() {
         eval();
@@ -95,6 +95,7 @@ public class LazyMetadataValue extends MetadataValueAdapter {
         }
     }
 
+    @Override
     public synchronized void invalidate() {
         if (cacheStrategy != CacheStrategy.CACHE_ETERNALLY) {
             internalValue.clear();

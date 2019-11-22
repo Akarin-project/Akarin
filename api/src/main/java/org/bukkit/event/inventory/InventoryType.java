@@ -11,7 +11,8 @@ import org.jetbrains.annotations.NotNull;
  * The current list of inventories that cannot be created via
  * {@link org.bukkit.Bukkit#createInventory} are:<br>
  * <blockquote>
- *     {@link InventoryType#CREATIVE} and {@link InventoryType#CRAFTING}
+ *     {@link InventoryType#CREATIVE}, {@link InventoryType#CRAFTING} and
+ *     {@link InventoryType#MERCHANT}
  * </blockquote>
  *
  * See {@link org.bukkit.Bukkit#createInventory} for more information.
@@ -53,7 +54,7 @@ public enum InventoryType {
      */
     ENCHANTING(2,"Enchanting"),
     /**
-     * A brewing stand inventory, with one FUEL slot and three CRAFTING slots.
+     * A brewing stand inventory, with one FUEL slot and four CRAFTING slots.
      */
     BREWING(5,"Brewing"),
     /**
@@ -69,7 +70,7 @@ public enum InventoryType {
      */
     CREATIVE(9,"Creative", false),
     /**
-     * The merchant inventory, with 2 TRADE-IN slots, and 1 RESULT slot.
+     * The merchant inventory, with 2 CRAFTING slots, and 1 RESULT slot.
      */
     MERCHANT(3,"Villager", false),
     /**
@@ -92,6 +93,39 @@ public enum InventoryType {
      * A shulker box inventory, with 27 slots of type CONTAINER.
      */
     SHULKER_BOX(27, "Shulker Box"),
+    /**
+     * A barrel box inventory, with 27 slots of type CONTAINER.
+     */
+    BARREL(27, "Barrel"),
+    /**
+     * A blast furnace inventory, with a RESULT slot, a CRAFTING slot, and a
+     * FUEL slot.
+     */
+    BLAST_FURNACE(3, "Blast Furnace"),
+    /**
+     * A lectern inventory, with 1 BOOK slot.
+     */
+    LECTERN(1, "Lectern"),
+    /**
+     * A smoker inventory, with a RESULT slot, a CRAFTING slot, and a FUEL slot.
+     */
+    SMOKER(3, "Smoker"),
+    /**
+     * Loom inventory, with 3 CRAFTING slots, and 1 RESULT slot.
+     */
+    LOOM(4, "Loom"),
+    /**
+     * Cartography inventory with 2 CRAFTING slots, and 1 RESULT slot.
+     */
+    CARTOGRAPHY(3, "Cartography Table"),
+    /**
+     * Grindstone inventory with 2 CRAFTING slots, and 1 RESULT slot.
+     */
+    GRINDSTONE(3, "Repair & Disenchant"),
+    /**
+     * Stonecutter inventory with 1 CRAFTING slot, and 1 RESULT slot.
+     */
+    STONECUTTER(2, "Stonecutter")
     ;
 
     private final int size;
@@ -133,9 +167,7 @@ public enum InventoryType {
          */
         RESULT,
         /**
-         * A slot in the crafting matrix, or the input slot in a furnace
-         * inventory, the potion slot in the brewing stand, or the enchanting
-         * slot.
+         * A slot in the crafting matrix, or an 'input' slot.
          */
         CRAFTING,
         /**

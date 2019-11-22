@@ -5,10 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Keyed;
-
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.material.MaterialData;
@@ -26,6 +24,7 @@ public class ShapelessRecipe implements Recipe, Keyed {
 
     @Deprecated
     public ShapelessRecipe(@NotNull ItemStack result) {
+        Preconditions.checkArgument(result.getType() != Material.AIR, "Recipe must have non-AIR result.");
         this.key = NamespacedKey.randomKey();
         new Throwable("Warning: A plugin is creating a recipe using a Deprecated method. This will cause you to receive warnings stating 'Tried to load unrecognized recipe: bukkit:<ID>'. Please ask the author to give their recipe a static key using NamespacedKey.").printStackTrace();
         this.output = new ItemStack(result);
@@ -46,6 +45,7 @@ public class ShapelessRecipe implements Recipe, Keyed {
      * @see ShapelessRecipe#addIngredient(int,Material,int)
      */
     public ShapelessRecipe(@NotNull NamespacedKey key, @NotNull ItemStack result) {
+        Preconditions.checkArgument(result.getType() != Material.AIR, "Recipe must have non-AIR result.");
         this.key = key;
         this.output = new ItemStack(result);
     }
@@ -290,6 +290,7 @@ public class ShapelessRecipe implements Recipe, Keyed {
      *
      * @return The result stack.
      */
+    @Override
     @NotNull
     public ItemStack getResult() {
         return output.clone();

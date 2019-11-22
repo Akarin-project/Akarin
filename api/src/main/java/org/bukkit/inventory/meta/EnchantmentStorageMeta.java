@@ -1,7 +1,6 @@
 package org.bukkit.inventory.meta;
 
 import java.util.Map;
-
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.jetbrains.annotations.NotNull;
@@ -77,6 +76,7 @@ public interface EnchantmentStorageMeta extends ItemMeta {
      */
     boolean hasConflictingStoredEnchant(@NotNull Enchantment ench);
 
+    @Override
     @NotNull
     EnchantmentStorageMeta clone();
 }

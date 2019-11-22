@@ -2,7 +2,6 @@ package org.bukkit.event.player;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Warning;
 import org.bukkit.entity.Player;
@@ -43,10 +42,12 @@ public class PlayerChatEvent extends PlayerEvent implements Cancellable {
         this.recipients = recipients;
     }
 
+    @Override
     public boolean isCancelled() {
         return cancel;
     }
 
+    @Override
     public void setCancelled(boolean cancel) {
         this.cancel = cancel;
     }

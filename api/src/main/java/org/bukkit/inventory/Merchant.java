@@ -1,7 +1,6 @@
 package org.bukkit.inventory;
 
 import java.util.List;
-
 import org.bukkit.entity.HumanEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +34,7 @@ public interface Merchant {
      *
      * @param i the index
      * @return the recipe
-     * @throws IndexOutOfBoundsException Throws when specified index is larger than Merchant's inventory
+     * @throws IndexOutOfBoundsException if recipe index out of bounds
      */
     @NotNull
     MerchantRecipe getRecipe(int i) throws IndexOutOfBoundsException;
@@ -45,7 +44,7 @@ public interface Merchant {
      *
      * @param i the index
      * @param recipe the recipe
-     * @throws IndexOutOfBoundsException Throws when specified index is larger than Merchant's inventory
+     * @throws IndexOutOfBoundsException if recipe index out of bounds
      */
     void setRecipe(int i, @NotNull MerchantRecipe recipe) throws IndexOutOfBoundsException;
 

@@ -5,7 +5,11 @@ import org.bukkit.block.BlockFace;
 
 /**
  * Represents stairs.
+ *
+ * @deprecated all usage of MaterialData is deprecated and subject to removal.
+ * Use {@link org.bukkit.block.data.BlockData}.
  */
+@Deprecated
 public class Stairs extends MaterialData implements Directional {
 
     public Stairs(final Material type) {
@@ -54,6 +58,7 @@ public class Stairs extends MaterialData implements Directional {
     /**
      * Set the direction the stair part of the block is facing
      */
+    @Override
     public void setFacingDirection(BlockFace face) {
         byte data;
 
@@ -82,6 +87,7 @@ public class Stairs extends MaterialData implements Directional {
     /**
      * @return the direction the stair part of the block is facing
      */
+    @Override
     public BlockFace getFacing() {
         return getDescendingDirection();
     }

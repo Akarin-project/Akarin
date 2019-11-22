@@ -1,15 +1,13 @@
 package org.bukkit.potion;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Color;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.LivingEntity;
-
-import com.google.common.collect.ImmutableMap;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -156,6 +154,7 @@ public class PotionEffect implements ConfigurationSerializable {
         return def;
     }
 
+    @Override
     @NotNull
     public Map<String, Object> serialize() {
         return ImmutableMap.<String, Object>builder()

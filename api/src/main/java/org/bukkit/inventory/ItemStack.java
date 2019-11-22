@@ -2,10 +2,9 @@ package org.bukkit.inventory;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.List; // Paper
 import java.util.Map;
-import java.util.Set;
-
+import java.util.Set; // Paper
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -20,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Represents a stack of items
+ * Represents a stack of item
  */
 public class ItemStack implements Cloneable, ConfigurationSerializable {
     private Material type = Material.AIR;
@@ -434,6 +433,7 @@ public class ItemStack implements Cloneable, ConfigurationSerializable {
         return level;
     }
 
+    @Override
     @NotNull
     @Utility
     public Map<String, Object> serialize() {
@@ -483,7 +483,7 @@ public class ItemStack implements Cloneable, ConfigurationSerializable {
                 damage = 0;
             }
         } else {
-            type = Material.getMaterial((String) args.get("type"));
+            type = Bukkit.getUnsafe().getMaterial((String) args.get("type"), version);
         }
 
         if (args.containsKey("amount")) {
@@ -509,6 +509,7 @@ public class ItemStack implements Cloneable, ConfigurationSerializable {
         } else if (args.containsKey("meta")) { // We cannot and will not have meta when enchantments (pre-ItemMeta) exist
             Object raw = args.get("meta");
             if (raw instanceof ItemMeta) {
+                ((ItemMeta) raw).setVersion(version);
                 result.setItemMeta((ItemMeta) raw);
             }
         }

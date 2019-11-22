@@ -1,21 +1,15 @@
 package org.bukkit.entity;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
-
-import java.util.List;
-
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.Merchant;
+import java.util.Locale;
+import org.bukkit.Keyed;
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents a villager NPC
  */
-public interface Villager extends Ageable, NPC, InventoryHolder, Merchant {
+public interface Villager extends AbstractVillager {
 
     /**
      * Gets the current profession of this villager.
@@ -33,242 +27,187 @@ public interface Villager extends Ageable, NPC, InventoryHolder, Merchant {
     public void setProfession(@NotNull Profession profession);
 
     /**
-     * Get the current {@link Career} for this Villager.
+     * Gets the current type of this villager.
      *
-     * @return the {@link Career}
+     * @return Current type.
      */
     @NotNull
-    public Career getCareer();
+    public Type getVillagerType();
 
     /**
-     * Set the new {@link Career} for this Villager.
-     * This method will reset the villager's trades to the new career.
+     * Sets the new type of this villager.
      *
-     * @param career the new career, or null to clear the career to a random one
-     * @throws IllegalArgumentException when the new {@link Career} cannot be
-     * used with this Villager's current {@link Profession}.
+     * @param type New type.
      */
-    public void setCareer(@Nullable Career career);
+    public void setVillagerType(@NotNull Type type);
 
     /**
-     * Set the new {@link Career} for this Villager.
+     * Gets the level of this villager.
      *
-     * @param career the new career, or null to clear the career to a random one
-     * @param resetTrades true to reset this Villager's trades to the new
-     * career's (if any)
-     * @throws IllegalArgumentException when the new {@link Career} cannot be
-     * used with this Villager's current {@link Profession}.
+     * A villager with a level of 1 and no experience is liable to lose its
+     * profession.
+     *
+     * @return this villager's level
      */
-    public void setCareer(@Nullable Career career, boolean resetTrades);
+    public int getVillagerLevel();
 
     /**
-     * Gets this villager's inventory.
+     * Sets the level of this villager.
+     *
+     * A villager with a level of 1 and no experience is liable to lose its
+     * profession.
+     *
+     * @param level the new level
+     * @throws IllegalArgumentException if level not between [1, 5]
+     */
+    public void setVillagerLevel(int level);
+
+    /**
+     * Gets the trading experience of this villager.
+     *
+     * @return trading experience
+     */
+    public int getVillagerExperience();
+
+    /**
+     * Sets the trading experience of this villager.
+     *
+     * @param experience new experience
+     * @throws IllegalArgumentException if experience &lt; 0
+     */
+    public void setVillagerExperience(int experience);
+
+    /**
+     * Attempts to make this villager sleep at the given location.
      * <br>
-     * Note that this inventory is not the Merchant inventory, rather, it is the
-     * items that a villager might have collected (from harvesting crops, etc.)
+     * The location must be in the current world and have a bed placed at the
+     * location. The villager will put its head on the specified block while
+     * sleeping.
      *
-     * {@inheritDoc}
+     * @param location the location of the bed
+     * @return whether the sleep was successful
      */
-    @NotNull
-    @Override
-    Inventory getInventory();
+    public boolean sleep(@NotNull Location location);
 
     /**
-     * Gets this villager's riches, the number of emeralds this villager has
-     * been given.
+     * Causes this villager to wake up if he's currently sleeping.
      *
-     * @return the villager's riches
+     * @throws IllegalStateException if not sleeping
      */
-    int getRiches();
+    public void wakeup();
 
     /**
-     * Sets this villager's riches.
-     *
-     * @see Villager#getRiches()
-     *
-     * @param riches the new riches
+     * Represents Villager type, usually corresponding to what biome they spawn
+     * in.
      */
-    void setRiches(int riches);
+    public enum Type implements Keyed {
+
+        DESERT,
+        JUNGLE,
+        PLAINS,
+        SAVANNA,
+        SNOW,
+        SWAMP,
+        TAIGA;
+        private final NamespacedKey key;
+
+        private Type() {
+            this.key = NamespacedKey.minecraft(this.name().toLowerCase(Locale.ROOT));
+        }
+
+        @NotNull
+        @Override
+        public NamespacedKey getKey() {
+            return key;
+        }
+    }
 
     /**
      * Represents the various different Villager professions there may be.
      * Villagers have different trading options depending on their profession,
      */
-    public enum Profession {
+    public enum Profession implements Keyed {
+        NONE,
         /**
-         * Normal. <b>Reserved for Zombies.</b>
-         * @deprecated Unused
+         * Armorer profession. Wears a black apron. Armorers primarily trade for
+         * iron armor, chainmail armor, and sometimes diamond armor.
          */
-        @Deprecated
-        NORMAL(true),
+        ARMORER,
         /**
-         * Farmer profession. Wears a brown robe.
+         * Butcher profession. Wears a white apron. Butchers primarily trade for
+         * raw and cooked food.
          */
-        FARMER(false),
+        BUTCHER,
         /**
-         * Librarian profession. Wears a white robe.
+         * Cartographer profession. Wears a white robe. Cartographers primarily
+         * trade for explorer maps and some paper.
          */
-        LIBRARIAN(false),
+        CARTOGRAPHER,
         /**
-         * Priest profession. Wears a purple robe.
+         * Cleric profession. Wears a purple robe. Clerics primarily trade for
+         * rotten flesh, gold ingot, redstone, lapis, ender pearl, glowstone,
+         * and bottle o' enchanting.
          */
-        PRIEST(false),
+        CLERIC,
         /**
-         * Blacksmith profession. Wears a black apron.
+         * Farmer profession. Wears a brown robe. Farmers primarily trade for
+         * food-related items.
          */
-        BLACKSMITH(false),
+        FARMER,
         /**
-         * Butcher profession. Wears a white apron.
+         * Fisherman profession. Wears a brown robe. Fisherman primarily trade
+         * for fish, as well as possibly selling string and/or coal.
          */
-        BUTCHER(false),
+        FISHERMAN,
         /**
-         * Nitwit profession. Wears a green apron, cannot trade.
+         * Fletcher profession. Wears a brown robe. Fletchers primarily trade
+         * for string, bows, and arrows.
          */
-        NITWIT(false),
+        FLETCHER,
         /**
-         * Husk. <b>Reserved for Zombies</b>
-         * @deprecated Unused
+         * Leatherworker profession. Wears a white apron. Leatherworkers
+         * primarily trade for leather, and leather armor, as well as saddles.
          */
-        @Deprecated
-        HUSK(true);
-        private final boolean zombie;
+        LEATHERWORKER,
+        /**
+         * Librarian profession. Wears a white robe. Librarians primarily trade
+         * for paper, books, and enchanted books.
+         */
+        LIBRARIAN,
+        /**
+         * Mason profession.
+         */
+        MASON,
+        /**
+         * Nitwit profession. Wears a green apron, cannot trade. Nitwit
+         * villagers do not do anything. They do not have any trades by default.
+         */
+        NITWIT,
+        /**
+         * Sheperd profession. Wears a brown robe. Shepherds primarily trade for
+         * wool items, and shears.
+         */
+        SHEPHERD,
+        /**
+         * Toolsmith profession. Wears a black apron. Tool smiths primarily
+         * trade for iron and diamond tools.
+         */
+        TOOLSMITH,
+        /**
+         * Weaponsmith profession. Wears a black apron. Weapon smiths primarily
+         * trade for iron and diamond weapons, sometimes enchanted.
+         */
+        WEAPONSMITH;
+        private final NamespacedKey key;
 
-        private Profession(boolean zombie) {
-            this.zombie = zombie;
+        private Profession() {
+            this.key = NamespacedKey.minecraft(this.name().toLowerCase(Locale.ROOT));
         }
 
-        /**
-         * Returns if this profession can only be used by zombies.
-         *
-         * @return zombie profession status
-         * @deprecated Unused
-         */
-        @Deprecated
-        public boolean isZombie() {
-            return zombie;
-        }
-
-        /**
-         * Get an immutable list of {@link Career} belonging to this Profession.
-         *
-         * @return an immutable list of careers for this profession, or an empty
-         * map if this Profession has no careers.
-         */
         @NotNull
-        public List<Career> getCareers() {
-            return Career.getCareers(this);
-        }
-    }
-
-    /**
-     * The Career of this Villager.
-     * Each {@link Profession} has a set of careers it is applicable to. Each
-     * career dictates the trading options that are generated.
-     */
-    public enum Career {
-        /*
-        NOTE: The Career entries are order-specific. They should be maintained in the numerical order they are used in the CB implementation.
-        (e.g. Farmer careers are 1,2,3,4 so Career should reflect that numerical order in their ordinal status)
-         */
-        // Farmer careers
-        /**
-         * Farmers primarily trade for food-related items.
-         */
-        FARMER(Profession.FARMER),
-        /**
-         * Fisherman primarily trade for fish, as well as possibly selling
-         * string and/or coal.
-         */
-        FISHERMAN(Profession.FARMER),
-        /**
-         * Shepherds primarily trade for wool items, and shears.
-         */
-        SHEPHERD(Profession.FARMER),
-        /**
-         * Fletchers primarily trade for string, bows, and arrows.
-         */
-        FLETCHER(Profession.FARMER),
-        // Librarian careers
-        /**
-         * Librarians primarily trade for paper, books, and enchanted books.
-         */
-        LIBRARIAN(Profession.LIBRARIAN),
-        /**
-         * Cartographers primarily trade for explorer maps and some paper.
-         */
-        CARTOGRAPHER(Profession.LIBRARIAN),
-        // Priest careers
-        /**
-         * Clerics primarily trade for rotten flesh, gold ingot, redstone,
-         * lapis, ender pearl, glowstone, and bottle o' enchanting.
-         */
-        CLERIC(Profession.PRIEST),
-        // Blacksmith careers
-        /**
-         * Armorers primarily trade for iron armor, chainmail armor, and
-         * sometimes diamond armor.
-         */
-        ARMORER(Profession.BLACKSMITH),
-        /**
-         * Weapon smiths primarily trade for iron and diamond weapons, sometimes
-         * enchanted.
-         */
-        WEAPON_SMITH(Profession.BLACKSMITH),
-        /**
-         * Tool smiths primarily trade for iron and diamond tools.
-         */
-        TOOL_SMITH(Profession.BLACKSMITH),
-        // Butcher careers
-        /**
-         * Butchers primarily trade for raw and cooked food.
-         */
-        BUTCHER(Profession.BUTCHER),
-        /**
-         * Leatherworkers primarily trade for leather, and leather armor, as
-         * well as saddles.
-         */
-        LEATHERWORKER(Profession.BUTCHER),
-        // Nitwit
-        /**
-         * Nitwit villagers do not do anything. They do not have any trades by
-         * default.
-         */
-        NITWIT(Profession.NITWIT);
-
-        private static final Multimap<Profession, Career> careerMap = LinkedListMultimap.create();
-        private final Profession profession;
-
-        private Career(/*@NotNull*/ Profession profession) {
-            this.profession = profession;
-        }
-
-        /**
-         * Get the {@link Profession} this {@link Career} belongs to.
-         *
-         * @return the {@link Profession}.
-         */
-        @NotNull
-        public Profession getProfession() {
-            return profession;
-        }
-
-        /**
-         * Get an immutable list of {@link Career}s that can be used with a
-         * given {@link Profession}
-         * 
-         * @param profession the profession to get careers for
-         * @return an immutable list of Careers that can be used by a
-         * profession, or an empty map if the profession was not found
-         */
-        @NotNull
-        public static List<Career> getCareers(@NotNull Profession profession) {
-            return careerMap.containsKey(profession) ? ImmutableList.copyOf(careerMap.get(profession)) : ImmutableList.<Career>of();
-        }
-
-        static {
-            for (Career career : Career.values()) {
-                careerMap.put(career.profession, career);
-            }
+        @Override
+        public NamespacedKey getKey() {
+            return key;
         }
     }
 }

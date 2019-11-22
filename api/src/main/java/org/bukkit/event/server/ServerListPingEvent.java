@@ -2,7 +2,6 @@ package org.bukkit.event.server;
 
 import java.net.InetAddress;
 import java.util.Iterator;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.UndefinedNullability;
 import org.bukkit.entity.Player;
@@ -23,7 +22,7 @@ public class ServerListPingEvent extends ServerEvent implements Iterable<Player>
     private int maxPlayers;
 
     public ServerListPingEvent(@NotNull final InetAddress address, @NotNull final String motd, final int numPlayers, final int maxPlayers) {
-        super(); // Paper - Is this event being fired async?
+        super(true);
         Validate.isTrue(numPlayers >= 0, "Cannot have negative number of players online", numPlayers);
         this.address = address;
         this.motd = motd;
@@ -35,13 +34,13 @@ public class ServerListPingEvent extends ServerEvent implements Iterable<Player>
      * This constructor is intended for implementations that provide the
      * {@link #iterator()} method, thus provided the {@link #getNumPlayers()}
      * count.
-     * 
+     *
      * @param address the address of the pinger
      * @param motd the message of the day
      * @param maxPlayers the max number of players
      */
     protected ServerListPingEvent(@NotNull final InetAddress address, @NotNull final String motd, final int maxPlayers) {
-        super(); // Paper - Is this event being fired async?
+        super(true);
         this.numPlayers = MAGIC_PLAYER_COUNT;
         this.address = address;
         this.motd = motd;

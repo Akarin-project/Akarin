@@ -10,15 +10,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
-
 import org.bukkit.block.Biome;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.*;
+import org.bukkit.entity.AbstractArrow;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.LightningStrike;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.generator.BlockPopulator;
+import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.metadata.Metadatable;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.PluginMessageRecipient;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Consumer;
@@ -32,22 +41,6 @@ import org.jetbrains.annotations.Nullable;
  * Represents a world, which may contain entities, chunks and blocks
  */
 public interface World extends PluginMessageRecipient, Metadatable {
-
-    // Akarin start
-    /**
-     * Get the nearest village of the location in range.
-     *
-     * @return The nearest village, null if there is no village in range.
-     */
-    public io.akarin.server.api.structure.Village getNearestVillage(@NotNull Location location, double xRadius, double yRadius, double zRadius);
-
-    /**
-     * Get villages which are near by the location in range.
-     *
-     * @return All the villages in range, an empty list if there is no village in range.
-     */
-    public List<io.akarin.server.api.structure.Village> getVillagesInRange(@NotNull Location location, double xRadius, double yRadius, double zRadius);
-    // Akarin end
 
     // Paper start
     /**
@@ -168,6 +161,79 @@ public interface World extends PluginMessageRecipient, Metadatable {
      */
     @NotNull
     public Block getHighestBlockAt(@NotNull Location location);
+
+    // Paper start - Add heightmap API
+    /**
+     * Returns the highest block's y-coordinate at the specified block coordinates that match the specified heightmap's conditions.
+     * <p>
+     * <b>implNote:</b> Implementations are recommended to use an iterative search as a fallback before resorting to
+     * throwing an {@code UnsupportedOperationException}.
+     * </p>
+     *
+     * @param x The block's x-coordinate.
+     * @param z The block's z-coordinate.
+     * @param heightmap The specified heightmap to use. See {@link com.destroystokyo.paper.HeightmapType}
+     * @return The highest block's y-coordinate at (x, z) that matches the specified heightmap's conditions.
+     * @throws UnsupportedOperationException If the heightmap type is not supported.
+     *
+     * @see com.destroystokyo.paper.HeightmapType
+     */
+    public int getHighestBlockYAt(int x, int z, @NotNull com.destroystokyo.paper.HeightmapType heightmap) throws UnsupportedOperationException;
+
+    /**
+     * Returns the highest block's y-coordinate at the specified block coordinates that match the specified heightmap's conditions.
+     * Note that the y-coordinate of the specified location is ignored.
+     * <p>
+     * <b>implNote:</b> Implementations are recommended to use an iterative search as a fallback before resorting to
+     * throwing an {@code UnsupportedOperationException}.
+     * </p>
+     *
+     * @param location The specified block coordinates.
+     * @param heightmap The specified heightmap to use. See {@link com.destroystokyo.paper.HeightmapType}
+     * @return The highest block's y-coordinate at {@code location} that matches the specified heightmap's conditions.
+     * @throws UnsupportedOperationException If the heightmap type is not supported.
+     * @see com.destroystokyo.paper.HeightmapType
+     */
+    default int getHighestBlockYAt(@NotNull Location location, @NotNull com.destroystokyo.paper.HeightmapType heightmap) throws UnsupportedOperationException {
+        return this.getHighestBlockYAt(location.getBlockX(), location.getBlockZ(), heightmap);
+    }
+
+    /**
+     * Returns the highest {@link Block} at the specified block coordinates that match the specified heightmap's conditions.
+     * <p>
+     * <b>implNote:</b> Implementations are recommended to use an iterative search as a fallback before resorting to
+     * throwing an {@code UnsupportedOperationException}.
+     * </p>
+     * @param x The block's x-coordinate.
+     * @param z The block's z-coordinate.
+     * @param heightmap The specified heightmap to use. See {@link com.destroystokyo.paper.HeightmapType}
+     * @return The highest {@link Block} at (x, z) that matches the specified heightmap's conditions.
+     * @throws UnsupportedOperationException If the heightmap type is not supported.
+     * @see com.destroystokyo.paper.HeightmapType
+     */
+    @NotNull
+    default Block getHighestBlockAt(int x, int z, @NotNull com.destroystokyo.paper.HeightmapType heightmap) throws UnsupportedOperationException {
+        return this.getBlockAt(x, this.getHighestBlockYAt(x, z, heightmap), z);
+    }
+
+    /**
+     * Returns the highest {@link Block} at the specified block coordinates that match the specified heightmap's conditions.
+     * Note that the y-coordinate of the specified location is ignored.
+     * <p>
+     * <b>implNote:</b> Implementations are recommended to use an iterative search as a fallback before resorting to
+     * throwing an {@code UnsupportedOperationException}.
+     * </p>
+     * @param location The specified block coordinates.
+     * @param heightmap The specified heightmap to use. See {@link com.destroystokyo.paper.HeightmapType}
+     * @return The highest {@link Block} at {@code location} that matches the specified heightmap's conditions.
+     * @throws UnsupportedOperationException If the heightmap type is not supported.
+     * @see com.destroystokyo.paper.HeightmapType
+     */
+    @NotNull
+    default Block getHighestBlockAt(@NotNull Location location, @NotNull com.destroystokyo.paper.HeightmapType heightmap) throws UnsupportedOperationException {
+        return this.getHighestBlockAt(location.getBlockX(), location.getBlockZ(), heightmap);
+    }
+    // Paper end
 
     /**
      * Gets the {@link Chunk} at the given coordinates
@@ -593,7 +659,11 @@ public interface World extends PluginMessageRecipient, Metadatable {
     public Chunk[] getLoadedChunks();
 
     /**
-     * Loads the specified {@link Chunk}
+     * Loads the specified {@link Chunk}.
+     * <p>
+     * <b>This method will keep the specified chunk loaded until one of the
+     * unload methods is manually called. Callers are advised to instead use
+     * getChunkAt which will only temporarily load the requested chunk.</b>
      *
      * @param chunk The chunk to load
      */
@@ -625,11 +695,19 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * @param z Z-coordinate of the chunk
      * @return true if the chunk is loaded and in use by one or more players,
      *     otherwise false
+     * @deprecated This method was added to facilitate chunk garbage collection.
+     *     As of the current Minecraft version chunks are now strictly managed and
+     *     will not be loaded for more than 1 tick unless they are in use.
      */
+    @Deprecated
     public boolean isChunkInUse(int x, int z);
 
     /**
-     * Loads the {@link Chunk} at the specified coordinates
+     * Loads the {@link Chunk} at the specified coordinates.
+     * <p>
+     * <b>This method will keep the specified chunk loaded until one of the
+     * unload methods is manually called. Callers are advised to instead use
+     * getChunkAt which will only temporarily load the requested chunk.</b>
      * <p>
      * If the chunk does not exist, it will be generated.
      * <p>
@@ -642,7 +720,11 @@ public interface World extends PluginMessageRecipient, Metadatable {
     public void loadChunk(int x, int z);
 
     /**
-     * Loads the {@link Chunk} at the specified coordinates
+     * Loads the {@link Chunk} at the specified coordinates.
+     * <p>
+     * <b>This method will keep the specified chunk loaded until one of the
+     * unload methods is manually called. Callers are advised to instead use
+     * getChunkAt which will only temporarily load the requested chunk.</b>
      *
      * @param x X-coordinate of the chunk
      * @param z Z-coordinate of the chunk
@@ -655,8 +737,8 @@ public interface World extends PluginMessageRecipient, Metadatable {
     /**
      * Safely unloads and saves the {@link Chunk} at the specified coordinates
      * <p>
-     * This method is analogous to {@link #unloadChunk(int, int, boolean,
-     * boolean)} where safe and save is true
+     * This method is analogous to {@link #unloadChunk(int, int, boolean)}
+     * where save is true.
      *
      * @param chunk the chunk to unload
      * @return true if the chunk has unloaded successfully, otherwise false
@@ -666,8 +748,8 @@ public interface World extends PluginMessageRecipient, Metadatable {
     /**
      * Safely unloads and saves the {@link Chunk} at the specified coordinates
      * <p>
-     * This method is analogous to {@link #unloadChunk(int, int, boolean,
-     * boolean)} where safe and saveis true
+     * This method is analogous to {@link #unloadChunk(int, int, boolean)}
+     * where save is true.
      *
      * @param x X-coordinate of the chunk
      * @param z Z-coordinate of the chunk
@@ -677,10 +759,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
 
     /**
      * Safely unloads and optionally saves the {@link Chunk} at the specified
-     * coordinates
-     * <p>
-     * This method is analogous to {@link #unloadChunk(int, int, boolean,
-     * boolean)} where save is true
+     * coordinates.
      *
      * @param x X-coordinate of the chunk
      * @param z Z-coordinate of the chunk
@@ -690,44 +769,14 @@ public interface World extends PluginMessageRecipient, Metadatable {
     public boolean unloadChunk(int x, int z, boolean save);
 
     /**
-     * Unloads and optionally saves the {@link Chunk} at the specified
-     * coordinates
-     *
-     * @param x X-coordinate of the chunk
-     * @param z Z-coordinate of the chunk
-     * @param save Controls whether the chunk is saved
-     * @param safe Controls whether to unload the chunk when players are
-     *     nearby
-     * @return true if the chunk has unloaded successfully, otherwise false
-     * @deprecated it is never safe to remove a chunk in use
-     */
-    @Deprecated
-    public boolean unloadChunk(int x, int z, boolean save, boolean safe);
-
-    /**
      * Safely queues the {@link Chunk} at the specified coordinates for
-     * unloading
-     * <p>
-     * This method is analogous to {@link #unloadChunkRequest(int, int,
-     * boolean)} where safe is true
+     * unloading.
      *
      * @param x X-coordinate of the chunk
      * @param z Z-coordinate of the chunk
      * @return true is the queue attempt was successful, otherwise false
      */
     public boolean unloadChunkRequest(int x, int z);
-
-    /**
-     * Queues the {@link Chunk} at the specified coordinates for unloading
-     *
-     * @param x X-coordinate of the chunk
-     * @param z Z-coordinate of the chunk
-     * @param safe Controls whether to queue the chunk when players are nearby
-     * @return Whether the chunk was actually queued
-     * @deprecated it is never safe to remove a chunk in use
-     */
-    @Deprecated
-    public boolean unloadChunkRequest(int x, int z, boolean safe);
 
     /**
      * Regenerates the {@link Chunk} at the specified coordinates
@@ -749,7 +798,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * @param x X-coordinate of the chunk
      * @param z Z-coordinate of the chunk
      * @return Whether the chunk was actually refreshed
-     * 
+     *
      * @deprecated This method is not guaranteed to work suitably across all client implementations.
      */
     @Deprecated
@@ -775,7 +824,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      *
      * @param x X-coordinate of the chunk
      * @param z Z-coordinate of the chunk
-     * @param forced
+     * @param forced force load status
      */
     public void setChunkForceLoaded(int x, int z, boolean forced);
 
@@ -788,6 +837,94 @@ public interface World extends PluginMessageRecipient, Metadatable {
      */
     @NotNull
     public Collection<Chunk> getForceLoadedChunks();
+
+    /**
+     * Adds a plugin ticket for the specified chunk, loading the chunk if it is
+     * not already loaded.
+     * <p>
+     * A plugin ticket will prevent a chunk from unloading until it is
+     * explicitly removed. A plugin instance may only have one ticket per chunk,
+     * but each chunk can have multiple plugin tickets.
+     * </p>
+     *
+     * @param x X-coordinate of the chunk
+     * @param z Z-coordinate of the chunk
+     * @param plugin Plugin which owns the ticket
+     * @return {@code true} if a plugin ticket was added, {@code false} if the
+     * ticket already exists for the plugin
+     * @throws IllegalStateException If the specified plugin is not enabled
+     * @see #removePluginChunkTicket(int, int, Plugin)
+     */
+    public boolean addPluginChunkTicket(int x, int z, @NotNull Plugin plugin);
+
+    /**
+     * Removes the specified plugin's ticket for the specified chunk
+     * <p>
+     * A plugin ticket will prevent a chunk from unloading until it is
+     * explicitly removed. A plugin instance may only have one ticket per chunk,
+     * but each chunk can have multiple plugin tickets.
+     * </p>
+     *
+     * @param x X-coordinate of the chunk
+     * @param z Z-coordinate of the chunk
+     * @param plugin Plugin which owns the ticket
+     * @return {@code true} if the plugin ticket was removed, {@code false} if
+     * there is no plugin ticket for the chunk
+     * @see #addPluginChunkTicket(int, int, Plugin)
+     */
+    public boolean removePluginChunkTicket(int x, int z, @NotNull Plugin plugin);
+
+    /**
+     * Removes all plugin tickets for the specified plugin
+     * <p>
+     * A plugin ticket will prevent a chunk from unloading until it is
+     * explicitly removed. A plugin instance may only have one ticket per chunk,
+     * but each chunk can have multiple plugin tickets.
+     * </p>
+     *
+     * @param plugin Specified plugin
+     * @see #addPluginChunkTicket(int, int, Plugin)
+     * @see #removePluginChunkTicket(int, int, Plugin)
+     */
+    public void removePluginChunkTickets(@NotNull Plugin plugin);
+
+    /**
+     * Retrieves a collection specifying which plugins have tickets for the
+     * specified chunk. This collection is not updated when plugin tickets are
+     * added or removed to the chunk.
+     * <p>
+     * A plugin ticket will prevent a chunk from unloading until it is
+     * explicitly removed. A plugin instance may only have one ticket per chunk,
+     * but each chunk can have multiple plugin tickets.
+     * </p>
+     *
+     * @param x X-coordinate of the chunk
+     * @param z Z-coordinate of the chunk
+     * @return unmodifiable collection containing which plugins have tickets for
+     * the chunk
+     * @see #addPluginChunkTicket(int, int, Plugin)
+     * @see #removePluginChunkTicket(int, int, Plugin)
+     */
+    @NotNull
+    public Collection<Plugin> getPluginChunkTickets(int x, int z);
+
+    /**
+     * Returns a map of which plugins have tickets for what chunks. The returned
+     * map is not updated when plugin tickets are added or removed to chunks. If
+     * a plugin has no tickets, it will be absent from the map.
+     * <p>
+     * A plugin ticket will prevent a chunk from unloading until it is
+     * explicitly removed. A plugin instance may only have one ticket per chunk,
+     * but each chunk can have multiple plugin tickets.
+     * </p>
+     *
+     * @return unmodifiable map containing which plugins have tickets for what
+     * chunks
+     * @see #addPluginChunkTicket(int, int, Plugin)
+     * @see #removePluginChunkTicket(int, int, Plugin)
+     */
+    @NotNull
+    public Map<Plugin, Collection<Chunk>> getPluginChunkTickets();
 
     /**
      * Drops an item at the specified {@link Location}
@@ -834,7 +971,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * @return Arrow entity spawned as a result of this method
      */
     @NotNull
-    public <T extends Arrow> T spawnArrow(@NotNull Location location, @NotNull Vector direction, float speed, float spread, @NotNull Class<T> clazz);
+    public <T extends AbstractArrow> T spawnArrow(@NotNull Location location, @NotNull Vector direction, float speed, float spread, @NotNull Class<T> clazz);
 
     /**
      * Creates a tree at the given {@link Location}
@@ -916,7 +1053,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
     /**
      * Get a collection of all entities in this World matching the given
      * class/interface
-     * 
+     *
      * @param <T> an entity subclass
      * @param cls The class representing the type of entity to match
      * @return A List of all Entities currently residing in this world that
@@ -1639,6 +1776,21 @@ public interface World extends PluginMessageRecipient, Metadatable {
     public boolean createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks);
 
     /**
+     * Creates explosion at given coordinates with given power and optionally
+     * setting blocks on fire or breaking blocks.
+     *
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param z Z coordinate
+     * @param power The power of explosion, where 4F is TNT
+     * @param setFire Whether or not to set blocks on fire
+     * @param breakBlocks Whether or not to have blocks be destroyed
+     * @param source the source entity, used for tracking damage
+     * @return false if explosion was canceled, otherwise true
+     */
+    public boolean createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks, @Nullable Entity source);
+
+    /**
      * Creates explosion at given coordinates with given power
      *
      * @param loc Location to blow up
@@ -1738,9 +1890,10 @@ public interface World extends PluginMessageRecipient, Metadatable {
     public default boolean createExplosion(@NotNull Entity source, float power) {
         return createExplosion(source, source.getLocation(), power, true, true);
     }
+    // Paper end
 
     /**
-     * Creates explosion at given location with given power and optionally
+     * Creates explosion at given coordinates with given power and optionally
      * setting blocks on fire or breaking blocks.
      *
      * @param loc Location to blow up
@@ -1749,10 +1902,20 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * @param breakBlocks Whether or not to have blocks be destroyed
      * @return false if explosion was canceled, otherwise true
      */
-    public default boolean createExplosion(@NotNull Location loc, float power, boolean setFire, boolean breakBlocks) {
-        return createExplosion(loc.getX(), loc.getY(), loc.getZ(), power, setFire, breakBlocks);
-    }
-    // Paper end
+    public boolean createExplosion(@NotNull Location loc, float power, boolean setFire, boolean breakBlocks);
+
+    /**
+     * Creates explosion at given coordinates with given power and optionally
+     * setting blocks on fire or breaking blocks.
+     *
+     * @param loc Location to blow up
+     * @param power The power of explosion, where 4F is TNT
+     * @param setFire Whether or not to set blocks on fire
+     * @param breakBlocks Whether or not to have blocks be destroyed
+     * @param source the source entity, used for tracking damage
+     * @return false if explosion was canceled, otherwise true
+     */
+    public boolean createExplosion(@NotNull Location loc, float power, boolean setFire, boolean breakBlocks, @Nullable Entity source);
 
     /**
      * Gets the {@link Environment} type of this world
@@ -2230,7 +2393,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * <p>
      * <b>Note:</b> If set to a negative number the world will use the
      * server-wide spawn limit instead.
-     * 
+     *
      * @param limit the new mob limit
      */
     void setMonsterSpawnLimit(int limit);
@@ -2249,7 +2412,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * <p>
      * <b>Note:</b> If set to a negative number the world will use the
      * server-wide spawn limit instead.
-     * 
+     *
      * @param limit the new mob limit
      */
     void setAnimalSpawnLimit(int limit);
@@ -2268,7 +2431,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * <p>
      * <b>Note:</b> If set to a negative number the world will use the
      * server-wide spawn limit instead.
-     * 
+     *
      * @param limit the new mob limit
      */
     void setWaterAnimalSpawnLimit(int limit);
@@ -2287,7 +2450,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * <p>
      * <b>Note:</b> If set to a negative number the world will use the
      * server-wide spawn limit instead.
-     * 
+     *
      * @param limit the new mob limit
      */
     void setAmbientSpawnLimit(int limit);
@@ -2457,6 +2620,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * Spawns the particle (the number of times specified by count)
      * at the target location.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param location the location to spawn at
      * @param count the number of particles
@@ -2471,6 +2635,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * Spawns the particle (the number of times specified by count)
      * at the target location.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param x the position on the x axis to spawn at
      * @param y the position on the y axis to spawn at
@@ -2520,6 +2685,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * randomized positively and negatively by the offset parameters
      * on each axis.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param location the location to spawn at
      * @param count the number of particles
@@ -2538,6 +2704,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * randomized positively and negatively by the offset parameters
      * on each axis.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param x the position on the x axis to spawn at
      * @param y the position on the y axis to spawn at
@@ -2594,6 +2761,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * randomized positively and negatively by the offset parameters
      * on each axis.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param location the location to spawn at
      * @param count the number of particles
@@ -2614,6 +2782,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * randomized positively and negatively by the offset parameters
      * on each axis.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param x the position on the x axis to spawn at
      * @param y the position on the y axis to spawn at
@@ -2686,6 +2855,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * randomized positively and negatively by the offset parameters
      * on each axis.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param location the location to spawn at
      * @param count the number of particles
@@ -2709,6 +2879,7 @@ public interface World extends PluginMessageRecipient, Metadatable {
      * randomized positively and negatively by the offset parameters
      * on each axis.
      *
+     * @param <T> type of particle data (see {@link Particle#getDataType()}
      * @param particle the particle to spawn
      * @param x the position on the x axis to spawn at
      * @param y the position on the y axis to spawn at
@@ -2756,6 +2927,15 @@ public interface World extends PluginMessageRecipient, Metadatable {
     public Location locateNearestStructure(@NotNull Location origin, @NotNull StructureType structureType, int radius, boolean findUnexplored);
 
     // Spigot start
+    /**
+     * Returns the view distance used for this world.
+     *
+     * @return the view distance used for this world
+     */
+    int getViewDistance();
+    // Spigot end
+
+    // Spigot start
     public class Spigot
     {
 
@@ -2789,6 +2969,24 @@ public interface World extends PluginMessageRecipient, Metadatable {
     @NotNull
     Spigot spigot();
     // Spigot end
+
+    /**
+     * Finds the nearest raid close to the given location.
+     *
+     * @param location the origin location
+     * @param radius the radius
+     * @return the closest {@link Raid}, or null if no raids were found
+     */
+    @Nullable
+    public Raid locateNearestRaid(@NotNull Location location, int radius);
+
+    /**
+     * Gets all raids that are going on over this world.
+     *
+     * @return the list of all active raids
+     */
+    @NotNull
+    public List<Raid> getRaids();
 
     /**
      * Represents various map environment types that a world may be

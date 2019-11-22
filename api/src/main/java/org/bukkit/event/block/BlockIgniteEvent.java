@@ -37,10 +37,12 @@ public class BlockIgniteEvent extends BlockEvent implements Cancellable {
         this.cancel = false;
     }
 
+    @Override
     public boolean isCancelled() {
         return cancel;
     }
 
+    @Override
     public void setCancelled(boolean cancel) {
         this.cancel = cancel;
     }
@@ -122,6 +124,10 @@ public class BlockIgniteEvent extends BlockEvent implements Cancellable {
          * Block ignition caused by explosion.
          */
         EXPLOSION,
+        /**
+         * Block ignition caused by a flaming arrow.
+         */
+        ARROW,
     }
 
     @NotNull

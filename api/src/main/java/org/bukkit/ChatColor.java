@@ -1,11 +1,9 @@
 package org.bukkit;
 
+import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import org.apache.commons.lang.Validate;
-
-import com.google.common.collect.Maps;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * All supported color values for chat
  */
-public enum ChatColor{
+public enum ChatColor {
     /**
      * Represents black
      */
@@ -27,7 +25,7 @@ public enum ChatColor{
     /**
      * Represents dark blue
      */
-    DARK_BLUE('1', 0x1){
+    DARK_BLUE('1', 0x1) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -37,7 +35,7 @@ public enum ChatColor{
     /**
      * Represents dark green
      */
-    DARK_GREEN('2', 0x2){
+    DARK_GREEN('2', 0x2) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -47,7 +45,7 @@ public enum ChatColor{
     /**
      * Represents dark blue (aqua)
      */
-    DARK_AQUA('3', 0x3){
+    DARK_AQUA('3', 0x3) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -57,7 +55,7 @@ public enum ChatColor{
     /**
      * Represents dark red
      */
-    DARK_RED('4', 0x4){
+    DARK_RED('4', 0x4) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -67,7 +65,7 @@ public enum ChatColor{
     /**
      * Represents dark purple
      */
-    DARK_PURPLE('5', 0x5){
+    DARK_PURPLE('5', 0x5) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -77,7 +75,7 @@ public enum ChatColor{
     /**
      * Represents gold
      */
-    GOLD('6', 0x6){
+    GOLD('6', 0x6) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -87,7 +85,7 @@ public enum ChatColor{
     /**
      * Represents gray
      */
-    GRAY('7', 0x7){
+    GRAY('7', 0x7) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -97,7 +95,7 @@ public enum ChatColor{
     /**
      * Represents dark gray
      */
-    DARK_GRAY('8', 0x8){
+    DARK_GRAY('8', 0x8) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -107,7 +105,7 @@ public enum ChatColor{
     /**
      * Represents blue
      */
-    BLUE('9', 0x9){
+    BLUE('9', 0x9) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -117,7 +115,7 @@ public enum ChatColor{
     /**
      * Represents green
      */
-    GREEN('a', 0xA){
+    GREEN('a', 0xA) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -127,7 +125,7 @@ public enum ChatColor{
     /**
      * Represents aqua
      */
-    AQUA('b', 0xB){
+    AQUA('b', 0xB) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -137,7 +135,7 @@ public enum ChatColor{
     /**
      * Represents red
      */
-    RED('c', 0xC){
+    RED('c', 0xC) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -147,7 +145,7 @@ public enum ChatColor{
     /**
      * Represents light purple
      */
-    LIGHT_PURPLE('d', 0xD){
+    LIGHT_PURPLE('d', 0xD) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -157,7 +155,7 @@ public enum ChatColor{
     /**
      * Represents yellow
      */
-    YELLOW('e', 0xE){
+    YELLOW('e', 0xE) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -167,7 +165,7 @@ public enum ChatColor{
     /**
      * Represents white
      */
-    WHITE('f', 0xF){
+    WHITE('f', 0xF) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -177,7 +175,7 @@ public enum ChatColor{
     /**
      * Represents magical characters that change around randomly
      */
-    MAGIC('k', 0x10, true){
+    MAGIC('k', 0x10, true) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -187,7 +185,7 @@ public enum ChatColor{
     /**
      * Makes the text bold.
      */
-    BOLD('l', 0x11, true){
+    BOLD('l', 0x11, true) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -197,7 +195,7 @@ public enum ChatColor{
     /**
      * Makes a line appear through the text.
      */
-    STRIKETHROUGH('m', 0x12, true){
+    STRIKETHROUGH('m', 0x12, true) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -207,7 +205,7 @@ public enum ChatColor{
     /**
      * Makes the text appear underlined.
      */
-    UNDERLINE('n', 0x13, true){
+    UNDERLINE('n', 0x13, true) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -217,7 +215,7 @@ public enum ChatColor{
     /**
      * Makes the text italic.
      */
-    ITALIC('o', 0x14, true){
+    ITALIC('o', 0x14, true) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -227,7 +225,7 @@ public enum ChatColor{
     /**
      * Resets all previous chat colors or formats.
      */
-    RESET('r', 0x15){
+    RESET('r', 0x15) {
         @NotNull
         @Override
         public net.md_5.bungee.api.ChatColor asBungee() {
@@ -246,8 +244,8 @@ public enum ChatColor{
     private final char code;
     private final boolean isFormat;
     private final String toString;
-    private final static Map<Integer, ChatColor> BY_ID = Maps.newHashMap();
-    private final static Map<Character, ChatColor> BY_CHAR = Maps.newHashMap();
+    private static final Map<Integer, ChatColor> BY_ID = Maps.newHashMap();
+    private static final Map<Character, ChatColor> BY_CHAR = Maps.newHashMap();
 
     private ChatColor(char code, int intCode) {
         this(code, intCode, false);
@@ -282,7 +280,7 @@ public enum ChatColor{
 
     /**
      * Checks if this code is a format code as opposed to a color code.
-     * 
+     *
      * @return whether this ChatColor is a format code
      */
     public boolean isFormat() {
@@ -291,7 +289,7 @@ public enum ChatColor{
 
     /**
      * Checks if this code is a color code as opposed to a format code.
-     * 
+     *
      * @return whether this ChatColor is a color code
      */
     public boolean isColor() {
@@ -353,6 +351,8 @@ public enum ChatColor{
      */
     @NotNull
     public static String translateAlternateColorCodes(char altColorChar, @NotNull String textToTranslate) {
+        Validate.notNull(textToTranslate, "Cannot translate null text");
+
         char[] b = textToTranslate.toCharArray();
         for (int i = 0; i < b.length - 1; i++) {
             if (b[i] == altColorChar && "0123456789AaBbCcDdEeFfKkLlMmNnOoRr".indexOf(b[i+1]) > -1) {
@@ -371,6 +371,8 @@ public enum ChatColor{
      */
     @NotNull
     public static String getLastColors(@NotNull String input) {
+        Validate.notNull(input, "Cannot get last colors from null text");
+
         String result = "";
         int length = input.length();
 

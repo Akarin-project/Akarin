@@ -136,7 +136,7 @@ public interface ItemFactory {
      * @param meta meta
      * @param material material
      * @return updated material
-     * @throws IllegalArgumentException exception
+     * @throws IllegalArgumentException if bad material or data
      * @deprecated for internal use only
      */
     @Deprecated
