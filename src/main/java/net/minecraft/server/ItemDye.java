@@ -16,11 +16,12 @@ public class ItemDye extends Item {
         ItemDye.a.put(enumcolor, this);
     }
 
+    @Override
     public boolean a(ItemStack itemstack, EntityHuman entityhuman, EntityLiving entityliving, EnumHand enumhand) {
         if (entityliving instanceof EntitySheep) {
             EntitySheep entitysheep = (EntitySheep) entityliving;
 
-            if (!entitysheep.isSheared() && entitysheep.getColor() != this.b) {
+            if (entitysheep.isAlive() && !entitysheep.isSheared() && entitysheep.getColor() != this.b) {
                 // CraftBukkit start
                 byte bColor = (byte) this.b.getColorIndex();
                 SheepDyeWoolEvent event = new SheepDyeWoolEvent((org.bukkit.entity.Sheep) entitysheep.getBukkitEntity(), org.bukkit.DyeColor.getByWoolData(bColor));

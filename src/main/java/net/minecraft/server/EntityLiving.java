@@ -2,24 +2,23 @@ package net.minecraft.server;
 
 import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-
-import java.util.Arrays;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.tuple.Pair;
 
 // CraftBukkit start
 import java.util.ArrayList;
-import java.util.stream.Collectors;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.bukkit.Location;
@@ -41,84 +40,85 @@ import co.aikar.timings.MinecraftTimings; // Paper
 
 public abstract class EntityLiving extends Entity {
 
-    private static final Logger a = LogManager.getLogger();
     private static final UUID b = UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D");
-    private static final AttributeModifier c = (new AttributeModifier(EntityLiving.b, "Sprinting speed boost", 0.30000001192092896D, 2)).a(false);
-    protected static final DataWatcherObject<Byte> aw = DataWatcher.a(EntityLiving.class, DataWatcherRegistry.a);
+    private static final AttributeModifier c = (new AttributeModifier(EntityLiving.b, "Sprinting speed boost", 0.30000001192092896D, AttributeModifier.Operation.MULTIPLY_TOTAL)).a(false);
+    protected static final DataWatcherObject<Byte> ar = DataWatcher.a(EntityLiving.class, DataWatcherRegistry.a);
     public static final DataWatcherObject<Float> HEALTH = DataWatcher.a(EntityLiving.class, DataWatcherRegistry.c);
+    private static final DataWatcherObject<Integer> e = DataWatcher.a(EntityLiving.class, DataWatcherRegistry.b);
+    private static final DataWatcherObject<Boolean> f = DataWatcher.a(EntityLiving.class, DataWatcherRegistry.i);
     private static final DataWatcherObject<Integer> g = DataWatcher.a(EntityLiving.class, DataWatcherRegistry.b);
-    private static final DataWatcherObject<Boolean> h = DataWatcher.a(EntityLiving.class, DataWatcherRegistry.i);
-    private static final DataWatcherObject<Integer> bx = DataWatcher.a(EntityLiving.class, DataWatcherRegistry.b);
+    private static final DataWatcherObject<Optional<BlockPosition>> bs = DataWatcher.a(EntityLiving.class, DataWatcherRegistry.m);
+    protected static final EntitySize as = EntitySize.c(0.2F, 0.2F);
     private AttributeMapBase attributeMap;
     public CombatTracker combatTracker = new CombatTracker(this);
     public final Map<MobEffectList, MobEffect> effects = Maps.newHashMap();
-    private final NonNullList<ItemStack> bB;
-    private final NonNullList<ItemStack> bC;
-    public boolean ax;
-    public EnumHand ay;
-    public int az;
-    public int aA;
+    private final NonNullList<ItemStack> bw;
+    private final NonNullList<ItemStack> bx;
+    public boolean at;
+    public EnumHand au;
+    public int av;
+    public int aw;
     public int hurtTicks;
-    public int aC;
-    public float aD;
+    public int hurtDuration;
+    public float az;
     public int deathTicks;
+    public float aB;
+    public float aC;
+    protected int aD;
+    public float aE;
     public float aF;
     public float aG;
-    protected int aH;
-    public float aI;
-    public float aJ;
-    public float aK;
     public int maxNoDamageTicks;
+    public final float aI;
+    public final float aJ;
+    public float aK;
+    public float aL;
     public float aM;
     public float aN;
     public float aO;
-    public float aP;
-    public float aQ;
-    public float aR;
-    public float aS;
-    public float aT;
-    public float aU;
     public EntityHuman killer;
-    public int lastDamageByPlayerTime; // Paper - public
-    protected boolean killed; protected void setDying(boolean dying) { this.killed = dying; } protected boolean isDying() { return this.killed; } // Paper - OBFHELPER
+    public int lastDamageByPlayerTime; // Paper - protected -> public
+    protected boolean killed;
     protected int ticksFarFromPlayer;
-    protected float aZ;
-    protected float ba;
-    protected float bb;
-    protected float bc;
-    protected float bd;
-    protected int be; protected int getKillCount() { return this.be; } // Paper - OBFHELPER
+    protected float aT;
+    protected float aU;
+    protected float aV;
+    protected float aW;
+    protected float aX;
+    protected int aY; protected int getKillCount() { return this.aY; } // Paper - OBFHELPER
     public float lastDamage;
-    protected boolean bg;
-    public float bh;
-    public float bi;
-    public float bj;
-    public float bk;
-    protected int bl;
-    protected double bm;
-    protected double bn;
-    protected double bo;
-    protected double bp;
-    protected double bq;
-    protected double br;
-    protected int bs;
+    protected boolean jumping;
+    public float bb;
+    public float bc;
+    public float bd;
+    public float be;
+    protected int bf;
+    protected double bg;
+    protected double bh;
+    protected double bi;
+    protected double bj;
+    protected double bk;
+    protected double bl;
+    protected int bm;
     public boolean updateEffects;
+    @Nullable
     public EntityLiving lastDamager;
     public int hurtTimestamp;
-    private EntityLiving bG;
-    private int bH;
-    private float bI;
-    private int bJ;
-    private float bK;
+    private EntityLiving bB;
+    private int bC;
+    private float bD;
+    private int jumpTicks;
+    private float bF;
     public ItemStack activeItem; // Paper - public
-    protected int bu;
-    protected int bv;
-    private BlockPosition bL;
-    private DamageSource bM;
-    private long bN;
-    protected int bw;
-    private float bO;
-    private float bP;
+    protected int bo;
+    protected int bp;
+    private BlockPosition bG;
+    private DamageSource bH;
+    private long bI;
+    protected int bq;
+    private float bJ;
+    private float bK;
+    protected BehaviorController<?> br;
     // CraftBukkit start
     public int expToDrop;
     public int maxAirTicks = 300;
@@ -143,49 +143,66 @@ public abstract class EntityLiving extends Entity {
     }
     // Spigot end
 
-    protected EntityLiving(EntityTypes<?> entitytypes, World world) {
+    protected EntityLiving(EntityTypes<? extends EntityLiving> entitytypes, World world) {
         super(entitytypes, world);
-        this.bB = NonNullList.a(2, ItemStack.a);
-        this.bC = NonNullList.a(4, ItemStack.a);
+        this.bw = NonNullList.a(2, ItemStack.a);
+        this.bx = NonNullList.a(4, ItemStack.a);
         this.maxNoDamageTicks = 20;
-        this.aU = 0.02F;
+        this.aO = 0.02F;
         this.updateEffects = true;
         this.activeItem = ItemStack.a;
         this.initAttributes();
         // CraftBukkit - setHealth(getMaxHealth()) inlined and simplified to skip the instanceof check for EntityPlayer, as getBukkitEntity() is not initialized in constructor
-        this.datawatcher.set(EntityLiving.HEALTH, (float) this.getAttributeInstance(GenericAttributes.maxHealth).getValue());
-        this.j = true;
-        this.aP = (float) ((Math.random() + 1.0D) * 0.009999999776482582D);
+        this.datawatcher.set(EntityLiving.HEALTH, (float) this.getAttributeInstance(GenericAttributes.MAX_HEALTH).getValue());
+        this.i = true;
+        this.aJ = (float) ((Math.random() + 1.0D) * 0.009999999776482582D);
         this.setPosition(this.locX, this.locY, this.locZ);
-        this.aO = (float) Math.random() * 12398.0F;
+        this.aI = (float) Math.random() * 12398.0F;
         this.yaw = (float) (Math.random() * 6.2831854820251465D);
-        this.aS = this.yaw;
-        this.Q = 0.6F;
+        this.aM = this.yaw;
+        this.K = 0.6F;
+        this.br = this.a(new Dynamic(DynamicOpsNBT.a, new NBTTagCompound()));
     }
 
+    public BehaviorController<?> getBehaviorController() {
+        return this.br;
+    }
+
+    protected BehaviorController<?> a(Dynamic<?> dynamic) {
+        return new BehaviorController<>(ImmutableList.of(), ImmutableList.of(), dynamic);
+    }
+
+    @Override
     public void killEntity() {
         this.damageEntity(DamageSource.OUT_OF_WORLD, Float.MAX_VALUE);
     }
 
-    protected void x_() {
-        this.datawatcher.register(EntityLiving.aw, (byte) 0);
+    public boolean a(EntityTypes<?> entitytypes) {
+        return true;
+    }
+
+    @Override
+    protected void initDatawatcher() {
+        this.datawatcher.register(EntityLiving.ar, (byte) 0);
+        this.datawatcher.register(EntityLiving.e, 0);
+        this.datawatcher.register(EntityLiving.f, false);
         this.datawatcher.register(EntityLiving.g, 0);
-        this.datawatcher.register(EntityLiving.h, false);
-        this.datawatcher.register(EntityLiving.bx, 0);
         this.datawatcher.register(EntityLiving.HEALTH, 1.0F);
+        this.datawatcher.register(EntityLiving.bs, Optional.empty());
     }
 
     protected void initAttributes() {
-        this.getAttributeMap().b(GenericAttributes.maxHealth);
-        this.getAttributeMap().b(GenericAttributes.c);
+        this.getAttributeMap().b(GenericAttributes.MAX_HEALTH);
+        this.getAttributeMap().b(GenericAttributes.KNOCKBACK_RESISTANCE);
         this.getAttributeMap().b(GenericAttributes.MOVEMENT_SPEED);
-        this.getAttributeMap().b(GenericAttributes.h);
-        this.getAttributeMap().b(GenericAttributes.i);
+        this.getAttributeMap().b(GenericAttributes.ARMOR);
+        this.getAttributeMap().b(GenericAttributes.ARMOR_TOUGHNESS);
     }
 
+    @Override
     protected void a(double d0, boolean flag, IBlockData iblockdata, BlockPosition blockposition) {
         if (!this.isInWater()) {
-            this.at();
+            this.ay();
         }
 
         if (!this.world.isClientSide && this.fallDistance > 3.0F && flag) {
@@ -197,9 +214,9 @@ public abstract class EntityLiving extends Entity {
 
                 // CraftBukkit start - visiblity api
                 if (this instanceof EntityPlayer) {
-                    ((WorldServer) this.world).sendParticles((EntityPlayer) this, new ParticleParamBlock(Particles.d, iblockdata), this.locX, this.locY, this.locZ, i, 0.0D, 0.0D, 0.0D, 0.15000000596046448D, false);
+                    ((WorldServer) this.world).sendParticles((EntityPlayer) this, new ParticleParamBlock(Particles.BLOCK, iblockdata), this.locX, this.locY, this.locZ, i, 0.0D, 0.0D, 0.0D, 0.15000000596046448D, false);
                 } else {
-                    ((WorldServer) this.world).a(new ParticleParamBlock(Particles.d, iblockdata), this.locX, this.locY, this.locZ, i, 0.0D, 0.0D, 0.0D, 0.15000000596046448D);
+                    ((WorldServer) this.world).a(new ParticleParamBlock(Particles.BLOCK, iblockdata), this.locX, this.locY, this.locZ, i, 0.0D, 0.0D, 0.0D, 0.15000000596046448D);
                 }
                 // CraftBukkit end
             }
@@ -208,15 +225,20 @@ public abstract class EntityLiving extends Entity {
         super.a(d0, flag, iblockdata, blockposition);
     }
 
-    public boolean canBreatheUnderwater() { return this.ca(); } // Paper - OBFHELPER
-    public boolean ca() {
+    public boolean canBreatheUnderwater() { return this.cm(); } // Paper - OBFHELPER
+    public boolean cm() {
         return this.getMonsterType() == EnumMonsterType.UNDEAD;
     }
 
-    public void W() {
-        this.aF = this.aG;
-        super.W();
-        //this.world.methodProfiler.enter("livingEntityBaseTick"); // Akarin - remove caller
+    @Override
+    public void entityBaseTick() {
+        this.aB = this.aC;
+        if (this.justCreated) {
+            this.getBedPosition().ifPresent(this::a);
+        }
+
+        super.entityBaseTick();
+        this.world.getMethodProfiler().enter("livingEntityBaseTick");
         boolean flag = this instanceof EntityHuman;
 
         if (this.isAlive()) {
@@ -243,49 +265,45 @@ public abstract class EntityLiving extends Entity {
 
         if (this.isAlive()) {
             if (this.a(TagsFluid.WATER) && this.world.getType(new BlockPosition(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ)).getBlock() != Blocks.BUBBLE_COLUMN) {
-                if (!this.canBreatheUnderwater() && !MobEffectUtil.c(this) && !flag1) { // Paper - use OBFHELPER so it can be overridden
-                    this.setAirTicks(this.k(this.getAirTicks()));
+                if (!this.canBreatheUnderwater() && !MobEffectUtil.c(this) && !flag1) {  // Paper - use OBFHELPER so it can be overridden
+                    this.setAirTicks(this.l(this.getAirTicks()));
                     if (this.getAirTicks() == -20) {
                         this.setAirTicks(0);
+                        Vec3D vec3d = this.getMot();
 
-                        // Akarin start - this handle by client
-                        /*
                         for (int i = 0; i < 8; ++i) {
                             float f = this.random.nextFloat() - this.random.nextFloat();
                             float f1 = this.random.nextFloat() - this.random.nextFloat();
                             float f2 = this.random.nextFloat() - this.random.nextFloat();
 
-                            this.world.addParticle(Particles.e, this.locX + (double) f, this.locY + (double) f1, this.locZ + (double) f2, this.motX, this.motY, this.motZ);
+                            this.world.addParticle(Particles.BUBBLE, this.locX + (double) f, this.locY + (double) f1, this.locZ + (double) f2, vec3d.x, vec3d.y, vec3d.z);
                         }
-                        */
-                        // Akarin end
 
                         this.damageEntity(DamageSource.DROWN, 2.0F);
                     }
                 }
 
-                if (!this.world.isClientSide && this.isPassenger() && this.getVehicle() != null && !this.getVehicle().aY()) {
+                if (!this.world.isClientSide && this.isPassenger() && this.getVehicle() != null && !this.getVehicle().bf()) {
                     this.stopRiding();
                 }
-            } else if (this.getAirTicks() < this.bf()) {
-                this.setAirTicks(this.l(this.getAirTicks()));
+            } else if (this.getAirTicks() < this.bp()) {
+                this.setAirTicks(this.m(this.getAirTicks()));
             }
 
             if (!this.world.isClientSide) {
                 BlockPosition blockposition = new BlockPosition(this);
 
-                if (!Objects.equal(this.bL, blockposition)) {
-                    this.bL = blockposition;
+                if (!Objects.equal(this.bG, blockposition)) {
+                    this.bG = blockposition;
                     this.b(blockposition);
                 }
             }
         }
 
-        if (this.isAlive() && this.ap()) {
+        if (this.isAlive() && this.au()) {
             this.extinguish();
         }
 
-        this.aM = this.aN;
         if (this.hurtTicks > 0) {
             --this.hurtTicks;
         }
@@ -295,7 +313,7 @@ public abstract class EntityLiving extends Entity {
         }
 
         if (this.getHealth() <= 0.0F) {
-            this.cb();
+            this.co();
         }
 
         if (this.lastDamageByPlayerTime > 0) {
@@ -304,8 +322,8 @@ public abstract class EntityLiving extends Entity {
             this.killer = null;
         }
 
-        if (this.bG != null && !this.bG.isAlive()) {
-            this.bG = null;
+        if (this.bB != null && !this.bB.isAlive()) {
+            this.bB = null;
         }
 
         if (this.lastDamager != null) {
@@ -317,19 +335,19 @@ public abstract class EntityLiving extends Entity {
         }
 
         this.tickPotionEffects();
-        this.bc = this.bb;
-        this.aR = this.aQ;
-        this.aT = this.aS;
+        this.aW = this.aV;
+        this.aL = this.aK;
+        this.aN = this.aM;
         this.lastYaw = this.yaw;
         this.lastPitch = this.pitch;
-        //this.world.methodProfiler.exit(); // Akarin - remove caller
+        this.world.getMethodProfiler().exit();
     }
 
     // CraftBukkit start
     public int getExpReward() {
         int exp = this.getExpValue(this.killer);
 
-        if (!this.world.isClientSide && (this.lastDamageByPlayerTime > 0 || this.alwaysGivesExp()) && this.isDropExperience() && this.world.getGameRules().getBoolean("doMobLoot")) {
+        if (!this.world.isClientSide && (this.lastDamageByPlayerTime > 0 || this.alwaysGivesExp()) && this.isDropExperience() && this.world.getGameRules().getBoolean(GameRules.DO_MOB_LOOT)) {
             return exp;
         } else {
             return 0;
@@ -350,11 +368,16 @@ public abstract class EntityLiving extends Entity {
         return false;
     }
 
-    public boolean aY() {
+    public float cn() {
+        return this.isBaby() ? 0.5F : 1.0F;
+    }
+
+    @Override
+    public boolean bf() {
         return false;
     }
 
-    protected void cb() {
+    protected void co() {
         ++this.deathTicks;
         if (this.deathTicks >= 20 && !this.dead) { // CraftBukkit - (this.deathTicks == 20) -> (this.deathTicks >= 20 && !this.dead)
             int i;
@@ -373,17 +396,13 @@ public abstract class EntityLiving extends Entity {
 
             this.die();
 
-            // Akarin start - this handle by client
-            /*
             for (i = 0; i < 20; ++i) {
                 double d0 = this.random.nextGaussian() * 0.02D;
                 double d1 = this.random.nextGaussian() * 0.02D;
                 double d2 = this.random.nextGaussian() * 0.02D;
 
-                this.world.addParticle(Particles.J, this.locX + (double) (this.random.nextFloat() * this.width * 2.0F) - (double) this.width, this.locY + (double) (this.random.nextFloat() * this.length), this.locZ + (double) (this.random.nextFloat() * this.width * 2.0F) - (double) this.width, d0, d1, d2);
+                this.world.addParticle(Particles.POOF, this.locX + (double) (this.random.nextFloat() * this.getWidth() * 2.0F) - (double) this.getWidth(), this.locY + (double) (this.random.nextFloat() * this.getHeight()), this.locZ + (double) (this.random.nextFloat() * this.getWidth() * 2.0F) - (double) this.getWidth(), d0, d1, d2);
             }
-            */
-            // Akarin end
         }
 
     }
@@ -392,14 +411,14 @@ public abstract class EntityLiving extends Entity {
         return !this.isBaby();
     }
 
-    protected int k(int i) {
+    protected int l(int i) {
         int j = EnchantmentManager.getOxygenEnchantmentLevel(this);
 
         return j > 0 && this.random.nextInt(j + 1) > 0 ? i : i - 1;
     }
 
-    protected int l(int i) {
-        return Math.min(i + 4, this.bf());
+    protected int m(int i) {
+        return Math.min(i + 4, this.bp());
     }
 
     protected int getExpValue(EntityHuman entityhuman) {
@@ -419,7 +438,7 @@ public abstract class EntityLiving extends Entity {
         return this.lastDamager;
     }
 
-    public int cg() {
+    public int ct() {
         return this.hurtTimestamp;
     }
 
@@ -428,26 +447,31 @@ public abstract class EntityLiving extends Entity {
         this.hurtTimestamp = this.ticksLived;
     }
 
-    public EntityLiving ch() {
-        return this.bG;
+    @Nullable
+    public EntityLiving cu() {
+        return this.bB;
     }
 
-    public int ci() {
-        return this.bH;
+    public int cv() {
+        return this.bC;
     }
 
     public void z(Entity entity) {
         if (entity instanceof EntityLiving) {
-            this.bG = (EntityLiving) entity;
+            this.bB = (EntityLiving) entity;
         } else {
-            this.bG = null;
+            this.bB = null;
         }
 
-        this.bH = this.ticksLived;
+        this.bC = this.ticksLived;
     }
 
-    public int cj() {
+    public int cw() {
         return this.ticksFarFromPlayer;
+    }
+
+    public void n(int i) {
+        this.ticksFarFromPlayer = i;
     }
 
     protected void b(ItemStack itemstack) {
@@ -465,6 +489,7 @@ public abstract class EntityLiving extends Entity {
         }
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         nbttagcompound.setFloat("Health", this.getHealth());
         nbttagcompound.setShort("HurtTime", (short) this.hurtTicks);
@@ -505,15 +530,22 @@ public abstract class EntityLiving extends Entity {
             while (iterator.hasNext()) {
                 MobEffect mobeffect = (MobEffect) iterator.next();
 
-                nbttaglist.add((NBTBase) mobeffect.a(new NBTTagCompound()));
+                nbttaglist.add(mobeffect.a(new NBTTagCompound()));
             }
 
             nbttagcompound.set("ActiveEffects", nbttaglist);
         }
 
-        nbttagcompound.setBoolean("FallFlying", this.dc());
+        nbttagcompound.setBoolean("FallFlying", this.isGliding());
+        this.getBedPosition().ifPresent((blockposition) -> {
+            nbttagcompound.setInt("SleepingX", blockposition.getX());
+            nbttagcompound.setInt("SleepingY", blockposition.getY());
+            nbttagcompound.setInt("SleepingZ", blockposition.getZ());
+        });
+        nbttagcompound.set("Brain", (NBTBase) this.br.a((DynamicOps) DynamicOpsNBT.a));
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         // Paper start - jvm keeps optimizing the setter
         float absorptionAmount = nbttagcompound.getFloat("AbsorptionAmount");
@@ -543,9 +575,9 @@ public abstract class EntityLiving extends Entity {
         if (nbttagcompound.hasKey("Bukkit.MaxHealth")) {
             NBTBase nbtbase = nbttagcompound.get("Bukkit.MaxHealth");
             if (nbtbase.getTypeId() == 5) {
-                this.getAttributeInstance(GenericAttributes.maxHealth).setValue(((NBTTagFloat) nbtbase).asDouble());
+                this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(((NBTTagFloat) nbtbase).asDouble());
             } else if (nbtbase.getTypeId() == 3) {
-                this.getAttributeInstance(GenericAttributes.maxHealth).setValue(((NBTTagInt) nbtbase).asDouble());
+                this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(((NBTTagInt) nbtbase).asDouble());
             }
         }
         // CraftBukkit end
@@ -561,15 +593,29 @@ public abstract class EntityLiving extends Entity {
             String s = nbttagcompound.getString("Team");
             ScoreboardTeam scoreboardteam = this.world.getScoreboard().getTeam(s);
             if (!world.paperConfig.nonPlayerEntitiesOnScoreboards && !(this instanceof EntityHuman)) { scoreboardteam = null; } // Paper
-            boolean flag = scoreboardteam != null && this.world.getScoreboard().addPlayerToTeam(this.bu(), scoreboardteam);
+            boolean flag = scoreboardteam != null && this.world.getScoreboard().addPlayerToTeam(this.getUniqueIDString(), scoreboardteam);
 
             if (!flag) {
-                EntityLiving.a.warn("Unable to add mob to team \"{}\" (that team probably doesn't exist)", s);
+                EntityLiving.LOGGER.warn("Unable to add mob to team \"{}\" (that team probably doesn't exist)", s);
             }
         }
 
         if (nbttagcompound.getBoolean("FallFlying")) {
             this.setFlag(7, true);
+        }
+
+        if (nbttagcompound.hasKeyOfType("SleepingX", 99) && nbttagcompound.hasKeyOfType("SleepingY", 99) && nbttagcompound.hasKeyOfType("SleepingZ", 99)) {
+            BlockPosition blockposition = new BlockPosition(nbttagcompound.getInt("SleepingX"), nbttagcompound.getInt("SleepingY"), nbttagcompound.getInt("SleepingZ"));
+
+            this.d(blockposition);
+            this.datawatcher.set(EntityLiving.POSE, EntityPose.SLEEPING);
+            if (!this.justCreated) {
+                this.a(blockposition);
+            }
+        }
+
+        if (nbttagcompound.hasKeyOfType("Brain", 10)) {
+            this.br = this.a(new Dynamic(DynamicOpsNBT.a, nbttagcompound.get("Brain")));
         }
 
     }
@@ -643,11 +689,9 @@ public abstract class EntityLiving extends Entity {
             this.updateEffects = false;
         }
 
-        int i = (Integer) this.datawatcher.get(EntityLiving.g);
-        boolean flag = (Boolean) this.datawatcher.get(EntityLiving.h);
+        int i = (Integer) this.datawatcher.get(EntityLiving.e);
+        boolean flag = (Boolean) this.datawatcher.get(EntityLiving.f);
 
-        // Akarin start - this handle by client
-        /*
         if (i > 0) {
             boolean flag1;
 
@@ -666,26 +710,62 @@ public abstract class EntityLiving extends Entity {
                 double d1 = (double) (i >> 8 & 255) / 255.0D;
                 double d2 = (double) (i >> 0 & 255) / 255.0D;
 
-                this.world.addParticle(flag ? Particles.a : Particles.s, this.locX + (this.random.nextDouble() - 0.5D) * (double) this.width, this.locY + this.random.nextDouble() * (double) this.length, this.locZ + (this.random.nextDouble() - 0.5D) * (double) this.width, d0, d1, d2);
+                this.world.addParticle(flag ? Particles.AMBIENT_ENTITY_EFFECT : Particles.ENTITY_EFFECT, this.locX + (this.random.nextDouble() - 0.5D) * (double) this.getWidth(), this.locY + this.random.nextDouble() * (double) this.getHeight(), this.locZ + (this.random.nextDouble() - 0.5D) * (double) this.getWidth(), d0, d1, d2);
             }
         }
-        */
-        // Akarin end
 
     }
 
     protected void C() {
         if (this.effects.isEmpty()) {
-            this.cl();
+            this.cy();
             this.setInvisible(false);
         } else {
             Collection<MobEffect> collection = this.effects.values();
 
-            this.datawatcher.set(EntityLiving.h, c(collection));
-            this.datawatcher.set(EntityLiving.g, PotionUtil.a(collection));
+            this.datawatcher.set(EntityLiving.f, c(collection));
+            this.datawatcher.set(EntityLiving.e, PotionUtil.a(collection));
             this.setInvisible(this.hasEffect(MobEffects.INVISIBILITY));
         }
 
+    }
+
+    public double A(@Nullable Entity entity) {
+        double d0 = 1.0D;
+
+        if (this.isSneaking()) {
+            d0 *= 0.8D;
+        }
+
+        if (this.isInvisible()) {
+            float f = this.cT();
+
+            if (f < 0.1F) {
+                f = 0.1F;
+            }
+
+            d0 *= 0.7D * (double) f;
+        }
+
+        if (entity != null) {
+            ItemStack itemstack = this.getEquipment(EnumItemSlot.HEAD);
+            Item item = itemstack.getItem();
+            EntityTypes<?> entitytypes = entity.getEntityType();
+
+            if (entitytypes == EntityTypes.SKELETON && item == Items.SKELETON_SKULL || entitytypes == EntityTypes.ZOMBIE && item == Items.ZOMBIE_HEAD || entitytypes == EntityTypes.CREEPER && item == Items.CREEPER_HEAD) {
+                d0 *= 0.5D;
+            }
+        }
+
+        return d0;
+    }
+
+    public boolean c(EntityLiving entityliving) {
+        return true;
+    }
+
+    public boolean a(EntityLiving entityliving, PathfinderTargetCondition pathfindertargetcondition) {
+        return pathfindertargetcondition.a(this, entityliving);
     }
 
     public static boolean c(Collection<MobEffect> collection) {
@@ -704,9 +784,9 @@ public abstract class EntityLiving extends Entity {
         return false;
     }
 
-    protected void cl() {
-        this.datawatcher.set(EntityLiving.h, false);
-        this.datawatcher.set(EntityLiving.g, 0);
+    protected void cy() {
+        this.datawatcher.set(EntityLiving.f, false);
+        this.datawatcher.set(EntityLiving.e, 0);
     }
 
     // CraftBukkit start
@@ -743,7 +823,7 @@ public abstract class EntityLiving extends Entity {
         return this.effects.values();
     }
 
-    public Map<MobEffectList, MobEffect> co() {
+    public Map<MobEffectList, MobEffect> cB() {
         return this.effects;
     }
 
@@ -762,7 +842,7 @@ public abstract class EntityLiving extends Entity {
     }
 
     public boolean addEffect(MobEffect mobeffect, EntityPotionEffectEvent.Cause cause) {
-        //org.spigotmc.AsyncCatcher.catchOp( "effect add"); // Spigot // Akarin
+        org.spigotmc.AsyncCatcher.catchOp("effect add"); // Spigot
         if (isTickingEffects) {
             effectsToProcess.add(new ProcessableEffect(mobeffect, cause));
             return true;
@@ -814,10 +894,10 @@ public abstract class EntityLiving extends Entity {
         return true;
     }
 
-    public boolean cp() {
+    public boolean cC() {
         return this.getMonsterType() == EnumMonsterType.UNDEAD;
     }
-    
+
     // CraftBukkit start
     @Nullable
     public MobEffect c(@Nullable MobEffectList mobeffectlist) {
@@ -902,8 +982,11 @@ public abstract class EntityLiving extends Entity {
         float f1 = this.getHealth();
 
         if (f1 > 0.0F) {
-            EntityRegainHealthEvent event = new EntityRegainHealthEvent(this.getBukkitEntity(), f, regainReason, isFastRegen); // Paper - Add isFastRegen
-            this.world.getServer().getPluginManager().callEvent(event);
+            EntityRegainHealthEvent event = new EntityRegainHealthEvent(this.getBukkitEntity(), f, regainReason, isFastRegen); // Paper
+            // Suppress during worldgen
+            if (this.valid) {
+                this.world.getServer().getPluginManager().callEvent(event);
+            }
 
             if (!event.isCancelled()) {
                 this.setHealth((float) (this.getHealth() + event.getAmount()));
@@ -946,6 +1029,7 @@ public abstract class EntityLiving extends Entity {
         this.datawatcher.set(EntityLiving.HEALTH, MathHelper.a(f, 0.0F, this.getMaxHealth()));
     }
 
+    @Override
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable(damagesource)) {
             return false;
@@ -956,12 +1040,18 @@ public abstract class EntityLiving extends Entity {
         } else if (damagesource.p() && this.hasEffect(MobEffects.FIRE_RESISTANCE)) {
             return false;
         } else {
+            if (this.isSleeping() && !this.world.isClientSide) {
+                this.dy();
+            }
+
             this.ticksFarFromPlayer = 0;
             float f1 = f;
 
             // CraftBukkit - Moved into damageEntity0(DamageSource, float)
             if (false && (damagesource == DamageSource.ANVIL || damagesource == DamageSource.FALLING_BLOCK) && !this.getEquipment(EnumItemSlot.HEAD).isEmpty()) {
-                this.getEquipment(EnumItemSlot.HEAD).damage((int) (f * 4.0F + this.random.nextFloat() * f * 2.0F), this);
+                this.getEquipment(EnumItemSlot.HEAD).damage((int) (f * 4.0F + this.random.nextFloat() * f * 2.0F), this, (entityliving) -> {
+                    entityliving.c(EnumItemSlot.HEAD);
+                });
                 f *= 0.75F;
             }
 
@@ -977,17 +1067,17 @@ public abstract class EntityLiving extends Entity {
                     Entity entity = damagesource.j();
 
                     if (entity instanceof EntityLiving) {
-                        this.c((EntityLiving) entity);
+                        this.shieldBlock((EntityLiving) entity);
                     }
                 }
 
                 flag = true;
             }
 
-            this.aJ = 1.5F;
+            this.aF = 1.5F;
             boolean flag1 = true;
 
-            if ((float) this.noDamageTicks > (float) this.maxNoDamageTicks / 2.0F) {
+            if ((float) this.noDamageTicks > 10.0F) {
                 if (f <= this.lastDamage) {
                     this.forceExplosionKnockback = true; // CraftBukkit - SPIGOT-949 - for vanilla consistency, cooldown does not prevent explosion knockback
                     return false;
@@ -1006,11 +1096,11 @@ public abstract class EntityLiving extends Entity {
                     return false;
                 }
                 this.lastDamage = f;
-                this.noDamageTicks = this.maxNoDamageTicks;
+                this.noDamageTicks = 20;
                 // this.damageEntity0(damagesource, f);
                 // CraftBukkit end
-                this.aC = 10;
-                this.hurtTicks = this.aC;
+                this.hurtDuration = 10;
+                this.hurtTicks = this.hurtDuration;
             }
 
             // CraftBukkit start
@@ -1022,7 +1112,7 @@ public abstract class EntityLiving extends Entity {
             }
             // CraftBukkit end
 
-            this.aD = 0.0F;
+            this.az = 0.0F;
             Entity entity1 = damagesource.getEntity();
 
             if (entity1 != null) {
@@ -1038,7 +1128,13 @@ public abstract class EntityLiving extends Entity {
 
                     if (entitywolf.isTamed()) {
                         this.lastDamageByPlayerTime = 100;
-                        this.killer = null;
+                        EntityLiving entityliving = entitywolf.getOwner();
+
+                        if (entityliving != null && entityliving.getEntityType() == EntityTypes.PLAYER) {
+                            this.killer = (EntityHuman) entityliving;
+                        } else {
+                            this.killer = null;
+                        }
                     }
                 }
             }
@@ -1056,6 +1152,8 @@ public abstract class EntityLiving extends Entity {
                         b0 = 36;
                     } else if (damagesource.p()) {
                         b0 = 37;
+                    } else if (damagesource == DamageSource.SWEET_BERRY_BUSH) {
+                        b0 = 44;
                     } else {
                         b0 = 2;
                     }
@@ -1065,7 +1163,7 @@ public abstract class EntityLiving extends Entity {
                 }
 
                 if (damagesource != DamageSource.DROWN && (!flag || f > 0.0F)) {
-                    this.aA();
+                    this.velocityChanged();
                 }
 
                 if (entity1 != null) {
@@ -1077,22 +1175,22 @@ public abstract class EntityLiving extends Entity {
                         d0 = (Math.random() - Math.random()) * 0.01D;
                     }
 
-                    this.aD = (float) (MathHelper.c(d1, d0) * 57.2957763671875D - (double) this.yaw);
+                    this.az = (float) (MathHelper.d(d1, d0) * 57.2957763671875D - (double) this.yaw);
                     this.a(entity1, 0.4F, d0, d1);
                 } else {
-                    this.aD = (float) ((int) (Math.random() * 2.0D) * 180);
+                    this.az = (float) ((int) (Math.random() * 2.0D) * 180);
                 }
             }
 
                 if (knockbackCancelled) this.world.broadcastEntityEffect(this, (byte) 2); // Paper - Disable explosion knockback
 
             if (this.getHealth() <= 0.0F) {
-                if (!this.e(damagesource)) {
+                if (!this.f(damagesource)) {
                     // Paper start - moved into CraftEventFactory event caller for cancellable death event
-                    //SoundEffect soundeffect = this.cs();
+                    //SoundEffect soundeffect = this.getSoundDeath();
 
                     //if (flag1 && soundeffect != null) {
-                    //    this.a(soundeffect, this.cD(), this.cE());
+                    //    this.a(soundeffect, this.getSoundVolume(), this.cV());
                     //}
                     this.silentDeath = !flag1; // mark entity as dying silently
                     // Paper end
@@ -1107,8 +1205,8 @@ public abstract class EntityLiving extends Entity {
             boolean flag2 = !flag || f > 0.0F;
 
             if (flag2) {
-                this.bM = damagesource;
-                this.bN = this.world.getTime();
+                this.bH = damagesource;
+                this.bI = this.world.getTime();
             }
 
             if (this instanceof EntityPlayer) {
@@ -1126,11 +1224,15 @@ public abstract class EntityLiving extends Entity {
         }
     }
 
-    protected void c(EntityLiving entityliving) {
-        entityliving.a(this, 0.5F, this.locX - entityliving.locX, this.locZ - entityliving.locZ);
+    protected void shieldBlock(EntityLiving entityliving) {
+        entityliving.e(this);
     }
 
-    private boolean e(DamageSource damagesource) {
+    protected void e(EntityLiving entityliving) {
+        entityliving.a(this, 0.5F, entityliving.locX - this.locX, entityliving.locZ - this.locZ);
+    }
+
+    private boolean f(DamageSource damagesource) {
         if (damagesource.ignoresInvulnerability()) {
             return false;
         } else {
@@ -1181,30 +1283,41 @@ public abstract class EntityLiving extends Entity {
     }
 
     @Nullable
-    public DamageSource cr() {
-        if (this.world.getTime() - this.bN > 40L) {
-            this.bM = null;
+    public DamageSource cE() {
+        if (this.world.getTime() - this.bI > 40L) {
+            this.bH = null;
         }
 
-        return this.bM;
+        return this.bH;
     }
 
     protected void c(DamageSource damagesource) {
-        SoundEffect soundeffect = this.d(damagesource);
+        SoundEffect soundeffect = this.getSoundHurt(damagesource);
 
         if (soundeffect != null) {
-            this.a(soundeffect, this.cD(), this.cE());
+            this.a(soundeffect, this.getSoundVolume(), this.cV());
         }
 
     }
 
     private boolean applyBlockingModifier(DamageSource damagesource) {
-        if (!damagesource.ignoresArmor() && this.isBlocking()) {
+        Entity entity = damagesource.j();
+        boolean flag = false;
+
+        if (entity instanceof EntityArrow) {
+            EntityArrow entityarrow = (EntityArrow) entity;
+
+            if (entityarrow.getPierceLevel() > 0) {
+                flag = true;
+            }
+        }
+
+        if (!damagesource.ignoresArmor() && this.isBlocking() && !flag) {
             Vec3D vec3d = damagesource.w();
 
             if (vec3d != null) {
                 Vec3D vec3d1 = this.f(1.0F);
-                Vec3D vec3d2 = vec3d.a(new Vec3D(this.locX, this.locY, this.locZ)).a();
+                Vec3D vec3d2 = vec3d.a(new Vec3D(this.locX, this.locY, this.locZ)).d();
 
                 vec3d2 = new Vec3D(vec3d2.x, 0.0D, vec3d2.z);
                 if (vec3d2.b(vec3d1) < 0.0D) {
@@ -1216,148 +1329,187 @@ public abstract class EntityLiving extends Entity {
         return false;
     }
 
-    public void c(ItemStack itemstack) {
-        super.a(SoundEffects.ENTITY_ITEM_BREAK, 0.8F, 0.8F + this.world.random.nextFloat() * 0.4F);
-        this.a(itemstack, 5);
-    }
-
     public void die(DamageSource damagesource) {
-        if (!this.killed && !this.enderTeleport) { // Akarin
+        if (!this.killed) {
             Entity entity = damagesource.getEntity();
-            EntityLiving entityliving = this.cv();
+            EntityLiving entityliving = this.getKillingEntity();
 
-            // Paper start - move down to make death event cancellable
-            //if (this.be >= 0 && entityliving != null) {
-            //    entityliving.a(this, this.be, damagesource);
-            //}
+            /* // Paper - move down to make death event cancellable
+            if (this.aY >= 0 && entityliving != null) {
+                entityliving.a(this, this.aY, damagesource);
+            }
 
-            //if (entity != null) {
-            //    entity.b(this);
-            //}
+            if (entity != null) {
+                entity.b(this);
+            }
+
+            if (this.isSleeping()) {
+                this.dy();
+            }
+            */ // Paper
 
             this.killed = true;
             //this.getCombatTracker().g();
-
-            org.bukkit.event.entity.EntityDeathEvent deathEvent = null;
-            // Paper end
             if (!this.world.isClientSide) {
-                int i = 0;
-
-                if (entity instanceof EntityHuman) {
-                    i = EnchantmentManager.g((EntityLiving) entity);
-                }
-
-                if (this.isDropExperience() && this.world.getGameRules().getBoolean("doMobLoot")) {
-                    boolean flag = this.lastDamageByPlayerTime > 0;
-
-                    this.a(flag, i, damagesource);
-                    // CraftBukkit start - Call death event
-                    deathEvent = CraftEventFactory.callEntityDeathEvent(this, this.drops); // Paper - cancellable death event
-                    this.drops = new ArrayList<org.bukkit.inventory.ItemStack>();
+                org.bukkit.event.entity.EntityDeathEvent deathEvent = this.d(damagesource);
+                if (deathEvent == null || !deathEvent.isCancelled()) {
+                    if (this.getKillCount() >= 0 && entityliving != null) {
+                        entityliving.runKillTrigger(this, this.getKillCount(), damagesource);
+                    }
+                    if (entity != null) {
+                        entity.onKill(this);
+                    }
+                    if (this.isSleeping()) {
+                        this.dy();
+                    }
+                    this.getCombatTracker().reset();
                 } else {
-                    deathEvent = CraftEventFactory.callEntityDeathEvent(this); // Paper - cancellable death event
-                    // CraftBukkit end
+                    this.killed = false;
+                    this.setHealth((float) deathEvent.getReviveHealth());
+                }
+                // Paper end
+
+                boolean flag = false;
+
+                if (this.killed && entityliving instanceof EntityWither) {
+                    if (this.world.getGameRules().getBoolean(GameRules.MOB_GRIEFING)) {
+                        BlockPosition blockposition = new BlockPosition(this.locX, this.locY, this.locZ);
+                        IBlockData iblockdata = Blocks.WITHER_ROSE.getBlockData();
+
+                        if (this.world.getType(blockposition).isAir() && iblockdata.canPlace(this.world, blockposition)) {
+                            this.world.setTypeAndData(blockposition, iblockdata, 3);
+                            flag = true;
+                        }
+                    }
+
+                    if (!flag) {
+                        EntityItem entityitem = new EntityItem(this.world, this.locX, this.locY, this.locZ, new ItemStack(Items.bg));
+
+                        this.world.addEntity(entityitem);
+                    }
                 }
             }
 
-            // Paper start - cancellable death event
-            if (deathEvent == null || !deathEvent.isCancelled()) {
-                // triggers and stats got moved down
-                if (this.getKillCount() >= 0 && entityliving != null) {
-                    entityliving.runKillTrigger(this, this.getKillCount(), damagesource);
-                }
-
-                if (entity != null) {
-                    entity.onKill(this);
-                }
-
-                this.getCombatTracker().reset();
-                this.setDying(true);
-                this.world.broadcastEntityEffect(this, (byte) 3);
-            } else {
-                this.setDying(false); // Paper - reset if cancelled
-                this.setHealth((float) deathEvent.getReviveHealth());
-            }
-            // Paper end
+            if (this.killed) { // Paper
+            this.world.broadcastEntityEffect(this, (byte) 3);
+            this.setPose(EntityPose.DYING);
+            } // Paper
         }
     }
 
-    protected void a(boolean flag, int i, DamageSource damagesource) {
-        this.dropDeathLoot(flag, i);
-        this.dropEquipment(flag, i);
+    protected org.bukkit.event.entity.EntityDeathEvent processDeath(DamageSource damagesource) { return d(damagesource); } // Paper - OBFHELPER
+    protected org.bukkit.event.entity.EntityDeathEvent d(DamageSource damagesource) { // Paper
+        Entity entity = damagesource.getEntity();
+        int i;
+
+        if (entity instanceof EntityHuman) {
+            i = EnchantmentManager.g((EntityLiving) entity);
+        } else {
+            i = 0;
+        }
+
+        boolean flag = this.lastDamageByPlayerTime > 0;
+
+        this.cF(); // CraftBukkit - from below // PAIL
+        org.bukkit.event.entity.EntityDeathEvent deathEvent; // Paper
+        if (this.isDropExperience() && this.world.getGameRules().getBoolean(GameRules.DO_MOB_LOOT)) {
+            this.a(damagesource, flag);
+            this.dropDeathLoot(damagesource, i, flag);
+            // CraftBukkit start - Call death event
+            deathEvent = CraftEventFactory.callEntityDeathEvent(this, this.drops); // Paper
+        } else {
+            deathEvent = CraftEventFactory.callEntityDeathEvent(this); // Paper
+            // CraftBukkit end
+        }
+        this.postDeathDropItems(deathEvent); // Paper
+        this.drops = new ArrayList<>(); // Paper
+
+        return deathEvent; // Paper
     }
 
-    protected void dropEquipment(boolean flag, int i) {}
+    protected void cF() {}
+    protected void postDeathDropItems(org.bukkit.event.entity.EntityDeathEvent event) {} // Paper - method for post death logic that cannot be ran before the event is potentially cancelled
+
+    protected void dropDeathLoot(DamageSource damagesource, int i, boolean flag) {}
+
+    public MinecraftKey cG() {
+        return this.getEntityType().h();
+    }
+
+    protected void a(DamageSource damagesource, boolean flag) {
+        MinecraftKey minecraftkey = this.cG();
+        LootTable loottable = this.world.getMinecraftServer().getLootTableRegistry().getLootTable(minecraftkey);
+        LootTableInfo.Builder loottableinfo_builder = this.a(flag, damagesource);
+
+        loottable.populateLoot(loottableinfo_builder.build(LootContextParameterSets.ENTITY), this::a);
+    }
+
+    protected LootTableInfo.Builder a(boolean flag, DamageSource damagesource) {
+        LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.world)).a(this.random).set(LootContextParameters.THIS_ENTITY, this).set(LootContextParameters.POSITION, new BlockPosition(this)).set(LootContextParameters.DAMAGE_SOURCE, damagesource).setOptional(LootContextParameters.KILLER_ENTITY, damagesource.getEntity()).setOptional(LootContextParameters.DIRECT_KILLER_ENTITY, damagesource.j());
+
+        if (flag && this.killer != null) {
+            loottableinfo_builder = loottableinfo_builder.set(LootContextParameters.LAST_DAMAGE_PLAYER, this.killer).a(this.killer.eb());
+        }
+
+        return loottableinfo_builder;
+    }
 
     public void a(Entity entity, float f, double d0, double d1) {
-        if (this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.c).getValue()) {
+        if (this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.KNOCKBACK_RESISTANCE).getValue()) {
             this.impulse = true;
-            float f1 = MathHelper.sqrt(d0 * d0 + d1 * d1);
+            Vec3D vec3d = this.getMot();
+            Vec3D vec3d1 = (new Vec3D(d0, 0.0D, d1)).d().a((double) f);
 
-            // Paper start - preserve old velocity
-            double oldMotX = this.motX;
-            double oldMotY = this.motY;
-            double oldMotZ = this.motZ;
-            // Paper end
-
-            this.motX /= 2.0D;
-            this.motZ /= 2.0D;
-            this.motX -= d0 / (double) f1 * (double) f;
-            this.motZ -= d1 / (double) f1 * (double) f;
-            if (this.onGround) {
-                this.motY /= 2.0D;
-                this.motY += (double) f;
-                if (this.motY > 0.4000000059604645D) {
-                    this.motY = 0.4000000059604645D;
-                }
-            }
+            this.setMot(vec3d.x / 2.0D - vec3d1.x, this.onGround ? Math.min(0.4D, vec3d.y / 2.0D + (double) f) : vec3d.y, vec3d.z / 2.0D - vec3d1.z);
 
             // Paper start - call EntityKnockbackByEntityEvent
-            org.bukkit.util.Vector delta = new org.bukkit.util.Vector(this.motX - oldMotX, this.motY - oldMotY, this.motZ - oldMotZ);
+            Vec3D currentMot = this.getMot();
+            org.bukkit.util.Vector delta = new org.bukkit.util.Vector(currentMot.x - vec3d.x, currentMot.y - vec3d.y, currentMot.z - vec3d.z);
             // Restore old velocity to be able to access it in the event
-            this.motX = oldMotX;
-            this.motY = oldMotY;
-            this.motZ = oldMotZ;
+            this.setMot(vec3d);
             if (entity == null || new com.destroystokyo.paper.event.entity.EntityKnockbackByEntityEvent((LivingEntity) getBukkitEntity(), entity.getBukkitEntity(), f, delta).callEvent()) {
-                this.motX += delta.getX();
-                this.motY += delta.getY();
-                this.motZ += delta.getZ();
+                this.setMot(vec3d.x + delta.getX(), vec3d.y + delta.getY(), vec3d.z + delta.getZ());
             }
             // Paper end
         }
     }
 
     @Nullable
-    protected SoundEffect d(DamageSource damagesource) {
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return SoundEffects.ENTITY_GENERIC_HURT;
     }
 
-    @Nullable public SoundEffect getDeathSoundEffect() { return cs();} // Paper - OBFHELPER
+    public final SoundEffect getDeathSoundEffect() { return this.getSoundDeath(); } // Paper - OBFHELPER
     @Nullable
-    protected SoundEffect cs() {
+    protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_GENERIC_DEATH;
     }
 
-    protected SoundEffect m(int i) {
+    protected SoundEffect getSoundFall(int i) {
         return i > 4 ? SoundEffects.ENTITY_GENERIC_BIG_FALL : SoundEffects.ENTITY_GENERIC_SMALL_FALL;
     }
 
-    protected void dropDeathLoot(boolean flag, int i) {}
+    protected SoundEffect c(ItemStack itemstack) {
+        return SoundEffects.ENTITY_GENERIC_DRINK;
+    }
 
-    public boolean z_() {
-        int i = MathHelper.floor(this.locX);
-        int j = MathHelper.floor(this.getBoundingBox().minY);
-        int k = MathHelper.floor(this.locZ);
+    public SoundEffect d(ItemStack itemstack) {
+        return SoundEffects.ENTITY_GENERIC_EAT;
+    }
 
-        if (this instanceof EntityHuman && ((EntityHuman) this).isSpectator()) {
+    public boolean isClimbing() {
+        if (this.isSpectator()) {
             return false;
         } else {
-            BlockPosition blockposition = new BlockPosition(i, j, k);
-            IBlockData iblockdata = this.world.getType(blockposition);
+            IBlockData iblockdata = this.cI();
             Block block = iblockdata.getBlock();
 
-            return block != Blocks.LADDER && block != Blocks.VINE ? block instanceof BlockTrapdoor && this.b(blockposition, iblockdata) : true;
+            return block != Blocks.LADDER && block != Blocks.VINE && block != Blocks.SCAFFOLDING ? block instanceof BlockTrapdoor && this.b(new BlockPosition(this), iblockdata) : true;
         }
+    }
+
+    public IBlockData cI() {
+        return this.world.getType(new BlockPosition(this));
     }
 
     private boolean b(BlockPosition blockposition, IBlockData iblockdata) {
@@ -1372,12 +1524,14 @@ public abstract class EntityLiving extends Entity {
         return false;
     }
 
+    @Override
     public boolean isAlive() {
         return !this.dead && this.getHealth() > 0.0F;
     }
 
-    public void c(float f, float f1) {
-        super.c(f, f1);
+    @Override
+    public void b(float f, float f1) {
+        super.b(f, f1);
         MobEffect mobeffect = this.getEffect(MobEffects.JUMP);
         float f2 = mobeffect == null ? 0.0F : (float) (mobeffect.getAmplifier() + 1);
         int i = MathHelper.f((f - 3.0F - f2) * f1);
@@ -1388,7 +1542,7 @@ public abstract class EntityLiving extends Entity {
                 return;
             }
             // CraftBukkit end
-            this.a(this.m(i), 1.0F, 1.0F);
+            this.a(this.getSoundFall(i), 1.0F, 1.0F);
             // this.damageEntity(DamageSource.FALL, (float) i); // CraftBukkit - moved up
             int j = MathHelper.floor(this.locX);
             int k = MathHelper.floor(this.locY - 0.20000000298023224D);
@@ -1396,7 +1550,7 @@ public abstract class EntityLiving extends Entity {
             IBlockData iblockdata = this.world.getType(new BlockPosition(j, k, l));
 
             if (!iblockdata.isAir()) {
-                SoundEffectType soundeffecttype = iblockdata.getBlock().getStepSound();
+                SoundEffectType soundeffecttype = iblockdata.r();
 
                 this.a(soundeffecttype.g(), soundeffecttype.a() * 0.5F, soundeffecttype.b() * 0.75F);
             }
@@ -1405,7 +1559,7 @@ public abstract class EntityLiving extends Entity {
     }
 
     public int getArmorStrength() {
-        AttributeInstance attributeinstance = this.getAttributeInstance(GenericAttributes.h);
+        AttributeInstance attributeinstance = this.getAttributeInstance(GenericAttributes.ARMOR);
 
         return MathHelper.floor(attributeinstance.getValue());
     }
@@ -1417,7 +1571,7 @@ public abstract class EntityLiving extends Entity {
     protected float applyArmorModifier(DamageSource damagesource, float f) {
         if (!damagesource.ignoresArmor()) {
             // this.damageArmor(f); // CraftBukkit - Moved into damageEntity0(DamageSource, float)
-            f = CombatMath.a(f, (float) this.getArmorStrength(), (float) this.getAttributeInstance(GenericAttributes.i).getValue());
+            f = CombatMath.a(f, (float) this.getArmorStrength(), (float) this.getAttributeInstance(GenericAttributes.ARMOR_TOUGHNESS).getValue());
         }
 
         return f;
@@ -1550,7 +1704,9 @@ public abstract class EntityLiving extends Entity {
 
             // Apply damage to helmet
             if ((damagesource == DamageSource.ANVIL || damagesource == DamageSource.FALLING_BLOCK) && this.getEquipment(EnumItemSlot.HEAD) != null) {
-                this.getEquipment(EnumItemSlot.HEAD).damage((int) (event.getDamage() * 4.0F + this.random.nextFloat() * event.getDamage() * 2.0F), this);
+                this.getEquipment(EnumItemSlot.HEAD).damage((int) (event.getDamage() * 4.0F + this.random.nextFloat() * event.getDamage() * 2.0F), this, (entityliving) -> {
+                    entityliving.c(EnumItemSlot.HEAD);
+                });
             }
 
             // Apply damage to armor
@@ -1566,7 +1722,7 @@ public abstract class EntityLiving extends Entity {
                 Entity entity = damagesource.j();
 
                 if (entity instanceof EntityLiving) {
-                    this.c((EntityLiving) entity);
+                    this.shieldBlock((EntityLiving) entity);
                 }
             }
 
@@ -1630,20 +1786,20 @@ public abstract class EntityLiving extends Entity {
     }
 
     @Nullable
-    public EntityLiving cv() {
+    public EntityLiving getKillingEntity() {
         return (EntityLiving) (this.combatTracker.c() != null ? this.combatTracker.c() : (this.killer != null ? this.killer : (this.lastDamager != null ? this.lastDamager : null)));
     }
 
     public final float getMaxHealth() {
-        return (float) this.getAttributeInstance(GenericAttributes.maxHealth).getValue();
+        return (float) this.getAttributeInstance(GenericAttributes.MAX_HEALTH).getValue();
     }
 
     public final int getArrowCount() {
-        return (Integer) this.datawatcher.get(EntityLiving.bx);
+        return (Integer) this.datawatcher.get(EntityLiving.g);
     }
 
     public final void setArrowCount(int i) {
-        this.datawatcher.set(EntityLiving.bx, i);
+        this.datawatcher.set(EntityLiving.g, i);
     }
 
     private int l() {
@@ -1651,35 +1807,36 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void a(EnumHand enumhand) {
-        if (!this.ax || this.az >= this.l() / 2 || this.az < 0) {
-            this.az = -1;
-            this.ax = true;
-            this.ay = enumhand;
+        if (!this.at || this.av >= this.l() / 2 || this.av < 0) {
+            this.av = -1;
+            this.at = true;
+            this.au = enumhand;
             if (this.world instanceof WorldServer) {
-                ((WorldServer) this.world).getTracker().a((Entity) this, (Packet) (new PacketPlayOutAnimation(this, enumhand == EnumHand.MAIN_HAND ? 0 : 3)));
+                ((WorldServer) this.world).getChunkProvider().broadcast(this, new PacketPlayOutAnimation(this, enumhand == EnumHand.MAIN_HAND ? 0 : 3));
             }
         }
 
     }
 
-    protected void aa() {
+    @Override
+    protected void af() {
         this.damageEntity(DamageSource.OUT_OF_WORLD, 4.0F);
     }
 
-    protected void cy() {
+    protected void cO() {
         int i = this.l();
 
-        if (this.ax) {
-            ++this.az;
-            if (this.az >= i) {
-                this.az = 0;
-                this.ax = false;
+        if (this.at) {
+            ++this.av;
+            if (this.av >= i) {
+                this.av = 0;
+                this.at = false;
             }
         } else {
-            this.az = 0;
+            this.av = 0;
         }
 
-        this.aG = (float) this.az / (float) i;
+        this.aC = (float) this.av / (float) i;
     }
 
     public AttributeInstance getAttributeInstance(IAttribute iattribute) {
@@ -1734,33 +1891,51 @@ public abstract class EntityLiving extends Entity {
         return !this.getEquipment(enumitemslot).isEmpty();
     }
 
+    @Override
     public abstract Iterable<ItemStack> getArmorItems();
 
     public abstract ItemStack getEquipment(EnumItemSlot enumitemslot);
 
     public abstract void setSlot(EnumItemSlot enumitemslot, ItemStack itemstack);
 
+    public float cT() {
+        Iterable<ItemStack> iterable = this.getArmorItems();
+        int i = 0;
+        int j = 0;
+
+        for (Iterator iterator = iterable.iterator(); iterator.hasNext(); ++i) {
+            ItemStack itemstack = (ItemStack) iterator.next();
+
+            if (!itemstack.isEmpty()) {
+                ++j;
+            }
+        }
+
+        return i > 0 ? (float) j / (float) i : 0.0F;
+    }
+
+    @Override
     public void setSprinting(boolean flag) {
         super.setSprinting(flag);
         AttributeInstance attributeinstance = this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED);
 
         if (attributeinstance.a(EntityLiving.b) != null) {
-            attributeinstance.c(EntityLiving.c);
+            attributeinstance.removeModifier(EntityLiving.c);
         }
 
         if (flag) {
-            attributeinstance.b(EntityLiving.c);
+            attributeinstance.addModifier(EntityLiving.c);
         }
 
     }
 
-    public float getDeathSoundVolume() { return cD();} // Paper - OBFHELPER
-    protected float cD() {
+    public final float getDeathSoundVolume() { return this.getSoundVolume(); } // Paper - OBFHELPER
+    protected float getSoundVolume() {
         return 1.0F;
     }
 
-    public float getDeathSoundPitch() { return cE();} // Paper - OBFHELPER
-    protected float cE() {
+    public float getSoundPitch() { return cV();} // Paper - OBFHELPER
+    protected float cV() {
         return this.isBaby() ? (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.5F : (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F;
     }
 
@@ -1768,24 +1943,32 @@ public abstract class EntityLiving extends Entity {
         return this.getHealth() <= 0.0F;
     }
 
-    public void A(Entity entity) {
+    @Override
+    public void collide(Entity entity) {
+        if (!this.isSleeping()) {
+            super.collide(entity);
+        }
+
+    }
+
+    public void B(Entity entity) {
         double d0;
 
         if (!(entity instanceof EntityBoat) && !(entity instanceof EntityHorseAbstract)) {
             double d1 = entity.locX;
-            double d2 = entity.getBoundingBox().minY + (double) entity.length;
+            double d2 = entity.getBoundingBox().minY + (double) entity.getHeight();
 
             d0 = entity.locZ;
             EnumDirection enumdirection = entity.getAdjustedDirection();
 
             if (enumdirection != null) {
                 EnumDirection enumdirection1 = enumdirection.e();
-                int[][] aint = new int[][] { { 0, 1}, { 0, -1}, { -1, 1}, { -1, -1}, { 1, 1}, { 1, -1}, { -1, 0}, { 1, 0}, { 0, 1}};
+                int[][] aint = new int[][]{{0, 1}, {0, -1}, {-1, 1}, {-1, -1}, {1, 1}, {1, -1}, {-1, 0}, {1, 0}, {0, 1}};
                 double d3 = Math.floor(this.locX) + 0.5D;
                 double d4 = Math.floor(this.locZ) + 0.5D;
                 double d5 = this.getBoundingBox().maxX - this.getBoundingBox().minX;
                 double d6 = this.getBoundingBox().maxZ - this.getBoundingBox().minZ;
-                AxisAlignedBB axisalignedbb = new AxisAlignedBB(d3 - d5 / 2.0D, entity.getBoundingBox().minY, d4 - d6 / 2.0D, d3 + d5 / 2.0D, Math.floor(entity.getBoundingBox().minY) + (double) this.length, d4 + d6 / 2.0D);
+                AxisAlignedBB axisalignedbb = new AxisAlignedBB(d3 - d5 / 2.0D, entity.getBoundingBox().minY, d4 - d6 / 2.0D, d3 + d5 / 2.0D, Math.floor(entity.getBoundingBox().minY) + (double) this.getHeight(), d4 + d6 / 2.0D);
                 int[][] aint1 = aint;
                 int i = aint.length;
 
@@ -1796,31 +1979,36 @@ public abstract class EntityLiving extends Entity {
                     double d9 = d3 + d7;
                     double d10 = d4 + d8;
                     AxisAlignedBB axisalignedbb1 = axisalignedbb.d(d7, 0.0D, d8);
+                    BlockPosition blockposition;
 
                     if (this.world.getCubes(this, axisalignedbb1)) {
-                        if (this.world.getType(new BlockPosition(d9, this.locY, d10)).q()) {
+                        blockposition = new BlockPosition(d9, this.locY, d10);
+                        if (this.world.getType(blockposition).a((IBlockAccess) this.world, blockposition, (Entity) this)) {
                             this.enderTeleportTo(d9, this.locY + 1.0D, d10);
                             return;
                         }
 
-                        BlockPosition blockposition = new BlockPosition(d9, this.locY - 1.0D, d10);
+                        BlockPosition blockposition1 = new BlockPosition(d9, this.locY - 1.0D, d10);
 
-                        if (this.world.getType(blockposition).q() || this.world.getFluid(blockposition).a(TagsFluid.WATER)) {
+                        if (this.world.getType(blockposition1).a((IBlockAccess) this.world, blockposition1, (Entity) this) || this.world.getFluid(blockposition1).a(TagsFluid.WATER)) {
                             d1 = d9;
                             d2 = this.locY + 1.0D;
                             d0 = d10;
                         }
-                    } else if (this.world.getCubes(this, axisalignedbb1.d(0.0D, 1.0D, 0.0D)) && this.world.getType(new BlockPosition(d9, this.locY + 1.0D, d10)).q()) {
-                        d1 = d9;
-                        d2 = this.locY + 2.0D;
-                        d0 = d10;
+                    } else {
+                        blockposition = new BlockPosition(d9, this.locY + 1.0D, d10);
+                        if (this.world.getCubes(this, axisalignedbb1.d(0.0D, 1.0D, 0.0D)) && this.world.getType(blockposition).a((IBlockAccess) this.world, blockposition, (Entity) this)) {
+                            d1 = d9;
+                            d2 = this.locY + 2.0D;
+                            d0 = d10;
+                        }
                     }
                 }
             }
 
             this.enderTeleportTo(d1, d2, d0);
         } else {
-            double d11 = (double) (this.width / 2.0F + entity.width / 2.0F) + 0.4D;
+            double d11 = (double) (this.getWidth() / 2.0F + entity.getWidth() / 2.0F) + 0.4D;
             float f;
 
             if (entity instanceof EntityBoat) {
@@ -1836,160 +2024,173 @@ public abstract class EntityLiving extends Entity {
             double d12 = this.locX + (double) f1 * d0;
             double d13 = this.locZ + (double) f2 * d0;
 
-            this.setPosition(d12, entity.locY + (double) entity.length + 0.001D, d13);
+            this.setPosition(d12, entity.locY + (double) entity.getHeight() + 0.001D, d13);
             if (!this.world.getCubes(this, this.getBoundingBox().b(entity.getBoundingBox()))) {
-                this.setPosition(d12, entity.locY + (double) entity.length + 1.001D, d13);
+                this.setPosition(d12, entity.locY + (double) entity.getHeight() + 1.001D, d13);
                 if (!this.world.getCubes(this, this.getBoundingBox().b(entity.getBoundingBox()))) {
-                    this.setPosition(entity.locX, entity.locY + (double) this.length + 0.001D, entity.locZ);
+                    this.setPosition(entity.locX, entity.locY + (double) this.getHeight() + 0.001D, entity.locZ);
                 }
             }
         }
     }
 
-    protected float cG() {
+    protected float cX() {
         return 0.42F;
     }
 
-    protected void cH() {
-        this.motY = (double) this.cG();
+    protected void jump() {
+        float f;
+
         if (this.hasEffect(MobEffects.JUMP)) {
-            this.motY += (double) ((float) (this.getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.1F);
+            f = this.cX() + 0.1F * (float) (this.getEffect(MobEffects.JUMP).getAmplifier() + 1);
+        } else {
+            f = this.cX();
         }
 
-        if (this.isSprinting()) {
-            float f = this.yaw * 0.017453292F;
+        Vec3D vec3d = this.getMot();
 
-            this.motX -= (double) (MathHelper.sin(f) * 0.2F);
-            this.motZ += (double) (MathHelper.cos(f) * 0.2F);
+        this.setMot(vec3d.x, (double) f, vec3d.z);
+        if (this.isSprinting()) {
+            float f1 = this.yaw * 0.017453292F;
+
+            this.setMot(this.getMot().add((double) (-MathHelper.sin(f1) * 0.2F), 0.0D, (double) (MathHelper.cos(f1) * 0.2F)));
         }
 
         this.impulse = true;
     }
 
     protected void c(Tag<FluidType> tag) {
-        this.motY += 0.03999999910593033D;
+        this.setMot(this.getMot().add(0.0D, 0.03999999910593033D, 0.0D));
     }
 
-    protected float cJ() {
+    protected float da() {
         return 0.8F;
     }
 
-    public void a(float f, float f1, float f2) {
+    public void e(Vec3D vec3d) {
         double d0;
-        double d1;
-        float f3;
-        double d2;
+        float f;
 
-        if (this.cP() || this.bT()) {
+        if (this.df() || this.ca()) {
             d0 = 0.08D;
-            if (this.motY <= 0.0D && this.hasEffect(MobEffects.SLOW_FALLING)) {
+            boolean flag = this.getMot().y <= 0.0D;
+
+            if (flag && this.hasEffect(MobEffects.SLOW_FALLING)) {
                 d0 = 0.01D;
                 this.fallDistance = 0.0F;
             }
 
-            float f4;
+            double d1;
+            float f1;
+            double d2;
 
             if (this.isInWater() && (!(this instanceof EntityHuman) || !((EntityHuman) this).abilities.isFlying)) {
                 d1 = this.locY;
-                float f5 = this.isSprinting() ? 0.9F : this.cJ();
+                f1 = this.isSprinting() ? 0.9F : this.da();
+                f = 0.02F;
+                float f2 = (float) EnchantmentManager.e(this);
 
-                f4 = 0.02F;
-                f3 = (float) EnchantmentManager.e(this);
-                if (f3 > 3.0F) {
-                    f3 = 3.0F;
+                if (f2 > 3.0F) {
+                    f2 = 3.0F;
                 }
 
                 if (!this.onGround) {
-                    f3 *= 0.5F;
+                    f2 *= 0.5F;
                 }
 
-                if (f3 > 0.0F) {
-                    f5 += (0.54600006F - f5) * f3 / 3.0F;
-                    f4 += (this.cK() - f4) * f3 / 3.0F;
+                if (f2 > 0.0F) {
+                    f1 += (0.54600006F - f1) * f2 / 3.0F;
+                    f += (this.db() - f) * f2 / 3.0F;
                 }
 
                 if (this.hasEffect(MobEffects.DOLPHINS_GRACE)) {
-                    f5 = 0.96F;
+                    f1 = 0.96F;
                 }
 
-                this.a(f, f1, f2, f4);
-                this.move(EnumMoveType.SELF, this.motX, this.motY, this.motZ);
-                this.motX *= (double) f5;
-                this.motY *= 0.800000011920929D;
-                this.motZ *= (double) f5;
+                this.a(f, vec3d);
+                this.move(EnumMoveType.SELF, this.getMot());
+                Vec3D vec3d1 = this.getMot();
+
+                if (this.positionChanged && this.isClimbing()) {
+                    vec3d1 = new Vec3D(vec3d1.x, 0.2D, vec3d1.z);
+                }
+
+                this.setMot(vec3d1.d((double) f1, 0.800000011920929D, (double) f1));
+                Vec3D vec3d2;
+
                 if (!this.isNoGravity() && !this.isSprinting()) {
-                    if (this.motY <= 0.0D && Math.abs(this.motY - 0.005D) >= 0.003D && Math.abs(this.motY - d0 / 16.0D) < 0.003D) {
-                        this.motY = -0.003D;
+                    vec3d2 = this.getMot();
+                    if (flag && Math.abs(vec3d2.y - 0.005D) >= 0.003D && Math.abs(vec3d2.y - d0 / 16.0D) < 0.003D) {
+                        d2 = -0.003D;
                     } else {
-                        this.motY -= d0 / 16.0D;
+                        d2 = vec3d2.y - d0 / 16.0D;
                     }
+
+                    this.setMot(vec3d2.x, d2, vec3d2.z);
                 }
 
-                if (this.positionChanged && this.c(this.motX, this.motY + 0.6000000238418579D - this.locY + d1, this.motZ)) {
-                    this.motY = 0.30000001192092896D;
+                vec3d2 = this.getMot();
+                if (this.positionChanged && this.d(vec3d2.x, vec3d2.y + 0.6000000238418579D - this.locY + d1, vec3d2.z)) {
+                    this.setMot(vec3d2.x, 0.30000001192092896D, vec3d2.z);
                 }
-            } else if (this.ax() && (!(this instanceof EntityHuman) || !((EntityHuman) this).abilities.isFlying)) {
+            } else if (this.aD() && (!(this instanceof EntityHuman) || !((EntityHuman) this).abilities.isFlying)) {
                 d1 = this.locY;
-                this.a(f, f1, f2, 0.02F);
-                this.move(EnumMoveType.SELF, this.motX, this.motY, this.motZ);
-                this.motX *= 0.5D;
-                this.motY *= 0.5D;
-                this.motZ *= 0.5D;
+                this.a(0.02F, vec3d);
+                this.move(EnumMoveType.SELF, this.getMot());
+                this.setMot(this.getMot().a(0.5D));
                 if (!this.isNoGravity()) {
-                    this.motY -= d0 / 4.0D;
+                    this.setMot(this.getMot().add(0.0D, -d0 / 4.0D, 0.0D));
                 }
 
-                if (this.positionChanged && this.c(this.motX, this.motY + 0.6000000238418579D - this.locY + d1, this.motZ)) {
-                    this.motY = 0.30000001192092896D;
+                Vec3D vec3d3 = this.getMot();
+
+                if (this.positionChanged && this.d(vec3d3.x, vec3d3.y + 0.6000000238418579D - this.locY + d1, vec3d3.z)) {
+                    this.setMot(vec3d3.x, 0.30000001192092896D, vec3d3.z);
                 }
-            } else if (this.dc()) {
-                if (this.motY > -0.5D) {
+            } else if (this.isGliding()) {
+                Vec3D vec3d4 = this.getMot();
+
+                if (vec3d4.y > -0.5D) {
                     this.fallDistance = 1.0F;
                 }
 
-                Vec3D vec3d = this.aN();
-                float f6 = this.pitch * 0.017453292F;
+                Vec3D vec3d5 = this.getLookDirection();
 
-                d2 = Math.sqrt(vec3d.x * vec3d.x + vec3d.z * vec3d.z);
-                double d3 = Math.sqrt(this.motX * this.motX + this.motZ * this.motZ);
-                double d4 = vec3d.b();
-                float f7 = MathHelper.cos(f6);
+                f1 = this.pitch * 0.017453292F;
+                double d3 = Math.sqrt(vec3d5.x * vec3d5.x + vec3d5.z * vec3d5.z);
+                double d4 = Math.sqrt(b(vec3d4));
 
-                f7 = (float) ((double) f7 * (double) f7 * Math.min(1.0D, d4 / 0.4D));
-                this.motY += d0 * (-1.0D + (double) f7 * 0.75D);
+                d2 = vec3d5.f();
+                float f3 = MathHelper.cos(f1);
+
+                f3 = (float) ((double) f3 * (double) f3 * Math.min(1.0D, d2 / 0.4D));
+                vec3d4 = this.getMot().add(0.0D, d0 * (-1.0D + (double) f3 * 0.75D), 0.0D);
                 double d5;
 
-                if (this.motY < 0.0D && d2 > 0.0D) {
-                    d5 = this.motY * -0.1D * (double) f7;
-                    this.motY += d5;
-                    this.motX += vec3d.x * d5 / d2;
-                    this.motZ += vec3d.z * d5 / d2;
+                if (vec3d4.y < 0.0D && d3 > 0.0D) {
+                    d5 = vec3d4.y * -0.1D * (double) f3;
+                    vec3d4 = vec3d4.add(vec3d5.x * d5 / d3, d5, vec3d5.z * d5 / d3);
                 }
 
-                if (f6 < 0.0F && d2 > 0.0D) {
-                    d5 = d3 * (double) (-MathHelper.sin(f6)) * 0.04D;
-                    this.motY += d5 * 3.2D;
-                    this.motX -= vec3d.x * d5 / d2;
-                    this.motZ -= vec3d.z * d5 / d2;
+                if (f1 < 0.0F && d3 > 0.0D) {
+                    d5 = d4 * (double) (-MathHelper.sin(f1)) * 0.04D;
+                    vec3d4 = vec3d4.add(-vec3d5.x * d5 / d3, d5 * 3.2D, -vec3d5.z * d5 / d3);
                 }
 
-                if (d2 > 0.0D) {
-                    this.motX += (vec3d.x / d2 * d3 - this.motX) * 0.1D;
-                    this.motZ += (vec3d.z / d2 * d3 - this.motZ) * 0.1D;
+                if (d3 > 0.0D) {
+                    vec3d4 = vec3d4.add((vec3d5.x / d3 * d4 - vec3d4.x) * 0.1D, 0.0D, (vec3d5.z / d3 * d4 - vec3d4.z) * 0.1D);
                 }
 
-                this.motX *= 0.9900000095367432D;
-                this.motY *= 0.9800000190734863D;
-                this.motZ *= 0.9900000095367432D;
-                this.move(EnumMoveType.SELF, this.motX, this.motY, this.motZ);
+                this.setMot(vec3d4.d(0.9900000095367432D, 0.9800000190734863D, 0.9900000095367432D));
+                this.move(EnumMoveType.SELF, this.getMot());
                 if (this.positionChanged && !this.world.isClientSide) {
-                    d5 = Math.sqrt(this.motX * this.motX + this.motZ * this.motZ);
-                    double d6 = d3 - d5;
-                    float f8 = (float) (d6 * 10.0D - 3.0D);
+                    d5 = Math.sqrt(b(this.getMot()));
+                    double d6 = d4 - d5;
+                    float f4 = (float) (d6 * 10.0D - 3.0D);
 
-                    if (f8 > 0.0F) {
-                        this.a(this.m((int) f8), 1.0F, 1.0F);
-                        this.damageEntity(DamageSource.FLY_INTO_WALL, f8);
+                    if (f4 > 0.0F) {
+                        this.a(this.getSoundFall((int) f4), 1.0F, 1.0F);
+                        this.damageEntity(DamageSource.FLY_INTO_WALL, f4);
                     }
                 }
 
@@ -1998,133 +2199,102 @@ public abstract class EntityLiving extends Entity {
                     this.setFlag(7, false);
                 }
             } else {
-                float f9 = 0.91F;
-                BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.d(this.locX, this.getBoundingBox().minY - 1.0D, this.locZ);
-                Throwable throwable = null;
+                BlockPosition blockposition = new BlockPosition(this.locX, this.getBoundingBox().minY - 1.0D, this.locZ);
+                float f5 = this.world.getType(blockposition).getBlock().m();
 
-                try {
-                    if (this.onGround) {
-                        f9 = this.world.getType(blockposition_pooledblockposition).getBlock().n() * 0.91F;
-                    }
+                f1 = this.onGround ? f5 * 0.91F : 0.91F;
+                this.a(this.r(f5), vec3d);
+                this.setMot(this.f(this.getMot()));
+                this.move(EnumMoveType.SELF, this.getMot());
+                Vec3D vec3d6 = this.getMot();
 
-                    f4 = 0.16277137F / (f9 * f9 * f9);
-                    if (this.onGround) {
-                        f3 = this.cK() * f4;
-                    } else {
-                        f3 = this.aU;
-                    }
-
-                    this.a(f, f1, f2, f3);
-                    f9 = 0.91F;
-                    if (this.onGround) {
-                        f9 = this.world.getType(blockposition_pooledblockposition.c(this.locX, this.getBoundingBox().minY - 1.0D, this.locZ)).getBlock().n() * 0.91F;
-                    }
-
-                    if (this.z_()) {
-                        float f10 = 0.15F;
-
-                        this.motX = MathHelper.a(this.motX, -0.15000000596046448D, 0.15000000596046448D);
-                        this.motZ = MathHelper.a(this.motZ, -0.15000000596046448D, 0.15000000596046448D);
-                        this.fallDistance = 0.0F;
-                        if (this.motY < -0.15D) {
-                            this.motY = -0.15D;
-                        }
-
-                        boolean flag = this.isSneaking() && this instanceof EntityHuman;
-
-                        if (flag && this.motY < 0.0D) {
-                            this.motY = 0.0D;
-                        }
-                    }
-
-                    this.move(EnumMoveType.SELF, this.motX, this.motY, this.motZ);
-                    if (this.positionChanged && this.z_()) {
-                        this.motY = 0.2D;
-                    }
-
-                    if (this.hasEffect(MobEffects.LEVITATION)) {
-                        this.motY += (0.05D * (double) (this.getEffect(MobEffects.LEVITATION).getAmplifier() + 1) - this.motY) * 0.2D;
-                        this.fallDistance = 0.0F;
-                    } else {
-                        blockposition_pooledblockposition.c(this.locX, 0.0D, this.locZ);
-                        if (this.world.isClientSide && (!this.world.isLoaded(blockposition_pooledblockposition) || !this.world.getChunkAtWorldCoords(blockposition_pooledblockposition).y())) {
-                            if (this.locY > 0.0D) {
-                                this.motY = -0.1D;
-                            } else {
-                                this.motY = 0.0D;
-                            }
-                        } else if (!this.isNoGravity()) {
-                            this.motY -= d0;
-                        }
-                    }
-
-                    this.motY *= 0.9800000190734863D;
-                    this.motX *= (double) f9;
-                    this.motZ *= (double) f9;
-                } catch (Throwable throwable1) {
-                    throwable = throwable1;
-                    throw throwable1;
-                } finally {
-                    if (blockposition_pooledblockposition != null) {
-                        if (throwable != null) {
-                            try {
-                                blockposition_pooledblockposition.close();
-                            } catch (Throwable throwable2) {
-                                throwable.addSuppressed(throwable2);
-                            }
-                        } else {
-                            blockposition_pooledblockposition.close();
-                        }
-                    }
-
+                if ((this.positionChanged || this.jumping) && this.isClimbing()) {
+                    vec3d6 = new Vec3D(vec3d6.x, 0.2D, vec3d6.z);
                 }
+
+                double d7 = vec3d6.y;
+
+                if (this.hasEffect(MobEffects.LEVITATION)) {
+                    d7 += (0.05D * (double) (this.getEffect(MobEffects.LEVITATION).getAmplifier() + 1) - vec3d6.y) * 0.2D;
+                    this.fallDistance = 0.0F;
+                } else if (this.world.isClientSide && !this.world.isLoaded(blockposition)) {
+                    if (this.locY > 0.0D) {
+                        d7 = -0.1D;
+                    } else {
+                        d7 = 0.0D;
+                    }
+                } else if (!this.isNoGravity()) {
+                    d7 -= d0;
+                }
+
+                this.setMot(vec3d6.x * (double) f1, d7 * 0.9800000190734863D, vec3d6.z * (double) f1);
             }
         }
 
-        this.aI = this.aJ;
+        this.aE = this.aF;
         d0 = this.locX - this.lastX;
-        d1 = this.locZ - this.lastZ;
-        d2 = this instanceof EntityBird ? this.locY - this.lastY : 0.0D;
-        f3 = MathHelper.sqrt(d0 * d0 + d2 * d2 + d1 * d1) * 4.0F;
-        if (f3 > 1.0F) {
-            f3 = 1.0F;
+        double d8 = this.locZ - this.lastZ;
+        double d9 = this instanceof EntityBird ? this.locY - this.lastY : 0.0D;
+
+        f = MathHelper.sqrt(d0 * d0 + d9 * d9 + d8 * d8) * 4.0F;
+        if (f > 1.0F) {
+            f = 1.0F;
         }
 
-        this.aJ += (f3 - this.aJ) * 0.4F;
-        this.aK += this.aJ;
+        this.aF += (f - this.aF) * 0.4F;
+        this.aG += this.aF;
     }
 
-    public float cK() {
-        return this.bI;
+    private Vec3D f(Vec3D vec3d) {
+        if (this.isClimbing()) {
+            this.fallDistance = 0.0F;
+            float f = 0.15F;
+            double d0 = MathHelper.a(vec3d.x, -0.15000000596046448D, 0.15000000596046448D);
+            double d1 = MathHelper.a(vec3d.z, -0.15000000596046448D, 0.15000000596046448D);
+            double d2 = Math.max(vec3d.y, -0.15000000596046448D);
+
+            if (d2 < 0.0D && this.cI().getBlock() != Blocks.SCAFFOLDING && this.isSneaking() && this instanceof EntityHuman) {
+                d2 = 0.0D;
+            }
+
+            vec3d = new Vec3D(d0, d2, d1);
+        }
+
+        return vec3d;
+    }
+
+    private float r(float f) {
+        return this.onGround ? this.db() * (0.21600002F / (f * f * f)) : this.aO;
+    }
+
+    public float db() {
+        return this.bD;
     }
 
     public void o(float f) {
-        this.bI = f;
+        this.bD = f;
     }
 
-    public boolean B(Entity entity) {
+    public boolean C(Entity entity) {
         this.z(entity);
         return false;
     }
 
-    public boolean isSleeping() {
-        return false;
-    }
-
+    @Override
     public void tick() {
         super.tick();
-        this.cV();
         this.o();
+        this.p();
         if (!this.world.isClientSide) {
             int i = this.getArrowCount();
 
             if (i > 0) {
-                if (this.aA <= 0) {
-                    this.aA = 20 * (30 - i);
+                if (this.aw <= 0) {
+                    this.aw = 20 * (30 - i);
                 }
 
-                --this.aA;
-                if (this.aA <= 0) {
+                --this.aw;
+                if (this.aw <= 0) {
                     this.setArrowCount(i - 1);
                 }
             }
@@ -2142,22 +2312,26 @@ public abstract class EntityLiving extends Entity {
                     this.setFlag(6, flag);
                 }
             }
+
+            if (this.isSleeping() && !this.r()) {
+                this.dy();
+            }
         }
 
         this.movementTick();
         double d0 = this.locX - this.lastX;
         double d1 = this.locZ - this.lastZ;
         float f = (float) (d0 * d0 + d1 * d1);
-        float f1 = this.aQ;
+        float f1 = this.aK;
         float f2 = 0.0F;
 
-        this.aZ = this.ba;
+        this.aT = this.aU;
         float f3 = 0.0F;
 
         if (f > 0.0025000002F) {
             f3 = 1.0F;
             f2 = (float) Math.sqrt((double) f) * 3.0F;
-            float f4 = (float) MathHelper.c(d1, d0) * 57.295776F - 90.0F;
+            float f4 = (float) MathHelper.d(d1, d0) * 57.295776F - 90.0F;
             float f5 = MathHelper.e(MathHelper.g(this.yaw) - f4);
 
             if (95.0F < f5 && f5 < 265.0F) {
@@ -2167,7 +2341,7 @@ public abstract class EntityLiving extends Entity {
             }
         }
 
-        if (this.aG > 0.0F) {
+        if (this.aC > 0.0F) {
             f1 = this.yaw;
         }
 
@@ -2175,11 +2349,11 @@ public abstract class EntityLiving extends Entity {
             f3 = 0.0F;
         }
 
-        this.ba += (f3 - this.ba) * 0.3F;
-        //this.world.methodProfiler.enter("headTurn"); // Akarin - remove caller
+        this.aU += (f3 - this.aU) * 0.3F;
+        this.world.getMethodProfiler().enter("headTurn");
         f2 = this.e(f1, f2);
-        //this.world.methodProfiler.exit(); // Akarin - remove caller
-        //this.world.methodProfiler.enter("rangeChecks"); // Akarin - remove caller
+        this.world.getMethodProfiler().exit();
+        this.world.getMethodProfiler().enter("rangeChecks");
 
         while (this.yaw - this.lastYaw < -180.0F) {
             this.lastYaw -= 360.0F;
@@ -2189,12 +2363,12 @@ public abstract class EntityLiving extends Entity {
             this.lastYaw += 360.0F;
         }
 
-        while (this.aQ - this.aR < -180.0F) {
-            this.aR -= 360.0F;
+        while (this.aK - this.aL < -180.0F) {
+            this.aL -= 360.0F;
         }
 
-        while (this.aQ - this.aR >= 180.0F) {
-            this.aR += 360.0F;
+        while (this.aK - this.aL >= 180.0F) {
+            this.aL += 360.0F;
         }
 
         while (this.pitch - this.lastPitch < -180.0F) {
@@ -2205,20 +2379,24 @@ public abstract class EntityLiving extends Entity {
             this.lastPitch += 360.0F;
         }
 
-        while (this.aS - this.aT < -180.0F) {
-            this.aT -= 360.0F;
+        while (this.aM - this.aN < -180.0F) {
+            this.aN -= 360.0F;
         }
 
-        while (this.aS - this.aT >= 180.0F) {
-            this.aT += 360.0F;
+        while (this.aM - this.aN >= 180.0F) {
+            this.aN += 360.0F;
         }
 
-        //this.world.methodProfiler.exit(); // Akarin - remove caller
-        this.bb += f2;
-        if (this.dc()) {
-            ++this.bv;
+        this.world.getMethodProfiler().exit();
+        this.aV += f2;
+        if (this.isGliding()) {
+            ++this.bp;
         } else {
-            this.bv = 0;
+            this.bp = 0;
+        }
+
+        if (this.isSleeping()) {
+            this.pitch = 0.0F;
         }
     }
 
@@ -2233,10 +2411,10 @@ public abstract class EntityLiving extends Entity {
 
             switch (enumitemslot.a()) {
                 case HAND:
-                    itemstack = (ItemStack) this.bB.get(enumitemslot.b());
+                    itemstack = (ItemStack) this.bw.get(enumitemslot.b());
                     break;
                 case ARMOR:
-                    itemstack = (ItemStack) this.bC.get(enumitemslot.b());
+                    itemstack = (ItemStack) this.bx.get(enumitemslot.b());
                     break;
                 default:
                     continue;
@@ -2252,7 +2430,7 @@ public abstract class EntityLiving extends Entity {
                     new PlayerArmorChangeEvent((Player) this.getBukkitEntity(), PlayerArmorChangeEvent.SlotType.valueOf(enumitemslot.name()), oldItem, newItem).callEvent();
                 }
                 // Paper end
-                ((WorldServer) this.world).getTracker().a((Entity) this, (Packet) (new PacketPlayOutEntityEquipment(this.getId(), enumitemslot, itemstack1)));
+                ((WorldServer) this.world).getChunkProvider().broadcast(this, new PacketPlayOutEntityEquipment(this.getId(), enumitemslot, itemstack1));
                 if (!itemstack.isEmpty()) {
                     this.getAttributeMap().a(itemstack.a(enumitemslot));
                 }
@@ -2263,10 +2441,10 @@ public abstract class EntityLiving extends Entity {
 
                 switch (enumitemslot.a()) {
                     case HAND:
-                        this.bB.set(enumitemslot.b(), itemstack1.isEmpty() ? ItemStack.a : itemstack1.cloneItemStack());
+                        this.bw.set(enumitemslot.b(), itemstack1.isEmpty() ? ItemStack.a : itemstack1.cloneItemStack());
                         break;
                     case ARMOR:
-                        this.bC.set(enumitemslot.b(), itemstack1.isEmpty() ? ItemStack.a : itemstack1.cloneItemStack());
+                        this.bx.set(enumitemslot.b(), itemstack1.isEmpty() ? ItemStack.a : itemstack1.cloneItemStack());
                 }
             }
         }
@@ -2274,10 +2452,10 @@ public abstract class EntityLiving extends Entity {
     // Paper end
 
     protected float e(float f, float f1) {
-        float f2 = MathHelper.g(f - this.aQ);
+        float f2 = MathHelper.g(f - this.aK);
 
-        this.aQ += f2 * 0.3F;
-        float f3 = MathHelper.g(this.yaw - this.aQ);
+        this.aK += f2 * 0.3F;
+        float f3 = MathHelper.g(this.yaw - this.aK);
         boolean flag = f3 < -90.0F || f3 >= 90.0F;
 
         if (f3 < -75.0F) {
@@ -2288,9 +2466,9 @@ public abstract class EntityLiving extends Entity {
             f3 = 75.0F;
         }
 
-        this.aQ = this.yaw - f3;
+        this.aK = this.yaw - f3;
         if (f3 * f3 > 2500.0F) {
-            this.aQ += f3 * 0.2F;
+            this.aK += f3 * 0.2F;
         }
 
         if (flag) {
@@ -2301,89 +2479,93 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void movementTick() {
-        if (this.bJ > 0) {
-            --this.bJ;
+        if (this.jumpTicks > 0) {
+            --this.jumpTicks;
         }
 
-        if (this.bl > 0 && !this.bT()) {
-            double d0 = this.locX + (this.bm - this.locX) / (double) this.bl;
-            double d1 = this.locY + (this.bn - this.locY) / (double) this.bl;
-            double d2 = this.locZ + (this.bo - this.locZ) / (double) this.bl;
-            double d3 = MathHelper.g(this.bp - (double) this.yaw);
+        if (this.bf > 0 && !this.ca()) {
+            double d0 = this.locX + (this.bg - this.locX) / (double) this.bf;
+            double d1 = this.locY + (this.bh - this.locY) / (double) this.bf;
+            double d2 = this.locZ + (this.bi - this.locZ) / (double) this.bf;
+            double d3 = MathHelper.g(this.bj - (double) this.yaw);
 
-            this.yaw = (float) ((double) this.yaw + d3 / (double) this.bl);
-            this.pitch = (float) ((double) this.pitch + (this.bq - (double) this.pitch) / (double) this.bl);
-            --this.bl;
+            this.yaw = (float) ((double) this.yaw + d3 / (double) this.bf);
+            this.pitch = (float) ((double) this.pitch + (this.bk - (double) this.pitch) / (double) this.bf);
+            --this.bf;
             this.setPosition(d0, d1, d2);
             this.setYawPitch(this.yaw, this.pitch);
-        } else if (!this.cP()) {
-            this.motX *= 0.98D;
-            this.motY *= 0.98D;
-            this.motZ *= 0.98D;
+        } else if (!this.df()) {
+            this.setMot(this.getMot().a(0.98D));
         }
 
-        if (this.bs > 0) {
-            this.aS = (float) ((double) this.aS + MathHelper.g(this.br - (double) this.aS) / (double) this.bs);
-            --this.bs;
+        if (this.bm > 0) {
+            this.aM = (float) ((double) this.aM + MathHelper.g(this.bl - (double) this.aM) / (double) this.bm);
+            --this.bm;
         }
 
-        if (Math.abs(this.motX) < 0.003D) {
-            this.motX = 0.0D;
+        Vec3D vec3d = this.getMot();
+        double d4 = vec3d.x;
+        double d5 = vec3d.y;
+        double d6 = vec3d.z;
+
+        if (Math.abs(vec3d.x) < 0.003D) {
+            d4 = 0.0D;
         }
 
-        if (Math.abs(this.motY) < 0.003D) {
-            this.motY = 0.0D;
+        if (Math.abs(vec3d.y) < 0.003D) {
+            d5 = 0.0D;
         }
 
-        if (Math.abs(this.motZ) < 0.003D) {
-            this.motZ = 0.0D;
+        if (Math.abs(vec3d.z) < 0.003D) {
+            d6 = 0.0D;
         }
 
-        //this.world.methodProfiler.enter("ai"); // Akarin - remove caller
+        this.setMot(d4, d5, d6);
+        this.world.getMethodProfiler().enter("ai");
         if (this.isFrozen()) {
-            this.bg = false;
-            this.bh = 0.0F;
-            this.bj = 0.0F;
-            this.bk = 0.0F;
-        } else if (this.cP()) {
-            //this.world.methodProfiler.enter("newAi"); // Akarin - remove caller
+            this.jumping = false;
+            this.bb = 0.0F;
+            this.bd = 0.0F;
+            this.be = 0.0F;
+        } else if (this.df()) {
+            this.world.getMethodProfiler().enter("newAi");
             this.doTick();
-            //this.world.methodProfiler.exit(); // Akarin - remove caller
+            this.world.getMethodProfiler().exit();
         }
 
-        //this.world.methodProfiler.exit(); // Akarin - remove caller
-        //this.world.methodProfiler.enter("jump"); // Akarin - remove caller
-        if (this.bg) {
-            if (this.W > 0.0D && (!this.onGround || this.W > 0.4D)) {
+        this.world.getMethodProfiler().exit();
+        this.world.getMethodProfiler().enter("jump");
+        if (this.jumping) {
+            if (this.Q > 0.0D && (!this.onGround || this.Q > 0.4D)) {
                 this.c(TagsFluid.WATER);
-            } else if (this.ax()) {
+            } else if (this.aD()) {
                 this.c(TagsFluid.LAVA);
-            } else if ((this.onGround || this.W > 0.0D && this.W <= 0.4D) && this.bJ == 0) {
-                this.cH();
-                this.bJ = 10;
+            } else if ((this.onGround || this.Q > 0.0D && this.Q <= 0.4D) && this.jumpTicks == 0) {
+                this.jump();
+                this.jumpTicks = 10;
             }
         } else {
-            this.bJ = 0;
+            this.jumpTicks = 0;
         }
 
-        //this.world.methodProfiler.exit(); // Akarin - remove caller
-        //this.world.methodProfiler.enter("travel"); // Akarin - remove caller
-        this.bh *= 0.98F;
-        this.bj *= 0.98F;
-        this.bk *= 0.9F;
+        this.world.getMethodProfiler().exit();
+        this.world.getMethodProfiler().enter("travel");
+        this.bb *= 0.98F;
+        this.bd *= 0.98F;
+        this.be *= 0.9F;
         this.n();
         AxisAlignedBB axisalignedbb = this.getBoundingBox();
 
-        this.a(this.bh, this.bi, this.bj);
-        //this.world.methodProfiler.exit(); // Akarin - remove caller
-        //this.world.methodProfiler.enter("push"); // Akarin - remove caller
-        if (this.bw > 0) {
-            --this.bw;
+        this.e(new Vec3D((double) this.bb, (double) this.bc, (double) this.bd));
+        this.world.getMethodProfiler().exit();
+        this.world.getMethodProfiler().enter("push");
+        if (this.bq > 0) {
+            --this.bq;
             this.a(axisalignedbb, this.getBoundingBox());
         }
 
-        this.cN();
-        //this.world.methodProfiler.exit(); // Akarin - remove caller
+        this.collideNearby();
+        this.world.getMethodProfiler().exit();
     }
 
     private void n() {
@@ -2394,8 +2576,10 @@ public abstract class EntityLiving extends Entity {
 
             if (itemstack.getItem() == Items.ELYTRA && ItemElytra.e(itemstack)) {
                 flag = true;
-                if (!this.world.isClientSide && (this.bv + 1) % 20 == 0) {
-                    itemstack.damage(1, this);
+                if (!this.world.isClientSide && (this.bp + 1) % 20 == 0) {
+                    itemstack.damage(1, this, (entityliving) -> {
+                        entityliving.c(EnumItemSlot.CHEST);
+                    });
                 }
             } else {
                 flag = false;
@@ -2413,11 +2597,11 @@ public abstract class EntityLiving extends Entity {
 
     protected void doTick() {}
 
-    protected void cN() {
+    protected void collideNearby() {
         List<Entity> list = this.world.getEntities(this, this.getBoundingBox(), IEntitySelector.a(this));
 
         if (!list.isEmpty()) {
-            int i = this.world.getGameRules().c("maxEntityCramming");
+            int i = this.world.getGameRules().getInt(GameRules.MAX_ENTITY_CRAMMING);
             int j;
 
             if (i > 0 && list.size() > i - 1 && this.random.nextInt(4) == 0) {
@@ -2440,7 +2624,7 @@ public abstract class EntityLiving extends Entity {
                 entity.numCollisions++; // Paper
                 numCollisions++; // Paper
 
-                this.C(entity);
+                this.D(entity);
             }
         }
 
@@ -2455,32 +2639,30 @@ public abstract class EntityLiving extends Entity {
                 Entity entity = (Entity) list.get(i);
 
                 if (entity instanceof EntityLiving) {
-                    this.d((EntityLiving) entity);
-                    this.bw = 0;
-                    this.motX *= -0.2D;
-                    this.motY *= -0.2D;
-                    this.motZ *= -0.2D;
+                    this.f((EntityLiving) entity);
+                    this.bq = 0;
+                    this.setMot(this.getMot().a(-0.2D));
                     break;
                 }
             }
         } else if (this.positionChanged) {
-            this.bw = 0;
+            this.bq = 0;
         }
 
-        if (!this.world.isClientSide && this.bw <= 0) {
+        if (!this.world.isClientSide && this.bq <= 0) {
             this.c(4, false);
         }
 
     }
 
-    protected void C(Entity entity) {
+    protected void D(Entity entity) {
         entity.collide(this);
     }
 
-    protected void d(EntityLiving entityliving) {}
+    protected void f(EntityLiving entityliving) {}
 
-    public void o(int i) {
-        this.bw = i;
+    public void q(int i) {
+        this.bq = i;
         if (!this.world.isClientSide) {
             this.c(4, true);
         }
@@ -2488,82 +2670,89 @@ public abstract class EntityLiving extends Entity {
     }
 
     public boolean isRiptiding() {
-        return ((Byte) this.datawatcher.get(EntityLiving.aw) & 4) != 0;
+        return ((Byte) this.datawatcher.get(EntityLiving.ar) & 4) != 0;
     }
 
     // Paper start
-    public void stopRiding() { stopRiding(false); }
-    public void stopRiding(boolean suppressCancellation) {
+    @Override public void stopRiding() { stopRiding(false); }
+    @Override public void stopRiding(boolean suppressCancellation) {
         // Paper end
         Entity entity = this.getVehicle();
 
         super.stopRiding(suppressCancellation); // Paper - suppress
         if (entity != null && entity != this.getVehicle() && !this.world.isClientSide) {
-            this.A(entity);
+            this.B(entity);
         }
 
     }
 
-    public void aH() {
-        super.aH();
-        this.aZ = this.ba;
-        this.ba = 0.0F;
+    @Override
+    public void passengerTick() {
+        super.passengerTick();
+        this.aT = this.aU;
+        this.aU = 0.0F;
         this.fallDistance = 0.0F;
     }
 
-    public void o(boolean flag) {
-        this.bg = flag;
+    public void setJumping(boolean flag) {
+        this.jumping = flag;
     }
 
     public void receive(Entity entity, int i) {
-        if (!entity.dead && !this.world.isClientSide) {
-            EntityTracker entitytracker = ((WorldServer) this.world).getTracker();
-
-            if (entity instanceof EntityItem || entity instanceof EntityArrow || entity instanceof EntityExperienceOrb) {
-                entitytracker.a(entity, (Packet) (new PacketPlayOutCollect(entity.getId(), this.getId(), i)));
-            }
+        if (!entity.dead && !this.world.isClientSide && (entity instanceof EntityItem || entity instanceof EntityArrow || entity instanceof EntityExperienceOrb)) {
+            ((WorldServer) this.world).getChunkProvider().broadcast(entity, new PacketPlayOutCollect(entity.getId(), this.getId(), i));
         }
 
     }
 
     public boolean hasLineOfSight(Entity entity) {
-        return this.world.rayTrace(new Vec3D(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ), new Vec3D(entity.locX, entity.locY + (double) entity.getHeadHeight(), entity.locZ), FluidCollisionOption.NEVER, true, false) == null;
+        Vec3D vec3d = new Vec3D(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ);
+        Vec3D vec3d1 = new Vec3D(entity.locX, entity.locY + (double) entity.getHeadHeight(), entity.locZ);
+
+        return this.world.rayTrace(new RayTrace(vec3d, vec3d1, RayTrace.BlockCollisionOption.COLLIDER, RayTrace.FluidCollisionOption.NONE, this)).getType() == MovingObjectPosition.EnumMovingObjectType.MISS;
     }
 
+    @Override
     public float h(float f) {
-        return f == 1.0F ? this.aS : this.aT + (this.aS - this.aT) * f;
+        return f == 1.0F ? this.aM : MathHelper.g(f, this.aN, this.aM);
     }
 
-    public boolean cP() {
+    public boolean df() {
         return !this.world.isClientSide;
     }
 
+    @Override
     public boolean isInteractable() {
         return !this.dead && this.collides; // CraftBukkit
     }
 
+    @Override
     public boolean isCollidable() {
-        return this.isAlive() && !this.z_() && this.collides; // CraftBukkit
+        return this.isAlive() && !this.isClimbing() && this.collides; // CraftBukkit
     }
 
-    protected void aA() {
-        this.velocityChanged = this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.c).getValue();
+    @Override
+    protected void velocityChanged() {
+        this.velocityChanged = this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.KNOCKBACK_RESISTANCE).getValue();
     }
 
+    @Override
     public float getHeadRotation() {
-        return this.aS;
+        return this.aM;
     }
 
+    @Override
     public void setHeadRotation(float f) {
-        this.aS = f;
+        this.aM = f;
     }
 
-    public void k(float f) {
-        this.aQ = f;
+    @Override
+    public void l(float f) {
+        this.aK = f;
     }
 
     public float getAbsorptionHearts() {
-        return this.bK;
+        return this.bF;
     }
 
     public void setAbsorptionHearts(float f) {
@@ -2571,56 +2760,57 @@ public abstract class EntityLiving extends Entity {
             f = 0.0F;
         }
 
-        this.bK = f;
+        this.bF = f;
     }
 
     public void enterCombat() {}
 
     public void exitCombat() {}
 
-    protected void cR() {
+    protected void dh() {
         this.updateEffects = true;
     }
 
     public abstract EnumMainHand getMainHand();
 
     public boolean isHandRaised() {
-        return ((Byte) this.datawatcher.get(EntityLiving.aw) & 1) > 0;
+        return ((Byte) this.datawatcher.get(EntityLiving.ar) & 1) > 0;
     }
 
-    public EnumHand cU() {
-        return ((Byte) this.datawatcher.get(EntityLiving.aw) & 2) > 0 ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
+    public EnumHand getRaisedHand() {
+        return ((Byte) this.datawatcher.get(EntityLiving.ar) & 2) > 0 ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
     }
 
-    protected void cV() {
+    private void o() {
         if (this.isHandRaised()) {
-            if (this.b(this.cU()) == this.activeItem) {
-                if (this.cX() <= 25 && this.cX() % 4 == 0) {
+            if (ItemStack.d(this.b(this.getRaisedHand()), this.activeItem)) {
+                this.activeItem.b(this.world, this, this.dm());
+                if (this.dm() <= 25 && this.dm() % 4 == 0) {
                     this.b(this.activeItem, 5);
                 }
 
-                if (--this.bu == 0 && !this.world.isClientSide) {
+                if (--this.bo == 0 && !this.world.isClientSide && !this.activeItem.m()) {
                     this.q();
                 }
             } else {
-                this.da();
+                this.dp();
             }
         }
 
     }
 
-    private void o() {
-        this.bP = this.bO;
-        if (this.isSwimming()) {
-            this.bO = Math.min(1.0F, this.bO + 0.09F);
+    private void p() {
+        this.bK = this.bJ;
+        if (this.bk()) {
+            this.bJ = Math.min(1.0F, this.bJ + 0.09F);
         } else {
-            this.bO = Math.max(0.0F, this.bO - 0.09F);
+            this.bJ = Math.max(0.0F, this.bJ - 0.09F);
         }
 
     }
 
     protected void c(int i, boolean flag) {
-        byte b0 = (Byte) this.datawatcher.get(EntityLiving.aw);
+        byte b0 = (Byte) this.datawatcher.get(EntityLiving.ar);
         int j;
 
         if (flag) {
@@ -2629,15 +2819,18 @@ public abstract class EntityLiving extends Entity {
             j = b0 & ~i;
         }
 
-        this.datawatcher.set(EntityLiving.aw, (byte) j);
+        this.datawatcher.set(EntityLiving.ar, (byte) j);
     }
 
-    public void c(EnumHand enumhand) {
+    // Paper start -- OBFHELPER and forwarder to method with forceUpdate parameter
+    public void c(EnumHand enumhand) { this.updateActiveItem(enumhand, false); }
+    public void updateActiveItem(EnumHand enumhand, boolean forceUpdate) {
+    // Paper end
         ItemStack itemstack = this.b(enumhand);
 
-        if (!itemstack.isEmpty() && !this.isHandRaised()) {
+        if (!itemstack.isEmpty() && !this.isHandRaised() || forceUpdate) { // Paper use override flag
             this.activeItem = itemstack;
-            this.bu = itemstack.k();
+            this.bo = itemstack.k();
             if (!this.world.isClientSide) {
                 this.c(1, true);
                 this.c(2, enumhand == EnumHand.OFF_HAND);
@@ -2646,46 +2839,50 @@ public abstract class EntityLiving extends Entity {
         }
     }
 
+    @Override
     public void a(DataWatcherObject<?> datawatcherobject) {
         super.a(datawatcherobject);
-        if (EntityLiving.aw.equals(datawatcherobject) && this.world.isClientSide) {
+        if (EntityLiving.bs.equals(datawatcherobject)) {
+            if (this.world.isClientSide) {
+                this.getBedPosition().ifPresent(this::a);
+            }
+        } else if (EntityLiving.ar.equals(datawatcherobject) && this.world.isClientSide) {
             if (this.isHandRaised() && this.activeItem.isEmpty()) {
-                this.activeItem = this.b(this.cU());
+                this.activeItem = this.b(this.getRaisedHand());
                 if (!this.activeItem.isEmpty()) {
-                    this.bu = this.activeItem.k();
+                    this.bo = this.activeItem.k();
                 }
             } else if (!this.isHandRaised() && !this.activeItem.isEmpty()) {
                 this.activeItem = ItemStack.a;
-                this.bu = 0;
+                this.bo = 0;
             }
         }
 
     }
 
+    @Override
     public void a(ArgumentAnchor.Anchor argumentanchor_anchor, Vec3D vec3d) {
         super.a(argumentanchor_anchor, vec3d);
-        this.aT = this.aS;
-        this.aQ = this.aS;
-        this.aR = this.aQ;
+        this.aN = this.aM;
+        this.aK = this.aM;
+        this.aL = this.aK;
     }
 
     protected void b(ItemStack itemstack, int i) {
         if (!itemstack.isEmpty() && this.isHandRaised()) {
             if (itemstack.l() == EnumAnimation.DRINK) {
-                this.a(SoundEffects.ENTITY_GENERIC_DRINK, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
+                this.a(this.c(itemstack), 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
             }
 
             if (itemstack.l() == EnumAnimation.EAT) {
                 this.a(itemstack, i);
-                this.a(SoundEffects.ENTITY_GENERIC_EAT, 0.5F + 0.5F * (float) this.random.nextInt(2), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+                this.a(this.d(itemstack), 0.5F + 0.5F * (float) this.random.nextInt(2), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
             }
 
         }
     }
 
     private void a(ItemStack itemstack, int i) {
-        // Akarin start - this handle by client
-        /*
         for (int j = 0; j < i; ++j) {
             Vec3D vec3d = new Vec3D(((double) this.random.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
 
@@ -2697,15 +2894,14 @@ public abstract class EntityLiving extends Entity {
             vec3d1 = vec3d1.a(-this.pitch * 0.017453292F);
             vec3d1 = vec3d1.b(-this.yaw * 0.017453292F);
             vec3d1 = vec3d1.add(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ);
-            this.world.addParticle(new ParticleParamItem(Particles.C, itemstack), vec3d1.x, vec3d1.y, vec3d1.z, vec3d.x, vec3d.y + 0.05D, vec3d.z);
+            this.world.addParticle(new ParticleParamItem(Particles.ITEM, itemstack), vec3d1.x, vec3d1.y, vec3d1.z, vec3d.x, vec3d.y + 0.05D, vec3d.z);
         }
-        */
-        // Akarin end
 
     }
 
     protected void q() {
         if (!this.activeItem.isEmpty() && this.isHandRaised()) {
+            this.updateActiveItem(this.getRaisedHand(), true); // Paper
             PlayerItemConsumeEvent event = null; // Paper
             this.b(this.activeItem, 16);
             // CraftBukkit start - fire PlayerItemConsumeEvent
@@ -2733,11 +2929,11 @@ public abstract class EntityLiving extends Entity {
                 itemstack = CraftItemStack.asNMSCopy(event.getReplacement());
             }
             // Paper end
-            this.a(this.cU(), itemstack);
+            this.a(this.getRaisedHand(), itemstack);
             // CraftBukkit end
-            this.da();
-            // Paper start - if the replacement is anything but the default, update the client inventory
-            if (this instanceof EntityPlayer && !com.google.common.base.Objects.equal(defaultReplacement, itemstack)) {
+            this.dp();
+            // Paper start
+            if (this instanceof EntityPlayer) {
                 ((EntityPlayer) this).getBukkitEntity().updateInventory();
             }
             // Paper end
@@ -2745,52 +2941,60 @@ public abstract class EntityLiving extends Entity {
 
     }
 
-    public ItemStack cW() {
+    public ItemStack dl() {
         return this.activeItem;
     }
 
-    public int getItemUseRemainingTime() { return cX(); } // Paper - OBFHELPER
-    public int cX() {
-        return this.bu;
+    public int getItemUseRemainingTime() { return this.dm(); } // Paper - OBFHELPER
+    public int dm() {
+        return this.bo;
     }
 
-    public int getHandRaisedTime() { return cY(); } // Paper - OBFHELPER
-    public int cY() {
-        return this.isHandRaised() ? this.activeItem.k() - this.cX() : 0;
+    public int getHandRaisedTime() { return this.dn(); } // Paper - OBFHELPER
+    public int dn() {
+        return this.isHandRaised() ? this.activeItem.k() - this.dm() : 0;
     }
 
     public void clearActiveItem() {
         if (!this.activeItem.isEmpty()) {
-            this.activeItem.a(this.world, this, this.cX());
+            this.activeItem.a(this.world, this, this.dm());
+            if (this.activeItem.m()) {
+                this.o();
+            }
         }
 
-        this.da();
+        this.dp();
     }
 
-    public void da() {
+    public void dp() {
         if (!this.world.isClientSide) {
             this.c(1, false);
         }
 
         this.activeItem = ItemStack.a;
-        this.bu = 0;
+        this.bo = 0;
     }
 
     public boolean isBlocking() {
         if (this.isHandRaised() && !this.activeItem.isEmpty()) {
             Item item = this.activeItem.getItem();
 
-            return item.d(this.activeItem) != EnumAnimation.BLOCK ? false : item.c(this.activeItem) - this.bu >= getShieldBlockingDelay(); // Paper - shieldBlockingDelay
+            return item.e_(this.activeItem) != EnumAnimation.BLOCK ? false : item.f_(this.activeItem) - this.bo >= getShieldBlockingDelay(); // Paper - shieldBlockingDelay
         } else {
             return false;
         }
     }
 
-    public boolean dc() {
+    public boolean isGliding() {
         return this.getFlag(7);
     }
 
-    public boolean j(double d0, double d1, double d2) {
+    @Override
+    public boolean bk() {
+        return super.bk() || !this.isGliding() && this.getPose() == EntityPose.FALL_FLYING;
+    }
+
+    public boolean a(double d0, double d1, double d2, boolean flag) {
         double d3 = this.locX;
         double d4 = this.locY;
         double d5 = this.locZ;
@@ -2798,28 +3002,26 @@ public abstract class EntityLiving extends Entity {
         this.locX = d0;
         this.locY = d1;
         this.locZ = d2;
-        boolean flag = false;
+        boolean flag1 = false;
         BlockPosition blockposition = new BlockPosition(this);
         World world = this.world;
-        Random random = this.getRandom();
-        boolean flag1;
 
         if (world.isLoaded(blockposition)) {
-            flag1 = false;
+            boolean flag2 = false;
 
-            while (!flag1 && blockposition.getY() > 0) {
+            while (!flag2 && blockposition.getY() > 0) {
                 BlockPosition blockposition1 = blockposition.down();
                 IBlockData iblockdata = world.getType(blockposition1);
 
                 if (iblockdata.getMaterial().isSolid()) {
-                    flag1 = true;
+                    flag2 = true;
                 } else {
                     --this.locY;
                     blockposition = blockposition1;
                 }
             }
 
-            if (flag1) {
+            if (flag2) {
                 // CraftBukkit start - Teleport event
                 // this.enderTeleportTo(this.locX, this.locY, this.locZ);
                 EntityTeleportEvent teleport = new EntityTeleportEvent(this.getBukkitEntity(), new Location(this.world.getWorld(), d3, d4, d5), new Location(this.world.getWorld(), this.locX, this.locY, this.locZ));
@@ -2827,58 +3029,198 @@ public abstract class EntityLiving extends Entity {
                 if (!teleport.isCancelled()) {
                     Location to = teleport.getTo();
                     this.enderTeleportTo(to.getX(), to.getY(), to.getZ());
-                    if (world.getCubes((Entity) this, this.getBoundingBox()) && !world.containsLiquid(this.getBoundingBox())) {
-                        flag = true;
+                    if (world.getCubes(this) && !world.containsLiquid(this.getBoundingBox())) {
+                        flag1 = true;
                     }
                 }
                 // CraftBukkit end
             }
         }
 
-        if (!flag) {
+        if (!flag1) {
             this.enderTeleportTo(d3, d4, d5);
             return false;
         } else {
-            flag1 = true;
-
-            // Akarin start - this handle by client
-            /*
-            for (int i = 0; i < 128; ++i) {
-                double d6 = (double) i / 127.0D;
-                float f = (random.nextFloat() - 0.5F) * 0.2F;
-                float f1 = (random.nextFloat() - 0.5F) * 0.2F;
-                float f2 = (random.nextFloat() - 0.5F) * 0.2F;
-                double d7 = d3 + (this.locX - d3) * d6 + (random.nextDouble() - 0.5D) * (double) this.width * 2.0D;
-                double d8 = d4 + (this.locY - d4) * d6 + random.nextDouble() * (double) this.length;
-                double d9 = d5 + (this.locZ - d5) * d6 + (random.nextDouble() - 0.5D) * (double) this.width * 2.0D;
-
-                world.addParticle(Particles.K, d7, d8, d9, (double) f, (double) f1, (double) f2);
+            if (flag) {
+                world.broadcastEntityEffect(this, (byte) 46);
             }
-            */
-            // Akarin end
 
             if (this instanceof EntityCreature) {
-                ((EntityCreature) this).getNavigation().q();
+                ((EntityCreature) this).getNavigation().o();
             }
 
             return true;
         }
     }
 
-    public boolean de() {
+    public boolean dt() {
         return true;
     }
 
-    public boolean df() {
+    public boolean du() {
         return true;
     }
 
+    public boolean e(ItemStack itemstack) {
+        return false;
+    }
+
+    @Override
+    public Packet<?> N() {
+        return new PacketPlayOutSpawnEntityLiving(this);
+    }
+
+    @Override
+    public EntitySize a(EntityPose entitypose) {
+        return entitypose == EntityPose.SLEEPING ? EntityLiving.as : super.a(entitypose).a(this.cn());
+    }
+
+    public Optional<BlockPosition> getBedPosition() {
+        return (Optional) this.datawatcher.get(EntityLiving.bs);
+    }
+
+    public void d(BlockPosition blockposition) {
+        this.datawatcher.set(EntityLiving.bs, Optional.of(blockposition));
+    }
+
+    public void dw() {
+        this.datawatcher.set(EntityLiving.bs, Optional.empty());
+    }
+
+    public boolean isSleeping() {
+        return this.getBedPosition().isPresent();
+    }
+
+    public void e(BlockPosition blockposition) {
+        if (this.isPassenger()) {
+            this.stopRiding();
+        }
+
+        IBlockData iblockdata = this.world.getType(blockposition);
+
+        if (iblockdata.getBlock() instanceof BlockBed) {
+            this.world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockBed.OCCUPIED, true), 3);
+        }
+
+        this.setPose(EntityPose.SLEEPING);
+        this.a(blockposition);
+        this.d(blockposition);
+        this.setMot(Vec3D.a);
+        this.impulse = true;
+    }
+
+    private void a(BlockPosition blockposition) {
+        this.setPosition((double) blockposition.getX() + 0.5D, (double) ((float) blockposition.getY() + 0.6875F), (double) blockposition.getZ() + 0.5D);
+    }
+
+    private boolean r() {
+        return (Boolean) this.getBedPosition().map((blockposition) -> {
+            return this.world.getType(blockposition).getBlock() instanceof BlockBed;
+        }).orElse(false);
+    }
+
+    public void dy() {
+        Optional<BlockPosition> optional = this.getBedPosition(); // CraftBukkit - decompile error
+        World world = this.world;
+
+        this.world.getClass();
+        optional.filter(world::isLoaded).ifPresent((blockposition) -> {
+            IBlockData iblockdata = this.world.getType(blockposition);
+
+            if (iblockdata.getBlock() instanceof BlockBed) {
+                this.world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockBed.OCCUPIED, false), 3);
+                Vec3D vec3d = (Vec3D) BlockBed.a(this.getEntityType(), (IWorldReader) this.world, blockposition, 0).orElseGet(() -> {
+                    BlockPosition blockposition1 = blockposition.up();
+
+                    return new Vec3D((double) blockposition1.getX() + 0.5D, (double) blockposition1.getY() + 0.1D, (double) blockposition1.getZ() + 0.5D);
+                });
+
+                this.setPosition(vec3d.x, vec3d.y, vec3d.z);
+            }
+
+        });
+        this.setPose(EntityPose.STANDING);
+        this.dw();
+    }
+
+    @Override
+    public boolean inBlock() {
+        return !this.isSleeping() && super.inBlock();
+    }
+
+    @Override
+    protected final float getHeadHeight(EntityPose entitypose, EntitySize entitysize) {
+        return entitypose == EntityPose.SLEEPING ? 0.2F : this.b(entitypose, entitysize);
+    }
+
+    protected float b(EntityPose entitypose, EntitySize entitysize) {
+        return super.getHeadHeight(entitypose, entitysize);
+    }
+
+    public ItemStack f(ItemStack itemstack) {
+        return ItemStack.a;
+    }
+
+    public ItemStack a(World world, ItemStack itemstack) {
+        if (itemstack.E()) {
+            world.playSound((EntityHuman) null, this.locX, this.locY, this.locZ, this.d(itemstack), SoundCategory.NEUTRAL, 1.0F, 1.0F + (world.random.nextFloat() - world.random.nextFloat()) * 0.4F);
+            this.a(itemstack, world, this);
+            itemstack.subtract(1);
+        }
+
+        return itemstack;
+    }
+
+    private void a(ItemStack itemstack, World world, EntityLiving entityliving) {
+        Item item = itemstack.getItem();
+
+        if (item.isFood()) {
+            List<Pair<MobEffect, Float>> list = item.getFoodInfo().f();
+            Iterator iterator = list.iterator();
+
+            while (iterator.hasNext()) {
+                Pair<MobEffect, Float> pair = (Pair) iterator.next();
+
+                if (!world.isClientSide && pair.getLeft() != null && world.random.nextFloat() < (Float) pair.getRight()) {
+                    entityliving.addEffect(new MobEffect((MobEffect) pair.getLeft()), EntityPotionEffectEvent.Cause.FOOD); // CraftBukkit
+                }
+            }
+        }
+
+    }
+
+    private static byte d(EnumItemSlot enumitemslot) {
+        switch (enumitemslot) {
+            case MAINHAND:
+                return 47;
+            case OFFHAND:
+                return 48;
+            case HEAD:
+                return 49;
+            case CHEST:
+                return 50;
+            case FEET:
+                return 52;
+            case LEGS:
+                return 51;
+            default:
+                return 47;
+        }
+    }
+
+    public void c(EnumItemSlot enumitemslot) {
+        this.world.broadcastEntityEffect(this, d(enumitemslot));
+    }
+
+    public void d(EnumHand enumhand) {
+        this.c(enumhand == EnumHand.MAIN_HAND ? EnumItemSlot.MAINHAND : EnumItemSlot.OFFHAND);
+    }
     // Paper start
     public MovingObjectPosition getRayTrace(int maxDistance) {
-        return getRayTrace(maxDistance, FluidCollisionOption.NEVER);
+        return getRayTrace(maxDistance, RayTrace.FluidCollisionOption.NONE);
     }
 
-    public MovingObjectPosition getRayTrace(int maxDistance, FluidCollisionOption fluidCollisionOption) {
+    public MovingObjectPosition getRayTrace(int maxDistance, RayTrace.FluidCollisionOption fluidCollisionOption) {
         if (maxDistance < 1 || maxDistance > 120) {
             throw new IllegalArgumentException("maxDistance must be between 1-120");
         }
@@ -2886,38 +3228,40 @@ public abstract class EntityLiving extends Entity {
         Vec3D start = new Vec3D(locX, locY + getHeadHeight(), locZ);
         org.bukkit.util.Vector dir = getBukkitEntity().getLocation().getDirection().multiply(maxDistance);
         Vec3D end = new Vec3D(start.x + dir.getX(), start.y + dir.getY(), start.z + dir.getZ());
+        RayTrace raytrace = new RayTrace(start, end, RayTrace.BlockCollisionOption.OUTLINE, fluidCollisionOption, this);
 
-        return world.rayTrace(start, end, fluidCollisionOption);
+        return world.rayTrace(raytrace);
     }
 
-    public MovingObjectPosition getTargetEntity(int maxDistance) {
+    public MovingObjectPositionEntity getTargetEntity(int maxDistance) {
         if (maxDistance < 1 || maxDistance > 120) {
             throw new IllegalArgumentException("maxDistance must be between 1-120");
         }
 
-        Vec3D start = getEyePosition(1.0F);
-        Vec3D direction = getLookVec();
+        Vec3D start = this.getEyePosition(1.0F);
+        Vec3D direction = this.getLookDirection();
         Vec3D end = start.add(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance);
 
         List<Entity> entityList = world.getEntities(this, getBoundingBox().expand(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance).grow(1.0D, 1.0D, 1.0D), IEntitySelector.notSpectator().and(Entity::isInteractable));
 
         double distance = 0.0D;
-        MovingObjectPosition rayTraceResult = null;
+        MovingObjectPositionEntity result = null;
 
         for (Entity entity : entityList) {
             AxisAlignedBB aabb = entity.getBoundingBox().grow((double) entity.getCollisionBorderSize());
-            MovingObjectPosition rayTrace = aabb.calculateIntercept(start, end);
+            Optional<Vec3D> rayTraceResult = aabb.calculateIntercept(start, end);
 
-            if (rayTrace != null) {
-                double distanceTo = start.distanceSquared(rayTrace.pos);
+            if (rayTraceResult.isPresent()) {
+                Vec3D rayTrace = rayTraceResult.get();
+                double distanceTo = start.distanceSquared(rayTrace);
                 if (distanceTo < distance || distance == 0.0D) {
-                    rayTraceResult = new MovingObjectPosition(entity, rayTrace.pos);
+                    result = new MovingObjectPositionEntity(entity, rayTrace);
                     distance = distanceTo;
                 }
             }
         }
 
-        return rayTraceResult;
+        return result;
     }
 
     public int shieldBlockingDelay = world.paperConfig.shieldBlockingDelay;

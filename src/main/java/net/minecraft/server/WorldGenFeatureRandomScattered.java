@@ -1,11 +1,16 @@
 package net.minecraft.server;
 
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 
 public abstract class WorldGenFeatureRandomScattered<C extends WorldGenFeatureConfiguration> extends StructureGenerator<C> {
 
-    public WorldGenFeatureRandomScattered() {}
+    public WorldGenFeatureRandomScattered(Function<Dynamic<?>, ? extends C> function) {
+        super(function);
+    }
 
+    @Override
     protected ChunkCoordIntPair a(ChunkGenerator<?> chunkgenerator, Random random, int i, int j, int k, int l) {
         int i1 = this.a(chunkgenerator);
         int j1 = this.b(chunkgenerator);
@@ -16,7 +21,7 @@ public abstract class WorldGenFeatureRandomScattered<C extends WorldGenFeatureCo
         int k2 = i2 / i1;
         int l2 = j2 / i1;
 
-        ((SeededRandom) random).a(chunkgenerator.getSeed(), k2, l2, this.c(chunkgenerator.getWorld())); // Spigot
+        ((SeededRandom) random).a(chunkgenerator.getSeed(), k2, l2, this.getSeed(chunkgenerator.getWorld())); // Spigot
         k2 *= i1;
         l2 *= i1;
         k2 += random.nextInt(i1 - j1);
@@ -24,11 +29,12 @@ public abstract class WorldGenFeatureRandomScattered<C extends WorldGenFeatureCo
         return new ChunkCoordIntPair(k2, l2);
     }
 
-    protected boolean a(ChunkGenerator<?> chunkgenerator, Random random, int i, int j) {
+    @Override
+    public boolean a(ChunkGenerator<?> chunkgenerator, Random random, int i, int j) {
         ChunkCoordIntPair chunkcoordintpair = this.a(chunkgenerator, random, i, j, 0, 0);
 
         if (i == chunkcoordintpair.x && j == chunkcoordintpair.z) {
-            BiomeBase biomebase = chunkgenerator.getWorldChunkManager().getBiome(new BlockPosition(i * 16 + 9, 0, j * 16 + 9), (BiomeBase) null);
+            BiomeBase biomebase = chunkgenerator.getWorldChunkManager().getBiome(new BlockPosition(i * 16 + 9, 0, j * 16 + 9));
 
             if (chunkgenerator.canSpawnStructure(biomebase, this)) {
                 return true;
@@ -46,11 +52,5 @@ public abstract class WorldGenFeatureRandomScattered<C extends WorldGenFeatureCo
         return chunkgenerator.getSettings().i();
     }
 
-    protected boolean a(GeneratorAccess generatoraccess) {
-        return generatoraccess.getWorldData().shouldGenerateMapFeatures();
-    }
-
-    protected abstract StructureStart a(GeneratorAccess generatoraccess, ChunkGenerator<?> chunkgenerator, SeededRandom seededrandom, int i, int j);
-
-    protected abstract int c(World world); // Spigot
+    protected abstract int getSeed(World world); // Spigot
 }

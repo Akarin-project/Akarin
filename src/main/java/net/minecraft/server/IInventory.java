@@ -1,12 +1,13 @@
 package net.minecraft.server;
 
+import java.util.Set;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity; // CraftBukkit
 
-public interface IInventory extends INamableTileEntity {
+public interface IInventory extends Clearable {
 
     int getSize();
 
-    boolean P_();
+    boolean isNotEmpty();
 
     ItemStack getItem(int i);
 
@@ -16,32 +17,44 @@ public interface IInventory extends INamableTileEntity {
 
     void setItem(int i, ItemStack itemstack);
 
-    int getMaxStackSize();
+    int getMaxStackSize(); // CraftBukkit
 
     void update();
 
     boolean a(EntityHuman entityhuman);
 
-    void startOpen(EntityHuman entityhuman);
+    default void startOpen(EntityHuman entityhuman) {}
 
-    void closeContainer(EntityHuman entityhuman);
+    default void closeContainer(EntityHuman entityhuman) {}
 
-    boolean b(int i, ItemStack itemstack);
-
-    int getProperty(int i);
-
-    void setProperty(int i, int j);
-
-    int h();
-
-    void clear();
-
-    default int n() {
-        return 0;
+    default boolean b(int i, ItemStack itemstack) {
+        return true;
     }
 
-    default int U_() {
-        return 0;
+    default int a(Item item) {
+        int i = 0;
+
+        for (int j = 0; j < this.getSize(); ++j) {
+            ItemStack itemstack = this.getItem(j);
+
+            if (itemstack.getItem().equals(item)) {
+                i += itemstack.getCount();
+            }
+        }
+
+        return i;
+    }
+
+    default boolean a(Set<Item> set) {
+        for (int i = 0; i < this.getSize(); ++i) {
+            ItemStack itemstack = this.getItem(i);
+
+            if (set.contains(itemstack.getItem()) && itemstack.getCount() > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // CraftBukkit start

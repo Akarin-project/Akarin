@@ -1,9 +1,8 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Lists;
-import java.util.Collection;
+import com.google.common.collect.Maps;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 public class TagsServer<T> extends Tags<T> {
@@ -12,13 +11,15 @@ public class TagsServer<T> extends Tags<T> {
     public int version; // CraftBukkit
 
     public TagsServer(IRegistry<T> iregistry, String s, String s1) {
-        super(iregistry::c, iregistry::get, s, false, s1);
+        super(iregistry::getOptional, s, false, s1);
         this.a = iregistry;
     }
 
     public void a(PacketDataSerializer packetdataserializer) {
-        packetdataserializer.d(this.c().size());
-        Iterator iterator = this.c().entrySet().iterator();
+        Map<MinecraftKey, Tag<T>> map = this.b();
+
+        packetdataserializer.d(map.size());
+        Iterator iterator = map.entrySet().iterator();
 
         while (iterator.hasNext()) {
             Entry<MinecraftKey, Tag<T>> entry = (Entry) iterator.next();
@@ -37,19 +38,21 @@ public class TagsServer<T> extends Tags<T> {
     }
 
     public void b(PacketDataSerializer packetdataserializer) {
-        int i = packetdataserializer.g();
+        Map<MinecraftKey, Tag<T>> map = Maps.newHashMap();
+        int i = packetdataserializer.i();
 
         for (int j = 0; j < i; ++j) {
-            MinecraftKey minecraftkey = packetdataserializer.l();
-            int k = packetdataserializer.g();
-            List<T> list = Lists.newArrayList();
+            MinecraftKey minecraftkey = packetdataserializer.o();
+            int k = packetdataserializer.i();
+            Tag.a<T> tag_a = Tag.a.a();
 
             for (int l = 0; l < k; ++l) {
-                list.add(this.a.fromId(packetdataserializer.g()));
+                tag_a.a(this.a.fromId(packetdataserializer.i()));
             }
 
-            this.c().put(minecraftkey, (Tag<T>) Tag.a.a().a((Collection) list).b(minecraftkey)); // CraftBukkit - decompile error
+            map.put(minecraftkey, tag_a.b(minecraftkey));
         }
 
+        this.b((Map) map);
     }
 }

@@ -2,12 +2,11 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityItem;
-
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.CraftServer;
 
 // Paper start
 import javax.annotation.Nullable;
@@ -26,18 +25,22 @@ public class CraftItem extends CraftEntity implements Item {
         this(server, entity, entity);
     }
 
+    @Override
     public ItemStack getItemStack() {
         return CraftItemStack.asCraftMirror(item.getItemStack());
     }
 
+    @Override
     public void setItemStack(ItemStack stack) {
         item.setItemStack(CraftItemStack.asNMSCopy(stack));
     }
 
+    @Override
     public int getPickupDelay() {
         return item.pickupDelay;
     }
 
+    @Override
     public void setPickupDelay(int delay) {
         item.pickupDelay = Math.min(delay, Short.MAX_VALUE);
     }
@@ -60,19 +63,23 @@ public class CraftItem extends CraftEntity implements Item {
     }
 
     @Nullable
+    @Override
     public UUID getOwner() {
         return item.getOwner();
     }
 
+    @Override
     public void setOwner(@Nullable UUID owner) {
         item.setOwner(owner);
     }
 
     @Nullable
+    @Override
     public UUID getThrower() {
         return item.getThrower();
     }
 
+    @Override
     public void setThrower(@Nullable UUID thrower) {
         item.setThrower(thrower);
     }
@@ -83,6 +90,7 @@ public class CraftItem extends CraftEntity implements Item {
         return "CraftItem";
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.DROPPED_ITEM;
     }

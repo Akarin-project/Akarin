@@ -35,13 +35,13 @@ public class CommandGamemode {
         ChatMessage chatmessage = new ChatMessage("gameMode." + enumgamemode.b(), new Object[0]);
 
         if (commandlistenerwrapper.getEntity() == entityplayer) {
-            commandlistenerwrapper.sendMessage(new ChatMessage("commands.gamemode.success.self", new Object[] { chatmessage}), true);
+            commandlistenerwrapper.sendMessage(new ChatMessage("commands.gamemode.success.self", new Object[]{chatmessage}), true);
         } else {
-            if (commandlistenerwrapper.getWorld().getGameRules().getBoolean("sendCommandFeedback")) {
-                entityplayer.sendMessage(new ChatMessage("gameMode.changed", new Object[] { chatmessage}));
+            if (commandlistenerwrapper.getWorld().getGameRules().getBoolean(GameRules.SEND_COMMAND_FEEDBACK)) {
+                entityplayer.sendMessage(new ChatMessage("gameMode.changed", new Object[]{chatmessage}));
             }
 
-            commandlistenerwrapper.sendMessage(new ChatMessage("commands.gamemode.success.other", new Object[] { entityplayer.getScoreboardDisplayName(), chatmessage}), true);
+            commandlistenerwrapper.sendMessage(new ChatMessage("commands.gamemode.success.other", new Object[]{entityplayer.getScoreboardDisplayName(), chatmessage}), true);
         }
 
     }

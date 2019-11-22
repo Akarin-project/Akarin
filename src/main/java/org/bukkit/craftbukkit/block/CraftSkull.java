@@ -4,15 +4,11 @@ import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.ProfileLookupCallback;
-
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TileEntitySkull;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-
 import org.bukkit.SkullType;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -40,7 +36,7 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
     public void load(TileEntitySkull skull) {
         super.load(skull);
 
-        profile = skull.getGameProfile();
+        profile = skull.gameProfile;
     }
 
     static int getSkullType(SkullType type) {
@@ -77,9 +73,12 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
             return false;
         }
 
-        // Akarin start
-        MinecraftServer.getServer().getModernUserCache().acquire(name, gameProfile -> profile = gameProfile);
-        // Akarin end
+        GameProfile profile = MinecraftServer.getServer().getUserCache().getProfile(name);
+        if (profile == null) {
+            return false;
+        }
+
+        this.profile = profile;
         return true;
     }
 

@@ -1,35 +1,33 @@
 package net.minecraft.server;
 
+import com.google.common.collect.Streams;
 import java.util.Collections;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.Spliterators.AbstractSpliterator;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
-import io.akarin.server.core.AkarinGlobalConfig;
+public interface IWorldReader extends IIBlockAccess {
 
-public interface IWorldReader extends IBlockAccess {
+    default boolean isEmpty(BlockPosition blockposition) {
+        return this.getType(blockposition).isAir();
+    }
 
-    boolean isEmpty(BlockPosition blockposition);
-
-    BiomeBase getBiome(BlockPosition blockposition);
-
-    int getBrightness(EnumSkyBlock enumskyblock, BlockPosition blockposition);
-
-    default boolean z(BlockPosition blockposition) {
+    default boolean u(BlockPosition blockposition) {
         if (blockposition.getY() >= this.getSeaLevel()) {
-            return this.e(blockposition);
+            return this.f(blockposition);
         } else {
             BlockPosition blockposition1 = new BlockPosition(blockposition.getX(), this.getSeaLevel(), blockposition.getZ());
 
-            if (!this.e(blockposition1)) {
+            if (!this.f(blockposition1)) {
                 return false;
             } else {
                 for (blockposition1 = blockposition1.down(); blockposition1.getY() > blockposition.getY(); blockposition1 = blockposition1.down()) {
                     IBlockData iblockdata = this.getType(blockposition1);
 
-                    if (iblockdata.b(this, blockposition1) > 0 && !iblockdata.getMaterial().isLiquid()) {
+                    if (iblockdata.b((IBlockAccess) this, blockposition1) > 0 && !iblockdata.getMaterial().isLiquid()) {
                         return false;
                     }
                 }
@@ -40,56 +38,21 @@ public interface IWorldReader extends IBlockAccess {
     }
 
     int getLightLevel(BlockPosition blockposition, int i);
-    // Paper start
-    default @Nullable
-    IBlockData getTypeIfLoaded(BlockPosition var1) {
-        return isLoaded(var1) ? getType(var1) : null;
-    }
 
-    default @Nullable
-    Block getBlockIfLoaded(BlockPosition var1) {
-        return isLoaded(var1) ? getType(var1).getBlock() : null;
-    }
+    @Nullable IChunkAccess getChunkIfLoadedImmediately(int x, int z); // Paper - ifLoaded api (we need this since current impl blocks if the chunk is loading)
+    @Nullable
+    IChunkAccess getChunkAt(int i, int j, ChunkStatus chunkstatus, boolean flag);
 
-    default @Nullable
-    Material getMaterialIfLoaded(BlockPosition var1) {
-        return isLoaded(var1) ? getType(var1).getMaterial() : null;
-    }
-    // Paper end
+    @Deprecated
+    boolean isChunkLoaded(int i, int j);
 
-    boolean isChunkLoaded(int i, int j, boolean flag);
-
-    boolean e(BlockPosition blockposition);
-
-    default BlockPosition getHighestBlockYAt(HeightMap.Type heightmap_type, BlockPosition blockposition) {
-        return new BlockPosition(blockposition.getX(), this.a(heightmap_type, blockposition.getX(), blockposition.getZ()), blockposition.getZ());
-    }
+    BlockPosition getHighestBlockYAt(HeightMap.Type heightmap_type, BlockPosition blockposition);
 
     int a(HeightMap.Type heightmap_type, int i, int j);
 
-    default float A(BlockPosition blockposition) {
-        return this.o().i()[this.getLightLevel(blockposition)];
+    default float v(BlockPosition blockposition) {
+        return this.getWorldProvider().i()[this.getLightLevel(blockposition)];
     }
-
-    @Nullable
-    default EntityHuman findNearbyPlayer(Entity entity, double d0) {
-        return this.a(entity.locX, entity.locY, entity.locZ, d0, false);
-    }
-
-    @Nullable
-    default EntityHuman b(Entity entity, double d0) {
-        return this.a(entity.locX, entity.locY, entity.locZ, d0, true);
-    }
-
-    @Nullable
-    default EntityHuman a(double d0, double d1, double d2, double d3, boolean flag) {
-        Predicate<Entity> predicate = flag ? IEntitySelector.e : IEntitySelector.f;
-
-        return this.a(d0, d1, d2, d3, predicate);
-    }
-
-    @Nullable
-    EntityHuman a(double d0, double d1, double d2, double d3, Predicate<Entity> predicate);
 
     int c();
 
@@ -97,158 +60,126 @@ public interface IWorldReader extends IBlockAccess {
 
     boolean a(@Nullable Entity entity, VoxelShape voxelshape);
 
-    int a(BlockPosition blockposition, EnumDirection enumdirection);
+    default int c(BlockPosition blockposition, EnumDirection enumdirection) {
+        return this.getType(blockposition).c(this, blockposition, enumdirection);
+    }
 
     boolean e();
 
     int getSeaLevel();
 
-    default boolean a(IBlockData iblockdata, BlockPosition blockposition) {
-        VoxelShape voxelshape = iblockdata.getCollisionShape(this, blockposition);
+    default IChunkAccess w(BlockPosition blockposition) {
+        return this.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+    }
+
+    default IChunkAccess getChunkAt(int i, int j) {
+        return this.getChunkAt(i, j, ChunkStatus.FULL, true);
+    }
+
+    default IChunkAccess getChunkAt(int i, int j, ChunkStatus chunkstatus) {
+        return this.getChunkAt(i, j, chunkstatus, true);
+    }
+
+    default ChunkStatus O() {
+        return ChunkStatus.EMPTY;
+    }
+
+    default boolean a(IBlockData iblockdata, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision) {
+        VoxelShape voxelshape = iblockdata.b((IBlockAccess) this, blockposition, voxelshapecollision);
 
         return voxelshape.isEmpty() || this.a((Entity) null, voxelshape.a((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ()));
     }
 
-    default boolean a_(@Nullable Entity entity, AxisAlignedBB axisalignedbb) {
-        return this.a(entity, VoxelShapes.a(axisalignedbb));
-    }
-
-    default Stream<VoxelShape> a(VoxelShape voxelshape, VoxelShape voxelshape1, boolean flag) {
-        // Akarin start
-        return rayTrace(voxelshape, voxelshape1, flag, null);
-    }
-
-    /*
-     * Reference on code by Colin Godsey <crgodsey@gmail.com>
-     * https://github.com/yesdog/Paper/blob/95e5ff5e9a741c21b694fec507d48682606346b1/Spigot-Server-Patches/0424-stair-collision-for-pe-fix.patch
-     */
-    static final VoxelShape slimShape = VoxelShapes.create(0.25, 0, 0.25, 0.75, 0.05, 0.75);
-
-    static boolean canIgnoreRayTrace(IBlockData data) {
-        Block type = data.getBlock();
-        
-        // Pull request if you want to add some more blocks
-        return type instanceof BlockStairs ||
-                type instanceof BlockStepAbstract ||
-                type instanceof BlockCarpet ||
-                type instanceof BlockSnow ||
-                type instanceof BlockAttachable ||
-                type instanceof BlockAnvil ||
-                type instanceof BlockBed ||
-                type instanceof BlockChest ||
-                type instanceof BlockChestTrapped;
-    }
-
-    default Stream<VoxelShape> rayTrace(VoxelShape voxelshape, VoxelShape voxelshape1, boolean flag, @Nullable Entity entity) {
-        // Akarin end
-        int i = MathHelper.floor(voxelshape.b(EnumDirection.EnumAxis.X)) - 1;
-        int j = MathHelper.f(voxelshape.c(EnumDirection.EnumAxis.X)) + 1;
-        int k = MathHelper.floor(voxelshape.b(EnumDirection.EnumAxis.Y)) - 1;
-        int l = MathHelper.f(voxelshape.c(EnumDirection.EnumAxis.Y)) + 1;
-        int i1 = MathHelper.floor(voxelshape.b(EnumDirection.EnumAxis.Z)) - 1;
-        int j1 = MathHelper.f(voxelshape.c(EnumDirection.EnumAxis.Z)) + 1;
-        WorldBorder worldborder = this.getWorldBorder();
-        boolean flag1 = worldborder.b() < (double) i && (double) j < worldborder.d() && worldborder.c() < (double) i1 && (double) j1 < worldborder.e();
-        VoxelShapeBitSet voxelshapebitset = new VoxelShapeBitSet(j - i, l - k, j1 - i1);
-        Predicate<VoxelShape> predicate = (voxelshape2) -> {
-            return !voxelshape2.isEmpty() && VoxelShapes.c(voxelshape, voxelshape2, OperatorBoolean.AND);
-        };
-        Stream<VoxelShape> stream = StreamSupport.stream(BlockPosition.MutableBlockPosition.b(i, k, i1, j - 1, l - 1, j1 - 1).spliterator(), false).map((blockposition_mutableblockposition) -> {
-            int k1 = blockposition_mutableblockposition.getX();
-            int l1 = blockposition_mutableblockposition.getY();
-            int i2 = blockposition_mutableblockposition.getZ();
-            boolean flag2 = k1 == i || k1 == j - 1;
-            boolean flag3 = l1 == k || l1 == l - 1;
-            boolean flag4 = i2 == i1 || i2 == j1 - 1;
-
-            if ((!flag2 || !flag3) && (!flag3 || !flag4) && (!flag4 || !flag2) && this.isLoaded(blockposition_mutableblockposition)) {
-                VoxelShape voxelshape2;
-
-                if (flag && !flag1 && !worldborder.a((BlockPosition) blockposition_mutableblockposition)) {
-                    voxelshape2 = VoxelShapes.b();
-                } else {
-                    voxelshape2 = AkarinGlobalConfig.ignoreRayTraceForSeatableBlocks && entity instanceof EntityPlayer && canIgnoreRayTrace(this.getType(blockposition_mutableblockposition)) ? slimShape : this.getType(blockposition_mutableblockposition).getCollisionShape(this, blockposition_mutableblockposition); // Akarin
-                }
-
-                VoxelShape voxelshape3 = voxelshape1.a((double) (-k1), (double) (-l1), (double) (-i2));
-
-                if (VoxelShapes.c(voxelshape3, voxelshape2, OperatorBoolean.AND)) {
-                    return VoxelShapes.a();
-                } else if (voxelshape2 == VoxelShapes.b()) {
-                    voxelshapebitset.a(k1 - i, l1 - k, i2 - i1, true, true);
-                    return VoxelShapes.a();
-                } else {
-                    return voxelshape2.a((double) k1, (double) l1, (double) i2);
-                }
-            } else {
-                return VoxelShapes.a();
-            }
-        }).filter(predicate);
-
-        return Stream.concat(stream, Stream.generate(() -> {
-            return new VoxelShapeWorldRegion(voxelshapebitset, i, k, i1);
-        }).limit(1L).filter(predicate));
-    }
-
-    default Stream<VoxelShape> a(@Nullable Entity entity, AxisAlignedBB axisalignedbb, double d0, double d1, double d2) {
-        return this.a(entity, axisalignedbb, Collections.emptySet(), d0, d1, d2);
-    }
-
-    default Stream<VoxelShape> a(@Nullable Entity entity, AxisAlignedBB axisalignedbb, Set<Entity> set, double d0, double d1, double d2) {
-        double d3 = 1.0E-7D;
-        VoxelShape voxelshape = VoxelShapes.a(axisalignedbb);
-        VoxelShape voxelshape1 = VoxelShapes.a(axisalignedbb.d(d0 > 0.0D ? -1.0E-7D : 1.0E-7D, d1 > 0.0D ? -1.0E-7D : 1.0E-7D, d2 > 0.0D ? -1.0E-7D : 1.0E-7D));
-        VoxelShape voxelshape2 = VoxelShapes.b(VoxelShapes.a(axisalignedbb.b(d0, d1, d2).g(1.0E-7D)), voxelshape1, OperatorBoolean.ONLY_FIRST);
-
-        return this.a(entity, voxelshape2, voxelshape, set);
-    }
-
-    default Stream<VoxelShape> b(@Nullable Entity entity, AxisAlignedBB axisalignedbb) {
-        return this.a(entity, VoxelShapes.a(axisalignedbb), VoxelShapes.a(), Collections.emptySet());
-    }
-
-    default Stream<VoxelShape> a(@Nullable Entity entity, VoxelShape voxelshape, VoxelShape voxelshape1, Set<Entity> set) {
-        boolean flag = entity != null && entity.bG();
-        boolean flag1 = entity != null && this.i(entity);
-
-        if (entity != null && flag == flag1) {
-            entity.n(!flag1);
-        }
-
-        return this.rayTrace(voxelshape, voxelshape1, flag1, entity); // Akarin
-    }
-
     default boolean i(Entity entity) {
-        WorldBorder worldborder = this.getWorldBorder();
-        double d0 = worldborder.b();
-        double d1 = worldborder.c();
-        double d2 = worldborder.d();
-        double d3 = worldborder.e();
-
-        if (entity.bG()) {
-            ++d0;
-            ++d1;
-            --d2;
-            --d3;
-        } else {
-            --d0;
-            --d1;
-            ++d2;
-            ++d3;
-        }
-
-        return entity.locX > d0 && entity.locX < d2 && entity.locZ > d1 && entity.locZ < d3;
+        return this.a(entity, VoxelShapes.a(entity.getBoundingBox()));
     }
 
-    default boolean a(@Nullable Entity entity, AxisAlignedBB axisalignedbb, Set<Entity> set) {
-        return this.a(entity, VoxelShapes.a(axisalignedbb), VoxelShapes.a(), set).allMatch(VoxelShape::isEmpty);
+    default boolean c(AxisAlignedBB axisalignedbb) {
+        return this.b((Entity) null, axisalignedbb, Collections.emptySet());
     }
 
-    default boolean getCubes(@Nullable Entity entity, AxisAlignedBB axisalignedbb) {
-        return this.a(entity, axisalignedbb, Collections.emptySet());
+    default boolean getCubes(Entity entity) {
+        return this.b(entity, entity.getBoundingBox(), Collections.emptySet());
     }
 
-    default boolean B(BlockPosition blockposition) {
+    default boolean getCubes(Entity entity, AxisAlignedBB axisalignedbb) {
+        return this.b(entity, axisalignedbb, Collections.emptySet());
+    }
+
+    default boolean b(@Nullable Entity entity, AxisAlignedBB axisalignedbb, Set<Entity> set) {
+        return this.c(entity, axisalignedbb, set).allMatch(VoxelShape::isEmpty);
+    }
+
+    default Stream<VoxelShape> a(@Nullable Entity entity, AxisAlignedBB axisalignedbb, Set<Entity> set) {
+        return Stream.empty();
+    }
+
+    default Stream<VoxelShape> c(@Nullable Entity entity, AxisAlignedBB axisalignedbb, Set<Entity> set) {
+        return Streams.concat(new Stream[]{this.b(entity, axisalignedbb), this.a(entity, axisalignedbb, set)});
+    }
+
+    default Stream<VoxelShape> b(@Nullable final Entity entity, AxisAlignedBB axisalignedbb) {
+        int i = MathHelper.floor(axisalignedbb.minX - 1.0E-7D) - 1;
+        int j = MathHelper.floor(axisalignedbb.maxX + 1.0E-7D) + 1;
+        int k = MathHelper.floor(axisalignedbb.minY - 1.0E-7D) - 1;
+        int l = MathHelper.floor(axisalignedbb.maxY + 1.0E-7D) + 1;
+        int i1 = MathHelper.floor(axisalignedbb.minZ - 1.0E-7D) - 1;
+        int j1 = MathHelper.floor(axisalignedbb.maxZ + 1.0E-7D) + 1;
+        final VoxelShapeCollision voxelshapecollision = entity == null ? VoxelShapeCollision.a() : VoxelShapeCollision.a(entity);
+        final CursorPosition cursorposition = new CursorPosition(i, k, i1, j, l, j1);
+        final BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
+        final VoxelShape voxelshape = VoxelShapes.a(axisalignedbb);
+
+        return StreamSupport.stream(new AbstractSpliterator<VoxelShape>(Long.MAX_VALUE, 1280) {
+            boolean a = entity == null;
+
+            public boolean tryAdvance(Consumer<? super VoxelShape> consumer) {
+                if (!this.a) {
+                    this.a = true;
+                    VoxelShape voxelshape1 = IWorldReader.this.getWorldBorder().a();
+                    boolean flag = VoxelShapes.c(voxelshape1, VoxelShapes.a(entity.getBoundingBox().shrink(1.0E-7D)), OperatorBoolean.AND);
+                    boolean flag1 = VoxelShapes.c(voxelshape1, VoxelShapes.a(entity.getBoundingBox().g(1.0E-7D)), OperatorBoolean.AND);
+
+                    if (!flag && flag1) {
+                        consumer.accept(voxelshape1);
+                        return true;
+                    }
+                }
+
+                while (cursorposition.a()) {
+                    int k1 = cursorposition.b();
+                    int l1 = cursorposition.c();
+                    int i2 = cursorposition.d();
+                    int j2 = cursorposition.e();
+
+                    if (j2 != 3) {
+                        int k2 = k1 >> 4;
+                        int l2 = i2 >> 4;
+                        IChunkAccess ichunkaccess = IWorldReader.this.getChunkAt(k2, l2, IWorldReader.this.O(), false);
+
+                        if (ichunkaccess != null) {
+                            blockposition_mutableblockposition.d(k1, l1, i2);
+                            IBlockData iblockdata = ichunkaccess.getType(blockposition_mutableblockposition);
+
+                            if ((j2 != 1 || iblockdata.f()) && (j2 != 2 || iblockdata.getBlock() == Blocks.MOVING_PISTON)) {
+                                VoxelShape voxelshape2 = iblockdata.b((IBlockAccess) IWorldReader.this, blockposition_mutableblockposition, voxelshapecollision);
+                                VoxelShape voxelshape3 = voxelshape2.a((double) k1, (double) l1, (double) i2);
+
+                                if (VoxelShapes.c(voxelshape, voxelshape3, OperatorBoolean.AND)) {
+                                    consumer.accept(voxelshape3);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return false;
+            }
+        }, false);
+    }
+
+    default boolean x(BlockPosition blockposition) {
         return this.getFluid(blockposition).a(TagsFluid.WATER);
     }
 
@@ -266,9 +197,9 @@ public interface IWorldReader extends IBlockAccess {
             for (int k1 = i; k1 < j; ++k1) {
                 for (int l1 = k; l1 < l; ++l1) {
                     for (int i2 = i1; i2 < j1; ++i2) {
-                        IBlockData iblockdata = this.getType(blockposition_pooledblockposition.c(k1, l1, i2));
+                        IBlockData iblockdata = this.getType(blockposition_pooledblockposition.d(k1, l1, i2));
 
-                        if (!iblockdata.s().e()) {
+                        if (!iblockdata.p().isEmpty()) {
                             boolean flag = true;
 
                             return flag;
@@ -302,72 +233,21 @@ public interface IWorldReader extends IBlockAccess {
     }
 
     default int d(BlockPosition blockposition, int i) {
-        if (blockposition.getX() >= -30000000 && blockposition.getZ() >= -30000000 && blockposition.getX() < 30000000 && blockposition.getZ() < 30000000) {
-            if (this.getType(blockposition).c(this, blockposition)) {
-                int j = this.getLightLevel(blockposition.up(), i);
-                int k = this.getLightLevel(blockposition.east(), i);
-                int l = this.getLightLevel(blockposition.west(), i);
-                int i1 = this.getLightLevel(blockposition.south(), i);
-                int j1 = this.getLightLevel(blockposition.north(), i);
-
-                if (k > j) {
-                    j = k;
-                }
-
-                if (l > j) {
-                    j = l;
-                }
-
-                if (i1 > j) {
-                    j = i1;
-                }
-
-                if (j1 > j) {
-                    j = j1;
-                }
-
-                return j;
-            } else {
-                return this.getLightLevel(blockposition, i);
-            }
-        } else {
-            return 15;
-        }
+        return blockposition.getX() >= -30000000 && blockposition.getZ() >= -30000000 && blockposition.getX() < 30000000 && blockposition.getZ() < 30000000 ? this.getLightLevel(blockposition, i) : 15;
     }
 
+    @Deprecated
     default boolean isLoaded(BlockPosition blockposition) {
-        return this.b(blockposition, true);
+        return this.isChunkLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4);
     }
 
-    default boolean b(BlockPosition blockposition, boolean flag) {
-        return this.isChunkLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4, flag);
-    }
-
-    default boolean areChunksLoaded(BlockPosition blockposition, int i) {
-        return this.areChunksLoaded(blockposition, i, true);
-    }
-
-    default boolean areChunksLoaded(BlockPosition blockposition, int i, boolean flag) {
-        return this.isAreaLoaded(blockposition.getX() - i, blockposition.getY() - i, blockposition.getZ() - i, blockposition.getX() + i, blockposition.getY() + i, blockposition.getZ() + i, flag);
-    }
-
+    @Deprecated
     default boolean areChunksLoadedBetween(BlockPosition blockposition, BlockPosition blockposition1) {
-        return this.areChunksLoadedBetween(blockposition, blockposition1, true);
+        return this.isAreaLoaded(blockposition.getX(), blockposition.getY(), blockposition.getZ(), blockposition1.getX(), blockposition1.getY(), blockposition1.getZ());
     }
 
-    default boolean areChunksLoadedBetween(BlockPosition blockposition, BlockPosition blockposition1, boolean flag) {
-        return this.isAreaLoaded(blockposition.getX(), blockposition.getY(), blockposition.getZ(), blockposition1.getX(), blockposition1.getY(), blockposition1.getZ(), flag);
-    }
-
-    default boolean a(StructureBoundingBox structureboundingbox) {
-        return this.a(structureboundingbox, true);
-    }
-
-    default boolean a(StructureBoundingBox structureboundingbox, boolean flag) {
-        return this.isAreaLoaded(structureboundingbox.a, structureboundingbox.b, structureboundingbox.c, structureboundingbox.d, structureboundingbox.e, structureboundingbox.f, flag);
-    }
-
-    default boolean isAreaLoaded(int i, int j, int k, int l, int i1, int j1, boolean flag) {
+    @Deprecated
+    default boolean isAreaLoaded(int i, int j, int k, int l, int i1, int j1) {
         if (i1 >= 0 && j < 256) {
             i >>= 4;
             k >>= 4;
@@ -376,7 +256,7 @@ public interface IWorldReader extends IBlockAccess {
 
             for (int k1 = i; k1 <= l; ++k1) {
                 for (int l1 = k; l1 <= j1; ++l1) {
-                    if (!this.isChunkLoaded(k1, l1, flag)) {
+                    if (!this.isChunkLoaded(k1, l1)) {
                         return false;
                     }
                 }
@@ -388,5 +268,5 @@ public interface IWorldReader extends IBlockAccess {
         }
     }
 
-    WorldProvider o();
+    WorldProvider getWorldProvider();
 }

@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
-import org.bukkit.craftbukkit.entity.CraftVillager;
+import org.bukkit.craftbukkit.entity.CraftAbstractVillager;
 import org.bukkit.entity.HumanEntity;
 // CraftBukkit end
 
@@ -14,9 +14,10 @@ public class InventoryMerchant implements IInventory {
 
     private final IMerchant merchant;
     private final NonNullList<ItemStack> itemsInSlots;
-    private final EntityHuman player;
+    @Nullable
     private MerchantRecipe recipe;
     public int selectedIndex;
+    private int e;
 
     // CraftBukkit start - add fields and methods
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
@@ -32,10 +33,16 @@ public class InventoryMerchant implements IInventory {
 
     public void onClose(CraftHumanEntity who) {
         transaction.remove(who);
+        merchant.setTradingPlayer((EntityHuman) null); // SPIGOT-4860
     }
 
     public List<HumanEntity> getViewers() {
         return transaction;
+    }
+
+    @Override
+    public int getMaxStackSize() {
+        return maxStack;
     }
 
     public void setMaxStackSize(int i) {
@@ -43,7 +50,7 @@ public class InventoryMerchant implements IInventory {
     }
 
     public org.bukkit.inventory.InventoryHolder getOwner() {
-        return (merchant instanceof EntityVillager) ? (CraftVillager) ((EntityVillager) this.merchant).getBukkitEntity() : null;
+        return (merchant instanceof EntityVillagerAbstract) ? (CraftAbstractVillager) ((EntityVillagerAbstract) this.merchant).getBukkitEntity() : null;
     }
 
     @Override
@@ -52,17 +59,18 @@ public class InventoryMerchant implements IInventory {
     }
     // CraftBukkit end
 
-    public InventoryMerchant(EntityHuman entityhuman, IMerchant imerchant) {
+    public InventoryMerchant(IMerchant imerchant) {
         this.itemsInSlots = NonNullList.a(3, ItemStack.a);
-        this.player = entityhuman;
         this.merchant = imerchant;
     }
 
+    @Override
     public int getSize() {
         return this.itemsInSlots.size();
     }
 
-    public boolean P_() {
+    @Override
+    public boolean isNotEmpty() {
         Iterator iterator = this.itemsInSlots.iterator();
 
         ItemStack itemstack;
@@ -78,10 +86,12 @@ public class InventoryMerchant implements IInventory {
         return false;
     }
 
+    @Override
     public ItemStack getItem(int i) {
         return (ItemStack) this.itemsInSlots.get(i);
     }
 
+    @Override
     public ItemStack splitStack(int i, int j) {
         ItemStack itemstack = (ItemStack) this.itemsInSlots.get(i);
 
@@ -90,125 +100,98 @@ public class InventoryMerchant implements IInventory {
         } else {
             ItemStack itemstack1 = ContainerUtil.a(this.itemsInSlots, i, j);
 
-            if (!itemstack1.isEmpty() && this.e(i)) {
-                this.i();
+            if (!itemstack1.isEmpty() && this.d(i)) {
+                this.f();
             }
 
             return itemstack1;
         }
     }
 
-    private boolean e(int i) {
+    private boolean d(int i) {
         return i == 0 || i == 1;
     }
 
+    @Override
     public ItemStack splitWithoutUpdate(int i) {
         return ContainerUtil.a(this.itemsInSlots, i);
     }
 
+    @Override
     public void setItem(int i, ItemStack itemstack) {
         this.itemsInSlots.set(i, itemstack);
         if (!itemstack.isEmpty() && itemstack.getCount() > this.getMaxStackSize()) {
             itemstack.setCount(this.getMaxStackSize());
         }
 
-        if (this.e(i)) {
-            this.i();
+        if (this.d(i)) {
+            this.f();
         }
 
     }
 
-    public IChatBaseComponent getDisplayName() {
-        return merchant.getScoreboardDisplayName(); // CraftBukkit
-    }
-
-    public boolean hasCustomName() {
-        return false;
-    }
-
-    @Nullable
-    public IChatBaseComponent getCustomName() {
-        return null;
-    }
-
-    public int getMaxStackSize() {
-        return maxStack; // CraftBukkit
-    }
-
+    @Override
     public boolean a(EntityHuman entityhuman) {
         return this.merchant.getTrader() == entityhuman;
     }
 
-    public void startOpen(EntityHuman entityhuman) {}
-
-    public void closeContainer(EntityHuman entityhuman) {}
-
-    public boolean b(int i, ItemStack itemstack) {
-        return true;
-    }
-
+    @Override
     public void update() {
-        this.i();
+        this.f();
     }
 
-    public void i() {
+    public void f() {
         this.recipe = null;
-        ItemStack itemstack = (ItemStack) this.itemsInSlots.get(0);
-        ItemStack itemstack1 = (ItemStack) this.itemsInSlots.get(1);
+        ItemStack itemstack;
+        ItemStack itemstack1;
 
-        if (itemstack.isEmpty()) {
-            itemstack = itemstack1;
+        if (((ItemStack) this.itemsInSlots.get(0)).isEmpty()) {
+            itemstack = (ItemStack) this.itemsInSlots.get(1);
             itemstack1 = ItemStack.a;
+        } else {
+            itemstack = (ItemStack) this.itemsInSlots.get(0);
+            itemstack1 = (ItemStack) this.itemsInSlots.get(1);
         }
 
         if (itemstack.isEmpty()) {
             this.setItem(2, ItemStack.a);
+            this.e = 0;
         } else {
-            MerchantRecipeList merchantrecipelist = this.merchant.getOffers(this.player);
+            MerchantRecipeList merchantrecipelist = this.merchant.getOffers();
 
-            if (merchantrecipelist != null) {
+            if (!merchantrecipelist.isEmpty()) {
                 MerchantRecipe merchantrecipe = merchantrecipelist.a(itemstack, itemstack1, this.selectedIndex);
 
-                if (merchantrecipe != null && !merchantrecipe.h()) {
+                if (merchantrecipe == null || merchantrecipe.isFullyUsed()) {
                     this.recipe = merchantrecipe;
-                    this.setItem(2, merchantrecipe.getBuyItem3().cloneItemStack());
-                } else if (!itemstack1.isEmpty()) {
                     merchantrecipe = merchantrecipelist.a(itemstack1, itemstack, this.selectedIndex);
-                    if (merchantrecipe != null && !merchantrecipe.h()) {
-                        this.recipe = merchantrecipe;
-                        this.setItem(2, merchantrecipe.getBuyItem3().cloneItemStack());
-                    } else {
-                        this.setItem(2, ItemStack.a);
-                    }
+                }
+
+                if (merchantrecipe != null && !merchantrecipe.isFullyUsed()) {
+                    this.recipe = merchantrecipe;
+                    this.setItem(2, merchantrecipe.f());
+                    this.e = merchantrecipe.getXp();
                 } else {
                     this.setItem(2, ItemStack.a);
+                    this.e = 0;
                 }
             }
 
-            this.merchant.a(this.getItem(2));
+            this.merchant.i(this.getItem(2));
         }
-
     }
 
+    @Nullable
     public MerchantRecipe getRecipe() {
         return this.recipe;
     }
 
-    public void d(int i) {
+    public void c(int i) {
         this.selectedIndex = i;
-        this.i();
+        this.f();
     }
 
-    public int getProperty(int i) {
-        return 0;
-    }
-
-    public void setProperty(int i, int j) {}
-
-    public int h() {
-        return 0;
-    }
-
+    @Override
     public void clear() {
         this.itemsInSlots.clear();
     }

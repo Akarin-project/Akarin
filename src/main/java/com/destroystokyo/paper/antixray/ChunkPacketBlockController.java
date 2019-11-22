@@ -19,7 +19,7 @@ public class ChunkPacketBlockController {
 
     }
 
-    public IBlockData[] getPredefinedBlockData(IWorldReader world, IChunkAccess chunk, ChunkSection chunkSection, boolean skyLight, boolean initializeBlocks) {
+    public IBlockData[] getPredefinedBlockData(IWorldReader world, IChunkAccess chunk, ChunkSection chunkSection, boolean initializeBlocks) {
         return null;
     }
 
@@ -27,11 +27,12 @@ public class ChunkPacketBlockController {
         return true;
     }
 
-    public ChunkPacketInfo<IBlockData> getChunkPacketInfo(PacketPlayOutMapChunk packetPlayOutMapChunk, Chunk chunk, int chunkSectionSelector) {
+    public ChunkPacketInfo<IBlockData> getChunkPacketInfo(PacketPlayOutMapChunk packetPlayOutMapChunk, Chunk chunk,
+                                                          int chunkSectionSelector, boolean forceLoad) {
         return null;
     }
 
-    public void modifyBlocks(PacketPlayOutMapChunk packetPlayOutMapChunk, ChunkPacketInfo<IBlockData> chunkPacketInfo) {
+    public void modifyBlocks(PacketPlayOutMapChunk packetPlayOutMapChunk, ChunkPacketInfo<IBlockData> chunkPacketInfo, boolean loadChunks, Integer ticketHold) {
         packetPlayOutMapChunk.setReady(true);
     }
 

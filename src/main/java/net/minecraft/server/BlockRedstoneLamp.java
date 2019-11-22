@@ -11,28 +11,32 @@ public class BlockRedstoneLamp extends Block {
 
     public BlockRedstoneLamp(Block.Info block_info) {
         super(block_info);
-        this.v((IBlockData) this.getBlockData().set(BlockRedstoneLamp.a, false));
+        this.o((IBlockData) this.getBlockData().set(BlockRedstoneLamp.a, false));
     }
 
-    public int m(IBlockData iblockdata) {
-        return (Boolean) iblockdata.get(BlockRedstoneLamp.a) ? super.m(iblockdata) : 0;
+    @Override
+    public int a(IBlockData iblockdata) {
+        return (Boolean) iblockdata.get(BlockRedstoneLamp.a) ? super.a(iblockdata) : 0;
     }
 
-    public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1) {
-        super.onPlace(iblockdata, world, blockposition, iblockdata1);
+    @Override
+    public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
+        super.onPlace(iblockdata, world, blockposition, iblockdata1, flag);
     }
 
     @Nullable
+    @Override
     public IBlockData getPlacedState(BlockActionContext blockactioncontext) {
         return (IBlockData) this.getBlockData().set(BlockRedstoneLamp.a, blockactioncontext.getWorld().isBlockIndirectlyPowered(blockactioncontext.getClickPosition()));
     }
 
-    public void doPhysics(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, BlockPosition blockposition1) {
+    @Override
+    public void doPhysics(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, BlockPosition blockposition1, boolean flag) {
         if (!world.isClientSide) {
-            boolean flag = (Boolean) iblockdata.get(BlockRedstoneLamp.a);
+            boolean flag1 = (Boolean) iblockdata.get(BlockRedstoneLamp.a);
 
-            if (flag != world.isBlockIndirectlyPowered(blockposition)) {
-                if (flag) {
+            if (flag1 != world.isBlockIndirectlyPowered(blockposition)) {
+                if (flag1) {
                     world.getBlockTickList().a(blockposition, this, 4);
                 } else {
                     // CraftBukkit start
@@ -47,7 +51,8 @@ public class BlockRedstoneLamp extends Block {
         }
     }
 
-    public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
+    @Override
+    public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (!world.isClientSide) {
             if ((Boolean) iblockdata.get(BlockRedstoneLamp.a) && !world.isBlockIndirectlyPowered(blockposition)) {
                 // CraftBukkit start
@@ -61,6 +66,7 @@ public class BlockRedstoneLamp extends Block {
         }
     }
 
+    @Override
     protected void a(BlockStateList.a<Block, IBlockData> blockstatelist_a) {
         blockstatelist_a.a(BlockRedstoneLamp.a);
     }

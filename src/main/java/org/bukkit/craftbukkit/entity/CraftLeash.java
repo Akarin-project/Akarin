@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.server.EntityLeash;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LeashHitch;
@@ -21,6 +20,7 @@ public class CraftLeash extends CraftHanging implements LeashHitch {
         return "CraftLeash";
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.LEASH_HITCH;
     }

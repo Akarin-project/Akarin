@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.EntityTNTPrimed;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -14,26 +13,32 @@ public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
         super(server, entity);
     }
 
+    @Override
     public float getYield() {
         return getHandle().yield;
     }
 
+    @Override
     public boolean isIncendiary() {
         return getHandle().isIncendiary;
     }
 
+    @Override
     public void setIsIncendiary(boolean isIncendiary) {
         getHandle().isIncendiary = isIncendiary;
     }
 
+    @Override
     public void setYield(float yield) {
         getHandle().yield = yield;
     }
 
+    @Override
     public int getFuseTicks() {
         return getHandle().getFuseTicks();
     }
 
+    @Override
     public void setFuseTicks(int fuseTicks) {
         getHandle().setFuseTicks(fuseTicks);
     }
@@ -48,10 +53,12 @@ public class CraftTNTPrimed extends CraftEntity implements TNTPrimed {
         return "CraftTNTPrimed";
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.PRIMED_TNT;
     }
 
+    @Override
     public Entity getSource() {
         EntityLiving source = getHandle().getSource();
 

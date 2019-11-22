@@ -4,13 +4,17 @@ public interface IWorldWriter {
 
     boolean setTypeAndData(BlockPosition blockposition, IBlockData iblockdata, int i);
 
-    boolean addEntity(Entity entity);
+    boolean a(BlockPosition blockposition, boolean flag);
 
-    boolean addEntity(Entity entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason); // CraftBukkit
+    boolean b(BlockPosition blockposition, boolean flag);
 
-    boolean setAir(BlockPosition blockposition);
+    default boolean addEntity(Entity entity) {
+        return false;
+    }
 
-    void a(EnumSkyBlock enumskyblock, BlockPosition blockposition, int i);
-
-    boolean setAir(BlockPosition blockposition, boolean flag);
+    // CraftBukkit start
+    default boolean addEntity(Entity entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason) {
+        return false;
+    }
+    // CraftBukkit end
 }

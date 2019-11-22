@@ -6,40 +6,36 @@ public class BlockMobSpawner extends BlockTileEntity {
         super(block_info);
     }
 
-    public TileEntity a(IBlockAccess iblockaccess) {
+    @Override
+    public TileEntity createTile(IBlockAccess iblockaccess) {
         return new TileEntityMobSpawner();
     }
 
-    public IMaterial getDropType(IBlockData iblockdata, World world, BlockPosition blockposition, int i) {
-        return Items.AIR;
-    }
-
-    public void dropNaturally(IBlockData iblockdata, World world, BlockPosition blockposition, float f, int i) {
-        super.dropNaturally(iblockdata, world, blockposition, f, i);
+    @Override
+    public void dropNaturally(IBlockData iblockdata, World world, BlockPosition blockposition, ItemStack itemstack) {
+        super.dropNaturally(iblockdata, world, blockposition, itemstack);
         /* CraftBukkit start - Delegate to getExpDrop
-        int j = 15 + world.random.nextInt(15) + world.random.nextInt(15);
+        int i = 15 + world.random.nextInt(15) + world.random.nextInt(15);
 
-        this.dropExperience(world, blockposition, j);
+        this.dropExperience(world, blockposition, i);
         */
     }
 
     @Override
-    public int getExpDrop(IBlockData iblockdata, World world, BlockPosition blockposition, int enchantmentLevel) {
-        int j = 15 + world.random.nextInt(15) + world.random.nextInt(15);
+    public int getExpDrop(IBlockData iblockdata, World world, BlockPosition blockposition, ItemStack itemstack) {
+        int i = 15 + world.random.nextInt(15) + world.random.nextInt(15);
 
-        return j;
+        return i;
         // CraftBukkit end
     }
 
+    @Override
     public EnumRenderType c(IBlockData iblockdata) {
         return EnumRenderType.MODEL;
     }
 
+    @Override
     public TextureType c() {
         return TextureType.CUTOUT;
-    }
-
-    public ItemStack a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata) {
-        return ItemStack.a;
     }
 }

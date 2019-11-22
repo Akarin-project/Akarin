@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,7 +20,6 @@ public class Main {
     public static boolean useConsole = true;
 
     public static void main(String[] args) {
-        io.akarin.server.core.AkarinGlobalConfig.init(new File("akarin.yml")); // Akarin
         // Todo: Installation script
         OptionParser parser = new OptionParser() {
             {
@@ -113,6 +111,7 @@ public class Main {
                         .describedAs("Yml file");
 
                 acceptsAll(asList("forceUpgrade"), "Whether to force a world upgrade");
+                acceptsAll(asList("eraseCache"), "Whether to force cache erase during world upgrade");
 
                 acceptsAll(asList("nojline"), "Disables jline and emulates the vanilla console");
 
@@ -173,8 +172,8 @@ public class Main {
             }
 
             float javaVersion = Float.parseFloat(System.getProperty("java.class.version"));
-            if (javaVersion > 56.0) {
-                System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 12 is supported.");
+            if (javaVersion > 57.0) {
+                System.err.println("Unsupported Java detected (" + javaVersion + "). Only up to Java 13 is supported.");
                 return;
             }
 
@@ -220,7 +219,7 @@ public class Main {
                     if (buildDate.before(deadline.getTime())) {
                         // Paper start - This is some stupid bullshit
                         System.err.println("*** Warning, you've not updated in a while! ***");
-                        System.err.println("*** Please visit our website for the latest information: https://akarin.io/ ***"); // Paper // Akarin
+                        System.err.println("*** Please download a new build as per instructions from https://papermc.io/downloads ***"); // Paper
                         //System.err.println("*** Server will start in 20 seconds ***");
                         //Thread.sleep(TimeUnit.SECONDS.toMillis(20));
                         // Paper End
@@ -239,7 +238,7 @@ public class Main {
                     System.out.println("Unable to read system info");
                 }
                 // Paper end
-
+                System.setProperty( "library.jansi.version", "Paper" ); // Paper - set meaningless jansi version to prevent git builds from crashing on Windows
                 System.out.println("Loading libraries, please wait...");
                 MinecraftServer.main(options);
             } catch (Throwable t) {

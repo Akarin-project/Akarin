@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.server.EntitySpider;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Spider;
@@ -22,6 +21,7 @@ public class CraftSpider extends CraftMonster implements Spider {
         return "CraftSpider";
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.SPIDER;
     }

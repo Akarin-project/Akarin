@@ -11,7 +11,7 @@ import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapelessRecipe;
 // CraftBukkit end
 
-public class ShapelessRecipes implements IRecipe {
+public class ShapelessRecipes implements RecipeCrafting {
 
     private final MinecraftKey key;
     private final String group;
@@ -39,74 +39,73 @@ public class ShapelessRecipes implements IRecipe {
     }
     // CraftBukkit end
 
+    @Override
     public MinecraftKey getKey() {
         return this.key;
     }
 
-    public RecipeSerializer<?> a() {
-        return RecipeSerializers.b;
+    @Override
+    public RecipeSerializer<?> getRecipeSerializer() {
+        return RecipeSerializer.b;
     }
 
-    public ItemStack d() {
+    @Override
+    public ItemStack c() {
         return this.result;
     }
 
-    public NonNullList<RecipeItemStack> e() {
+    @Override
+    public NonNullList<RecipeItemStack> a() {
         return this.ingredients;
     }
 
-    public boolean a(IInventory iinventory, World world) {
-        if (!(iinventory instanceof InventoryCrafting)) {
-            return false;
-        } else {
-            AutoRecipeStackManager autorecipestackmanager = new AutoRecipeStackManager();
-            int i = 0;
+    public boolean a(InventoryCrafting inventorycrafting, World world) {
+        AutoRecipeStackManager autorecipestackmanager = new AutoRecipeStackManager();
+        int i = 0;
 
-            // Paper start
-            java.util.List<ItemStack> providedItems = new java.util.ArrayList<>();
-            co.aikar.util.Counter<ItemStack> matchedProvided = new co.aikar.util.Counter<>();
-            co.aikar.util.Counter<RecipeItemStack> matchedIngredients = new co.aikar.util.Counter<>();
-            // Paper end
-            for (int j = 0; j < iinventory.n(); ++j) {
-                for (int k = 0; k < iinventory.U_(); ++k) {
-                    ItemStack itemstack = iinventory.getItem(k + j * iinventory.U_());
+        // Paper start
+        java.util.List<ItemStack> providedItems = new java.util.ArrayList<>();
+        co.aikar.util.Counter<ItemStack> matchedProvided = new co.aikar.util.Counter<>();
+        co.aikar.util.Counter<RecipeItemStack> matchedIngredients = new co.aikar.util.Counter<>();
+        // Paper end
+        for (int j = 0; j < inventorycrafting.getSize(); ++j) {
+            ItemStack itemstack = inventorycrafting.getItem(j);
 
-                    if (!itemstack.isEmpty()) {
-                        // Paper start
-                        itemstack = itemstack.cloneItemStack();
-                        providedItems.add(itemstack);
-                        for (RecipeItemStack ingredient : ingredients) {
-                            if (ingredient.test(itemstack)) {
-                                matchedProvided.increment(itemstack);
-                                matchedIngredients.increment(ingredient);
-                            }
-                        }
-                        // Paper end
+            if (!itemstack.isEmpty()) {
+                // Paper start
+                itemstack = itemstack.cloneItemStack();
+                providedItems.add(itemstack);
+                for (RecipeItemStack ingredient : ingredients) {
+                    if (ingredient.test(itemstack)) {
+                        matchedProvided.increment(itemstack);
+                        matchedIngredients.increment(ingredient);
                     }
                 }
+                // Paper end
             }
-            // Paper start
-            java.util.List<RecipeItemStack> ingredients = new java.util.ArrayList<>(this.ingredients);
-            providedItems.sort(java.util.Comparator.comparingInt((ItemStack c) -> (int) matchedProvided.getCount(c)).reversed());
-            ingredients.sort(java.util.Comparator.comparingInt((RecipeItemStack c) -> (int) matchedIngredients.getCount(c)));
-
-            PROVIDED:
-            for (ItemStack provided : providedItems) {
-                for (Iterator<RecipeItemStack> itIngredient = ingredients.iterator(); itIngredient.hasNext(); ) {
-                    RecipeItemStack ingredient = itIngredient.next();
-                    if (ingredient.test(provided)) {
-                        itIngredient.remove();
-                        continue PROVIDED;
-                    }
-                }
-                return false;
-            }
-            return ingredients.isEmpty();
-            // Paper end
         }
+
+        // Paper start
+        java.util.List<RecipeItemStack> ingredients = new java.util.ArrayList<>(this.ingredients);
+        providedItems.sort(java.util.Comparator.comparingInt((ItemStack c) -> (int) matchedProvided.getCount(c)).reversed());
+        ingredients.sort(java.util.Comparator.comparingInt((RecipeItemStack c) -> (int) matchedIngredients.getCount(c)));
+
+        PROVIDED:
+        for (ItemStack provided : providedItems) {
+            for (Iterator<RecipeItemStack> itIngredient = ingredients.iterator(); itIngredient.hasNext(); ) {
+                RecipeItemStack ingredient = itIngredient.next();
+                if (ingredient.test(provided)) {
+                    itIngredient.remove();
+                    continue PROVIDED;
+                }
+            }
+            return false;
+        }
+        return ingredients.isEmpty();
+        // Paper end
     }
 
-    public ItemStack craftItem(IInventory iinventory) {
+    public ItemStack a(InventoryCrafting inventorycrafting) {
         return this.result.cloneItemStack();
     }
 
@@ -114,6 +113,7 @@ public class ShapelessRecipes implements IRecipe {
 
         public a() {}
 
+        @Override
         public ShapelessRecipes a(MinecraftKey minecraftkey, JsonObject jsonobject) {
             String s = ChatDeserializer.a(jsonobject, "group", "");
             NonNullList<RecipeItemStack> nonnulllist = a(ChatDeserializer.u(jsonobject, "ingredients"));
@@ -143,20 +143,17 @@ public class ShapelessRecipes implements IRecipe {
             return nonnulllist;
         }
 
-        public String a() {
-            return "crafting_shapeless";
-        }
-
+        @Override
         public ShapelessRecipes a(MinecraftKey minecraftkey, PacketDataSerializer packetdataserializer) {
             String s = packetdataserializer.e(32767);
-            int i = packetdataserializer.g();
+            int i = packetdataserializer.i();
             NonNullList<RecipeItemStack> nonnulllist = NonNullList.a(i, RecipeItemStack.a);
 
             for (int j = 0; j < nonnulllist.size(); ++j) {
                 nonnulllist.set(j, RecipeItemStack.b(packetdataserializer));
             }
 
-            ItemStack itemstack = packetdataserializer.k();
+            ItemStack itemstack = packetdataserializer.m();
 
             return new ShapelessRecipes(minecraftkey, s, itemstack, nonnulllist);
         }

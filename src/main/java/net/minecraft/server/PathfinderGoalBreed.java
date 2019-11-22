@@ -1,17 +1,19 @@
 package net.minecraft.server;
 
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
+import javax.annotation.Nullable;
 
 public class PathfinderGoalBreed extends PathfinderGoal {
 
+    private static final PathfinderTargetCondition d = (new PathfinderTargetCondition()).a(8.0D).a().b().c();
     protected final EntityAnimal animal;
-    private final Class<? extends EntityAnimal> d;
-    protected World b;
+    private final Class<? extends EntityAnimal> e;
+    protected final World b;
     protected EntityAnimal partner;
-    private int e;
-    private final double f;
+    private int f;
+    private final double g;
 
     public PathfinderGoalBreed(EntityAnimal entityanimal, double d0) {
         this(entityanimal, d0, entityanimal.getClass());
@@ -20,41 +22,46 @@ public class PathfinderGoalBreed extends PathfinderGoal {
     public PathfinderGoalBreed(EntityAnimal entityanimal, double d0, Class<? extends EntityAnimal> oclass) {
         this.animal = entityanimal;
         this.b = entityanimal.world;
-        this.d = oclass;
-        this.f = d0;
-        this.a(3);
+        this.e = oclass;
+        this.g = d0;
+        this.a(EnumSet.of(PathfinderGoal.Type.MOVE, PathfinderGoal.Type.LOOK));
     }
 
+    @Override
     public boolean a() {
         if (!this.animal.isInLove()) {
             return false;
         } else {
-            this.partner = this.i();
+            this.partner = this.h();
             return this.partner != null;
         }
     }
 
+    @Override
     public boolean b() {
-        return this.partner.isAlive() && this.partner.isInLove() && this.e < 60;
+        return this.partner.isAlive() && this.partner.isInLove() && this.f < 60;
     }
 
+    @Override
     public void d() {
         this.partner = null;
-        this.e = 0;
+        this.f = 0;
     }
 
+    @Override
     public void e() {
-        this.animal.getControllerLook().a(this.partner, 10.0F, (float) this.animal.K());
-        this.animal.getNavigation().a((Entity) this.partner, this.f);
-        ++this.e;
-        if (this.e >= 60 && this.animal.h(this.partner) < 9.0D) {
+        this.animal.getControllerLook().a(this.partner, 10.0F, (float) this.animal.M());
+        this.animal.getNavigation().a((Entity) this.partner, this.g);
+        ++this.f;
+        if (this.f >= 60 && this.animal.h((Entity) this.partner) < 9.0D) {
             this.g();
         }
 
     }
 
-    private EntityAnimal i() {
-        List<EntityAnimal> list = this.b.a(this.d, this.animal.getBoundingBox().g(8.0D));
+    @Nullable
+    private EntityAnimal h() {
+        List<EntityAnimal> list = this.b.a(this.e, PathfinderGoalBreed.d, this.animal, this.animal.getBoundingBox().g(8.0D));
         double d0 = Double.MAX_VALUE;
         EntityAnimal entityanimal = null;
         Iterator iterator = list.iterator();
@@ -62,9 +69,9 @@ public class PathfinderGoalBreed extends PathfinderGoal {
         while (iterator.hasNext()) {
             EntityAnimal entityanimal1 = (EntityAnimal) iterator.next();
 
-            if (this.animal.mate(entityanimal1) && this.animal.h(entityanimal1) < d0) {
+            if (this.animal.mate(entityanimal1) && this.animal.h((Entity) entityanimal1) < d0) {
                 entityanimal = entityanimal1;
-                d0 = this.animal.h(entityanimal1);
+                d0 = this.animal.h((Entity) entityanimal1);
             }
         }
 
@@ -106,24 +113,8 @@ public class PathfinderGoalBreed extends PathfinderGoal {
             entityageable.setAgeRaw(-24000);
             entityageable.setPositionRotation(this.animal.locX, this.animal.locY, this.animal.locZ, 0.0F, 0.0F);
             this.b.addEntity(entityageable, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING); // CraftBukkit - added SpawnReason
-            // Akarin start - this handle by client
-            /*
-            Random random = this.animal.getRandom();
-
-            for (int i = 0; i < 7; ++i) {
-                double d0 = random.nextGaussian() * 0.02D;
-                double d1 = random.nextGaussian() * 0.02D;
-                double d2 = random.nextGaussian() * 0.02D;
-                double d3 = random.nextDouble() * (double) this.animal.width * 2.0D - (double) this.animal.width;
-                double d4 = 0.5D + random.nextDouble() * (double) this.animal.length;
-                double d5 = random.nextDouble() * (double) this.animal.width * 2.0D - (double) this.animal.width;
-
-                this.b.addParticle(Particles.A, this.animal.locX + d3, this.animal.locY + d4, this.animal.locZ + d5, d0, d1, d2);
-            }
-            */
-            // Akarin end
-
-            if (this.b.getGameRules().getBoolean("doMobLoot")) {
+            this.b.broadcastEntityEffect(this.animal, (byte) 18);
+            if (this.b.getGameRules().getBoolean(GameRules.DO_MOB_LOOT)) {
                 // CraftBukkit start - use event experience
                 if (experience > 0) {
                     this.b.addEntity(new EntityExperienceOrb(this.b, this.animal.locX, this.animal.locY, this.animal.locZ, experience, org.bukkit.entity.ExperienceOrb.SpawnReason.BREED, entityplayer, entityageable)); // Paper

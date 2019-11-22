@@ -1,34 +1,59 @@
 package net.minecraft.server;
 
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
 public class PathfinderGoalHurtByTarget extends PathfinderGoalTarget {
 
-    private final boolean a;
-    private int b;
-    private final Class<?>[] c;
+    private static final PathfinderTargetCondition a = (new PathfinderTargetCondition()).c().e();
+    private boolean b;
+    private int c;
+    private final Class<?>[] d;
+    private Class<?>[] i;
 
-    public PathfinderGoalHurtByTarget(EntityCreature entitycreature, boolean flag, Class<?>... aclass) {
+    public PathfinderGoalHurtByTarget(EntityCreature entitycreature, Class<?>... aclass) {
         super(entitycreature, true);
-        this.a = flag;
-        this.c = aclass;
-        this.a(1);
+        this.d = aclass;
+        this.a(EnumSet.of(PathfinderGoal.Type.TARGET));
     }
 
+    @Override
     public boolean a() {
-        int i = this.e.cg();
+        int i = this.e.ct();
         EntityLiving entityliving = this.e.getLastDamager();
 
-        return i != this.b && entityliving != null && this.a(entityliving, false);
+        if (i != this.c && entityliving != null) {
+            Class[] aclass = this.d;
+            int j = aclass.length;
+
+            for (int k = 0; k < j; ++k) {
+                Class<?> oclass = aclass[k];
+
+                if (oclass.isAssignableFrom(entityliving.getClass())) {
+                    return false;
+                }
+            }
+
+            return this.a(entityliving, PathfinderGoalHurtByTarget.a);
+        } else {
+            return false;
+        }
     }
 
+    public PathfinderGoalHurtByTarget a(Class<?>... aclass) {
+        this.b = true;
+        this.i = aclass;
+        return this;
+    }
+
+    @Override
     public void c() {
         this.e.setGoalTarget(this.e.getLastDamager(), org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY, true); // CraftBukkit - reason
         this.g = this.e.getGoalTarget();
-        this.b = this.e.cg();
+        this.c = this.e.ct();
         this.h = 300;
-        if (this.a) {
+        if (this.b) {
             this.g();
         }
 
@@ -36,36 +61,40 @@ public class PathfinderGoalHurtByTarget extends PathfinderGoalTarget {
     }
 
     protected void g() {
-        double d0 = this.i();
-        List<EntityCreature> list = this.e.world.a(this.e.getClass(), (new AxisAlignedBB(this.e.locX, this.e.locY, this.e.locZ, this.e.locX + 1.0D, this.e.locY + 1.0D, this.e.locZ + 1.0D)).grow(d0, 10.0D, d0));
+        double d0 = this.k();
+        List<EntityInsentient> list = this.e.world.b(this.e.getClass(), (new AxisAlignedBB(this.e.locX, this.e.locY, this.e.locZ, this.e.locX + 1.0D, this.e.locY + 1.0D, this.e.locZ + 1.0D)).grow(d0, 10.0D, d0));
         Iterator iterator = list.iterator();
 
         while (iterator.hasNext()) {
-            EntityCreature entitycreature = (EntityCreature) iterator.next();
+            EntityInsentient entityinsentient = (EntityInsentient) iterator.next();
 
-            if (this.e != entitycreature && entitycreature.getGoalTarget() == null && (!(this.e instanceof EntityTameableAnimal) || ((EntityTameableAnimal) this.e).getOwner() == ((EntityTameableAnimal) entitycreature).getOwner()) && !entitycreature.r(this.e.getLastDamager())) {
-                boolean flag = false;
-                Class[] aclass = this.c;
-                int i = aclass.length;
+            if (this.e != entityinsentient && entityinsentient.getGoalTarget() == null && (!(this.e instanceof EntityTameableAnimal) || ((EntityTameableAnimal) this.e).getOwner() == ((EntityTameableAnimal) entityinsentient).getOwner()) && !entityinsentient.r(this.e.getLastDamager())) {
+                if (this.i != null) {
+                    boolean flag = false;
+                    Class[] aclass = this.i;
+                    int i = aclass.length;
 
-                for (int j = 0; j < i; ++j) {
-                    Class<?> oclass = aclass[j];
+                    for (int j = 0; j < i; ++j) {
+                        Class<?> oclass = aclass[j];
 
-                    if (entitycreature.getClass() == oclass) {
-                        flag = true;
-                        break;
+                        if (entityinsentient.getClass() == oclass) {
+                            flag = true;
+                            break;
+                        }
+                    }
+
+                    if (flag) {
+                        continue;
                     }
                 }
 
-                if (!flag) {
-                    this.a(entitycreature, this.e.getLastDamager());
-                }
+                this.a(entityinsentient, this.e.getLastDamager());
             }
         }
 
     }
 
-    protected void a(EntityCreature entitycreature, EntityLiving entityliving) {
-        entitycreature.setGoalTarget(entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_NEARBY_ENTITY, true); // CraftBukkit - reason
+    protected void a(EntityInsentient entityinsentient, EntityLiving entityliving) {
+        entityinsentient.setGoalTarget(entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_NEARBY_ENTITY, true); // CraftBukkit - reason
     }
 }

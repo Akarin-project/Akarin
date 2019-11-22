@@ -1,69 +1,34 @@
 package net.minecraft.server;
 
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ChunkProviderGenerate extends ChunkGeneratorAbstract<GeneratorSettingsOverworld> {
 
-    private static final Logger f = LogManager.getLogger();
-    private final NoiseGeneratorOctaves g;
-    private final NoiseGeneratorOctaves h;
-    private final NoiseGeneratorOctaves i;
-    private final NoiseGenerator3 j;
-    private final GeneratorSettingsOverworld k;
-    private final NoiseGeneratorOctaves l;
-    private final NoiseGeneratorOctaves m;
-    private final WorldType n;
-    private final float[] o;
-    private final MobSpawnerPhantom p = new MobSpawnerPhantom();
-    private final IBlockData q;
-    private final IBlockData r;
-
-    public ChunkProviderGenerate(GeneratorAccess generatoraccess, WorldChunkManager worldchunkmanager, GeneratorSettingsOverworld generatorsettingsoverworld) {
-        super(generatoraccess, worldchunkmanager);
-        this.n = generatoraccess.getWorldData().getType();
-        SeededRandom seededrandom = new SeededRandom(this.b);
-
-        this.g = new NoiseGeneratorOctaves(seededrandom, 16);
-        this.h = new NoiseGeneratorOctaves(seededrandom, 16);
-        this.i = new NoiseGeneratorOctaves(seededrandom, 8);
-        this.j = new NoiseGenerator3(seededrandom, 4);
-        this.l = new NoiseGeneratorOctaves(seededrandom, 10);
-        this.m = new NoiseGeneratorOctaves(seededrandom, 16);
-        this.o = new float[25];
-
+    private static final float[] h = (float[]) SystemUtils.a((new float[25]), (afloat) -> { // CraftBukkit - decompile error
         for (int i = -2; i <= 2; ++i) {
             for (int j = -2; j <= 2; ++j) {
                 float f = 10.0F / MathHelper.c((float) (i * i + j * j) + 0.2F);
 
-                this.o[i + 2 + (j + 2) * 5] = f;
+                afloat[i + 2 + (j + 2) * 5] = f;
             }
         }
 
-        this.k = generatorsettingsoverworld;
-        this.q = this.k.r();
-        this.r = this.k.s();
+    });
+    private final NoiseGeneratorOctaves i;
+    private final boolean j;
+    private final MobSpawnerPhantom k = new MobSpawnerPhantom();
+    private final MobSpawnerPatrol l = new MobSpawnerPatrol();
+    private final MobSpawnerCat m = new MobSpawnerCat();
+    private final VillageSiege n = new VillageSiege();
+
+    public ChunkProviderGenerate(GeneratorAccess generatoraccess, WorldChunkManager worldchunkmanager, GeneratorSettingsOverworld generatorsettingsoverworld) {
+        super(generatoraccess, worldchunkmanager, 4, 8, 256, generatorsettingsoverworld, true);
+        this.e.a(2620);
+        this.i = new NoiseGeneratorOctaves(this.e, 16);
+        this.j = generatoraccess.getWorldData().getType() == WorldType.AMPLIFIED;
     }
 
-    public void createChunk(IChunkAccess ichunkaccess) {
-        ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
-        int i = chunkcoordintpair.x;
-        int j = chunkcoordintpair.z;
-        SeededRandom seededrandom = new SeededRandom();
-
-        seededrandom.a(i, j);
-        BiomeBase[] abiomebase = this.c.getBiomeBlock(i * 16, j * 16, 16, 16);
-
-        ichunkaccess.a(abiomebase);
-        this.a(i, j, ichunkaccess);
-        ichunkaccess.a(HeightMap.Type.WORLD_SURFACE_WG, HeightMap.Type.OCEAN_FLOOR_WG);
-        this.a(ichunkaccess, abiomebase, seededrandom, this.a.getSeaLevel());
-        this.a(ichunkaccess, seededrandom);
-        ichunkaccess.a(HeightMap.Type.WORLD_SURFACE_WG, HeightMap.Type.OCEAN_FLOOR_WG);
-        ichunkaccess.a(ChunkStatus.BASE);
-    }
-
+    @Override
     public void addMobs(RegionLimitedWorldAccess regionlimitedworldaccess) {
         int i = regionlimitedworldaccess.a();
         int j = regionlimitedworldaccess.b();
@@ -74,201 +39,135 @@ public class ChunkProviderGenerate extends ChunkGeneratorAbstract<GeneratorSetti
         SpawnerCreature.a(regionlimitedworldaccess, biomebase, i, j, seededrandom);
     }
 
-    public void a(int i, int j, IChunkAccess ichunkaccess) {
-        BiomeBase[] abiomebase = this.c.getBiomes(ichunkaccess.getPos().x * 4 - 2, ichunkaccess.getPos().z * 4 - 2, 10, 10);
-        double[] adouble = new double[825];
+    @Override
+    protected void a(double[] adouble, int i, int j) {
+        double d0 = 684.4119873046875D;
+        double d1 = 684.4119873046875D;
+        double d2 = 8.555149841308594D;
+        double d3 = 4.277574920654297D;
+        boolean flag = true;
+        boolean flag1 = true;
 
-        this.a(abiomebase, ichunkaccess.getPos().x * 4, 0, ichunkaccess.getPos().z * 4, adouble);
-        BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
+        this.a(adouble, i, j, 684.4119873046875D, 684.4119873046875D, 8.555149841308594D, 4.277574920654297D, 3, -10);
+    }
 
-        for (int k = 0; k < 4; ++k) {
-            int l = k * 5;
-            int i1 = (k + 1) * 5;
+    @Override
+    protected double a(double d0, double d1, int i) {
+        double d2 = 8.5D;
+        double d3 = ((double) i - (8.5D + d0 * 8.5D / 8.0D * 4.0D)) * 12.0D * 128.0D / 256.0D / d1;
 
-            for (int j1 = 0; j1 < 4; ++j1) {
-                int k1 = (l + j1) * 33;
-                int l1 = (l + j1 + 1) * 33;
-                int i2 = (i1 + j1) * 33;
-                int j2 = (i1 + j1 + 1) * 33;
+        if (d3 < 0.0D) {
+            d3 *= 4.0D;
+        }
 
-                for (int k2 = 0; k2 < 32; ++k2) {
-                    double d0 = 0.125D;
-                    double d1 = adouble[k1 + k2];
-                    double d2 = adouble[l1 + k2];
-                    double d3 = adouble[i2 + k2];
-                    double d4 = adouble[j2 + k2];
-                    double d5 = (adouble[k1 + k2 + 1] - d1) * 0.125D;
-                    double d6 = (adouble[l1 + k2 + 1] - d2) * 0.125D;
-                    double d7 = (adouble[i2 + k2 + 1] - d3) * 0.125D;
-                    double d8 = (adouble[j2 + k2 + 1] - d4) * 0.125D;
+        return d3;
+    }
 
-                    for (int l2 = 0; l2 < 8; ++l2) {
-                        double d9 = 0.25D;
-                        double d10 = d1;
-                        double d11 = d2;
-                        double d12 = (d3 - d1) * 0.25D;
-                        double d13 = (d4 - d2) * 0.25D;
+    @Override
+    protected double[] a(int i, int j) {
+        double[] adouble = new double[2];
+        float f = 0.0F;
+        float f1 = 0.0F;
+        float f2 = 0.0F;
+        boolean flag = true;
+        float f3 = this.c.b(i, j).g();
 
-                        for (int i3 = 0; i3 < 4; ++i3) {
-                            double d14 = 0.25D;
-                            double d15 = (d11 - d10) * 0.25D;
-                            double d16 = d10 - d15;
+        for (int k = -2; k <= 2; ++k) {
+            for (int l = -2; l <= 2; ++l) {
+                BiomeBase biomebase = this.c.b(i + k, j + l);
+                float f4 = biomebase.g();
+                float f5 = biomebase.k();
 
-                            for (int j3 = 0; j3 < 4; ++j3) {
-                                blockposition_mutableblockposition.c(k * 4 + i3, k2 * 8 + l2, j1 * 4 + j3);
-                                if ((d16 += d15) > 0.0D) {
-                                    ichunkaccess.setType(blockposition_mutableblockposition, this.q, false);
-                                } else if (k2 * 8 + l2 < this.k.w()) {
-                                    ichunkaccess.setType(blockposition_mutableblockposition, this.r, false);
-                                }
-                            }
-
-                            d10 += d12;
-                            d11 += d13;
-                        }
-
-                        d1 += d5;
-                        d2 += d6;
-                        d3 += d7;
-                        d4 += d8;
-                    }
+                if (this.j && f4 > 0.0F) {
+                    f4 = 1.0F + f4 * 2.0F;
+                    f5 = 1.0F + f5 * 4.0F;
                 }
+                // CraftBukkit start - fix MC-54738
+                if (f4 < -1.8F) {
+                    f4 = -1.8F;
+                }
+                // CraftBukkit end
+
+                float f6 = ChunkProviderGenerate.h[k + 2 + (l + 2) * 5] / (f4 + 2.0F);
+
+                if (biomebase.g() > f3) {
+                    f6 /= 2.0F;
+                }
+
+                f += f5 * f6;
+                f1 += f4 * f6;
+                f2 += f6;
             }
         }
 
+        f /= f2;
+        f1 /= f2;
+        f = f * 0.9F + 0.1F;
+        f1 = (f1 * 4.0F - 1.0F) / 8.0F;
+        adouble[0] = (double) f1 + this.c(i, j);
+        adouble[1] = (double) f;
+        return adouble;
     }
 
-    private void a(BiomeBase[] abiomebase, int i, int j, int k, double[] adouble) {
-        double[] adouble1 = this.m.a(i, k, 5, 5, this.k.x(), this.k.y(), this.k.z());
-        float f = this.k.A();
-        float f1 = this.k.B();
-        double[] adouble2 = this.i.a(i, j, k, 5, 33, 5, (double) (f / this.k.C()), (double) (f1 / this.k.D()), (double) (f / this.k.E()));
-        double[] adouble3 = this.g.a(i, j, k, 5, 33, 5, (double) f, (double) f1, (double) f);
-        double[] adouble4 = this.h.a(i, j, k, 5, 33, 5, (double) f, (double) f1, (double) f);
-        int l = 0;
-        int i1 = 0;
+    private double c(int i, int j) {
+        double d0 = this.i.a((double) (i * 200), 10.0D, (double) (j * 200), 1.0D, 0.0D, true) / 8000.0D;
 
-        for (int j1 = 0; j1 < 5; ++j1) {
-            for (int k1 = 0; k1 < 5; ++k1) {
-                float f2 = 0.0F;
-                float f3 = 0.0F;
-                float f4 = 0.0F;
-                boolean flag = true;
-                BiomeBase biomebase = abiomebase[j1 + 2 + (k1 + 2) * 10];
-
-                for (int l1 = -2; l1 <= 2; ++l1) {
-                    for (int i2 = -2; i2 <= 2; ++i2) {
-                        BiomeBase biomebase1 = abiomebase[j1 + l1 + 2 + (k1 + i2 + 2) * 10];
-                        float f5 = this.k.F() + biomebase1.h() * this.k.G();
-                        float f6 = this.k.H() + biomebase1.l() * this.k.I();
-
-                        if (this.n == WorldType.AMPLIFIED && f5 > 0.0F) {
-                            f5 = 1.0F + f5 * 2.0F;
-                            f6 = 1.0F + f6 * 4.0F;
-                        }
-                        // CraftBukkit start - fix MC-54738
-                        if (f5 < -1.8F) {
-                            f5 = -1.8F;
-                        }
-                        // CraftBukkit end
-
-                        float f7 = this.o[l1 + 2 + (i2 + 2) * 5] / (f5 + 2.0F);
-
-                        if (biomebase1.h() > biomebase.h()) {
-                            f7 /= 2.0F;
-                        }
-
-                        f2 += f6 * f7;
-                        f3 += f5 * f7;
-                        f4 += f7;
-                    }
-                }
-
-                f2 /= f4;
-                f3 /= f4;
-                f2 = f2 * 0.9F + 0.1F;
-                f3 = (f3 * 4.0F - 1.0F) / 8.0F;
-                double d0 = adouble1[i1] / 8000.0D;
-
-                if (d0 < 0.0D) {
-                    d0 = -d0 * 0.3D;
-                }
-
-                d0 = d0 * 3.0D - 2.0D;
-                if (d0 < 0.0D) {
-                    d0 /= 2.0D;
-                    if (d0 < -1.0D) {
-                        d0 = -1.0D;
-                    }
-
-                    d0 /= 1.4D;
-                    d0 /= 2.0D;
-                } else {
-                    if (d0 > 1.0D) {
-                        d0 = 1.0D;
-                    }
-
-                    d0 /= 8.0D;
-                }
-
-                ++i1;
-                double d1 = (double) f3;
-                double d2 = (double) f2;
-
-                d1 += d0 * 0.2D;
-                d1 = d1 * this.k.J() / 8.0D;
-                double d3 = this.k.J() + d1 * 4.0D;
-
-                for (int j2 = 0; j2 < 33; ++j2) {
-                    double d4 = ((double) j2 - d3) * this.k.K() * 128.0D / 256.0D / d2;
-
-                    if (d4 < 0.0D) {
-                        d4 *= 4.0D;
-                    }
-
-                    double d5 = adouble3[l] / this.k.L();
-                    double d6 = adouble4[l] / this.k.M();
-                    double d7 = (adouble2[l] / 10.0D + 1.0D) / 2.0D;
-                    double d8 = MathHelper.b(d5, d6, d7) - d4;
-
-                    if (j2 > 29) {
-                        double d9 = (double) ((float) (j2 - 29) / 3.0F);
-
-                        d8 = d8 * (1.0D - d9) - 10.0D * d9;
-                    }
-
-                    adouble[l] = d8;
-                    ++l;
-                }
-            }
+        if (d0 < 0.0D) {
+            d0 = -d0 * 0.3D;
         }
 
+        d0 = d0 * 3.0D - 2.0D;
+        if (d0 < 0.0D) {
+            d0 /= 28.0D;
+        } else {
+            if (d0 > 1.0D) {
+                d0 = 1.0D;
+            }
+
+            d0 /= 40.0D;
+        }
+
+        return d0;
     }
 
+    @Override
     public List<BiomeBase.BiomeMeta> getMobsFor(EnumCreatureType enumcreaturetype, BlockPosition blockposition) {
-        BiomeBase biomebase = this.a.getBiome(blockposition);
+        if (WorldGenerator.SWAMP_HUT.c(this.a, blockposition)) {
+            if (enumcreaturetype == EnumCreatureType.MONSTER) {
+                return WorldGenerator.SWAMP_HUT.e();
+            }
 
-        return enumcreaturetype == EnumCreatureType.MONSTER && ((WorldGenFeatureSwampHut) WorldGenerator.l).d(this.a, blockposition) ? WorldGenerator.l.d() : (enumcreaturetype == EnumCreatureType.MONSTER && WorldGenerator.n.b(this.a, blockposition) ? WorldGenerator.n.d() : biomebase.getMobs(enumcreaturetype));
+            if (enumcreaturetype == EnumCreatureType.CREATURE) {
+                return WorldGenerator.SWAMP_HUT.f();
+            }
+        } else if (enumcreaturetype == EnumCreatureType.MONSTER) {
+            if (WorldGenerator.PILLAGER_OUTPOST.a(this.a, blockposition)) {
+                return WorldGenerator.PILLAGER_OUTPOST.e();
+            }
+
+            if (WorldGenerator.OCEAN_MONUMENT.a(this.a, blockposition)) {
+                return WorldGenerator.OCEAN_MONUMENT.e();
+            }
+        }
+
+        return super.getMobsFor(enumcreaturetype, blockposition);
     }
 
-    public int a(World world, boolean flag, boolean flag1) {
-        byte b0 = 0;
-        int i = b0 + this.p.a(world, flag, flag1);
-
-        return i;
+    @Override
+    public void doMobSpawning(WorldServer worldserver, boolean flag, boolean flag1) {
+        this.k.a(worldserver, flag, flag1);
+        this.l.a(worldserver, flag, flag1);
+        this.m.a(worldserver, flag, flag1);
+        this.n.a(worldserver, flag, flag1);
     }
 
-    public GeneratorSettingsOverworld getSettings() {
-        return this.k;
-    }
-
-    public double[] a(int i, int j) {
-        double d0 = 0.03125D;
-
-        return this.j.a((double) (i << 4), (double) (j << 4), 16, 16, 0.0625D, 0.0625D, 1.0D);
-    }
-
+    @Override
     public int getSpawnHeight() {
         return this.a.getSeaLevel() + 1;
+    }
+
+    @Override
+    public int getSeaLevel() {
+        return 63;
     }
 }

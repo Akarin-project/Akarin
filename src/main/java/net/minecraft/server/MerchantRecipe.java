@@ -6,10 +6,14 @@ public class MerchantRecipe {
 
     public ItemStack buyingItem1;
     public ItemStack buyingItem2;
-    public ItemStack sellingItem;
+    public final ItemStack sellingItem;
     public int uses;
     public int maxUses;
     public boolean rewardExp;
+    private int specialPrice;
+    private int demand;
+    public float priceMultiplier;
+    public int xp;
     // CraftBukkit start
     private CraftMerchantRecipe bukkitHandle;
 
@@ -17,64 +21,104 @@ public class MerchantRecipe {
         return (bukkitHandle == null) ? bukkitHandle = new CraftMerchantRecipe(this) : bukkitHandle;
     }
 
-    public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2, int i, int j, CraftMerchantRecipe bukkit) {
-        this(itemstack, itemstack1, itemstack2, i, j);
+    public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2, int uses, int maxUses, int experience, float priceMultiplier, CraftMerchantRecipe bukkit) {
+        this(itemstack, itemstack1, itemstack2, uses, maxUses, experience, priceMultiplier);
         this.bukkitHandle = bukkit;
     }
     // CraftBukkit end
 
     public MerchantRecipe(NBTTagCompound nbttagcompound) {
-        this.buyingItem1 = ItemStack.a;
-        this.buyingItem2 = ItemStack.a;
-        this.sellingItem = ItemStack.a;
-        this.a(nbttagcompound);
+        this.rewardExp = true;
+        this.xp = 1;
+        this.buyingItem1 = ItemStack.a(nbttagcompound.getCompound("buy"));
+        this.buyingItem2 = ItemStack.a(nbttagcompound.getCompound("buyB"));
+        this.sellingItem = ItemStack.a(nbttagcompound.getCompound("sell"));
+        this.uses = nbttagcompound.getInt("uses");
+        if (nbttagcompound.hasKeyOfType("maxUses", 99)) {
+            this.maxUses = nbttagcompound.getInt("maxUses");
+        } else {
+            this.maxUses = 4;
+        }
+
+        if (nbttagcompound.hasKeyOfType("rewardExp", 1)) {
+            this.rewardExp = nbttagcompound.getBoolean("rewardExp");
+        }
+
+        if (nbttagcompound.hasKeyOfType("xp", 3)) {
+            this.xp = nbttagcompound.getInt("xp");
+        }
+
+        if (nbttagcompound.hasKeyOfType("priceMultiplier", 5)) {
+            this.priceMultiplier = nbttagcompound.getFloat("priceMultiplier");
+        }
+
+        this.specialPrice = nbttagcompound.getInt("specialPrice");
+        this.demand = nbttagcompound.getInt("demand");
     }
 
-    public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2) {
-        this(itemstack, itemstack1, itemstack2, 0, 7);
+    public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, int i, int j, float f) {
+        this(itemstack, ItemStack.a, itemstack1, i, j, f);
     }
 
-    public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2, int i, int j) {
-        this.buyingItem1 = ItemStack.a;
-        this.buyingItem2 = ItemStack.a;
-        this.sellingItem = ItemStack.a;
+    public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2, int i, int j, float f) {
+        this(itemstack, itemstack1, itemstack2, 0, i, j, f);
+    }
+
+    public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2, int i, int j, int k, float f) {
+        this(itemstack, itemstack1, itemstack2, i, j, k, f, 0);
+    }
+
+    public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1, ItemStack itemstack2, int i, int j, int k, float f, int l) {
+        this.rewardExp = true;
+        this.xp = 1;
         this.buyingItem1 = itemstack;
         this.buyingItem2 = itemstack1;
         this.sellingItem = itemstack2;
         this.uses = i;
         this.maxUses = j;
-        this.rewardExp = true;
+        this.xp = k;
+        this.priceMultiplier = f;
+        this.demand = l;
     }
 
-    public MerchantRecipe(ItemStack itemstack, ItemStack itemstack1) {
-        this(itemstack, ItemStack.a, itemstack1);
-    }
-
-    public MerchantRecipe(ItemStack itemstack, Item item) {
-        this(itemstack, new ItemStack(item));
+    public ItemStack a() {
+        return this.buyingItem1;
     }
 
     public ItemStack getBuyItem1() {
-        return this.buyingItem1;
+        int i = this.buyingItem1.getCount();
+        ItemStack itemstack = this.buyingItem1.cloneItemStack();
+        int j = Math.max(0, MathHelper.d((float) (i * this.demand) * this.priceMultiplier));
+
+        itemstack.setCount(MathHelper.clamp(i + j + this.specialPrice, 1, this.buyingItem1.getItem().getMaxStackSize()));
+        return itemstack;
     }
 
     public ItemStack getBuyItem2() {
         return this.buyingItem2;
     }
 
-    public boolean hasSecondItem() {
-        return !this.buyingItem2.isEmpty();
-    }
-
-    public ItemStack getBuyItem3() {
+    public ItemStack getSellingItem() {
         return this.sellingItem;
     }
 
-    public int e() {
+    public void e() {
+        this.demand = this.demand + this.uses - (this.maxUses - this.uses);
+    }
+
+    public ItemStack f() {
+        return this.sellingItem.cloneItemStack();
+    }
+
+    public int getUses() {
         return this.uses;
     }
 
-    public int f() {
+    public void resetUses() {
+        this.uses = 0;
+    }
+
+    public int getMaxUses() {
         return this.maxUses;
     }
 
@@ -82,59 +126,90 @@ public class MerchantRecipe {
         ++this.uses;
     }
 
-    public void a(int i) {
-        this.maxUses += i;
+    public int k() {
+        return this.demand;
     }
 
-    public boolean h() {
+    public void increaseSpecialPrice(int i) {
+        this.specialPrice += i;
+    }
+
+    public void setSpecialPrice() {
+        this.specialPrice = 0;
+    }
+
+    public int getSpecialPrice() {
+        return this.specialPrice;
+    }
+
+    public void setSpecialPrice(int i) {
+        this.specialPrice = i;
+    }
+
+    public float getPriceMultiplier() {
+        return this.priceMultiplier;
+    }
+
+    public int getXp() {
+        return this.xp;
+    }
+
+    public boolean isFullyUsed() {
         return this.uses >= this.maxUses;
     }
 
-    public boolean j() {
+    public void q() {
+        this.uses = this.maxUses;
+    }
+
+    public boolean isRewardExp() {
         return this.rewardExp;
     }
 
-    public void a(NBTTagCompound nbttagcompound) {
-        NBTTagCompound nbttagcompound1 = nbttagcompound.getCompound("buy");
-
-        this.buyingItem1 = ItemStack.a(nbttagcompound1);
-        NBTTagCompound nbttagcompound2 = nbttagcompound.getCompound("sell");
-
-        this.sellingItem = ItemStack.a(nbttagcompound2);
-        if (nbttagcompound.hasKeyOfType("buyB", 10)) {
-            this.buyingItem2 = ItemStack.a(nbttagcompound.getCompound("buyB"));
-        }
-
-        if (nbttagcompound.hasKeyOfType("uses", 99)) {
-            this.uses = nbttagcompound.getInt("uses");
-        }
-
-        if (nbttagcompound.hasKeyOfType("maxUses", 99)) {
-            this.maxUses = nbttagcompound.getInt("maxUses");
-        } else {
-            this.maxUses = 7;
-        }
-
-        if (nbttagcompound.hasKeyOfType("rewardExp", 1)) {
-            this.rewardExp = nbttagcompound.getBoolean("rewardExp");
-        } else {
-            this.rewardExp = true;
-        }
-
-    }
-
-    public NBTTagCompound k() {
+    public NBTTagCompound s() {
         NBTTagCompound nbttagcompound = new NBTTagCompound();
 
         nbttagcompound.set("buy", this.buyingItem1.save(new NBTTagCompound()));
         nbttagcompound.set("sell", this.sellingItem.save(new NBTTagCompound()));
-        if (!this.buyingItem2.isEmpty()) {
-            nbttagcompound.set("buyB", this.buyingItem2.save(new NBTTagCompound()));
-        }
-
+        nbttagcompound.set("buyB", this.buyingItem2.save(new NBTTagCompound()));
         nbttagcompound.setInt("uses", this.uses);
         nbttagcompound.setInt("maxUses", this.maxUses);
         nbttagcompound.setBoolean("rewardExp", this.rewardExp);
+        nbttagcompound.setInt("xp", this.xp);
+        nbttagcompound.setFloat("priceMultiplier", this.priceMultiplier);
+        nbttagcompound.setInt("specialPrice", this.specialPrice);
+        nbttagcompound.setInt("demand", this.demand);
         return nbttagcompound;
+    }
+
+    public boolean a(ItemStack itemstack, ItemStack itemstack1) {
+        return this.c(itemstack, this.getBuyItem1()) && itemstack.getCount() >= this.getBuyItem1().getCount() && this.c(itemstack1, this.buyingItem2) && itemstack1.getCount() >= this.buyingItem2.getCount();
+    }
+
+    private boolean c(ItemStack itemstack, ItemStack itemstack1) {
+        if (itemstack1.isEmpty() && itemstack.isEmpty()) {
+            return true;
+        } else {
+            ItemStack itemstack2 = itemstack.cloneItemStack();
+
+            if (itemstack2.getItem().usesDurability()) {
+                itemstack2.setDamage(itemstack2.getDamage());
+            }
+
+            return ItemStack.c(itemstack2, itemstack1) && (!itemstack1.hasTag() || itemstack2.hasTag() && GameProfileSerializer.a(itemstack1.getTag(), itemstack2.getTag(), false));
+        }
+    }
+
+    public boolean b(ItemStack itemstack, ItemStack itemstack1) {
+        if (!this.a(itemstack, itemstack1)) {
+            return false;
+        } else {
+            itemstack.subtract(this.getBuyItem1().getCount());
+            if (!this.getBuyItem2().isEmpty()) {
+                itemstack1.subtract(this.getBuyItem2().getCount());
+            }
+
+            return true;
+        }
     }
 }

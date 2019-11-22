@@ -9,13 +9,13 @@ public class ControllerJump {
         this.b = entityinsentient;
     }
 
-    public void a() {
+    public void jump() {
         this.a = true;
     }
 
     public void jumpIfSet() { this.b(); } // Paper - OBFHELPER
     public void b() {
-        this.b.o(this.a);
+        this.b.setJumping(this.a);
         this.a = false;
     }
 }

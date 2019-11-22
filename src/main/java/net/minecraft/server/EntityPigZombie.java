@@ -1,21 +1,23 @@
 package net.minecraft.server;
 
+import java.util.Random;
 import java.util.UUID;
 import javax.annotation.Nullable;
 
 public class EntityPigZombie extends EntityZombie {
 
-    private static final UUID a = UUID.fromString("49455A49-7EC5-45BA-B886-3B90B23A1718");
-    private static final AttributeModifier b = (new AttributeModifier(EntityPigZombie.a, "Attacking speed boost", 0.05D, 0)).a(false);
+    private static final UUID b = UUID.fromString("49455A49-7EC5-45BA-B886-3B90B23A1718");
+    private static final AttributeModifier c = (new AttributeModifier(EntityPigZombie.b, "Attacking speed boost", 0.05D, AttributeModifier.Operation.ADDITION)).a(false);
     public int angerLevel;
     private int soundDelay;
     private UUID hurtBy;
 
-    public EntityPigZombie(World world) {
-        super(EntityTypes.ZOMBIE_PIGMAN, world);
-        this.fireProof = true;
+    public EntityPigZombie(EntityTypes<? extends EntityPigZombie> entitytypes, World world) {
+        super(entitytypes, world);
+        this.a(PathType.LAVA, 8.0F);
     }
 
+    @Override
     public void setLastDamager(@Nullable EntityLiving entityliving) {
         super.setLastDamager(entityliving);
         if (entityliving != null) {
@@ -24,6 +26,7 @@ public class EntityPigZombie extends EntityZombie {
 
     }
 
+    @Override
     protected void l() {
         this.goalSelector.a(2, new PathfinderGoalZombieAttack(this, 1.0D, false));
         this.goalSelector.a(7, new PathfinderGoalRandomStrollLand(this, 1.0D));
@@ -31,53 +34,69 @@ public class EntityPigZombie extends EntityZombie {
         this.targetSelector.a(2, new EntityPigZombie.PathfinderGoalAnger(this));
     }
 
+    @Override
     protected void initAttributes() {
         super.initAttributes();
-        this.getAttributeInstance(EntityPigZombie.c).setValue(0.0D);
+        this.getAttributeInstance(EntityPigZombie.d).setValue(0.0D);
         this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.23000000417232513D);
         this.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).setValue(5.0D);
     }
 
-    protected boolean dC() {
+    @Override
+    protected boolean dY() {
         return false;
     }
 
+    @Override
     protected void mobTick() {
         AttributeInstance attributeinstance = this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED);
+        EntityLiving entityliving = this.getLastDamager();
 
-        if (this.dF()) {
-            if (!this.isBaby() && !attributeinstance.a(EntityPigZombie.b)) {
-                attributeinstance.b(EntityPigZombie.b);
+        if (this.ef()) {
+            if (!this.isBaby() && !attributeinstance.a(EntityPigZombie.c)) {
+                attributeinstance.addModifier(EntityPigZombie.c);
             }
 
             --this.angerLevel;
-        } else if (attributeinstance.a(EntityPigZombie.b)) {
-            attributeinstance.c(EntityPigZombie.b);
+            EntityLiving entityliving1 = entityliving != null ? entityliving : this.getGoalTarget();
+
+            if (!this.ef() && entityliving1 != null) {
+                if (!this.hasLineOfSight(entityliving1)) {
+                    this.setLastDamager((EntityLiving) null);
+                    this.setGoalTarget((EntityLiving) null);
+                } else {
+                    this.angerLevel = this.ee();
+                }
+            }
+        } else if (attributeinstance.a(EntityPigZombie.c)) {
+            attributeinstance.removeModifier(EntityPigZombie.c);
         }
 
         if (this.soundDelay > 0 && --this.soundDelay == 0) {
-            this.a(SoundEffects.ENTITY_ZOMBIE_PIGMAN_ANGRY, this.cD() * 2.0F, ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * 1.8F);
+            this.a(SoundEffects.ENTITY_ZOMBIE_PIGMAN_ANGRY, this.getSoundVolume() * 2.0F, ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * 1.8F);
         }
 
-        if (this.angerLevel > 0 && this.hurtBy != null && this.getLastDamager() == null) {
+        if (this.ef() && this.hurtBy != null && entityliving == null) {
             EntityHuman entityhuman = this.world.b(this.hurtBy);
 
             this.setLastDamager(entityhuman);
             this.killer = entityhuman;
-            this.lastDamageByPlayerTime = this.cg();
+            this.lastDamageByPlayerTime = this.ct();
         }
 
         super.mobTick();
     }
 
-    public boolean a(GeneratorAccess generatoraccess, boolean flag) {
+    public static boolean b(EntityTypes<EntityPigZombie> entitytypes, GeneratorAccess generatoraccess, EnumMobSpawn enummobspawn, BlockPosition blockposition, Random random) {
         return generatoraccess.getDifficulty() != EnumDifficulty.PEACEFUL;
     }
 
+    @Override
     public boolean a(IWorldReader iworldreader) {
-        return iworldreader.a_(this, this.getBoundingBox()) && iworldreader.getCubes(this, this.getBoundingBox()) && !iworldreader.containsLiquid(this.getBoundingBox());
+        return iworldreader.i(this) && !iworldreader.containsLiquid(this.getBoundingBox());
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
         nbttagcompound.setShort("Anger", (short) this.angerLevel);
@@ -89,6 +108,7 @@ public class EntityPigZombie extends EntityZombie {
 
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         this.angerLevel = nbttagcompound.getShort("Anger");
@@ -101,12 +121,13 @@ public class EntityPigZombie extends EntityZombie {
             this.setLastDamager(entityhuman);
             if (entityhuman != null) {
                 this.killer = entityhuman;
-                this.lastDamageByPlayerTime = this.cg();
+                this.lastDamageByPlayerTime = this.ct();
             }
         }
 
     }
 
+    @Override
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable(damagesource)) {
             return false;
@@ -116,7 +137,7 @@ public class EntityPigZombie extends EntityZombie {
             // CraftBukkit start
             boolean result = super.damageEntity(damagesource, f);
 
-            if (result && entity instanceof EntityHuman && !((EntityHuman) entity).u()) {
+            if (result && entity instanceof EntityHuman && !((EntityHuman) entity).isCreative() && this.hasLineOfSight(entity)) {
                 this.a(entity);
             }
 
@@ -125,12 +146,12 @@ public class EntityPigZombie extends EntityZombie {
         }
     }
 
-    private void a(Entity entity) {
+    private boolean a(Entity entity) {
         // CraftBukkit start
-        org.bukkit.event.entity.PigZombieAngerEvent event = new org.bukkit.event.entity.PigZombieAngerEvent((org.bukkit.entity.PigZombie) this.getBukkitEntity(), (entity == null) ? null : entity.getBukkitEntity(), 400 + this.random.nextInt(400));
+        org.bukkit.event.entity.PigZombieAngerEvent event = new org.bukkit.event.entity.PigZombieAngerEvent((org.bukkit.entity.PigZombie) this.getBukkitEntity(), (entity == null) ? null : entity.getBukkitEntity(), this.ee());
         this.world.getServer().getPluginManager().callEvent(event);
         if (event.isCancelled()) {
-            return;
+            return false;
         }
         this.angerLevel = event.getNewAnger();
         // CraftBukkit end
@@ -139,43 +160,50 @@ public class EntityPigZombie extends EntityZombie {
             this.setLastDamager((EntityLiving) entity);
         }
 
+        return true;
     }
 
-    public boolean dF() {
+    private int ee() {
+        return 400 + this.random.nextInt(400);
+    }
+
+    private boolean ef() {
         return this.angerLevel > 0;
     }
 
-    protected SoundEffect D() {
+    @Override
+    protected SoundEffect getSoundAmbient() {
         return SoundEffects.ENTITY_ZOMBIE_PIGMAN_AMBIENT;
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return SoundEffects.ENTITY_ZOMBIE_PIGMAN_HURT;
     }
 
-    protected SoundEffect cs() {
+    @Override
+    protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_ZOMBIE_PIGMAN_DEATH;
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.au;
-    }
-
+    @Override
     public boolean a(EntityHuman entityhuman, EnumHand enumhand) {
         return false;
     }
 
+    @Override
     protected void a(DifficultyDamageScaler difficultydamagescaler) {
         this.setSlot(EnumItemSlot.MAINHAND, new ItemStack(Items.GOLDEN_SWORD));
     }
 
-    protected ItemStack dB() {
+    @Override
+    protected ItemStack dX() {
         return ItemStack.a;
     }
 
-    public boolean c(EntityHuman entityhuman) {
-        return this.dF();
+    @Override
+    public boolean e(EntityHuman entityhuman) {
+        return this.ef();
     }
 
     static class PathfinderGoalAnger extends PathfinderGoalNearestAttackableTarget<EntityHuman> {
@@ -184,21 +212,23 @@ public class EntityPigZombie extends EntityZombie {
             super(entitypigzombie, EntityHuman.class, true);
         }
 
+        @Override
         public boolean a() {
-            return ((EntityPigZombie) this.e).dF() && super.a();
+            return ((EntityPigZombie) this.e).ef() && super.a();
         }
     }
 
     static class PathfinderGoalAngerOther extends PathfinderGoalHurtByTarget {
 
         public PathfinderGoalAngerOther(EntityPigZombie entitypigzombie) {
-            super(entitypigzombie, true);
+            super(entitypigzombie);
+            this.a(new Class[]{EntityZombie.class});
         }
 
-        protected void a(EntityCreature entitycreature, EntityLiving entityliving) {
-            super.a(entitycreature, entityliving);
-            if (entitycreature instanceof EntityPigZombie) {
-                ((EntityPigZombie) entitycreature).a((Entity) entityliving);
+        @Override
+        protected void a(EntityInsentient entityinsentient, EntityLiving entityliving) {
+            if (entityinsentient instanceof EntityPigZombie && this.e.hasLineOfSight(entityliving) && ((EntityPigZombie) entityinsentient).a((Entity) entityliving)) {
+                entityinsentient.setGoalTarget(entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_NEARBY_ENTITY, true); // CraftBukkit
             }
 
         }

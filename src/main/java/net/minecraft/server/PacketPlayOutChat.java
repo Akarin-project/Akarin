@@ -19,11 +19,13 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
         this.b = chatmessagetype;
     }
 
+    @Override
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
-        this.a = packetdataserializer.f();
+        this.a = packetdataserializer.h();
         this.b = ChatMessageType.a(packetdataserializer.readByte());
     }
 
+    @Override
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
         // Spigot start
         if (components != null) {
@@ -54,13 +56,8 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
         return this.b;
     }
 
+    @Override
     public boolean a() {
         return true;
     }
-    // Akarin start
-    @Override
-    public io.akarin.server.core.PacketType getType() {
-        return io.akarin.server.core.PacketType.PLAY_OUT_CHAT;
-    }
-    // Akarin end
 }

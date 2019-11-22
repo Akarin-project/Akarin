@@ -1,8 +1,6 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Maps;
-import com.google.common.io.Files;
-import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -12,9 +10,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,7 +27,7 @@ import org.bukkit.event.server.ServerCommandEvent;
 
 public class CommandDispatcher {
 
-    private static final Logger a = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private final com.mojang.brigadier.CommandDispatcher<CommandListenerWrapper> b = new com.mojang.brigadier.CommandDispatcher();
 
     // CraftBukkit start
@@ -52,6 +47,7 @@ public class CommandDispatcher {
         CommandEnchant.a(this.b);
         CommandXp.a(this.b);
         CommandFill.a(this.b);
+        CommandForceload.a(this.b);
         CommandFunction.a(this.b);
         CommandGamemode.a(this.b);
         CommandGamerule.a(this.b);
@@ -61,6 +57,7 @@ public class CommandDispatcher {
         CommandKill.a(this.b);
         CommandList.a(this.b);
         CommandLocate.a(this.b);
+        CommandLoot.a(this.b);
         CommandTell.a(this.b);
         CommandParticle.a(this.b);
         CommandPlaySound.a(this.b);
@@ -69,6 +66,7 @@ public class CommandDispatcher {
         CommandRecipe.a(this.b);
         CommandReplaceItem.a(this.b);
         CommandSay.a(this.b);
+        CommandSchedule.a(this.b);
         CommandScoreboard.a(this.b);
         CommandSeed.a(this.b);
         CommandSetBlock.a(this.b);
@@ -79,9 +77,9 @@ public class CommandDispatcher {
         CommandSummon.a(this.b);
         CommandTag.a(this.b);
         CommandTeam.a(this.b);
+        CommandTeamMsg.a(this.b);
         CommandTeleport.a(this.b);
         CommandTellRaw.a(this.b);
-        CommandForceload.a(this.b);
         CommandTime.a(this.b);
         CommandTitle.a(this.b);
         CommandTrigger.a(this.b);
@@ -104,7 +102,7 @@ public class CommandDispatcher {
         }
 
         this.b.findAmbiguities((commandnode, commandnode1, commandnode2, collection) -> {
-            // CommandDispatcher.a.warn("Ambiguity between arguments {} and {} with inputs: {}", this.b.getPath(commandnode1), this.b.getPath(commandnode2), collection); // CraftBukkit
+            // CommandDispatcher.LOGGER.warn("Ambiguity between arguments {} and {} with inputs: {}", this.b.getPath(commandnode1), this.b.getPath(commandnode2), collection); // CraftBukkit
         });
         return this;
     }
@@ -114,15 +112,6 @@ public class CommandDispatcher {
         this.b.setConsumer((commandcontext, flag1, i) -> {
             ((CommandListenerWrapper) commandcontext.getSource()).a(commandcontext, flag1, i);
         });
-    }
-
-    public void a(File file) {
-        try {
-            Files.write((new GsonBuilder()).setPrettyPrinting().create().toJson(ArgumentRegistry.a(this.b, (CommandNode) this.b.getRoot())), file, StandardCharsets.UTF_8);
-        } catch (IOException ioexception) {
-            CommandDispatcher.a.error("Couldn't write out command tree!", ioexception);
-        }
-
     }
 
     // CraftBukkit start
@@ -172,7 +161,7 @@ public class CommandDispatcher {
             stringreader.skip();
         }
 
-        //commandlistenerwrapper.getServer().methodProfiler.enter(s); // Akarin - remove caller
+        commandlistenerwrapper.getServer().getMethodProfiler().enter(s);
 
         byte b0;
 
@@ -221,7 +210,7 @@ public class CommandDispatcher {
                 ChatMessage chatmessage1 = new ChatMessage("command.failed", new Object[0]);
 
                 chatcomponenttext = new ChatComponentText(exception.getMessage() == null ? exception.getClass().getName() : exception.getMessage());
-                if (CommandDispatcher.a.isDebugEnabled()) {
+                if (CommandDispatcher.LOGGER.isDebugEnabled()) {
                     StackTraceElement[] astacktraceelement = exception.getStackTrace();
 
                     for (int k = 0; k < Math.min(astacktraceelement.length, 3); ++k) {
@@ -236,7 +225,7 @@ public class CommandDispatcher {
                 return b1;
             }
         } finally {
-            //commandlistenerwrapper.getServer().methodProfiler.exit(); // Akarin - remove caller
+            commandlistenerwrapper.getServer().getMethodProfiler().exit();
         }
 
         return b0;
@@ -246,7 +235,7 @@ public class CommandDispatcher {
         if ( org.spigotmc.SpigotConfig.tabComplete < 0 ) return; // Spigot
         // CraftBukkit start
         // Register Vanilla commands into builtRoot as before
-        Map<CommandNode<CommandListenerWrapper>, CommandNode<ICompletionProvider>> map = com.koloboke.collect.map.hash.HashObjObjMaps.getDefaultFactory().withNullKeyAllowed(true).withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newMutableMap(); // Use identity to prevent aliasing issues // Akarin - koloboke
+        Map<CommandNode<CommandListenerWrapper>, CommandNode<ICompletionProvider>> map = Maps.newIdentityHashMap(); // Use identity to prevent aliasing issues
         RootCommandNode vanillaRoot = new RootCommandNode();
 
         RootCommandNode<CommandListenerWrapper> vanilla = entityplayer.server.vanillaCommandDispatcher.a().getRoot();

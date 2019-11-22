@@ -1,12 +1,10 @@
 package org.bukkit.craftbukkit.inventory;
 
 import java.util.Map;
-
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NonNullList;
 import net.minecraft.server.RecipeItemStack;
 import net.minecraft.server.ShapedRecipes;
-
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -44,6 +42,7 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
         return ret;
     }
 
+    @Override
     public void addToCraftingManager() {
         String[] shape = this.getShape();
         Map<Character, org.bukkit.inventory.RecipeChoice> ingred = this.getChoiceMap();
@@ -57,6 +56,6 @@ public class CraftShapedRecipe extends ShapedRecipe implements CraftRecipe {
             }
         }
 
-        MinecraftServer.getServer().getCraftingManager().a(new ShapedRecipes(CraftNamespacedKey.toMinecraft(this.getKey()), this.getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult())));
+        MinecraftServer.getServer().getCraftingManager().addRecipe(new ShapedRecipes(CraftNamespacedKey.toMinecraft(this.getKey()), this.getGroup(), width, shape.length, data, CraftItemStack.asNMSCopy(this.getResult())));
     }
 }

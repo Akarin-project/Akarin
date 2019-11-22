@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 
 public class DragonControllerStrafe extends AbstractDragonController {
 
-    private static final Logger b = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private int c;
     private PathEntity d;
     private Vec3D e;
@@ -17,9 +17,10 @@ public class DragonControllerStrafe extends AbstractDragonController {
         super(entityenderdragon);
     }
 
+    @Override
     public void c() {
         if (this.f == null) {
-            DragonControllerStrafe.b.warn("Skipping player strafe phase because no player was found");
+            DragonControllerStrafe.LOGGER.warn("Skipping player strafe phase because no player was found");
             this.a.getDragonControllerManager().setControllerPhase(DragonControllerPhase.HOLDING_PATTERN);
         } else {
             double d0;
@@ -44,11 +45,11 @@ public class DragonControllerStrafe extends AbstractDragonController {
             }
 
             d1 = 64.0D;
-            if (this.f.h(this.a) < 4096.0D) {
+            if (this.f.h((Entity) this.a) < 4096.0D) {
                 if (this.a.hasLineOfSight(this.f)) {
                     ++this.c;
-                    Vec3D vec3d = (new Vec3D(this.f.locX - this.a.locX, 0.0D, this.f.locZ - this.a.locZ)).a();
-                    Vec3D vec3d1 = (new Vec3D((double) MathHelper.sin(this.a.yaw * 0.017453292F), 0.0D, (double) (-MathHelper.cos(this.a.yaw * 0.017453292F)))).a();
+                    Vec3D vec3d = (new Vec3D(this.f.locX - this.a.locX, 0.0D, this.f.locZ - this.a.locZ)).d();
+                    Vec3D vec3d1 = (new Vec3D((double) MathHelper.sin(this.a.yaw * 0.017453292F), 0.0D, (double) (-MathHelper.cos(this.a.yaw * 0.017453292F)))).d();
                     float f = (float) vec3d1.b(vec3d);
                     float f1 = (float) (Math.acos((double) f) * 57.2957763671875D);
 
@@ -56,11 +57,11 @@ public class DragonControllerStrafe extends AbstractDragonController {
                     if (this.c >= 5 && f1 >= 0.0F && f1 < 10.0F) {
                         d2 = 1.0D;
                         Vec3D vec3d2 = this.a.f(1.0F);
-                        double d6 = this.a.bD.locX - vec3d2.x * 1.0D;
-                        double d7 = this.a.bD.locY + (double) (this.a.bD.length / 2.0F) + 0.5D;
-                        double d8 = this.a.bD.locZ - vec3d2.z * 1.0D;
+                        double d6 = this.a.bA.locX - vec3d2.x * 1.0D;
+                        double d7 = this.a.bA.locY + (double) (this.a.bA.getHeight() / 2.0F) + 0.5D;
+                        double d8 = this.a.bA.locZ - vec3d2.z * 1.0D;
                         double d9 = this.f.locX - d6;
-                        double d10 = this.f.locY + (double) (this.f.length / 2.0F) - (d7 + (double) (this.a.bD.length / 2.0F));
+                        double d10 = this.f.locY + (double) (this.f.getHeight() / 2.0F) - (d7 + (double) (this.a.bA.getHeight() / 2.0F));
                         double d11 = this.f.locZ - d8;
 
                         this.a.world.a((EntityHuman) null, 1017, new BlockPosition(this.a), 0);
@@ -127,7 +128,7 @@ public class DragonControllerStrafe extends AbstractDragonController {
 
     private void k() {
         if (this.d != null && !this.d.b()) {
-            Vec3D vec3d = this.d.f();
+            Vec3D vec3d = this.d.g();
 
             this.d.a();
             double d0 = vec3d.x;
@@ -144,6 +145,7 @@ public class DragonControllerStrafe extends AbstractDragonController {
 
     }
 
+    @Override
     public void d() {
         this.c = 0;
         this.e = null;
@@ -154,7 +156,7 @@ public class DragonControllerStrafe extends AbstractDragonController {
     public void a(EntityLiving entityliving) {
         this.f = entityliving;
         int i = this.a.l();
-        int j = this.a.k(this.f.locX, this.f.locY, this.f.locZ);
+        int j = this.a.l(this.f.locX, this.f.locY, this.f.locZ);
         int k = MathHelper.floor(this.f.locX);
         int l = MathHelper.floor(this.f.locZ);
         double d0 = (double) k - this.a.locX;
@@ -173,10 +175,12 @@ public class DragonControllerStrafe extends AbstractDragonController {
     }
 
     @Nullable
+    @Override
     public Vec3D g() {
         return this.e;
     }
 
+    @Override
     public DragonControllerPhase<DragonControllerStrafe> getControllerPhase() {
         return DragonControllerPhase.STRAFE_PLAYER;
     }

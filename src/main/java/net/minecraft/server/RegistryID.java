@@ -29,6 +29,7 @@ public class RegistryID<K> implements Registry<K> {
     }
 
     @Nullable
+    @Override
     public K fromId(int i) {
         return i >= 0 && i < this.d.length ? this.d[i] : null;
     }

@@ -25,15 +25,16 @@ public class DamageSource {
     public static final DamageSource DRAGON_BREATH = (new DamageSource("dragonBreath")).setIgnoreArmor();
     public static final DamageSource FIREWORKS = (new DamageSource("fireworks")).e();
     public static final DamageSource DRYOUT = new DamageSource("dryout");
-    private boolean w;
+    public static final DamageSource SWEET_BERRY_BUSH = new DamageSource("sweetBerryBush");
     private boolean x;
     private boolean y;
-    private float z = 0.1F;
-    private boolean A;
+    private boolean z;
+    private float A = 0.1F;
     private boolean B;
     private boolean C;
     private boolean D;
     private boolean E;
+    private boolean F;
     public final String translationIndex;
     // CraftBukkit start
     private boolean sweep;
@@ -97,37 +98,37 @@ public class DamageSource {
     }
 
     public boolean b() {
-        return this.B;
+        return this.C;
     }
 
     public DamageSource c() {
-        this.B = true;
+        this.C = true;
         return this;
     }
 
     public boolean isExplosion() {
-        return this.E;
+        return this.F;
     }
 
     public DamageSource e() {
-        this.E = true;
+        this.F = true;
         return this;
     }
 
     public boolean ignoresArmor() {
-        return this.w;
-    }
-
-    public float getExhaustionCost() {
-        return this.z;
-    }
-
-    public boolean ignoresInvulnerability() {
         return this.x;
     }
 
-    public boolean isStarvation() {
+    public float getExhaustionCost() {
+        return this.A;
+    }
+
+    public boolean ignoresInvulnerability() {
         return this.y;
+    }
+
+    public boolean isStarvation() {
+        return this.z;
     }
 
     protected DamageSource(String s) {
@@ -145,37 +146,37 @@ public class DamageSource {
     }
 
     protected DamageSource setIgnoreArmor() {
-        this.w = true;
-        this.z = 0.0F;
+        this.x = true;
+        this.A = 0.0F;
         return this;
     }
 
     protected DamageSource m() {
-        this.x = true;
+        this.y = true;
         return this;
     }
 
     protected DamageSource n() {
-        this.y = true;
-        this.z = 0.0F;
+        this.z = true;
+        this.A = 0.0F;
         return this;
     }
 
     protected DamageSource setExplosion() {
-        this.A = true;
+        this.B = true;
         return this;
     }
 
     public IChatBaseComponent getLocalizedDeathMessage(EntityLiving entityliving) {
-        EntityLiving entityliving1 = entityliving.cv();
+        EntityLiving entityliving1 = entityliving.getKillingEntity();
         String s = "death.attack." + this.translationIndex;
         String s1 = s + ".player";
 
-        return entityliving1 != null ? new ChatMessage(s1, new Object[] { entityliving.getScoreboardDisplayName(), entityliving1.getScoreboardDisplayName()}) : new ChatMessage(s, new Object[] { entityliving.getScoreboardDisplayName()});
+        return entityliving1 != null ? new ChatMessage(s1, new Object[]{entityliving.getScoreboardDisplayName(), entityliving1.getScoreboardDisplayName()}) : new ChatMessage(s, new Object[]{entityliving.getScoreboardDisplayName()});
     }
 
     public boolean p() {
-        return this.A;
+        return this.B;
     }
 
     public String q() {
@@ -183,20 +184,20 @@ public class DamageSource {
     }
 
     public DamageSource r() {
-        this.C = true;
+        this.D = true;
         return this;
     }
 
     public boolean s() {
-        return this.C;
-    }
-
-    public boolean isMagic() {
         return this.D;
     }
 
+    public boolean isMagic() {
+        return this.E;
+    }
+
     public DamageSource setMagic() {
-        this.D = true;
+        this.E = true;
         return this;
     }
 

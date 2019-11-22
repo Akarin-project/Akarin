@@ -16,13 +16,28 @@ public class NBTCompressedStreamTools {
 
     public static NBTTagCompound a(InputStream inputstream) throws IOException {
         DataInputStream datainputstream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(inputstream)));
+        Throwable throwable = null;
 
         NBTTagCompound nbttagcompound;
 
         try {
             nbttagcompound = a((DataInput) datainputstream, NBTReadLimiter.a);
+        } catch (Throwable throwable1) {
+            throwable = throwable1;
+            throw throwable1;
         } finally {
-            datainputstream.close();
+            if (datainputstream != null) {
+                if (throwable != null) {
+                    try {
+                        datainputstream.close();
+                    } catch (Throwable throwable2) {
+                        throwable.addSuppressed(throwable2);
+                    }
+                } else {
+                    datainputstream.close();
+                }
+            }
+
         }
 
         return nbttagcompound;
@@ -30,11 +45,26 @@ public class NBTCompressedStreamTools {
 
     public static void a(NBTTagCompound nbttagcompound, OutputStream outputstream) throws IOException {
         DataOutputStream dataoutputstream = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(outputstream)));
+        Throwable throwable = null;
 
         try {
             a(nbttagcompound, (DataOutput) dataoutputstream);
+        } catch (Throwable throwable1) {
+            throwable = throwable1;
+            throw throwable1;
         } finally {
-            dataoutputstream.close();
+            if (dataoutputstream != null) {
+                if (throwable != null) {
+                    try {
+                        dataoutputstream.close();
+                    } catch (Throwable throwable2) {
+                        throwable.addSuppressed(throwable2);
+                    }
+                } else {
+                    dataoutputstream.close();
+                }
+            }
+
         }
 
     }

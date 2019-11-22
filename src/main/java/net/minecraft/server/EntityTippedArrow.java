@@ -7,13 +7,13 @@ import java.util.Set;
 
 public class EntityTippedArrow extends EntityArrow {
 
-    private static final DataWatcherObject<Integer> g = DataWatcher.a(EntityTippedArrow.class, DataWatcherRegistry.b);
+    private static final DataWatcherObject<Integer> COLOR = DataWatcher.a(EntityTippedArrow.class, DataWatcherRegistry.b);
     private PotionRegistry potionRegistry;
     public final Set<MobEffect> effects;
     private boolean hasColor;
 
-    public EntityTippedArrow(World world) {
-        super(EntityTypes.ARROW, world);
+    public EntityTippedArrow(EntityTypes<? extends EntityTippedArrow> entitytypes, World world) {
+        super(entitytypes, world);
         this.potionRegistry = Potions.EMPTY;
         this.effects = Sets.newHashSet();
     }
@@ -48,14 +48,14 @@ public class EntityTippedArrow extends EntityArrow {
             int i = c(itemstack);
 
             if (i == -1) {
-                this.s();
+                this.z();
             } else {
                 this.setColor(i);
             }
         } else if (itemstack.getItem() == Items.ARROW) {
             this.potionRegistry = Potions.EMPTY;
             this.effects.clear();
-            this.datawatcher.set(EntityTippedArrow.g, -1);
+            this.datawatcher.set(EntityTippedArrow.COLOR, -1);
         }
 
     }
@@ -66,36 +66,38 @@ public class EntityTippedArrow extends EntityArrow {
         return nbttagcompound != null && nbttagcompound.hasKeyOfType("CustomPotionColor", 99) ? nbttagcompound.getInt("CustomPotionColor") : -1;
     }
 
-    private void s() {
+    private void z() {
         this.hasColor = false;
-        this.datawatcher.set(EntityTippedArrow.g, PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects)));
+        this.datawatcher.set(EntityTippedArrow.COLOR, PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects)));
     }
 
-    public void a(MobEffect mobeffect) {
+    public void addEffect(MobEffect mobeffect) {
         this.effects.add(mobeffect);
-        this.getDataWatcher().set(EntityTippedArrow.g, PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects)));
+        this.getDataWatcher().set(EntityTippedArrow.COLOR, PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects)));
     }
 
-    protected void x_() {
-        super.x_();
-        this.datawatcher.register(EntityTippedArrow.g, -1);
+    @Override
+    protected void initDatawatcher() {
+        super.initDatawatcher();
+        this.datawatcher.register(EntityTippedArrow.COLOR, -1);
     }
 
+    @Override
     public void tick() {
         super.tick();
         if (this.world.isClientSide) {
             if (this.inGround) {
-                if (this.c % 5 == 0) {
+                if (this.d % 5 == 0) {
                     this.b(1);
                 }
             } else {
                 this.b(2);
             }
-        } else if (this.inGround && this.c != 0 && !this.effects.isEmpty() && this.c >= 600) {
+        } else if (this.inGround && this.d != 0 && !this.effects.isEmpty() && this.d >= 600) {
             this.world.broadcastEntityEffect(this, (byte) 0);
             this.potionRegistry = Potions.EMPTY;
             this.effects.clear();
-            this.datawatcher.set(EntityTippedArrow.g, -1);
+            this.datawatcher.set(EntityTippedArrow.COLOR, -1);
         }
 
     }
@@ -109,7 +111,7 @@ public class EntityTippedArrow extends EntityArrow {
             double d2 = (double) (j >> 0 & 255) / 255.0D;
 
             for (int k = 0; k < i; ++k) {
-                this.world.addParticle(Particles.s, this.locX + (this.random.nextDouble() - 0.5D) * (double) this.width, this.locY + this.random.nextDouble() * (double) this.length, this.locZ + (this.random.nextDouble() - 0.5D) * (double) this.width, d0, d1, d2);
+                this.world.addParticle(Particles.ENTITY_EFFECT, this.locX + (this.random.nextDouble() - 0.5D) * (double) this.getWidth(), this.locY + this.random.nextDouble() * (double) this.getHeight(), this.locZ + (this.random.nextDouble() - 0.5D) * (double) this.getWidth(), d0, d1, d2);
             }
 
         }
@@ -117,7 +119,7 @@ public class EntityTippedArrow extends EntityArrow {
 
     // CraftBukkit start accessor methods
     public void refreshEffects() {
-        this.getDataWatcher().set(EntityTippedArrow.g, Integer.valueOf(PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects))));
+        this.getDataWatcher().set(EntityTippedArrow.COLOR, PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects)));
     }
 
     public String getType() {
@@ -126,7 +128,7 @@ public class EntityTippedArrow extends EntityArrow {
 
     public void setType(String string) {
         this.potionRegistry = IRegistry.POTION.get(new MinecraftKey(string));
-        this.datawatcher.set(EntityTippedArrow.g, Integer.valueOf(PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects))));
+        this.getDataWatcher().set(EntityTippedArrow.COLOR, PotionUtil.a((Collection) PotionUtil.a(this.potionRegistry, (Collection) this.effects)));
     }
 
     public boolean isTipped() {
@@ -135,14 +137,15 @@ public class EntityTippedArrow extends EntityArrow {
     // CraftBukkit end
 
     public int getColor() {
-        return (Integer) this.datawatcher.get(EntityTippedArrow.g);
+        return (Integer) this.datawatcher.get(EntityTippedArrow.COLOR);
     }
 
     public void setColor(int i) {
         this.hasColor = true;
-        this.datawatcher.set(EntityTippedArrow.g, i);
+        this.datawatcher.set(EntityTippedArrow.COLOR, i);
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
         if (this.potionRegistry != Potions.EMPTY && this.potionRegistry != null) {
@@ -160,7 +163,7 @@ public class EntityTippedArrow extends EntityArrow {
             while (iterator.hasNext()) {
                 MobEffect mobeffect = (MobEffect) iterator.next();
 
-                nbttaglist.add((NBTBase) mobeffect.a(new NBTTagCompound()));
+                nbttaglist.add(mobeffect.a(new NBTTagCompound()));
             }
 
             nbttagcompound.set("CustomPotionEffects", nbttaglist);
@@ -168,6 +171,7 @@ public class EntityTippedArrow extends EntityArrow {
 
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         if (nbttagcompound.hasKeyOfType("Potion", 8)) {
@@ -179,17 +183,18 @@ public class EntityTippedArrow extends EntityArrow {
         while (iterator.hasNext()) {
             MobEffect mobeffect = (MobEffect) iterator.next();
 
-            this.a(mobeffect);
+            this.addEffect(mobeffect);
         }
 
         if (nbttagcompound.hasKeyOfType("Color", 99)) {
             this.setColor(nbttagcompound.getInt("Color"));
         } else {
-            this.s();
+            this.z();
         }
 
     }
 
+    @Override
     protected void a(EntityLiving entityliving) {
         super.a(entityliving);
         Iterator iterator = this.potionRegistry.a().iterator();
@@ -212,6 +217,7 @@ public class EntityTippedArrow extends EntityArrow {
 
     }
 
+    @Override
     protected ItemStack getItemStack() {
         if (this.effects.isEmpty() && this.potionRegistry == Potions.EMPTY) {
             return new ItemStack(Items.ARROW);

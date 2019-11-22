@@ -14,19 +14,21 @@ public class BlockConcretePowder extends BlockFalling {
         this.a = block.getBlockData();
     }
 
+    @Override
     public void a(World world, BlockPosition blockposition, IBlockData iblockdata, IBlockData iblockdata1) {
-        if (x(iblockdata1)) {
+        if (canHarden(iblockdata1)) {
             org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world, blockposition, this.a, 3); // CraftBukkit
         }
 
     }
 
+    @Override
     public IBlockData getPlacedState(BlockActionContext blockactioncontext) {
         World world = blockactioncontext.getWorld();
         BlockPosition blockposition = blockactioncontext.getClickPosition();
 
         // CraftBukkit start
-        if (!x(world.getType(blockposition)) && !a((IBlockAccess) world, blockposition)) {
+        if (!canHarden(world.getType(blockposition)) && !a((IBlockAccess) world, blockposition)) {
             return super.getPlacedState(blockactioncontext);
         }
 
@@ -55,10 +57,10 @@ public class BlockConcretePowder extends BlockFalling {
             EnumDirection enumdirection = aenumdirection[j];
             IBlockData iblockdata = iblockaccess.getType(blockposition_mutableblockposition);
 
-            if (enumdirection != EnumDirection.DOWN || x(iblockdata)) {
+            if (enumdirection != EnumDirection.DOWN || canHarden(iblockdata)) {
                 blockposition_mutableblockposition.g(blockposition).c(enumdirection);
                 iblockdata = iblockaccess.getType(blockposition_mutableblockposition);
-                if (x(iblockdata) && !Block.a(iblockdata.getCollisionShape(iblockaccess, blockposition), enumdirection.opposite())) {
+                if (canHarden(iblockdata) && !iblockdata.d(iblockaccess, blockposition, enumdirection.opposite())) {
                     flag = true;
                     break;
                 }
@@ -68,10 +70,11 @@ public class BlockConcretePowder extends BlockFalling {
         return flag;
     }
 
-    private static boolean x(IBlockData iblockdata) {
-        return iblockdata.s().a(TagsFluid.WATER);
+    private static boolean canHarden(IBlockData iblockdata) {
+        return iblockdata.p().a(TagsFluid.WATER);
     }
 
+    @Override
     public IBlockData updateState(IBlockData iblockdata, EnumDirection enumdirection, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
         // CraftBukkit start
         if (a((IBlockAccess) generatoraccess, blockposition)) {

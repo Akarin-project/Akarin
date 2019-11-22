@@ -12,22 +12,25 @@ public class EntityDamageSourceIndirect extends EntityDamageSource {
     }
 
     @Nullable
+    @Override
     public Entity j() {
-        return this.w;
+        return this.x;
     }
 
     @Nullable
+    @Override
     public Entity getEntity() {
         return this.owner;
     }
 
+    @Override
     public IChatBaseComponent getLocalizedDeathMessage(EntityLiving entityliving) {
-        IChatBaseComponent ichatbasecomponent = this.owner == null ? this.w.getScoreboardDisplayName() : this.owner.getScoreboardDisplayName();
+        IChatBaseComponent ichatbasecomponent = this.owner == null ? this.x.getScoreboardDisplayName() : this.owner.getScoreboardDisplayName();
         ItemStack itemstack = this.owner instanceof EntityLiving ? ((EntityLiving) this.owner).getItemInMainHand() : ItemStack.a;
         String s = "death.attack." + this.translationIndex;
         String s1 = s + ".item";
 
-        return !itemstack.isEmpty() && itemstack.hasName() ? new ChatMessage(s1, new Object[] { entityliving.getScoreboardDisplayName(), ichatbasecomponent, itemstack.A()}) : new ChatMessage(s, new Object[] { entityliving.getScoreboardDisplayName(), ichatbasecomponent});
+        return !itemstack.isEmpty() && itemstack.hasName() ? new ChatMessage(s1, new Object[]{entityliving.getScoreboardDisplayName(), ichatbasecomponent, itemstack.B()}) : new ChatMessage(s, new Object[]{entityliving.getScoreboardDisplayName(), ichatbasecomponent});
     }
 
     // CraftBukkit start

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RecipeFireworksStar extends ShapelessRecipes implements IRecipe { // CraftBukkit - added extends
+public class RecipeFireworksStar extends ShapelessRecipes { // CraftBukkit - added extends
 
     private static final RecipeItemStack a = RecipeItemStack.a(Items.FIRE_CHARGE, Items.FEATHER, Items.GOLD_NUGGET, Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.CREEPER_HEAD, Items.PLAYER_HEAD, Items.DRAGON_HEAD, Items.ZOMBIE_HEAD);
     private static final RecipeItemStack b = RecipeItemStack.a(Items.DIAMOND);
@@ -26,70 +26,66 @@ public class RecipeFireworksStar extends ShapelessRecipes implements IRecipe { /
 
     // CraftBukkit start - Delegate to new parent class with bogus info
     public RecipeFireworksStar(MinecraftKey minecraftkey) {
-        super(minecraftkey, "", new ItemStack(Items.FIREWORK_STAR, 0), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.GUNPOWDER)));
+        super(minecraftkey, "", new ItemStack(Items.FIREWORK_STAR), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.GUNPOWDER)));
     }
     // CraftBukkit end
 
-    public boolean a(IInventory iinventory, World world) {
-        if (!(iinventory instanceof InventoryCrafting)) {
-            return false;
-        } else {
-            boolean flag = false;
-            boolean flag1 = false;
-            boolean flag2 = false;
-            boolean flag3 = false;
-            boolean flag4 = false;
+    public boolean a(InventoryCrafting inventorycrafting, World world) {
+        boolean flag = false;
+        boolean flag1 = false;
+        boolean flag2 = false;
+        boolean flag3 = false;
+        boolean flag4 = false;
 
-            for (int i = 0; i < iinventory.getSize(); ++i) {
-                ItemStack itemstack = iinventory.getItem(i);
+        for (int i = 0; i < inventorycrafting.getSize(); ++i) {
+            ItemStack itemstack = inventorycrafting.getItem(i);
 
-                if (!itemstack.isEmpty()) {
-                    if (RecipeFireworksStar.a.test(itemstack)) {
-                        if (flag2) {
-                            return false;
-                        }
-
-                        flag2 = true;
-                    } else if (RecipeFireworksStar.c.test(itemstack)) {
-                        if (flag4) {
-                            return false;
-                        }
-
-                        flag4 = true;
-                    } else if (RecipeFireworksStar.b.test(itemstack)) {
-                        if (flag3) {
-                            return false;
-                        }
-
-                        flag3 = true;
-                    } else if (RecipeFireworksStar.e.test(itemstack)) {
-                        if (flag) {
-                            return false;
-                        }
-
-                        flag = true;
-                    } else {
-                        if (!(itemstack.getItem() instanceof ItemDye)) {
-                            return false;
-                        }
-
-                        flag1 = true;
+            if (!itemstack.isEmpty()) {
+                if (RecipeFireworksStar.a.test(itemstack)) {
+                    if (flag2) {
+                        return false;
                     }
+
+                    flag2 = true;
+                } else if (RecipeFireworksStar.c.test(itemstack)) {
+                    if (flag4) {
+                        return false;
+                    }
+
+                    flag4 = true;
+                } else if (RecipeFireworksStar.b.test(itemstack)) {
+                    if (flag3) {
+                        return false;
+                    }
+
+                    flag3 = true;
+                } else if (RecipeFireworksStar.e.test(itemstack)) {
+                    if (flag) {
+                        return false;
+                    }
+
+                    flag = true;
+                } else {
+                    if (!(itemstack.getItem() instanceof ItemDye)) {
+                        return false;
+                    }
+
+                    flag1 = true;
                 }
             }
-
-            return flag && flag1;
         }
+
+        return flag && flag1;
     }
 
-    public ItemStack craftItem(IInventory iinventory) {
+    public ItemStack a(InventoryCrafting inventorycrafting) {
         ItemStack itemstack = new ItemStack(Items.FIREWORK_STAR);
         NBTTagCompound nbttagcompound = itemstack.a("Explosion");
         ItemFireworks.EffectType itemfireworks_effecttype = ItemFireworks.EffectType.SMALL_BALL;
         List<Integer> list = Lists.newArrayList();
 
-        for (int i = 0; i < iinventory.getSize(); ++i) {
-            ItemStack itemstack1 = iinventory.getItem(i);
+        for (int i = 0; i < inventorycrafting.getSize(); ++i) {
+            ItemStack itemstack1 = inventorycrafting.getItem(i);
 
             if (!itemstack1.isEmpty()) {
                 if (RecipeFireworksStar.a.test(itemstack1)) {
@@ -109,11 +105,13 @@ public class RecipeFireworksStar extends ShapelessRecipes implements IRecipe { /
         return itemstack;
     }
 
-    public ItemStack d() {
+    @Override
+    public ItemStack c() {
         return new ItemStack(Items.FIREWORK_STAR);
     }
 
-    public RecipeSerializer<?> a() {
-        return RecipeSerializers.h;
+    @Override
+    public RecipeSerializer<?> getRecipeSerializer() {
+        return RecipeSerializer.h;
     }
 }

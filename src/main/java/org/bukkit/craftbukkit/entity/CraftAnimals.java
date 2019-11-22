@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
-import java.util.UUID;
 import com.google.common.base.Preconditions;
+import java.util.UUID;
 import net.minecraft.server.EntityAnimal;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Animals;
@@ -40,11 +40,11 @@ public class CraftAnimals extends CraftAgeable implements Animals {
     @Override
     public void setLoveModeTicks(int ticks) {
         Preconditions.checkArgument(ticks >= 0, "Love mode ticks must be positive or 0");
-        getHandle().d(ticks); // PAIL rename setLoveModeTicks
+        getHandle().setLoveTicks(ticks);
     }
 
     @Override
     public int getLoveModeTicks() {
-        return getHandle().bC; // PAIL rename loveTicks
+        return getHandle().loveTicks;
     }
 }

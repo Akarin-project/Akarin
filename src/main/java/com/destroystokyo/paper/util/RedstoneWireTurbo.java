@@ -13,6 +13,8 @@ import net.minecraft.server.Block;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.BlockRedstoneWire;
 import net.minecraft.server.IBlockData;
+import net.minecraft.server.Items;
+import net.minecraft.server.ItemStack;
 import net.minecraft.server.World;
 
 /**
@@ -320,7 +322,7 @@ public class RedstoneWireTurbo {
         // be replicated here.
         if (!wire.canPlace(null, worldIn, pos)) {
             // Pop off the redstone dust
-            oldState.dropNaturally(worldIn, pos, 0);
+            Block.a(worldIn, pos, new ItemStack(Items.REDSTONE)); // TODO
             worldIn.setAir(pos);
 
             // Mark this position as not being redstone wire
@@ -843,7 +845,7 @@ public class RedstoneWireTurbo {
             // position directly above the node being calculated is always
             // at index 1.
             UpdateNode center_up = upd.neighbor_nodes[1];
-            boolean center_up_is_cube = center_up.currentState.isOccluding();
+            boolean center_up_is_cube = center_up.currentState.isOccluding(worldIn, center_up.self); // TODO
 
             for (int m = 0; m < 4; m++) {
                 // Get the neighbor array index of each of the four cardinal
@@ -857,7 +859,7 @@ public class RedstoneWireTurbo {
 
                 // Also check the positions above and below the cardinal
                 // neighbors
-                boolean neighbor_is_cube = neighbor.currentState.isOccluding();
+                boolean neighbor_is_cube = neighbor.currentState.isOccluding(worldIn, neighbor.self); // TODO
                 if (!neighbor_is_cube) {
                     UpdateNode neighbor_down = upd.neighbor_nodes[rs_neighbors_dn[m]];
                     l = getMaxCurrentStrength(neighbor_down, l);
@@ -881,7 +883,7 @@ public class RedstoneWireTurbo {
         // egg82's amendment
         // Adding Bukkit's BlockRedstoneEvent - er.. event.
         if (i != j) {
-            BlockRedstoneEvent event = new BlockRedstoneEvent(worldIn.getWorld().getBlockAt(upd.self), i, j); // Akarin
+            BlockRedstoneEvent event = new BlockRedstoneEvent(worldIn.getWorld().getBlockAt(upd.self.getX(), upd.self.getY(), upd.self.getZ()), i, j);
             worldIn.getServer().getPluginManager().callEvent(event);
             j = event.getNewCurrent();
         }

@@ -9,14 +9,17 @@ public class BlockGrass extends BlockDirtSnowSpreadable implements IBlockFragile
         super(block_info);
     }
 
+    @Override
     public boolean a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, boolean flag) {
         return iblockaccess.getType(blockposition.up()).isAir();
     }
 
+    @Override
     public boolean a(World world, Random random, BlockPosition blockposition, IBlockData iblockdata) {
         return true;
     }
 
+    @Override
     public void b(World world, Random random, BlockPosition blockposition, IBlockData iblockdata) {
         BlockPosition blockposition1 = blockposition.up();
         IBlockData iblockdata1 = Blocks.GRASS.getBlockData();
@@ -28,8 +31,8 @@ public class BlockGrass extends BlockDirtSnowSpreadable implements IBlockFragile
 
             while (true) {
                 if (j < i / 16) {
-                    blockposition2 = blockposition2.a(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
-                    if (world.getType(blockposition2.down()).getBlock() == this && !world.getType(blockposition2).k()) {
+                    blockposition2 = blockposition2.b(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
+                    if (world.getType(blockposition2.down()).getBlock() == this && !world.getType(blockposition2).o(world, blockposition2)) {
                         ++j;
                         continue;
                     }
@@ -46,13 +49,13 @@ public class BlockGrass extends BlockDirtSnowSpreadable implements IBlockFragile
                             IBlockData iblockdata3;
 
                             if (random.nextInt(8) == 0) {
-                                List<WorldGenFeatureCompositeFlower<?>> list = world.getBiome(blockposition2).f();
+                                List<WorldGenFeatureConfigured<?>> list = world.getBiome(blockposition2).e();
 
                                 if (list.isEmpty()) {
                                     break label38;
                                 }
 
-                                iblockdata3 = ((WorldGenFeatureCompositeFlower) list.get(0)).a(random, blockposition2);
+                                iblockdata3 = ((WorldGenFlowers) ((WorldGenFeatureCompositeConfiguration) ((WorldGenFeatureConfigured) list.get(0)).b).a.a).a(random, blockposition2);
                             } else {
                                 iblockdata3 = iblockdata1;
                             }
@@ -71,10 +74,12 @@ public class BlockGrass extends BlockDirtSnowSpreadable implements IBlockFragile
 
     }
 
+    @Override
     public boolean f(IBlockData iblockdata) {
         return true;
     }
 
+    @Override
     public TextureType c() {
         return TextureType.CUTOUT_MIPPED;
     }

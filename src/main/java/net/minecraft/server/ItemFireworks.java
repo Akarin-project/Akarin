@@ -9,14 +9,15 @@ public class ItemFireworks extends Item {
         super(item_info);
     }
 
+    @Override
     public EnumInteractionResult a(ItemActionContext itemactioncontext) {
         World world = itemactioncontext.getWorld();
 
         if (!world.isClientSide) {
-            BlockPosition blockposition = itemactioncontext.getClickPosition();
             ItemStack itemstack = itemactioncontext.getItemStack();
-            EntityFireworks entityfireworks = new EntityFireworks(world, (double) ((float) blockposition.getX() + itemactioncontext.m()), (double) ((float) blockposition.getY() + itemactioncontext.n()), (double) ((float) blockposition.getZ() + itemactioncontext.o()), itemstack);
-            entityfireworks.spawningEntity = itemactioncontext.b.getUniqueID(); // Paper
+            Vec3D vec3d = itemactioncontext.j();
+            EntityFireworks entityfireworks = new EntityFireworks(world, vec3d.x, vec3d.y, vec3d.z, itemstack);
+            entityfireworks.spawningEntity = itemactioncontext.getEntity().getUniqueID(); // Paper
 
             world.addEntity(entityfireworks);
             itemstack.subtract(1);
@@ -25,14 +26,15 @@ public class ItemFireworks extends Item {
         return EnumInteractionResult.SUCCESS;
     }
 
+    @Override
     public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
-        if (entityhuman.dc()) {
+        if (entityhuman.isGliding()) {
             ItemStack itemstack = entityhuman.b(enumhand);
 
             if (!world.isClientSide) {
-                EntityFireworks entityfireworks = new EntityFireworks(world, itemstack, entityhuman);
-                entityfireworks.spawningEntity = entityhuman.getUniqueID(); // Paper
-
+                // Paper start
+                final EntityFireworks entityfireworks = new EntityFireworks(world, itemstack, entityhuman);
+                entityfireworks.spawningEntity = entityhuman.getUniqueID();
                 // Paper start
                 com.destroystokyo.paper.event.player.PlayerElytraBoostEvent event = new com.destroystokyo.paper.event.player.PlayerElytraBoostEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack), (org.bukkit.entity.Firework) entityfireworks.getBukkitEntity());
                 if (event.callEvent() && world.addEntity(entityfireworks)) {
@@ -41,8 +43,8 @@ public class ItemFireworks extends Item {
                     } else ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
                 } else if (entityhuman instanceof EntityPlayer) {
                     ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
-                    // Paper end
                 }
+                // Paper end
             }
 
             return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, entityhuman.b(enumhand));

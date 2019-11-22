@@ -71,8 +71,8 @@ public class SpigotConfig
         commands = new HashMap<String, Command>();
         commands.put( "spigot", new SpigotCommand( "spigot" ) );
 
-        version = getInt( "config-version", 11 );
-        set( "config-version", 11 );
+        version = getInt( "config-version", 12 );
+        set( "config-version", 12 );
         readConfig( SpigotConfig.class, null );
     }
 
@@ -245,11 +245,6 @@ public class SpigotConfig
         Bukkit.getLogger().log( Level.INFO, "Using {0} threads for Netty based IO", count );
     }
 
-    public static boolean lateBind;
-    private static void lateBind() {
-        lateBind = getBoolean( "settings.late-bind", false );
-    }
-
     public static boolean disableStatSaving;
     public static Map<MinecraftKey, Integer> forcedStats = new HashMap<>();
     private static void stats()
@@ -290,7 +285,7 @@ public class SpigotConfig
     public static int playerSample;
     private static void playerSample()
     {
-        playerSample = Math.max(getInt( "settings.sample-count", 12 ), 0); // Paper - Avoid negative counts
+        playerSample = Math.max( getInt( "settings.sample-count", 12 ), 0 ); // Paper - Avoid negative counts
         Bukkit.getLogger().log( Level.INFO, "Server Ping Player Sample Count: {0}", playerSample ); // Paper - Use logger
     }
 
@@ -357,7 +352,7 @@ public class SpigotConfig
     private static void attributeMaxes()
     {
         maxHealth = getDouble( "settings.attribute.maxHealth.max", maxHealth );
-        ( (AttributeRanged) GenericAttributes.maxHealth ).maximum = maxHealth;
+        ( (AttributeRanged) GenericAttributes.MAX_HEALTH ).maximum = maxHealth;
         movementSpeed = getDouble( "settings.attribute.movementSpeed.max", movementSpeed );
         ( (AttributeRanged) GenericAttributes.MOVEMENT_SPEED ).maximum = movementSpeed;
         attackDamage = getDouble( "settings.attribute.attackDamage.max", attackDamage );

@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import java.util.Map.Entry;
 // CraftBukkit start
 import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
@@ -8,10 +9,10 @@ import org.bukkit.event.entity.EntityTargetEvent;
 
 public class EntityExperienceOrb extends Entity {
 
-    public int a;
     public int b;
     public int c;
-    private int d = 5;
+    public int d;
+    private int e;
     public int value;
     private EntityHuman targetPlayer;
     private int targetTime;
@@ -34,7 +35,7 @@ public class EntityExperienceOrb extends Entity {
         if (comp.hasKey("reason")) {
             String reason = comp.getString("reason");
             try {
-                spawnReason = org.bukkit.entity.ExperienceOrb.SpawnReason.valueOf(reason);
+                this.spawnReason = org.bukkit.entity.ExperienceOrb.SpawnReason.valueOf(reason);
             } catch (Exception e) {
                 this.world.getServer().getLogger().warning("Invalid spawnReason set for experience orb: " + e.getMessage() + " - " + reason);
             }
@@ -42,14 +43,14 @@ public class EntityExperienceOrb extends Entity {
     }
     private void savePaperNBT(NBTTagCompound nbttagcompound) {
         NBTTagCompound comp = new NBTTagCompound();
-        if (sourceEntityId != null) {
-            comp.setUUID("source", sourceEntityId);
+        if (this.sourceEntityId != null) {
+            comp.setUUID("source", this.sourceEntityId);
         }
-        if (triggerEntityId != null) {
+        if (this.triggerEntityId != null) {
             comp.setUUID("trigger", triggerEntityId);
         }
-        if (spawnReason != null && spawnReason != org.bukkit.entity.ExperienceOrb.SpawnReason.UNKNOWN) {
-            comp.setString("reason", spawnReason.name());
+        if (this.spawnReason != null && this.spawnReason != org.bukkit.entity.ExperienceOrb.SpawnReason.UNKNOWN) {
+            comp.setString("reason", this.spawnReason.name());
         }
         nbttagcompound.set("Paper.ExpData", comp);
     }
@@ -63,36 +64,36 @@ public class EntityExperienceOrb extends Entity {
     }
 
     public EntityExperienceOrb(World world, double d0, double d1, double d2, int i, org.bukkit.entity.ExperienceOrb.SpawnReason reason, Entity triggerId, Entity sourceId) {
-        super(EntityTypes.EXPERIENCE_ORB, world);
+        this(EntityTypes.EXPERIENCE_ORB, world);
         this.sourceEntityId = sourceId != null ? sourceId.getUniqueID() : null;
         this.triggerEntityId = triggerId != null ? triggerId.getUniqueID() : null;
         this.spawnReason = reason != null ? reason : org.bukkit.entity.ExperienceOrb.SpawnReason.UNKNOWN;
         // Paper end
-        this.setSize(0.5F, 0.5F);
         this.setPosition(d0, d1, d2);
-        this.yaw = (float) (Math.random() * 360.0D);
-        this.motX = (double) ((float) (Math.random() * 0.20000000298023224D - 0.10000000149011612D) * 2.0F);
-        this.motY = (double) ((float) (Math.random() * 0.2D) * 2.0F);
-        this.motZ = (double) ((float) (Math.random() * 0.20000000298023224D - 0.10000000149011612D) * 2.0F);
+        this.yaw = (float) (this.random.nextDouble() * 360.0D);
+        this.setMot((this.random.nextDouble() * 0.20000000298023224D - 0.10000000149011612D) * 2.0D, this.random.nextDouble() * 0.2D * 2.0D, (this.random.nextDouble() * 0.20000000298023224D - 0.10000000149011612D) * 2.0D);
         this.value = i;
     }
 
-    public EntityExperienceOrb(World world) {
-        super(EntityTypes.EXPERIENCE_ORB, world);
-        this.setSize(0.25F, 0.25F);
+    public EntityExperienceOrb(EntityTypes<? extends EntityExperienceOrb> entitytypes, World world) {
+        super(entitytypes, world);
+        this.e = 5;
     }
 
+    @Override
     protected boolean playStepSound() {
         return false;
     }
 
-    protected void x_() {}
+    @Override
+    protected void initDatawatcher() {}
 
+    @Override
     public void tick() {
         super.tick();
         EntityHuman prevTarget = this.targetPlayer;// CraftBukkit - store old target
-        if (this.c > 0) {
-            --this.c;
+        if (this.d > 0) {
+            --this.d;
         }
 
         this.lastX = this.locX;
@@ -101,100 +102,100 @@ public class EntityExperienceOrb extends Entity {
         if (this.a(TagsFluid.WATER)) {
             this.k();
         } else if (!this.isNoGravity()) {
-            this.motY -= 0.029999999329447746D;
+            this.setMot(this.getMot().add(0.0D, -0.03D, 0.0D));
         }
 
         if (this.world.getFluid(new BlockPosition(this)).a(TagsFluid.LAVA)) {
-            this.motY = 0.20000000298023224D;
-            this.motX = (double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
-            this.motZ = (double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.setMot((double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F), 0.20000000298023224D, (double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F));
             this.a(SoundEffects.ENTITY_GENERIC_BURN, 0.4F, 2.0F + this.random.nextFloat() * 0.4F);
         }
 
-        this.i(this.locX, (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0D, this.locZ);
+        if (!this.world.c(this.getBoundingBox())) {
+            this.i(this.locX, (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0D, this.locZ);
+        }
+
         double d0 = 8.0D;
 
-        if (this.targetTime < this.a - 20 + this.getId() % 100) {
-            if (this.targetPlayer == null || this.targetPlayer.h(this) > 64.0D) {
+        if (this.targetTime < this.b - 20 + this.getId() % 100) {
+            if (this.targetPlayer == null || this.targetPlayer.h((Entity) this) > 64.0D) {
                 this.targetPlayer = this.world.findNearbyPlayer(this, 8.0D);
             }
 
-            this.targetTime = this.a;
+            this.targetTime = this.b;
         }
 
         if (this.targetPlayer != null && this.targetPlayer.isSpectator()) {
             this.targetPlayer = null;
         }
 
-        if (this.targetPlayer != null) {
-            // CraftBukkit start
-            boolean cancelled = false;
-            if (this.targetPlayer != prevTarget) {
-                EntityTargetLivingEntityEvent event = CraftEventFactory.callEntityTargetLivingEvent(this, targetPlayer, EntityTargetEvent.TargetReason.CLOSEST_PLAYER);
-                EntityLiving target = event.getTarget() == null ? null : ((org.bukkit.craftbukkit.entity.CraftLivingEntity) event.getTarget()).getHandle();
-                targetPlayer = target instanceof EntityHuman ? (EntityHuman) target : null;
-                cancelled = event.isCancelled();
-            }
+        // CraftBukkit start
+        boolean cancelled = false;
+        if (this.targetPlayer != prevTarget) {
+            EntityTargetLivingEntityEvent event = CraftEventFactory.callEntityTargetLivingEvent(this, targetPlayer, (targetPlayer != null) ? EntityTargetEvent.TargetReason.CLOSEST_PLAYER : EntityTargetEvent.TargetReason.FORGOT_TARGET);
+            EntityLiving target = (event.getTarget() == null) ? null : ((org.bukkit.craftbukkit.entity.CraftLivingEntity) event.getTarget()).getHandle();
+            cancelled = event.isCancelled();
 
-            if (!cancelled && targetPlayer != null) {
-            double d1 = (this.targetPlayer.locX - this.locX) / 8.0D;
-            double d2 = (this.targetPlayer.locY + (double) this.targetPlayer.getHeadHeight() / 2.0D - this.locY) / 8.0D;
-            double d3 = (this.targetPlayer.locZ - this.locZ) / 8.0D;
-            double d4 = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3);
-            double d5 = 1.0D - d4;
-
-            if (d5 > 0.0D) {
-                d5 *= d5;
-                this.motX += d1 / d4 * d5 * 0.1D;
-                this.motY += d2 / d4 * d5 * 0.1D;
-                this.motZ += d3 / d4 * d5 * 0.1D;
+            if (cancelled) {
+                targetPlayer = prevTarget;
+            } else {
+                targetPlayer = (target instanceof EntityHuman) ? (EntityHuman) target : null;
             }
-            }
-            // CraftBukkit end
         }
 
-        this.move(EnumMoveType.SELF, this.motX, this.motY, this.motZ);
+        if (this.targetPlayer != null && !cancelled) {
+            // CraftBukkit end
+            Vec3D vec3d = new Vec3D(this.targetPlayer.locX - this.locX, this.targetPlayer.locY + (double) this.targetPlayer.getHeadHeight() / 2.0D - this.locY, this.targetPlayer.locZ - this.locZ);
+            double d1 = vec3d.g();
+
+            if (d1 < 64.0D) {
+                double d2 = 1.0D - Math.sqrt(d1) / 8.0D;
+
+                this.setMot(this.getMot().e(vec3d.d().a(d2 * d2 * 0.1D)));
+            }
+        }
+
+        this.move(EnumMoveType.SELF, this.getMot());
         float f = 0.98F;
 
         if (this.onGround) {
-            f = this.world.getType(new BlockPosition(MathHelper.floor(this.locX), MathHelper.floor(this.getBoundingBox().minY) - 1, MathHelper.floor(this.locZ))).getBlock().n() * 0.98F;
+            f = this.world.getType(new BlockPosition(this.locX, this.getBoundingBox().minY - 1.0D, this.locZ)).getBlock().m() * 0.98F;
         }
 
-        this.motX *= (double) f;
-        this.motY *= 0.9800000190734863D;
-        this.motZ *= (double) f;
+        this.setMot(this.getMot().d((double) f, 0.98D, (double) f));
         if (this.onGround) {
-            this.motY *= -0.8999999761581421D;
+            this.setMot(this.getMot().d(1.0D, -0.9D, 1.0D));
         }
 
-        ++this.a;
         ++this.b;
-        if (this.b >= 6000) {
+        ++this.c;
+        if (this.c >= 6000) {
             this.die();
         }
 
     }
 
     private void k() {
-        this.motY += 5.000000237487257E-4D;
-        this.motY = Math.min(this.motY, 0.05999999865889549D);
-        this.motX *= 0.9900000095367432D;
-        this.motZ *= 0.9900000095367432D;
+        Vec3D vec3d = this.getMot();
+
+        this.setMot(vec3d.x * 0.9900000095367432D, Math.min(vec3d.y + 5.000000237487257E-4D, 0.05999999865889549D), vec3d.z * 0.9900000095367432D);
     }
 
-    protected void au() {}
+    @Override
+    protected void az() {}
 
-    protected void burn(int i) {
+    @Override
+    protected void burn(float i) { // CraftBukkit - int -> float
         this.damageEntity(DamageSource.FIRE, (float) i);
     }
 
+    @Override
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable(damagesource)) {
             return false;
         } else {
-            this.aA();
-            this.d = (int) ((float) this.d - f);
-            if (this.d <= 0) {
+            this.velocityChanged();
+            this.e = (int) ((float) this.e - f);
+            if (this.e <= 0) {
                 this.die();
             }
 
@@ -202,38 +203,45 @@ public class EntityExperienceOrb extends Entity {
         }
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
-        nbttagcompound.setShort("Health", (short) this.d);
-        nbttagcompound.setShort("Age", (short) this.b);
+        nbttagcompound.setShort("Health", (short) this.e);
+        nbttagcompound.setShort("Age", (short) this.c);
         nbttagcompound.setInt("Value", this.value); // Paper - save as Integer
-        savePaperNBT(nbttagcompound); // Paper
+        this.savePaperNBT(nbttagcompound); // Paper
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
-        this.d = nbttagcompound.getShort("Health");
-        this.b = nbttagcompound.getShort("Age");
+        this.e = nbttagcompound.getShort("Health");
+        this.c = nbttagcompound.getShort("Age");
         this.value = nbttagcompound.getInt("Value"); // Paper - load as Integer
-        loadPaperNBT(nbttagcompound); // Paper
+        this.loadPaperNBT(nbttagcompound); // Paper
     }
 
-    public void d(EntityHuman entityhuman) {
+    @Override
+    public void pickup(EntityHuman entityhuman) {
         if (!this.world.isClientSide) {
-            if (this.c == 0 && entityhuman.bJ == 0 && new com.destroystokyo.paper.event.player.PlayerPickupExperienceEvent(((EntityPlayer) entityhuman).getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) this.getBukkitEntity()).callEvent()) { // Paper
-                entityhuman.bJ = 2;
+            if (this.d == 0 && entityhuman.bF == 0 && new com.destroystokyo.paper.event.player.PlayerPickupExperienceEvent(((EntityPlayer) entityhuman).getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) this.getBukkitEntity()).callEvent()) { // Paper
+                entityhuman.bF = 2;
                 entityhuman.receive(this, 1);
-                ItemStack itemstack = EnchantmentManager.b(Enchantments.MENDING, (EntityLiving) entityhuman);
+                Entry<EnumItemSlot, ItemStack> entry = EnchantmentManager.b(Enchantments.MENDING, (EntityLiving) entityhuman);
 
-                if (!itemstack.isEmpty() && itemstack.f()) {
-                    int i = Math.min(this.c(this.value), itemstack.getDamage());
+                if (entry != null) {
+                    ItemStack itemstack = (ItemStack) entry.getValue();
 
-                    // CraftBukkit start
-                    org.bukkit.event.player.PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(entityhuman, this, itemstack, i);
-                    i = event.getRepairAmount();
-                    if (!event.isCancelled()) {
-                        this.value -= this.b(i);
-                        itemstack.setDamage(itemstack.getDamage() - i);
+                    if (!itemstack.isEmpty() && itemstack.f()) {
+                        int i = Math.min(this.c(this.value), itemstack.getDamage());
+
+                        // CraftBukkit start
+                        org.bukkit.event.player.PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(entityhuman, this, itemstack, i);
+                        i = event.getRepairAmount();
+                        if (!event.isCancelled()) {
+                            this.value -= this.b(i);
+                            itemstack.setDamage(itemstack.getDamage() - i);
+                        }
+                        // CraftBukkit end
                     }
-                    // CraftBukkit end
                 }
 
                 if (this.value > 0) {
@@ -282,7 +290,13 @@ public class EntityExperienceOrb extends Entity {
         return i >= 2477 ? 2477 : (i >= 1237 ? 1237 : (i >= 617 ? 617 : (i >= 307 ? 307 : (i >= 149 ? 149 : (i >= 73 ? 73 : (i >= 37 ? 37 : (i >= 17 ? 17 : (i >= 7 ? 7 : (i >= 3 ? 3 : 1)))))))));
     }
 
-    public boolean bk() {
+    @Override
+    public boolean bs() {
         return false;
+    }
+
+    @Override
+    public Packet<?> N() {
+        return new PacketPlayOutSpawnEntityExperienceOrb(this);
     }
 }

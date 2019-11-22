@@ -8,14 +8,14 @@ import org.bukkit.command.CommandSender;
 
 public abstract class CommandBlockListenerAbstract implements ICommandListener {
 
-    private static final SimpleDateFormat a = new SimpleDateFormat("HH:mm:ss");
-    private long b = -1L;
-    private boolean c = true;
-    private int d;
-    private boolean e = true;
-    private IChatBaseComponent f;
-    private String g = "";
-    private IChatBaseComponent h = new ChatComponentText("@");
+    private static final SimpleDateFormat b = new SimpleDateFormat("HH:mm:ss");
+    private long lastExecution = -1L;
+    private boolean updateLastExecution = true;
+    private int successCount;
+    private boolean trackOutput = true;
+    private IChatBaseComponent lastOutput;
+    private String command = "";
+    private IChatBaseComponent customName = new ChatComponentText("@");
     // CraftBukkit start
     @Override
     public abstract CommandSender getBukkitSender(CommandListenerWrapper wrapper);
@@ -24,90 +24,90 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
     public CommandBlockListenerAbstract() {}
 
     public int i() {
-        return this.d;
+        return this.successCount;
     }
 
     public void a(int i) {
-        this.d = i;
+        this.successCount = i;
     }
 
     public IChatBaseComponent j() {
-        return (IChatBaseComponent) (this.f == null ? new ChatComponentText("") : this.f);
+        return (IChatBaseComponent) (this.lastOutput == null ? new ChatComponentText("") : this.lastOutput);
     }
 
     public NBTTagCompound a(NBTTagCompound nbttagcompound) {
-        nbttagcompound.setString("Command", this.g);
-        nbttagcompound.setInt("SuccessCount", this.d);
-        nbttagcompound.setString("CustomName", IChatBaseComponent.ChatSerializer.a(this.h));
-        nbttagcompound.setBoolean("TrackOutput", this.e);
-        if (this.f != null && this.e) {
-            nbttagcompound.setString("LastOutput", IChatBaseComponent.ChatSerializer.a(this.f));
+        nbttagcompound.setString("Command", this.command);
+        nbttagcompound.setInt("SuccessCount", this.successCount);
+        nbttagcompound.setString("CustomName", IChatBaseComponent.ChatSerializer.a(this.customName));
+        nbttagcompound.setBoolean("TrackOutput", this.trackOutput);
+        if (this.lastOutput != null && this.trackOutput) {
+            nbttagcompound.setString("LastOutput", IChatBaseComponent.ChatSerializer.a(this.lastOutput));
         }
 
-        nbttagcompound.setBoolean("UpdateLastExecution", this.c);
-        if (this.c && this.b > 0L) {
-            nbttagcompound.setLong("LastExecution", this.b);
+        nbttagcompound.setBoolean("UpdateLastExecution", this.updateLastExecution);
+        if (this.updateLastExecution && this.lastExecution > 0L) {
+            nbttagcompound.setLong("LastExecution", this.lastExecution);
         }
 
         return nbttagcompound;
     }
 
     public void b(NBTTagCompound nbttagcompound) {
-        this.g = nbttagcompound.getString("Command");
-        this.d = nbttagcompound.getInt("SuccessCount");
+        this.command = nbttagcompound.getString("Command");
+        this.successCount = nbttagcompound.getInt("SuccessCount");
         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-            this.h = MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound); // Paper - Catch ParseException
+            this.customName = MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound); // Paper - Catch ParseException
         }
 
         if (nbttagcompound.hasKeyOfType("TrackOutput", 1)) {
-            this.e = nbttagcompound.getBoolean("TrackOutput");
+            this.trackOutput = nbttagcompound.getBoolean("TrackOutput");
         }
 
-        if (nbttagcompound.hasKeyOfType("LastOutput", 8) && this.e) {
+        if (nbttagcompound.hasKeyOfType("LastOutput", 8) && this.trackOutput) {
             try {
-                this.f = IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("LastOutput"));
+                this.lastOutput = IChatBaseComponent.ChatSerializer.a(nbttagcompound.getString("LastOutput"));
             } catch (Throwable throwable) {
-                this.f = new ChatComponentText(throwable.getMessage());
+                this.lastOutput = new ChatComponentText(throwable.getMessage());
             }
         } else {
-            this.f = null;
+            this.lastOutput = null;
         }
 
         if (nbttagcompound.hasKey("UpdateLastExecution")) {
-            this.c = nbttagcompound.getBoolean("UpdateLastExecution");
+            this.updateLastExecution = nbttagcompound.getBoolean("UpdateLastExecution");
         }
 
-        if (this.c && nbttagcompound.hasKey("LastExecution")) {
-            this.b = nbttagcompound.getLong("LastExecution");
+        if (this.updateLastExecution && nbttagcompound.hasKey("LastExecution")) {
+            this.lastExecution = nbttagcompound.getLong("LastExecution");
         } else {
-            this.b = -1L;
+            this.lastExecution = -1L;
         }
 
     }
 
     public void setCommand(String s) {
-        this.g = s;
-        this.d = 0;
+        this.command = s;
+        this.successCount = 0;
     }
 
     public String getCommand() {
-        return this.g;
+        return this.command;
     }
 
     public boolean a(World world) {
-        if (!world.isClientSide && world.getTime() != this.b) {
-            if ("Searge".equalsIgnoreCase(this.g)) {
-                this.f = new ChatComponentText("#itzlipofutzli");
-                this.d = 1;
+        if (!world.isClientSide && world.getTime() != this.lastExecution) {
+            if ("Searge".equalsIgnoreCase(this.command)) {
+                this.lastOutput = new ChatComponentText("#itzlipofutzli");
+                this.successCount = 1;
                 return true;
             } else {
-                this.d = 0;
+                this.successCount = 0;
                 MinecraftServer minecraftserver = this.d().getMinecraftServer();
 
-                if (minecraftserver != null && minecraftserver.D() && minecraftserver.getEnableCommandBlock() && !UtilColor.b(this.g)) {
+                if (minecraftserver != null && minecraftserver.F() && minecraftserver.getEnableCommandBlock() && !UtilColor.b(this.command)) {
                     try {
-                        this.f = null;
-                        this.d = minecraftserver.getCommandDispatcher().dispatchServerCommand(this.getWrapper(), this.g); // CraftBukkit
+                        this.lastOutput = null;
+                        this.successCount = minecraftserver.getCommandDispatcher().dispatchServerCommand(this.getWrapper(), this.command); // CraftBukkit
                     } catch (Throwable throwable) {
                         CrashReport crashreport = CrashReport.a(throwable, "Executing command block");
                         CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Command to be executed");
@@ -120,10 +120,10 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
                     }
                 }
 
-                if (this.c) {
-                    this.b = world.getTime();
+                if (this.updateLastExecution) {
+                    this.lastExecution = world.getTime();
                 } else {
-                    this.b = -1L;
+                    this.lastExecution = -1L;
                 }
 
                 return true;
@@ -134,7 +134,7 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
     }
 
     public IChatBaseComponent getName() {
-        return this.h;
+        return this.customName;
     }
 
     public void setName(IChatBaseComponent ichatbasecomponent) {
@@ -143,12 +143,13 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
             ichatbasecomponent = new ChatComponentText("@");
         }
         // CraftBukkit end
-        this.h = ichatbasecomponent;
+        this.customName = ichatbasecomponent;
     }
 
+    @Override
     public void sendMessage(IChatBaseComponent ichatbasecomponent) {
-        if (this.e) {
-            this.f = (new ChatComponentText("[" + CommandBlockListenerAbstract.a.format(new Date()) + "] ")).addSibling(ichatbasecomponent);
+        if (this.trackOutput) {
+            this.lastOutput = (new ChatComponentText("[" + CommandBlockListenerAbstract.b.format(new Date()) + "] ")).addSibling(ichatbasecomponent);
             this.e();
         }
 
@@ -159,11 +160,11 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
     public abstract void e();
 
     public void c(@Nullable IChatBaseComponent ichatbasecomponent) {
-        this.f = ichatbasecomponent;
+        this.lastOutput = ichatbasecomponent;
     }
 
     public void a(boolean flag) {
-        this.e = flag;
+        this.trackOutput = flag;
     }
 
     public boolean a(EntityHuman entityhuman) {
@@ -180,15 +181,18 @@ public abstract class CommandBlockListenerAbstract implements ICommandListener {
 
     public abstract CommandListenerWrapper getWrapper();
 
-    public boolean a() {
-        return this.d().getGameRules().getBoolean("sendCommandFeedback") && this.e;
+    @Override
+    public boolean shouldSendSuccess() {
+        return this.d().getGameRules().getBoolean(GameRules.SEND_COMMAND_FEEDBACK) && this.trackOutput;
     }
 
-    public boolean b() {
-        return this.e;
+    @Override
+    public boolean shouldSendFailure() {
+        return this.trackOutput;
     }
 
-    public boolean B_() {
-        return this.d().getGameRules().getBoolean("commandBlockOutput");
+    @Override
+    public boolean shouldBroadcastCommands() {
+        return this.d().getGameRules().getBoolean(GameRules.COMMAND_BLOCK_OUTPUT);
     }
 }

@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import java.util.EnumSet;
+
 public class PathfinderGoalTame extends PathfinderGoal {
 
     private final EntityHorseAbstract entity;
@@ -11,9 +13,10 @@ public class PathfinderGoalTame extends PathfinderGoal {
     public PathfinderGoalTame(EntityHorseAbstract entityhorseabstract, double d0) {
         this.entity = entityhorseabstract;
         this.b = d0;
-        this.a(1);
+        this.a(EnumSet.of(PathfinderGoal.Type.MOVE));
     }
 
+    @Override
     public boolean a() {
         if (!this.entity.isTamed() && this.entity.isVehicle()) {
             Vec3D vec3d = RandomPositionGenerator.a(this.entity, 5, 4);
@@ -31,17 +34,20 @@ public class PathfinderGoalTame extends PathfinderGoal {
         }
     }
 
+    @Override
     public void c() {
         this.entity.getNavigation().a(this.c, this.d, this.e, this.b);
     }
 
+    @Override
     public boolean b() {
-        return !this.entity.isTamed() && !this.entity.getNavigation().p() && this.entity.isVehicle();
+        return !this.entity.isTamed() && !this.entity.getNavigation().n() && this.entity.isVehicle();
     }
 
+    @Override
     public void e() {
         if (!this.entity.isTamed() && this.entity.getRandom().nextInt(50) == 0) {
-            Entity entity = (Entity) this.entity.bP().get(0);
+            Entity entity = (Entity) this.entity.getPassengers().get(0);
 
             if (entity == null) {
                 return;
@@ -57,11 +63,11 @@ public class PathfinderGoalTame extends PathfinderGoal {
                     return;
                 }
 
-                this.entity.r(5);
+                this.entity.u(5);
             }
 
             this.entity.ejectPassengers();
-            this.entity.dZ();
+            this.entity.eu();
             this.entity.world.broadcastEntityEffect(this.entity, (byte) 6);
         }
 

@@ -1,42 +1,55 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Lists;
+import com.mojang.datafixers.Dynamic;
 import java.util.List;
+import java.util.function.Function;
 
-public class WorldGenFeatureSwampHut extends WorldGenFeatureRandomScattered<WorldGenFeatureSwampHutConfiguration> {
+public class WorldGenFeatureSwampHut extends WorldGenFeatureRandomScattered<WorldGenFeatureEmptyConfiguration> {
 
-    private static final List<BiomeBase.BiomeMeta> b = Lists.newArrayList(new BiomeBase.BiomeMeta[] { new BiomeBase.BiomeMeta(EntityTypes.WITCH, 1, 1, 1)});
+    private static final List<BiomeBase.BiomeMeta> a = Lists.newArrayList(new BiomeBase.BiomeMeta[]{new BiomeBase.BiomeMeta(EntityTypes.WITCH, 1, 1, 1)});
+    private static final List<BiomeBase.BiomeMeta> aS = Lists.newArrayList(new BiomeBase.BiomeMeta[]{new BiomeBase.BiomeMeta(EntityTypes.CAT, 1, 1, 1)});
 
-    public WorldGenFeatureSwampHut() {}
+    public WorldGenFeatureSwampHut(Function<Dynamic<?>, ? extends WorldGenFeatureEmptyConfiguration> function) {
+        super(function);
+    }
 
-    protected String a() {
+    @Override
+    public String b() {
         return "Swamp_Hut";
     }
 
-    public int b() {
+    @Override
+    public int c() {
         return 3;
     }
 
-    protected StructureStart a(GeneratorAccess generatoraccess, ChunkGenerator<?> chunkgenerator, SeededRandom seededrandom, int i, int j) {
-        BiomeBase biomebase = chunkgenerator.getWorldChunkManager().getBiome(new BlockPosition((i << 4) + 9, 0, (j << 4) + 9), Biomes.PLAINS);
-
-        return new WorldGenFeatureSwampHut.a(generatoraccess, seededrandom, i, j, biomebase);
+    @Override
+    public StructureGenerator.a a() {
+        return WorldGenFeatureSwampHut.a::new;
     }
 
+    @Override
     // Spigot start
-    protected int c(World world) {
+    protected int getSeed(World world) {
         return world.spigotConfig.swampSeed;
         // Spigot end
     }
 
-    public List<BiomeBase.BiomeMeta> d() {
-        return WorldGenFeatureSwampHut.b;
+    @Override
+    public List<BiomeBase.BiomeMeta> e() {
+        return WorldGenFeatureSwampHut.a;
     }
 
-    public boolean d(GeneratorAccess generatoraccess, BlockPosition blockposition) {
-        StructureStart structurestart = this.a(generatoraccess, blockposition);
+    @Override
+    public List<BiomeBase.BiomeMeta> f() {
+        return WorldGenFeatureSwampHut.aS;
+    }
 
-        if (structurestart != WorldGenFeatureSwampHut.a && structurestart instanceof WorldGenFeatureSwampHut.a && !structurestart.d().isEmpty()) {
+    public boolean c(GeneratorAccess generatoraccess, BlockPosition blockposition) {
+        StructureStart structurestart = this.a(generatoraccess, blockposition, true);
+
+        if (structurestart != StructureStart.a && structurestart instanceof WorldGenFeatureSwampHut.a && !structurestart.d().isEmpty()) {
             StructurePiece structurepiece = (StructurePiece) structurestart.d().get(0);
 
             return structurepiece instanceof WorldGenWitchHut;
@@ -47,14 +60,16 @@ public class WorldGenFeatureSwampHut extends WorldGenFeatureRandomScattered<Worl
 
     public static class a extends StructureStart {
 
-        public a() {}
+        public a(StructureGenerator<?> structuregenerator, int i, int j, BiomeBase biomebase, StructureBoundingBox structureboundingbox, int k, long l) {
+            super(structuregenerator, i, j, biomebase, structureboundingbox, k, l);
+        }
 
-        public a(GeneratorAccess generatoraccess, SeededRandom seededrandom, int i, int j, BiomeBase biomebase) {
-            super(i, j, biomebase, seededrandom, generatoraccess.getSeed());
-            WorldGenWitchHut worldgenwitchhut = new WorldGenWitchHut(seededrandom, i * 16, j * 16);
+        @Override
+        public void a(ChunkGenerator<?> chunkgenerator, DefinedStructureManager definedstructuremanager, int i, int j, BiomeBase biomebase) {
+            WorldGenWitchHut worldgenwitchhut = new WorldGenWitchHut(this.d, i * 16, j * 16);
 
-            this.a.add(worldgenwitchhut);
-            this.a((IBlockAccess) generatoraccess);
+            this.b.add(worldgenwitchhut);
+            this.b();
         }
     }
 }

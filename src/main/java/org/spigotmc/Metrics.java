@@ -70,7 +70,7 @@ public class Metrics {
     /**
      * The current revision number
      */
-    private final static int REVISION = 6;
+    private static final int REVISION = 6;
     /**
      * The base url of the metrics domain
      */
@@ -580,7 +580,7 @@ public class Metrics {
     /**
      * Interface used to collect custom data for a plugin
      */
-    public static abstract class Plotter {
+    public abstract static class Plotter {
 
         /**
          * The plot's name

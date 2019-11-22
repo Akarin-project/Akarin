@@ -1,28 +1,30 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.WeakHashMap;
 
 import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
 
 public class BlockRedstoneTorch extends BlockTorch {
 
-    public static final BlockStateBoolean LIT = BlockProperties.o;
-    private static final Map<IBlockAccess, List<BlockRedstoneTorch.RedstoneUpdateInfo>> b = new java.util.WeakHashMap(); // Spigot
+    public static final BlockStateBoolean LIT = BlockProperties.r;
+    // Paper - Move the mapped list to World
 
     protected BlockRedstoneTorch(Block.Info block_info) {
         super(block_info);
-        this.v((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockRedstoneTorch.LIT, true));
+        this.o((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockRedstoneTorch.LIT, true));
     }
 
+    @Override
     public int a(IWorldReader iworldreader) {
         return 2;
     }
 
-    public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1) {
+    @Override
+    public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
         EnumDirection[] aenumdirection = EnumDirection.values();
         int i = aenumdirection.length;
 
@@ -34,6 +36,7 @@ public class BlockRedstoneTorch extends BlockTorch {
 
     }
 
+    @Override
     public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
         if (!flag) {
             EnumDirection[] aenumdirection = EnumDirection.values();
@@ -48,6 +51,7 @@ public class BlockRedstoneTorch extends BlockTorch {
         }
     }
 
+    @Override
     public int a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, EnumDirection enumdirection) {
         return (Boolean) iblockdata.get(BlockRedstoneTorch.LIT) && EnumDirection.UP != enumdirection ? 15 : 0;
     }
@@ -56,28 +60,26 @@ public class BlockRedstoneTorch extends BlockTorch {
         return world.isBlockFacePowered(blockposition.down(), EnumDirection.DOWN);
     }
 
-    public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
+    @Override
+    public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         a(iblockdata, world, blockposition, random, this.a(world, blockposition, iblockdata));
     }
 
     public static void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random, boolean flag) {
-        List list = (List) BlockRedstoneTorch.b.get(world);
-
         // Paper start
-        if (list != null) {
-            int index = 0;
-            while (index < list.size() && world.getTime() - ((BlockRedstoneTorch.RedstoneUpdateInfo) list.get(index)).getTime() > 60L) {
-                index++;
-            }
-            if (index > 0) {
-                list.subList(0, index).clear();
+        java.util.ArrayDeque<BlockRedstoneTorch.RedstoneUpdateInfo> redstoneUpdateInfos = world.redstoneUpdateInfos;
+
+        if (redstoneUpdateInfos != null) {
+            BlockRedstoneTorch.RedstoneUpdateInfo curr;
+            while ((curr = redstoneUpdateInfos.peek()) != null && world.getTime() - curr.getTime() > 60L) {
+                redstoneUpdateInfos.poll();
             }
         }
         // Paper end
 
         // CraftBukkit start
         org.bukkit.plugin.PluginManager manager = world.getServer().getPluginManager();
-        org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition); // Akarin
+        org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
         int oldCurrent = ((Boolean) iblockdata.get(BlockRedstoneTorch.LIT)).booleanValue() ? 15 : 0;
 
         BlockRedstoneEvent event = new BlockRedstoneEvent(block, oldCurrent, oldCurrent);
@@ -95,20 +97,7 @@ public class BlockRedstoneTorch extends BlockTorch {
                 // CraftBukkit end
                 world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockRedstoneTorch.LIT, false), 3);
                 if (a(world, blockposition, true)) {
-                    world.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_REDSTONE_TORCH_BURNOUT, SoundCategory.BLOCKS, 0.5F, 2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F);
-
-                    // Akarin start - this handle by client
-                    /*
-                    for (int i = 0; i < 5; ++i) {
-                        double d0 = (double) blockposition.getX() + random.nextDouble() * 0.6D + 0.2D;
-                        double d1 = (double) blockposition.getY() + random.nextDouble() * 0.6D + 0.2D;
-                        double d2 = (double) blockposition.getZ() + random.nextDouble() * 0.6D + 0.2D;
-
-                        world.addParticle(Particles.M, d0, d1, d2, 0.0D, 0.0D, 0.0D);
-                    }
-                    */
-                    // Akarin end
-
+                    world.triggerEffect(1502, blockposition, 0);
                     world.getBlockTickList().a(blockposition, world.getType(blockposition).getBlock(), 160);
                 }
             }
@@ -127,46 +116,51 @@ public class BlockRedstoneTorch extends BlockTorch {
 
     }
 
-    public void doPhysics(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, BlockPosition blockposition1) {
+    @Override
+    public void doPhysics(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, BlockPosition blockposition1, boolean flag) {
         if ((Boolean) iblockdata.get(BlockRedstoneTorch.LIT) == this.a(world, blockposition, iblockdata) && !world.getBlockTickList().b(blockposition, this)) {
             world.getBlockTickList().a(blockposition, this, this.a((IWorldReader) world));
         }
 
     }
 
+    @Override
     public int b(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, EnumDirection enumdirection) {
-        return enumdirection == EnumDirection.DOWN ? iblockdata.a(iblockaccess, blockposition, enumdirection) : 0;
+        return enumdirection == EnumDirection.DOWN ? iblockdata.b(iblockaccess, blockposition, enumdirection) : 0;
     }
 
+    @Override
     public boolean isPowerSource(IBlockData iblockdata) {
         return true;
     }
 
-    public int m(IBlockData iblockdata) {
-        return (Boolean) iblockdata.get(BlockRedstoneTorch.LIT) ? super.m(iblockdata) : 0;
+    @Override
+    public int a(IBlockData iblockdata) {
+        return (Boolean) iblockdata.get(BlockRedstoneTorch.LIT) ? super.a(iblockdata) : 0;
     }
 
+    @Override
     protected void a(BlockStateList.a<Block, IBlockData> blockstatelist_a) {
         blockstatelist_a.a(BlockRedstoneTorch.LIT);
     }
 
     private static boolean a(World world, BlockPosition blockposition, boolean flag) {
-        List<BlockRedstoneTorch.RedstoneUpdateInfo> list = (List) BlockRedstoneTorch.b.get(world);
-
+        // Paper start
+        java.util.ArrayDeque<BlockRedstoneTorch.RedstoneUpdateInfo> list = world.redstoneUpdateInfos;
         if (list == null) {
-            list = Lists.newArrayList();
-            BlockRedstoneTorch.b.put(world, list);
+            list = world.redstoneUpdateInfos = new java.util.ArrayDeque<>();
         }
 
+
         if (flag) {
-            ((List) list).add(new BlockRedstoneTorch.RedstoneUpdateInfo(blockposition.h(), world.getTime()));
+            list.add(new BlockRedstoneTorch.RedstoneUpdateInfo(blockposition.immutableCopy(), world.getTime()));
         }
 
         int i = 0;
 
-        for (int j = 0; j < ((List) list).size(); ++j) {
-            BlockRedstoneTorch.RedstoneUpdateInfo blockredstonetorch_redstoneupdateinfo = (BlockRedstoneTorch.RedstoneUpdateInfo) ((List) list).get(j);
-
+        for (java.util.Iterator<BlockRedstoneTorch.RedstoneUpdateInfo> iterator = list.iterator(); iterator.hasNext();) {
+            BlockRedstoneTorch.RedstoneUpdateInfo blockredstonetorch_redstoneupdateinfo = iterator.next();
+            // Paper end
             if (blockredstonetorch_redstoneupdateinfo.a.equals(blockposition)) {
                 ++i;
                 if (i >= 8) {

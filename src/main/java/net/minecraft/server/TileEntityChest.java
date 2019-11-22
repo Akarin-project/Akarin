@@ -11,9 +11,9 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
 
     private NonNullList<ItemStack> items;
     protected float a;
-    protected float e;
-    protected int f;
-    private int k;
+    protected float b;
+    protected int viewingCount;
+    private int j;
 
     // CraftBukkit start - add fields and methods
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
@@ -35,6 +35,11 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
         return transaction;
     }
 
+    @Override
+    public int getMaxStackSize() {
+        return maxStack;
+    }
+
     public void setMaxStackSize(int size) {
         maxStack = size;
     }
@@ -49,11 +54,13 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
         this(TileEntityTypes.CHEST);
     }
 
+    @Override
     public int getSize() {
         return 27;
     }
 
-    public boolean P_() {
+    @Override
+    public boolean isNotEmpty() {
         Iterator iterator = this.items.iterator();
 
         ItemStack itemstack;
@@ -69,12 +76,12 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
         return false;
     }
 
-    public IChatBaseComponent getDisplayName() {
-        IChatBaseComponent ichatbasecomponent = this.getCustomName();
-
-        return (IChatBaseComponent) (ichatbasecomponent != null ? ichatbasecomponent : new ChatMessage("container.chest", new Object[0]));
+    @Override
+    protected IChatBaseComponent getContainerName() {
+        return new ChatMessage("container.chest", new Object[0]);
     }
 
+    @Override
     public void load(NBTTagCompound nbttagcompound) {
         super.load(nbttagcompound);
         this.items = NonNullList.a(this.getSize(), ItemStack.a);
@@ -82,29 +89,16 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
             ContainerUtil.b(nbttagcompound, this.items);
         }
 
-        if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
-            this.i = MCUtil.getBaseComponentFromNbt("CustomName", nbttagcompound); // Paper - Catch ParseException
-        }
-
     }
 
+    @Override
     public NBTTagCompound save(NBTTagCompound nbttagcompound) {
         super.save(nbttagcompound);
         if (!this.e(nbttagcompound)) {
             ContainerUtil.a(nbttagcompound, this.items);
         }
 
-        IChatBaseComponent ichatbasecomponent = this.getCustomName();
-
-        if (ichatbasecomponent != null) {
-            nbttagcompound.setString("CustomName", IChatBaseComponent.ChatSerializer.a(ichatbasecomponent));
-        }
-
         return nbttagcompound;
-    }
-
-    public int getMaxStackSize() {
-        return maxStack; // CraftBukkit
     }
 
     public void tick() {
@@ -112,48 +106,29 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
         int j = this.position.getY();
         int k = this.position.getZ();
 
-        ++this.k;
-        // Paper start
+        ++this.j;
     }
-    private void doOpenLogic() {
-        float f;
+
+    public void doOpenLogic() {
         int i = this.position.getX();
         int j = this.position.getY();
         int k = this.position.getZ();
-        if (false && !this.world.isClientSide && this.f != 0 && (this.k + i + j + k) % 200 == 0) { // Paper - disable block
-            // Paper end
-            this.f = 0;
-            f = 5.0F;
-            List<EntityHuman> list = this.world.a(EntityHuman.class, new AxisAlignedBB((double) ((float) i - 5.0F), (double) ((float) j - 5.0F), (double) ((float) k - 5.0F), (double) ((float) (i + 1) + 5.0F), (double) ((float) (j + 1) + 5.0F), (double) ((float) (k + 1) + 5.0F)));
-            Iterator iterator = list.iterator();
 
-            while (iterator.hasNext()) {
-                EntityHuman entityhuman = (EntityHuman) iterator.next();
+        //this.viewingCount = a(this.world, this, this.j, i, j, k, this.viewingCount); // Paper - check is faulty given our logic is called before active container set
+        this.b = this.a;
+        float f = 0.1F;
 
-                if (entityhuman.activeContainer instanceof ContainerChest) {
-                    IInventory iinventory = ((ContainerChest) entityhuman.activeContainer).d();
-
-                    if (iinventory == this || iinventory instanceof InventoryLargeChest && ((InventoryLargeChest) iinventory).a((IInventory) this)) {
-                        ++this.f;
-                    }
-                }
-            }
-        }
-
-        if (this.f == 1 && this.a == 0.0F) { // check == 1 instead of > 0, first open
+        if (this.viewingCount > 0 && this.a == 0.0F) {
             this.a(SoundEffects.BLOCK_CHEST_OPEN);
         }
-        // Paper start
     }
-    private void doCloseLogic() {
-        this.e = this.a;
-        // Paper end
 
-        if (this.f == 0/* && this.a > 0.0F || this.f > 0 && this.a < 1.0F*/) { // Paper disable all but player count check
-            /* // Paper disable animation stuff
+    public void doCloseLogic() {
+        if (this.viewingCount == 0 /* && this.a > 0.0F || this.viewingCount > 0 && this.a < 1.0F */) { // Paper - disable all but player count check
+            /* // Paper - disable animation stuff
             float f1 = this.a;
 
-            if (this.f > 0) {
+            if (this.viewingCount > 0) {
                 this.a += 0.1F;
             } else {
                 this.a -= 0.1F;
@@ -165,14 +140,12 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
 
             float f2 = 0.5F;
 
-
             if (this.a < 0.5F && f1 >= 0.5F) {
-            */
-                // add some delay
-                MCUtil.scheduleTask(10, () -> {
-                    if (this.f == 0) this.a(SoundEffects.BLOCK_CHEST_CLOSE);
+             */
+            MCUtil.scheduleTask(10, () -> {
+                    this.a(SoundEffects.BLOCK_CHEST_CLOSE);
                 });
-            // } // Paper end
+            //} // Paper end
 
             if (this.a < 0.0F) {
                 this.a = 0.0F;
@@ -181,7 +154,37 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
 
     }
 
+    public static int a(World world, TileEntityContainer tileentitycontainer, int i, int j, int k, int l, int i1) {
+        if (!world.isClientSide && i1 != 0 && (i + j + k + l) % 200 == 0) {
+            i1 = a(world, tileentitycontainer, j, k, l);
+        }
+
+        return i1;
+    }
+
+    public static int a(World world, TileEntityContainer tileentitycontainer, int i, int j, int k) {
+        int l = 0;
+        float f = 5.0F;
+        List<EntityHuman> list = world.a(EntityHuman.class, new AxisAlignedBB((double) ((float) i - 5.0F), (double) ((float) j - 5.0F), (double) ((float) k - 5.0F), (double) ((float) (i + 1) + 5.0F), (double) ((float) (j + 1) + 5.0F), (double) ((float) (k + 1) + 5.0F)));
+        Iterator iterator = list.iterator();
+
+        while (iterator.hasNext()) {
+            EntityHuman entityhuman = (EntityHuman) iterator.next();
+
+            if (entityhuman.activeContainer instanceof ContainerChest) {
+                IInventory iinventory = ((ContainerChest) entityhuman.activeContainer).e();
+
+                if (iinventory == tileentitycontainer || iinventory instanceof InventoryLargeChest && ((InventoryLargeChest) iinventory).a((IInventory) tileentitycontainer)) {
+                    ++l;
+                }
+            }
+        }
+
+        return l;
+    }
+
     private void a(SoundEffect soundeffect) {
+        if (!this.getBlock().hasProperty(BlockChest.b)) { return; } // Paper - this can be delayed, double check exists - Fixes GH-2074
         BlockPropertyChestType blockpropertychesttype = (BlockPropertyChestType) this.getBlock().get(BlockChest.b);
 
         if (blockpropertychesttype != BlockPropertyChestType.LEFT) {
@@ -190,93 +193,89 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
             double d2 = (double) this.position.getZ() + 0.5D;
 
             if (blockpropertychesttype == BlockPropertyChestType.RIGHT) {
-                EnumDirection enumdirection = BlockChest.k(this.getBlock());
+                EnumDirection enumdirection = BlockChest.j(this.getBlock());
 
                 d0 += (double) enumdirection.getAdjacentX() * 0.5D;
                 d2 += (double) enumdirection.getAdjacentZ() * 0.5D;
             }
 
-            this.world.a((EntityHuman) null, d0, d1, d2, soundeffect, SoundCategory.BLOCKS, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
+            this.world.playSound((EntityHuman) null, d0, d1, d2, soundeffect, SoundCategory.BLOCKS, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
         }
     }
 
-    public boolean c(int i, int j) {
+    @Override
+    public boolean setProperty(int i, int j) {
         if (i == 1) {
-            this.f = j;
+            this.viewingCount = j;
             return true;
         } else {
-            return super.c(i, j);
+            return super.setProperty(i, j);
         }
     }
 
+    @Override
     public void startOpen(EntityHuman entityhuman) {
         if (!entityhuman.isSpectator()) {
-            if (this.f < 0) {
-                this.f = 0;
+            if (this.viewingCount < 0) {
+                this.viewingCount = 0;
             }
-            int oldPower = Math.max(0, Math.min(15, this.f)); // CraftBukkit - Get power before new viewer is added
+            int oldPower = Math.max(0, Math.min(15, this.viewingCount)); // CraftBukkit - Get power before new viewer is added
 
-            ++this.f;
+            ++this.viewingCount;
             if (this.world == null) return; // CraftBukkit
             doOpenLogic(); // Paper
 
             // CraftBukkit start - Call redstone event
-            if (this.getBlock() == Blocks.TRAPPED_CHEST) {
-                int newPower = Math.max(0, Math.min(15, this.f));
+            if (this.getBlock().getBlock() == Blocks.TRAPPED_CHEST) {
+                int newPower = Math.max(0, Math.min(15, this.viewingCount));
 
                 if (oldPower != newPower) {
                     org.bukkit.craftbukkit.event.CraftEventFactory.callRedstoneChange(world, position, oldPower, newPower);
                 }
             }
             // CraftBukkit end
-            this.p();
+            this.onOpen();
         }
 
     }
 
+    @Override
     public void closeContainer(EntityHuman entityhuman) {
         if (!entityhuman.isSpectator()) {
-            int oldPower = Math.max(0, Math.min(15, this.f)); // CraftBukkit - Get power before new viewer is added
-            --this.f;
+            int oldPower = Math.max(0, Math.min(15, this.viewingCount)); // CraftBukkit - Get power before new viewer is added
+            --this.viewingCount;
 
             // CraftBukkit start - Call redstone event
             doCloseLogic(); // Paper
-            if (this.getBlock() == Blocks.TRAPPED_CHEST) {
-                int newPower = Math.max(0, Math.min(15, this.f));
+            if (this.getBlock().getBlock() == Blocks.TRAPPED_CHEST) {
+                int newPower = Math.max(0, Math.min(15, this.viewingCount));
 
                 if (oldPower != newPower) {
                     org.bukkit.craftbukkit.event.CraftEventFactory.callRedstoneChange(world, position, oldPower, newPower);
                 }
             }
             // CraftBukkit end
-            this.p();
+            this.onOpen();
         }
 
     }
 
-    protected void p() {
+    protected void onOpen() {
         Block block = this.getBlock().getBlock();
 
         if (block instanceof BlockChest) {
-            this.world.playBlockAction(this.position, block, 1, this.f);
+            this.world.playBlockAction(this.position, block, 1, this.viewingCount);
             this.world.applyPhysics(this.position, block);
         }
 
     }
 
-    public String getContainerName() {
-        return "minecraft:chest";
-    }
-
-    public Container createContainer(PlayerInventory playerinventory, EntityHuman entityhuman) {
-        this.d(entityhuman);
-        return new ContainerChest(playerinventory, this, entityhuman);
-    }
-
-    protected NonNullList<ItemStack> q() {
+    @Override
+    protected NonNullList<ItemStack> f() {
         return this.items;
     }
 
+    @Override
     protected void a(NonNullList<ItemStack> nonnulllist) {
         this.items = nonnulllist;
     }
@@ -288,7 +287,7 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
             TileEntity tileentity = iblockaccess.getTileEntity(blockposition);
 
             if (tileentity instanceof TileEntityChest) {
-                return ((TileEntityChest) tileentity).f;
+                return ((TileEntityChest) tileentity).viewingCount;
             }
         }
 
@@ -296,10 +295,15 @@ public class TileEntityChest extends TileEntityLootable { // Paper - Remove ITic
     }
 
     public static void a(TileEntityChest tileentitychest, TileEntityChest tileentitychest1) {
-        NonNullList<ItemStack> nonnulllist = tileentitychest.q();
+        NonNullList<ItemStack> nonnulllist = tileentitychest.f();
 
-        tileentitychest.a(tileentitychest1.q());
+        tileentitychest.a(tileentitychest1.f());
         tileentitychest1.a(nonnulllist);
+    }
+
+    @Override
+    protected Container createContainer(int i, PlayerInventory playerinventory) {
+        return ContainerChest.a(i, playerinventory, this);
     }
 
     // CraftBukkit start

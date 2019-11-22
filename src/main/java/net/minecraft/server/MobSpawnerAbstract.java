@@ -1,19 +1,19 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Lists;
-
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public abstract class MobSpawnerAbstract {
 
-    private static final Logger a = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     public int spawnDelay = 20;
-    private final List<MobSpawnerData> mobs = Lists.newArrayList();
-    private MobSpawnerData spawnData = new MobSpawnerData();
+    public final List<MobSpawnerData> mobs = Lists.newArrayList();
+    public MobSpawnerData spawnData = new MobSpawnerData();
     private double e;
     private double f;
     public int minSpawnDelay = 200;
@@ -29,27 +29,28 @@ public abstract class MobSpawnerAbstract {
 
     @Nullable
     public MinecraftKey getMobName() {
-        String s = this.spawnData.b().getString("id");
+        String s = this.spawnData.getEntity().getString("id");
 
         try {
             return UtilColor.b(s) ? null : new MinecraftKey(s);
         } catch (ResourceKeyInvalidException resourcekeyinvalidexception) {
             BlockPosition blockposition = this.b();
 
-            MobSpawnerAbstract.a.warn("Invalid entity id '{}' at spawner {}:[{},{},{}]", s, this.a().worldProvider.getDimensionManager(), blockposition.getX(), blockposition.getY(), blockposition.getZ());
+            MobSpawnerAbstract.LOGGER.warn("Invalid entity id '{}' at spawner {}:[{},{},{}]", s, this.a().worldProvider.getDimensionManager(), blockposition.getX(), blockposition.getY(), blockposition.getZ());
             return null;
         }
     }
 
     public void setMobName(EntityTypes<?> entitytypes) {
-        this.spawnData.b().setString("id", IRegistry.ENTITY_TYPE.getKey(entitytypes).toString());
+        this.spawnData.getEntity().setString("id", IRegistry.ENTITY_TYPE.getKey(entitytypes).toString());
         this.mobs.clear(); // CraftBukkit - SPIGOT-3496, MC-92282
     }
 
+    public boolean isActivated() { return h(); } // Paper - OBFHELPER
     private boolean h() {
         BlockPosition blockposition = this.b();
 
-        return this.a().b((double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, (double) this.requiredPlayerRange);
+        return this.a().isPlayerNearby((double) blockposition.getX() + 0.5D, (double) blockposition.getY() + 0.5D, (double) blockposition.getZ() + 0.5D, (double) this.requiredPlayerRange);
     }
 
     public void c() {
@@ -60,19 +61,16 @@ public abstract class MobSpawnerAbstract {
         if (!this.h()) {
             this.f = this.e;
         } else {
+            World world = this.a();
             BlockPosition blockposition = this.b();
 
-            if (this.a().isClientSide) {
-                // Akarin start - this handle by client
-                /*
-                double d0 = (double) ((float) blockposition.getX() + this.a().random.nextFloat());
-                double d1 = (double) ((float) blockposition.getY() + this.a().random.nextFloat());
-                double d2 = (double) ((float) blockposition.getZ() + this.a().random.nextFloat());
+            if (world.isClientSide) {
+                double d0 = (double) ((float) blockposition.getX() + world.random.nextFloat());
+                double d1 = (double) ((float) blockposition.getY() + world.random.nextFloat());
+                double d2 = (double) ((float) blockposition.getZ() + world.random.nextFloat());
 
-                this.a().addParticle(Particles.M, d0, d1, d2, 0.0D, 0.0D, 0.0D);
-                this.a().addParticle(Particles.y, d0, d1, d2, 0.0D, 0.0D, 0.0D);
-                */
-                // Akarin end
+                world.addParticle(Particles.SMOKE, d0, d1, d2, 0.0D, 0.0D, 0.0D);
+                world.addParticle(Particles.FLAME, d0, d1, d2, 0.0D, 0.0D, 0.0D);
                 if (this.spawnDelay > 0) {
                     this.spawnDelay -= tickDelay; // Paper
                 }
@@ -92,25 +90,32 @@ public abstract class MobSpawnerAbstract {
                 boolean flag = false;
 
                 for (int i = 0; i < this.spawnCount; ++i) {
-                    NBTTagCompound nbttagcompound = this.spawnData.b();
-                    NBTTagList nbttaglist = nbttagcompound.getList("Pos", 6);
-                    World world = this.a();
-                    int j = nbttaglist.size();
-                    double d3 = j >= 1 ? nbttaglist.k(0) : (double) blockposition.getX() + (world.random.nextDouble() - world.random.nextDouble()) * (double) this.spawnRange + 0.5D;
-                    double d4 = j >= 2 ? nbttaglist.k(1) : (double) (blockposition.getY() + world.random.nextInt(3) - 1);
-                    double d5 = j >= 3 ? nbttaglist.k(2) : (double) blockposition.getZ() + (world.random.nextDouble() - world.random.nextDouble()) * (double) this.spawnRange + 0.5D;
-                    // Paper start
-                    if (this.getMobName() == null) {
+                    NBTTagCompound nbttagcompound = this.spawnData.getEntity();
+                    Optional<EntityTypes<?>> optional = EntityTypes.a(nbttagcompound);
+
+                    if (!optional.isPresent()) {
+                        this.i();
                         return;
                     }
-                    String key = this.getMobName().getKey();
+
+                    NBTTagList nbttaglist = nbttagcompound.getList("Pos", 6);
+                    int j = nbttaglist.size();
+                    double d3 = j >= 1 ? nbttaglist.h(0) : (double) blockposition.getX() + (world.random.nextDouble() - world.random.nextDouble()) * (double) this.spawnRange + 0.5D;
+                    double d4 = j >= 2 ? nbttaglist.h(1) : (double) (blockposition.getY() + world.random.nextInt(3) - 1);
+                    double d5 = j >= 3 ? nbttaglist.h(2) : (double) blockposition.getZ() + (world.random.nextDouble() - world.random.nextDouble()) * (double) this.spawnRange + 0.5D;
+
+                    if (world.c(((EntityTypes) optional.get()).a(d3, d4, d5)) && EntityPositionTypes.a((EntityTypes) optional.get(), world.getMinecraftWorld(), EnumMobSpawn.SPAWNER, new BlockPosition(d3, d4, d5), world.getRandom())) {
+                    // Paper start
+                    EntityTypes entityType = optional.get();
+                    String key = EntityTypes.getName(entityType).getKey();
+
                     org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.fromName(key);
                     if (type != null) {
                         com.destroystokyo.paper.event.entity.PreSpawnerSpawnEvent event;
                         event = new com.destroystokyo.paper.event.entity.PreSpawnerSpawnEvent(
-                                MCUtil.toLocation(world, d3, d4, d5),
-                                type,
-                                MCUtil.toLocation(world, blockposition)
+                            MCUtil.toLocation(world, d3, d4, d5),
+                            type,
+                            MCUtil.toLocation(world, blockposition)
                         );
                         if (!event.callEvent()) {
                             flag = true;
@@ -121,26 +126,35 @@ public abstract class MobSpawnerAbstract {
                         }
                     }
                     // Paper end
-                    Entity entity = ChunkRegionLoader.spawnEntity(nbttagcompound, world, d3, d4, d5, false, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER); // Paper
 
-                    if (entity == null) {
-                        this.i();
-                        return;
-                    }
+                        Entity entity = EntityTypes.a(nbttagcompound, world, (entity1) -> {
+                            entity1.setPositionRotation(d3, d4, d5, entity1.yaw, entity1.pitch);
+                            return entity1;
+                        });
 
-                    int k = world.a(entity.getClass(), (new AxisAlignedBB((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ(), (double) (blockposition.getX() + 1), (double) (blockposition.getY() + 1), (double) (blockposition.getZ() + 1))).g((double) this.spawnRange)).size();
+                        if (entity == null) {
+                            this.i();
+                            return;
+                        }
 
-                    if (k >= this.maxNearbyEntities) {
-                        this.i();
-                        return;
-                    }
+                        int k = world.a(entity.getClass(), (new AxisAlignedBB((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ(), (double) (blockposition.getX() + 1), (double) (blockposition.getY() + 1), (double) (blockposition.getZ() + 1))).g((double) this.spawnRange)).size();
 
-                    EntityInsentient entityinsentient = entity instanceof EntityInsentient ? (EntityInsentient) entity : null;
+                        if (k >= this.maxNearbyEntities) {
+                            this.i();
+                            return;
+                        }
 
-                    entity.setPositionRotation(entity.locX, entity.locY, entity.locZ, world.random.nextFloat() * 360.0F, 0.0F);
-                    if (entityinsentient == null || entityinsentient.a((GeneratorAccess) world, true) && entityinsentient.canSpawn()) {
-                        if (this.spawnData.b().d() == 1 && this.spawnData.b().hasKeyOfType("id", 8) && entity instanceof EntityInsentient) {
-                            ((EntityInsentient) entity).prepare(world.getDamageScaler(new BlockPosition(entity)), (GroupDataEntity) null, (NBTTagCompound) null);
+                        entity.setPositionRotation(entity.locX, entity.locY, entity.locZ, world.random.nextFloat() * 360.0F, 0.0F);
+                        if (entity instanceof EntityInsentient) {
+                            EntityInsentient entityinsentient = (EntityInsentient) entity;
+
+                            if (!entityinsentient.a((GeneratorAccess) world, EnumMobSpawn.SPAWNER) || !entityinsentient.a((IWorldReader) world)) {
+                                continue;
+                            }
+
+                            if (this.spawnData.getEntity().d() == 1 && this.spawnData.getEntity().hasKeyOfType("id", 8)) {
+                                ((EntityInsentient) entity).prepare(world, world.getDamageScaler(new BlockPosition(entity)), EnumMobSpawn.SPAWNER, (GroupDataEntity) null, (NBTTagCompound) null);
+                            }
                         }
                         entity.spawnedViaMobSpawner = true; // Paper
                         // Spigot Start
@@ -162,10 +176,10 @@ public abstract class MobSpawnerAbstract {
                             continue;
                         }
                         // Spigot End
-                        ChunkRegionLoader.a(entity, (GeneratorAccess) world, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER); // CraftBukkit
+                        this.a(entity);
                         world.triggerEffect(2004, blockposition, 0);
-                        if (entityinsentient != null) {
-                            entityinsentient.doSpawnEffect();
+                        if (entity instanceof EntityInsentient) {
+                            ((EntityInsentient) entity).doSpawnEffect();
                         }
 
                         /*flag = true;*/ // Paper - moved up above cancellable event
@@ -180,6 +194,20 @@ public abstract class MobSpawnerAbstract {
         }
     }
 
+    private void a(Entity entity) {
+        if (entity.valid || this.a().addEntity(entity, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.SPAWNER)) { // CraftBukkit // Paper
+            Iterator iterator = entity.getPassengers().iterator();
+
+            while (iterator.hasNext()) {
+                Entity entity1 = (Entity) iterator.next();
+
+                this.a(entity1);
+            }
+
+        }
+    }
+
+    public void resetTimer() { i(); } // Paper - OBFHELPER
     private void i() {
         if (this.maxSpawnDelay <= this.minSpawnDelay) {
             this.spawnDelay = this.minSpawnDelay;
@@ -190,14 +218,20 @@ public abstract class MobSpawnerAbstract {
         }
 
         if (!this.mobs.isEmpty()) {
-            this.a((MobSpawnerData) WeightedRandom.a(this.a().random, this.mobs));
+            this.setSpawnData((MobSpawnerData) WeightedRandom.a(this.a().random, this.mobs));
         }
 
         this.a(1);
     }
 
     public void a(NBTTagCompound nbttagcompound) {
+        // Paper start - use larger int if set
+        if (nbttagcompound.hasKey("Paper.Delay")) {
+            this.spawnDelay = nbttagcompound.getInt("Paper.Delay");
+        } else {
         this.spawnDelay = nbttagcompound.getShort("Delay");
+        }
+        // Paper end
         this.mobs.clear();
         if (nbttagcompound.hasKeyOfType("SpawnPotentials", 9)) {
             NBTTagList nbttaglist = nbttagcompound.getList("SpawnPotentials", 10);
@@ -208,14 +242,19 @@ public abstract class MobSpawnerAbstract {
         }
 
         if (nbttagcompound.hasKeyOfType("SpawnData", 10)) {
-            this.a(new MobSpawnerData(1, nbttagcompound.getCompound("SpawnData")));
+            this.setSpawnData(new MobSpawnerData(1, nbttagcompound.getCompound("SpawnData")));
         } else if (!this.mobs.isEmpty()) {
-            this.a((MobSpawnerData) WeightedRandom.a(this.a().random, this.mobs));
+            this.setSpawnData((MobSpawnerData) WeightedRandom.a(this.a().random, this.mobs));
         }
-
+        // Paper start - use ints if set
+        if (nbttagcompound.hasKeyOfType("Paper.MinSpawnDelay", 99)) {
+            this.minSpawnDelay = nbttagcompound.getInt("Paper.MinSpawnDelay");
+            this.maxSpawnDelay = nbttagcompound.getInt("Paper.MaxSpawnDelay");
+            this.spawnCount = nbttagcompound.getShort("SpawnCount");
+        } else // Paper end
         if (nbttagcompound.hasKeyOfType("MinSpawnDelay", 99)) {
-            this.minSpawnDelay = nbttagcompound.getShort("MinSpawnDelay");
-            this.maxSpawnDelay = nbttagcompound.getShort("MaxSpawnDelay");
+            this.minSpawnDelay = nbttagcompound.getInt("MinSpawnDelay");
+            this.maxSpawnDelay = nbttagcompound.getInt("MaxSpawnDelay");
             this.spawnCount = nbttagcompound.getShort("SpawnCount");
         }
 
@@ -240,25 +279,36 @@ public abstract class MobSpawnerAbstract {
         if (minecraftkey == null) {
             return nbttagcompound;
         } else {
-            nbttagcompound.setShort("Delay", (short) this.spawnDelay);
-            nbttagcompound.setShort("MinSpawnDelay", (short) this.minSpawnDelay);
-            nbttagcompound.setShort("MaxSpawnDelay", (short) this.maxSpawnDelay);
+            // Paper start
+            if (spawnDelay > Short.MAX_VALUE) {
+                nbttagcompound.setInt("Paper.Delay", this.spawnDelay);
+            }
+            nbttagcompound.setShort("Delay", (short) Math.min(Short.MAX_VALUE, this.spawnDelay));
+
+            if (minSpawnDelay > Short.MAX_VALUE || maxSpawnDelay > Short.MAX_VALUE) {
+                nbttagcompound.setInt("Paper.MinSpawnDelay", this.minSpawnDelay);
+                nbttagcompound.setInt("Paper.MaxSpawnDelay", this.maxSpawnDelay);
+            }
+
+            nbttagcompound.setShort("MinSpawnDelay", (short) Math.min(Short.MAX_VALUE, this.minSpawnDelay));
+            nbttagcompound.setShort("MaxSpawnDelay", (short) Math.min(Short.MAX_VALUE, this.maxSpawnDelay));
+            // Paper end
             nbttagcompound.setShort("SpawnCount", (short) this.spawnCount);
             nbttagcompound.setShort("MaxNearbyEntities", (short) this.maxNearbyEntities);
             nbttagcompound.setShort("RequiredPlayerRange", (short) this.requiredPlayerRange);
             nbttagcompound.setShort("SpawnRange", (short) this.spawnRange);
-            nbttagcompound.set("SpawnData", this.spawnData.b().clone());
+            nbttagcompound.set("SpawnData", this.spawnData.getEntity().clone());
             NBTTagList nbttaglist = new NBTTagList();
 
             if (this.mobs.isEmpty()) {
-                nbttaglist.add((NBTBase) this.spawnData.a());
+                nbttaglist.add(this.spawnData.a());
             } else {
                 Iterator iterator = this.mobs.iterator();
 
                 while (iterator.hasNext()) {
                     MobSpawnerData mobspawnerdata = (MobSpawnerData) iterator.next();
 
-                    nbttaglist.add((NBTBase) mobspawnerdata.a());
+                    nbttaglist.add(mobspawnerdata.a());
                 }
             }
 
@@ -276,7 +326,7 @@ public abstract class MobSpawnerAbstract {
         }
     }
 
-    public void a(MobSpawnerData mobspawnerdata) {
+    public void setSpawnData(MobSpawnerData mobspawnerdata) {
         this.spawnData = mobspawnerdata;
     }
 

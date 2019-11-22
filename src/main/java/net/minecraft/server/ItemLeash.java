@@ -11,12 +11,13 @@ public class ItemLeash extends Item {
         super(item_info);
     }
 
+    @Override
     public EnumInteractionResult a(ItemActionContext itemactioncontext) {
         World world = itemactioncontext.getWorld();
         BlockPosition blockposition = itemactioncontext.getClickPosition();
         Block block = world.getType(blockposition).getBlock();
 
-        if (block instanceof BlockFence) {
+        if (block.a(TagsBlock.FENCES)) {
             EntityHuman entityhuman = itemactioncontext.getEntity();
 
             if (!world.isClientSide && entityhuman != null) {
@@ -30,7 +31,7 @@ public class ItemLeash extends Item {
     }
 
     public static boolean a(EntityHuman entityhuman, World world, BlockPosition blockposition) {
-        EntityLeash entityleash = EntityLeash.b(world, blockposition);
+        EntityLeash entityleash = null;
         boolean flag = false;
         double d0 = 7.0D;
         int i = blockposition.getX();
@@ -42,12 +43,12 @@ public class ItemLeash extends Item {
         while (iterator.hasNext()) {
             EntityInsentient entityinsentient = (EntityInsentient) iterator.next();
 
-            if (entityinsentient.isLeashed() && entityinsentient.getLeashHolder() == entityhuman) {
+            if (entityinsentient.getLeashHolder() == entityhuman) {
                 if (entityleash == null) {
                     entityleash = EntityLeash.a(world, blockposition);
 
                     // CraftBukkit start - fire HangingPlaceEvent
-                    HangingPlaceEvent event = new HangingPlaceEvent((org.bukkit.entity.Hanging) entityleash.getBukkitEntity(), entityhuman != null ? (org.bukkit.entity.Player) entityhuman.getBukkitEntity() : null, world.getWorld().getBlockAt(blockposition), org.bukkit.block.BlockFace.SELF); // Akarin
+                    HangingPlaceEvent event = new HangingPlaceEvent((org.bukkit.entity.Hanging) entityleash.getBukkitEntity(), entityhuman != null ? (org.bukkit.entity.Player) entityhuman.getBukkitEntity() : null, world.getWorld().getBlockAt(i, j, k), org.bukkit.block.BlockFace.SELF);
                     world.getServer().getPluginManager().callEvent(event);
 
                     if (event.isCancelled()) {

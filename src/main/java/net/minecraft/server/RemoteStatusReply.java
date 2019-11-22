@@ -18,7 +18,7 @@ public class RemoteStatusReply {
         this.b.write(abyte, 0, abyte.length);
     }
 
-    public void writeString(String string) throws IOException { a(string); } // Paper - OBFHELPER
+    public void writeString(String string) throws IOException { this.a(string); } // Paper - OBFHELPER
     public void a(String s) throws IOException {
         this.b.writeBytes(s);
         this.b.write(0);
@@ -33,12 +33,12 @@ public class RemoteStatusReply {
     }
     // Paper end
 
-    public void writeInt(int i) throws IOException { a(i); } // Paper - OBFHELPER
+    public void writeInt(int i) throws IOException { this.a(i); } // Paper - OBFHELPER
     public void a(int i) throws IOException {
         this.b.write(i);
     }
 
-    public void writeShort(short i) throws IOException { a(i); } // Paper - OBFHELPER
+    public void writeShort(short i) throws IOException { this.a(i); } // Paper - OBFHELPER
     public void a(short short0) throws IOException {
         this.b.writeShort(Short.reverseBytes(short0));
     }

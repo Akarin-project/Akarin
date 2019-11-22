@@ -23,8 +23,15 @@ public class PacketStatusListener implements PacketStatusInListener {
         this.networkManager = networkmanager;
     }
 
+    @Override
     public void a(IChatBaseComponent ichatbasecomponent) {}
 
+    @Override
+    public NetworkManager a() {
+        return this.networkManager;
+    }
+
+    @Override
     public void a(PacketStatusInStart packetstatusinstart) {
         if (this.d) {
             this.networkManager.close(PacketStatusListener.a);
@@ -123,7 +130,7 @@ public class PacketStatusListener implements PacketStatusInListener {
             ping.setFavicon(event.icon.value);
             ping.setMOTD(new ChatComponentText(event.getMotd()));
             ping.setPlayerSample(playerSample);
-            int version = minecraftServer.getServerPing().getServerData().getProtocolVersion();
+            int version = SharedConstants.a().getProtocolVersion();
             ping.setServerInfo(new ServerPing.ServerData(minecraftServer.getServerModName() + " " + minecraftServer.getVersion(), version));
 
             this.networkManager.sendPacket(new PacketStatusOutServerInfo(ping));
@@ -134,6 +141,7 @@ public class PacketStatusListener implements PacketStatusInListener {
         // CraftBukkit end
     }
 
+    @Override
     public void a(PacketStatusInPing packetstatusinping) {
         this.networkManager.sendPacket(new PacketStatusOutPong(packetstatusinping.b()));
         this.networkManager.close(PacketStatusListener.a);

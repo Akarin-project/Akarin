@@ -1,6 +1,10 @@
 package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.server.BiomeBase;
+import net.minecraft.server.DataPaletteBlock;
+import net.minecraft.server.HeightMap;
+import net.minecraft.server.IBlockData;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
@@ -8,11 +12,6 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-
-import net.minecraft.server.BiomeBase;
-import net.minecraft.server.DataPaletteBlock;
-import net.minecraft.server.HeightMap;
-import net.minecraft.server.IBlockData;
 
 /**
  * Represents a static, thread-safe snapshot of chunk of blocks
@@ -44,16 +43,33 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
         this.biomeTemp = biomeTemp;
     }
 
+    @Override
     public int getX() {
         return x;
     }
 
+    @Override
     public int getZ() {
         return z;
     }
 
+    @Override
     public String getWorldName() {
         return worldname;
+    }
+
+    @Override
+    public boolean contains(BlockData block) {
+        Preconditions.checkArgument(block != null, "Block cannot be null");
+
+        IBlockData nms = ((CraftBlockData) block).getState();
+        for (DataPaletteBlock<IBlockData> palette : blockids) {
+            if (palette.a(nms)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -77,6 +93,7 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
         return CraftMagicNumbers.toLegacyData(blockids[y >> 4].a(x, y & 0xF, z));
     }
 
+    @Override
     public final int getBlockSkyLight(int x, int y, int z) {
         CraftChunk.validateChunkCoordinates(x, y, z);
 
@@ -84,6 +101,7 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
         return (skylight[y >> 4][off] >> ((x & 1) << 2)) & 0xF;
     }
 
+    @Override
     public final int getBlockEmittedLight(int x, int y, int z) {
         CraftChunk.validateChunkCoordinates(x, y, z);
 
@@ -91,28 +109,36 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
         return (emitlight[y >> 4][off] >> ((x & 1) << 2)) & 0xF;
     }
 
+    @Override
     public final int getHighestBlockYAt(int x, int z) {
+        Preconditions.checkState(hmap != null, "ChunkSnapshot created without height map. Please call getSnapshot with includeMaxblocky=true");
         CraftChunk.validateChunkCoordinates(x, 0, z);
 
         return hmap.a(x, z);
     }
 
+    @Override
     public final Biome getBiome(int x, int z) {
+        Preconditions.checkState(biome != null, "ChunkSnapshot created without biome. Please call getSnapshot with includeBiome=true");
         CraftChunk.validateChunkCoordinates(x, 0, z);
 
         return CraftBlock.biomeBaseToBiome(biome[z << 4 | x]);
     }
 
+    @Override
     public final double getRawBiomeTemperature(int x, int z) {
+        Preconditions.checkState(biomeTemp != null, "ChunkSnapshot created without biome temperatures. Please call getSnapshot with includeBiomeTempRain=true");
         CraftChunk.validateChunkCoordinates(x, 0, z);
 
         return biomeTemp[z << 4 | x];
     }
 
+    @Override
     public final long getCaptureFullTime() {
         return captureFulltime;
     }
 
+    @Override
     public final boolean isSectionEmpty(int sy) {
         return empty[sy];
     }

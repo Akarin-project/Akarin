@@ -38,6 +38,7 @@ public class BossBattleCustom extends BossBattleServer {
         return this.h;
     }
 
+    @Override
     public void addPlayer(EntityPlayer entityplayer) {
         super.addPlayer(entityplayer);
         this.i.add(entityplayer.getUniqueID());
@@ -47,11 +48,13 @@ public class BossBattleCustom extends BossBattleServer {
         this.i.add(uuid);
     }
 
+    @Override
     public void removePlayer(EntityPlayer entityplayer) {
         super.removePlayer(entityplayer);
         this.i.remove(entityplayer.getUniqueID());
     }
 
+    @Override
     public void b() {
         super.b();
         this.i.clear();
@@ -190,7 +193,7 @@ public class BossBattleCustom extends BossBattleServer {
         while (iterator.hasNext()) {
             UUID uuid = (UUID) iterator.next();
 
-            nbttaglist.add((NBTBase) GameProfileSerializer.a(uuid));
+            nbttaglist.add(GameProfileSerializer.a(uuid));
         }
 
         nbttagcompound.set("Players", nbttaglist);

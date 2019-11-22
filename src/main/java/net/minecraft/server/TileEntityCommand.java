@@ -5,8 +5,8 @@ import javax.annotation.Nullable;
 public class TileEntityCommand extends TileEntity {
 
     private boolean a;
-    private boolean e;
-    private boolean f;
+    private boolean b;
+    private boolean c;
     private boolean g;
     private final CommandBlockListenerAbstract h = new CommandBlockListenerAbstract() {
         // CraftBukkit start
@@ -16,21 +16,25 @@ public class TileEntityCommand extends TileEntity {
         }
         // CraftBukkit end
 
+        @Override
         public void setCommand(String s) {
             super.setCommand(s);
             TileEntityCommand.this.update();
         }
 
+        @Override
         public WorldServer d() {
             return (WorldServer) TileEntityCommand.this.world;
         }
 
+        @Override
         public void e() {
             IBlockData iblockdata = TileEntityCommand.this.world.getType(TileEntityCommand.this.position);
 
             this.d().notify(TileEntityCommand.this.position, iblockdata, iblockdata, 3);
         }
 
+        @Override
         public CommandListenerWrapper getWrapper() {
             return new CommandListenerWrapper(this, new Vec3D((double) TileEntityCommand.this.position.getX() + 0.5D, (double) TileEntityCommand.this.position.getY() + 0.5D, (double) TileEntityCommand.this.position.getZ() + 0.5D), Vec2F.a, this.d(), 2, this.getName().getString(), this.getName(), this.d().getMinecraftServer(), (Entity) null);
         }
@@ -40,26 +44,29 @@ public class TileEntityCommand extends TileEntity {
         super(TileEntityTypes.COMMAND_BLOCK);
     }
 
+    @Override
     public NBTTagCompound save(NBTTagCompound nbttagcompound) {
         super.save(nbttagcompound);
         this.h.a(nbttagcompound);
-        nbttagcompound.setBoolean("powered", this.d());
-        nbttagcompound.setBoolean("conditionMet", this.f());
-        nbttagcompound.setBoolean("auto", this.e());
+        nbttagcompound.setBoolean("powered", this.f());
+        nbttagcompound.setBoolean("conditionMet", this.h());
+        nbttagcompound.setBoolean("auto", this.g());
         return nbttagcompound;
     }
 
+    @Override
     public void load(NBTTagCompound nbttagcompound) {
         super.load(nbttagcompound);
         this.h.b(nbttagcompound);
         this.a = nbttagcompound.getBoolean("powered");
-        this.f = nbttagcompound.getBoolean("conditionMet");
+        this.c = nbttagcompound.getBoolean("conditionMet");
         this.b(nbttagcompound.getBoolean("auto"));
     }
 
     @Nullable
+    @Override
     public PacketPlayOutTileEntityData getUpdatePacket() {
-        if (this.i()) {
+        if (this.t()) {
             this.c(false);
             NBTTagCompound nbttagcompound = this.save(new NBTTagCompound());
 
@@ -69,6 +76,7 @@ public class TileEntityCommand extends TileEntity {
         }
     }
 
+    @Override
     public boolean isFilteredNBT() {
         return true;
     }
@@ -81,51 +89,51 @@ public class TileEntityCommand extends TileEntity {
         this.a = flag;
     }
 
-    public boolean d() {
+    public boolean f() {
         return this.a;
     }
 
-    public boolean e() {
-        return this.e;
+    public boolean g() {
+        return this.b;
     }
 
     public void b(boolean flag) {
-        boolean flag1 = this.e;
+        boolean flag1 = this.b;
 
-        this.e = flag;
-        if (!flag1 && flag && !this.a && this.world != null && this.j() != TileEntityCommand.Type.SEQUENCE) {
+        this.b = flag;
+        if (!flag1 && flag && !this.a && this.world != null && this.u() != TileEntityCommand.Type.SEQUENCE) {
             Block block = this.getBlock().getBlock();
 
             if (block instanceof BlockCommand) {
-                this.h();
+                this.s();
                 this.world.getBlockTickList().a(this.position, block, block.a((IWorldReader) this.world));
             }
         }
 
     }
 
-    public boolean f() {
-        return this.f;
+    public boolean h() {
+        return this.c;
     }
 
-    public boolean h() {
-        this.f = true;
-        if (this.k()) {
+    public boolean s() {
+        this.c = true;
+        if (this.v()) {
             BlockPosition blockposition = this.position.shift(((EnumDirection) this.world.getType(this.position).get(BlockCommand.a)).opposite());
 
             if (this.world.getType(blockposition).getBlock() instanceof BlockCommand) {
                 TileEntity tileentity = this.world.getTileEntity(blockposition);
 
-                this.f = tileentity instanceof TileEntityCommand && ((TileEntityCommand) tileentity).getCommandBlock().i() > 0;
+                this.c = tileentity instanceof TileEntityCommand && ((TileEntityCommand) tileentity).getCommandBlock().i() > 0;
             } else {
-                this.f = false;
+                this.c = false;
             }
         }
 
-        return this.f;
+        return this.c;
     }
 
-    public boolean i() {
+    public boolean t() {
         return this.g;
     }
 
@@ -133,21 +141,22 @@ public class TileEntityCommand extends TileEntity {
         this.g = flag;
     }
 
-    public TileEntityCommand.Type j() {
+    public TileEntityCommand.Type u() {
         Block block = this.getBlock().getBlock();
 
         return block == Blocks.COMMAND_BLOCK ? TileEntityCommand.Type.REDSTONE : (block == Blocks.REPEATING_COMMAND_BLOCK ? TileEntityCommand.Type.AUTO : (block == Blocks.CHAIN_COMMAND_BLOCK ? TileEntityCommand.Type.SEQUENCE : TileEntityCommand.Type.REDSTONE));
     }
 
-    public boolean k() {
+    public boolean v() {
         IBlockData iblockdata = this.world.getType(this.getPosition());
 
         return iblockdata.getBlock() instanceof BlockCommand ? (Boolean) iblockdata.get(BlockCommand.b) : false;
     }
 
-    public void z() {
+    @Override
+    public void n() {
         this.invalidateBlockCache();
-        super.z();
+        super.n();
     }
 
     public static enum Type {

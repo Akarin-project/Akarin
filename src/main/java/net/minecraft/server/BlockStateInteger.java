@@ -33,7 +33,8 @@ public class BlockStateInteger extends BlockState<Integer> {
         }
     }
 
-    public Collection<Integer> d() {
+    @Override
+    public Collection<Integer> getValues() {
         return this.a;
     }
 
@@ -49,6 +50,7 @@ public class BlockStateInteger extends BlockState<Integer> {
         }
     }
 
+    @Override
     public int c() {
         return 31 * super.c() + this.a.hashCode();
     }
@@ -57,6 +59,7 @@ public class BlockStateInteger extends BlockState<Integer> {
         return new BlockStateInteger(s, i, j);
     }
 
+    @Override
     public Optional<Integer> b(String s) {
         try {
             Integer integer = Integer.valueOf(s);

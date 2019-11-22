@@ -24,40 +24,22 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
         this.color = enumcolor;
     }
 
-    public void a(ItemStack itemstack, EnumColor enumcolor) {
-        this.patterns = null;
-        NBTTagCompound nbttagcompound = itemstack.b("BlockEntityTag");
-
-        if (nbttagcompound != null && nbttagcompound.hasKeyOfType("Patterns", 9)) {
-            this.patterns = nbttagcompound.getList("Patterns", 10).clone();
-            // CraftBukkit start
-            while (this.patterns.size() > 20) {
-                this.patterns.remove(20);
-            }
-            // CraftBukkit end
-        }
-
-        this.color = enumcolor;
-        this.h = null;
-        this.i = null;
-        this.j = "";
-        this.g = true;
-        this.a = itemstack.hasName() ? itemstack.getName() : null;
-    }
-
+    @Override
     public IChatBaseComponent getDisplayName() {
         return (IChatBaseComponent) (this.a != null ? this.a : new ChatMessage("block.minecraft.banner", new Object[0]));
     }
 
-    public boolean hasCustomName() {
-        return this.a != null;
-    }
-
     @Nullable
+    @Override
     public IChatBaseComponent getCustomName() {
         return this.a;
     }
 
+    public void a(IChatBaseComponent ichatbasecomponent) {
+        this.a = ichatbasecomponent;
+    }
+
+    @Override
     public NBTTagCompound save(NBTTagCompound nbttagcompound) {
         super.save(nbttagcompound);
         if (this.patterns != null) {
@@ -71,6 +53,7 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
         return nbttagcompound;
     }
 
+    @Override
     public void load(NBTTagCompound nbttagcompound) {
         super.load(nbttagcompound);
         if (nbttagcompound.hasKeyOfType("CustomName", 8)) {
@@ -78,7 +61,7 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
         }
 
         if (this.hasWorld()) {
-            this.color = ((BlockBannerAbstract) this.getBlock().getBlock()).b();
+            this.color = ((BlockBannerAbstract) this.getBlock().getBlock()).getColor();
         } else {
             this.color = null;
         }
@@ -96,11 +79,13 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
     }
 
     @Nullable
+    @Override
     public PacketPlayOutTileEntityData getUpdatePacket() {
-        return new PacketPlayOutTileEntityData(this.position, 6, this.aa_());
+        return new PacketPlayOutTileEntityData(this.position, 6, this.b());
     }
 
-    public NBTTagCompound aa_() {
+    @Override
+    public NBTTagCompound b() {
         return this.save(new NBTTagCompound());
     }
 
@@ -119,32 +104,16 @@ public class TileEntityBanner extends TileEntity implements INamableTileEntity {
             if (!nbttaglist.isEmpty()) {
                 nbttaglist.remove(nbttaglist.size() - 1);
                 if (nbttaglist.isEmpty()) {
-                    itemstack.c("BlockEntityTag");
+                    itemstack.removeTag("BlockEntityTag");
                 }
 
             }
         }
     }
 
-    public ItemStack a(IBlockData iblockdata) {
-        ItemStack itemstack = new ItemStack(BlockBanner.a(this.a(() -> {
-            return iblockdata;
-        })));
-
-        if (this.patterns != null && !this.patterns.isEmpty()) {
-            itemstack.a("BlockEntityTag").set("Patterns", this.patterns.clone());
-        }
-
-        if (this.a != null) {
-            itemstack.a(this.a);
-        }
-
-        return itemstack;
-    }
-
     public EnumColor a(Supplier<IBlockData> supplier) {
         if (this.color == null) {
-            this.color = ((BlockBannerAbstract) ((IBlockData) supplier.get()).getBlock()).b();
+            this.color = ((BlockBannerAbstract) ((IBlockData) supplier.get()).getBlock()).getColor();
         }
 
         return this.color;

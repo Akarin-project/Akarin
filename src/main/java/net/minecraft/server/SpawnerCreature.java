@@ -1,304 +1,208 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Sets;
-
-import io.akarin.server.core.AkarinCreatureSpanwner;
-import io.akarin.server.core.AkarinGlobalConfig;
-
-import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
-import java.util.Set;
+import java.util.function.Consumer; // Paper
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 // CraftBukkit start
 import com.destroystokyo.paper.exception.ServerInternalException;
-import org.bukkit.craftbukkit.util.LongHash;
-import org.bukkit.craftbukkit.util.LongHashSet;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 // CraftBukkit end
 
 public final class SpawnerCreature {
 
-    private static final Logger a = LogManager.getLogger();
-    private static final int b = (int) Math.pow(17.0D, 2.0D);
-    private final LongHashSet c = new LongHashSet(); // CraftBukkit
+    private static final Logger LOGGER = LogManager.getLogger();
 
-    public SpawnerCreature() {}
+    // Paper start - add maxSpawns parameter and return spawned mobs
+    public static void a(EnumCreatureType enumcreaturetype, World world, Chunk chunk, BlockPosition blockposition) {
+        spawnMobs(enumcreaturetype, world, chunk, blockposition, Integer.MAX_VALUE, null);
+    }
+    public static int spawnMobs(EnumCreatureType enumcreaturetype, World world, Chunk chunk, BlockPosition blockposition, int maxSpawns, Consumer<Entity> trackEntity) {
+        // Paper end
+        ChunkGenerator<?> chunkgenerator = world.getChunkProvider().getChunkGenerator();
+        int i = 0; // Paper - force diff on name change
+        BlockPosition blockposition1 = getRandomPosition(world, chunk);
+        int j = blockposition1.getX();
+        int k = blockposition1.getY();
+        int l = blockposition1.getZ();
 
-    public int a(WorldServer worldserver, boolean flag, boolean flag1, boolean flag2) {
-        // Akarin start
-        if (AkarinGlobalConfig.improvedMobSpawnMechanics) {
-            int before = worldserver.entityList.size();
-            AkarinCreatureSpanwner.spawnMobs(worldserver, flag, flag1, flag2);
-            return worldserver.entityList.size() - before;
-        }
-        // Akarin end
-        if (!flag && !flag1) {
-            return 0;
-        } else {
-            this.c.clear();
-            int i = 0;
-            Iterator iterator = worldserver.players.iterator();
+        if (k >= 1) {
+            IBlockData iblockdata = world.getTypeIfLoadedAndInBounds(blockposition1);  // Paper - don't load chunks for mob spawn
 
-            int j;
-            int k;
+            if (iblockdata != null && !iblockdata.isOccluding(chunk, blockposition1)) { // Paper - don't load chunks for mob spawn
+                BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
+                int i1 = 0;
 
-            while (iterator.hasNext()) {
-                EntityHuman entityhuman = (EntityHuman) iterator.next();
+                while (i1 < 3) {
+                    int j1 = j;
+                    int k1 = l;
+                    boolean flag = true;
+                    BiomeBase.BiomeMeta biomebase_biomemeta = null;
+                    GroupDataEntity groupdataentity = null;
+                    int l1 = MathHelper.f(Math.random() * 4.0D);
+                    int i2 = 0; // Paper - force diff on name change
+                    int j2 = 0;
 
-                if (!entityhuman.isSpectator() && entityhuman.affectsSpawning) { // Paper
-                    int l = MathHelper.floor(entityhuman.locX / 16.0D);
+                    while (true) {
+                        if (j2 < l1) {
+                            label104:
+                            {
+                                j1 += world.random.nextInt(6) - world.random.nextInt(6);
+                                k1 += world.random.nextInt(6) - world.random.nextInt(6);
+                                blockposition_mutableblockposition.d(j1, k, k1);
+                                float f = (float) j1 + 0.5F;
+                                float f1 = (float) k1 + 0.5F;
+                                EntityHuman entityhuman = world.a((double) f, (double) f1, -1.0D);
 
-                    j = MathHelper.floor(entityhuman.locZ / 16.0D);
-                    boolean flag3 = true;
-                    // Spigot Start
-                    byte b0 = worldserver.spigotConfig.mobSpawnRange;
-                    b0 = ( b0 > entityhuman.getViewDistance() ) ? (byte) entityhuman.getViewDistance() : b0; // Paper - Use player view distance API
-                    b0 = ( b0 > 8 ) ? 8 : b0;
-                    // Paper start
-                    com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event;
-                    event = new com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent(
-                            (org.bukkit.entity.Player) entityhuman.getBukkitEntity(), b0);
-                    if (!event.callEvent()) {
-                        continue;
-                    }
-                    b0 = event.getSpawnRadius();
-                    // Paperr end
+                                if (entityhuman != null) {
+                                    double d0 = entityhuman.e((double) f, (double) k, (double) f1);
 
-                    for (int i1 = -b0; i1 <= b0; ++i1) {
-                        for (k = -b0; k <= b0; ++k) {
-                            boolean flag4 = i1 == -b0 || i1 == b0 || k == -b0 || k == b0;
-                            // Spigot End
-                            ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i1 + l, k + j);
+                                    if (d0 > 576.0D && !blockposition.a((IPosition) (new Vec3D((double) f, (double) k, (double) f1)), 24.0D) && world.isLoadedAndInBounds(blockposition_mutableblockposition)) { // Paper - don't load chunks for mob spawn
+                                        ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(blockposition_mutableblockposition);
 
-                            // CraftBukkit start - use LongHash and LongHashSet
-                            long chunkCoords = LongHash.toLong(chunkcoordintpair.x, chunkcoordintpair.z);
-                            if (!this.c.contains(chunkCoords)) {
-                                ++i;
-                                if (!flag4 && worldserver.getWorldBorder().isInBounds(chunkcoordintpair)) {
-                                    PlayerChunk playerchunk = worldserver.getPlayerChunkMap().getChunk(chunkcoordintpair.x, chunkcoordintpair.z);
+                                        if (Objects.equals(chunkcoordintpair, chunk.getPos()) || world.getChunkProvider().a(chunkcoordintpair)) {
+                                            if (biomebase_biomemeta == null) {
+                                                biomebase_biomemeta = a(chunkgenerator, enumcreaturetype, world.random, (BlockPosition) blockposition_mutableblockposition);
+                                                if (biomebase_biomemeta == null) {
+                                                    break label104;
+                                                }
 
-                                    if (playerchunk != null && playerchunk.e()) {
-                                        this.c.add(chunkCoords);
-                                        // CraftBukkit end
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                                                l1 = biomebase_biomemeta.c + world.random.nextInt(1 + biomebase_biomemeta.d - biomebase_biomemeta.c);
+                                            }
 
-            int j1 = 0;
-            BlockPosition blockposition = worldserver.getSpawn();
-            EnumCreatureType[] aenumcreaturetype = EnumCreatureType.values();
+                                            if (biomebase_biomemeta.b.e() != EnumCreatureType.MISC && (biomebase_biomemeta.b.d() || d0 <= 16384.0D)) {
+                                                EntityTypes<?> entitytypes = biomebase_biomemeta.b;
 
-            j = aenumcreaturetype.length;
+                                                if (entitytypes.b() && a(chunkgenerator, enumcreaturetype, biomebase_biomemeta, (BlockPosition) blockposition_mutableblockposition)) {
+                                                    EntityPositionTypes.Surface entitypositiontypes_surface = EntityPositionTypes.a(entitytypes);
 
-            for (int k1 = 0; k1 < j; ++k1) {
-                EnumCreatureType enumcreaturetype = aenumcreaturetype[k1];
+                                                    if (a(entitypositiontypes_surface, (IWorldReader) world, (BlockPosition) blockposition_mutableblockposition, entitytypes) && EntityPositionTypes.a(entitytypes, world, EnumMobSpawn.NATURAL, blockposition_mutableblockposition, world.random) && world.c(entitytypes.a((double) f, (double) k, (double) f1))) {
+                                                        EntityInsentient entityinsentient;
 
-               // CraftBukkit start - Use per-world spawn limits
-                int limit = enumcreaturetype.b();
-                switch (enumcreaturetype) {
-                    case MONSTER:
-                        limit = worldserver.getWorld().getMonsterSpawnLimit();
-                        break;
-                    case CREATURE:
-                        limit = worldserver.getWorld().getAnimalSpawnLimit();
-                        break;
-                    case WATER_CREATURE:
-                        limit = worldserver.getWorld().getWaterAnimalSpawnLimit();
-                        break;
-                    case AMBIENT:
-                        limit = worldserver.getWorld().getAmbientSpawnLimit();
-                        break;
-                }
+                                                    // Paper start
+                                                    com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
+                                                    EntityTypes<?> cls = biomebase_biomemeta.b;
+                                                    org.bukkit.entity.EntityType type = org.bukkit.entity.EntityType.fromName(EntityTypes.getName(cls).getKey());
+                                                    if (type != null) {
+                                                        event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
+                                                            MCUtil.toLocation(world, blockposition_mutableblockposition),
+                                                            type, SpawnReason.NATURAL
+                                                        );
+                                                        if (!event.callEvent()) {
+                                                            if (event.shouldAbortSpawn()) {
+                                                                return i; // Paper
+                                                            }
+                                                            ++i2;
+                                                            continue;
+                                                        }
+                                                    }
+                                                    // Paper end
 
-                if (limit == 0) {
-                    continue;
-                }
-                // CraftBukkit end
+                                                        try {
+                                                            Entity entity = entitytypes.a(world);
 
-                if ((!enumcreaturetype.c() || flag1) && (enumcreaturetype.c() || flag) && (!enumcreaturetype.d() || flag2)) {
-                    k = limit * i / SpawnerCreature.b; // CraftBukkit - use per-world limits
-                    int l1 = ((com.destroystokyo.paper.PaperWorldEntityList) worldserver.entityList).getCreatureCount(enumcreaturetype); // Paper - entity count cache
-
-                    if (l1 <= k) {
-                        BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
-                        Iterator iterator1 = this.c.iterator();
-
-                        label137:
-                        while (iterator1.hasNext()) {
-                            // CraftBukkit start = use LongHash and LongObjectHashMap
-                            long key = ((Long) iterator1.next()).longValue();
-                            BlockPosition blockposition1 = getRandomPosition(worldserver, LongHash.msw(key), LongHash.lsw(key));
-                            // CraftBukkit
-                            int i2 = blockposition1.getX();
-                            int j2 = blockposition1.getY();
-                            int k2 = blockposition1.getZ();
-                            IBlockData iblockdata = worldserver.getTypeIfLoadedAndInBounds(blockposition1);  // Paper - don't load chunks for mob spawn
-
-                            if (iblockdata != null && !iblockdata.isOccluding()) { // Paper - don't load chunks for mob spawn
-                                int l2 = 0;
-                                int i3 = 0;
-
-                                while (i3 < 3) {
-                                    int j3 = i2;
-                                    int k3 = j2;
-                                    int l3 = k2;
-                                    boolean flag5 = true;
-                                    BiomeBase.BiomeMeta biomebase_biomemeta = null;
-                                    GroupDataEntity groupdataentity = null;
-                                    int i4 = MathHelper.f(Math.random() * 4.0D);
-                                    int j4 = 0;
-                                    int k4 = 0;
-
-                                    while (true) {
-                                        if (k4 < i4) {
-                                            label130:
-                                            {
-                                                j3 += worldserver.random.nextInt(6) - worldserver.random.nextInt(6);
-                                                k3 += worldserver.random.nextInt(1) - worldserver.random.nextInt(1);
-                                                l3 += worldserver.random.nextInt(6) - worldserver.random.nextInt(6);
-                                                blockposition_mutableblockposition.c(j3, k3, l3);
-                                                float f = (float) j3 + 0.5F;
-                                                float f1 = (float) l3 + 0.5F;
-                                                EntityHuman entityhuman1 = worldserver.a((double) f, (double) f1, -1.0D);
-
-                                                if (entityhuman1 != null && worldserver.isLoadedAndInBounds(blockposition_mutableblockposition)) { // Paper - don't load chunks for mob spawn
-                                                    double d0 = entityhuman1.d((double) f, (double) k3, (double) f1);
-
-                                                    if (d0 > 576.0D && blockposition.distanceSquared((double) f, (double) k3, (double) f1) >= 576.0D) {
-                                                        if (biomebase_biomemeta == null) {
-                                                            biomebase_biomemeta = worldserver.a(enumcreaturetype, (BlockPosition) blockposition_mutableblockposition);
-                                                            if (biomebase_biomemeta == null) {
-                                                                break label130;
+                                                            if (!(entity instanceof EntityInsentient)) {
+                                                                throw new IllegalStateException("Trying to spawn a non-mob: " + IRegistry.ENTITY_TYPE.getKey(entitytypes));
                                                             }
 
-                                                            i4 = biomebase_biomemeta.c + worldserver.random.nextInt(1 + biomebase_biomemeta.d - biomebase_biomemeta.c);
+                                                            entityinsentient = (EntityInsentient) entity;
+                                                        } catch (Exception exception) {
+                                                            SpawnerCreature.LOGGER.warn("Failed to create mob", exception);
+                                                            ServerInternalException.reportInternalException(exception); // Paper
+                                                            return i; // Paper
                                                         }
 
-                                                        if (worldserver.a(enumcreaturetype, biomebase_biomemeta, (BlockPosition) blockposition_mutableblockposition)) {
-                                                            EntityPositionTypes.Surface entitypositiontypes_surface = EntityPositionTypes.a(biomebase_biomemeta.b);
-                                                            if (entitypositiontypes_surface != null && a(entitypositiontypes_surface, worldserver, blockposition_mutableblockposition, biomebase_biomemeta.b)) {
-                                                                EntityInsentient entityinsentient;
-
-                                                            // Paper start
-                                                            com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event;
-                                                            EntityTypes<? extends EntityInsentient> cls = biomebase_biomemeta.b;
-                                                            org.bukkit.entity.EntityType type = EntityTypes.clsToTypeMap.get(cls);
-                                                            if (type != null) {
-                                                                event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
-                                                                        MCUtil.toLocation(worldserver, blockposition_mutableblockposition),
-                                                                        type, SpawnReason.NATURAL
-                                                                );
-                                                                if (!event.callEvent()) {
-                                                                    if (event.shouldAbortSpawn()) {
-                                                                        continue label137; // right above the iterator for c (Chunk Pos Set)
-                                                                    }
-                                                                    j1 += l2;
-                                                                    ++j4;
-                                                                    continue;
+                                                        entityinsentient.setPositionRotation((double) f, (double) k, (double) f1, world.random.nextFloat() * 360.0F, 0.0F);
+                                                        if ((d0 <= 16384.0D || !entityinsentient.isTypeNotPersistent(d0)) && entityinsentient.a((GeneratorAccess) world, EnumMobSpawn.NATURAL) && entityinsentient.a((IWorldReader) world)) {
+                                                            groupdataentity = entityinsentient.prepare(world, world.getDamageScaler(new BlockPosition(entityinsentient)), EnumMobSpawn.NATURAL, groupdataentity, (NBTTagCompound) null);
+                                                            // CraftBukkit start
+                                                            if (world.addEntity(entityinsentient, SpawnReason.NATURAL)) {
+                                                                ++i; // Paper - force diff on name change
+                                                                ++i2;
+                                                                if (trackEntity != null) {
+                                                                    trackEntity.accept(entityinsentient); // Paper
                                                                 }
                                                             }
-                                                            // Paper end
+                                                            if (i >= maxSpawns) { return i; } // Paper
+                                                            // CraftBukkit end
+                                                            if (i >= entityinsentient.dC()) {
+                                                                return i; // Paper
+                                                            }
 
-
-                                                                try {
-                                                                    entityinsentient = (EntityInsentient) biomebase_biomemeta.b.a((World) worldserver);
-                                                                } catch (Exception exception) {
-                                                                    SpawnerCreature.a.warn("Failed to create mob", exception);
-                                                                ServerInternalException.reportInternalException(exception); // Paper
-                                                                    return j1;
-                                                                }
-
-                                                                entityinsentient.setPositionRotation((double) f, (double) k3, (double) f1, worldserver.random.nextFloat() * 360.0F, 0.0F);
-                                                                if ((d0 <= 16384.0D || !entityinsentient.isTypeNotPersistent()) && entityinsentient.a((GeneratorAccess) worldserver, false) && entityinsentient.a((IWorldReader) worldserver)) {
-                                                                    groupdataentity = entityinsentient.prepare(worldserver.getDamageScaler(new BlockPosition(entityinsentient)), groupdataentity, (NBTTagCompound) null);
-                                                                    if (entityinsentient.a((IWorldReader) worldserver)) {
-                                                                        // CraftBukkit start
-                                                                        if (worldserver.addEntity(entityinsentient, SpawnReason.NATURAL)) {
-                                                                            ++l2;
-                                                                            ++j4;
-                                                                        }
-                                                                        // CraftBukkit end
-                                                                    } else {
-                                                                        entityinsentient.die();
-                                                                    }
-
-                                                                    if (l2 >= entityinsentient.dg()) {
-                                                                        continue label137;
-                                                                    }
-
-                                                                    if (entityinsentient.c(j4)) {
-                                                                        break label130;
-                                                                    }
-                                                                }
-
-                                                                j1 += l2;
+                                                            if (entityinsentient.c(i2)) {
+                                                                break label104;
                                                             }
                                                         }
                                                     }
                                                 }
-
-                                                ++k4;
-                                                continue;
                                             }
                                         }
-
-                                        ++i3;
-                                        break;
                                     }
                                 }
+
+                                ++j2;
+                                continue;
                             }
                         }
+
+                        ++i1;
+                        break;
                     }
                 }
+
             }
-
-            return j1;
         }
+        return i; // Paper
     }
 
-    public static BlockPosition getRandomPosition(World world, int i, int j) { // Akarin - public
-        Chunk chunk = world.getChunkAt(i, j);
-        int k = i * 16 + world.random.nextInt(16);
-        int l = j * 16 + world.random.nextInt(16);
-        int i1 = chunk.a(HeightMap.Type.LIGHT_BLOCKING, k, l) + 1;
-        int j1 = world.random.nextInt(i1 + 1);
+    @Nullable
+    private static BiomeBase.BiomeMeta a(ChunkGenerator<?> chunkgenerator, EnumCreatureType enumcreaturetype, Random random, BlockPosition blockposition) {
+        List<BiomeBase.BiomeMeta> list = chunkgenerator.getMobsFor(enumcreaturetype, blockposition);
 
-        return new BlockPosition(k, j1, l);
+        return list.isEmpty() ? null : (BiomeBase.BiomeMeta) WeightedRandom.a(random, list);
     }
 
-    public static boolean a(IBlockData iblockdata, Fluid fluid) {
-        return iblockdata.k() ? false : (iblockdata.isPowerSource() ? false : (!fluid.e() ? false : !iblockdata.a(TagsBlock.RAILS)));
+    private static boolean a(ChunkGenerator<?> chunkgenerator, EnumCreatureType enumcreaturetype, BiomeBase.BiomeMeta biomebase_biomemeta, BlockPosition blockposition) {
+        List<BiomeBase.BiomeMeta> list = chunkgenerator.getMobsFor(enumcreaturetype, blockposition);
+
+        return list.isEmpty() ? false : list.contains(biomebase_biomemeta);
     }
 
-    public static boolean isValidSpawnSurface(EntityPositionTypes.Surface entitypositiontypes_surface, IWorldReader iworldreader, BlockPosition blockposition, @Nullable EntityTypes<? extends EntityInsentient> entitytypes) { return a(entitypositiontypes_surface, iworldreader, blockposition, entitytypes); } // Akarin
-    public static boolean a(EntityPositionTypes.Surface entitypositiontypes_surface, IWorldReader iworldreader, BlockPosition blockposition, @Nullable EntityTypes<? extends EntityInsentient> entitytypes) {
-        if (entitytypes != null && iworldreader.getWorldBorder().a(blockposition)) {
+    private static BlockPosition getRandomPosition(World world, Chunk chunk) {
+        ChunkCoordIntPair chunkcoordintpair = chunk.getPos();
+        int i = chunkcoordintpair.d() + world.random.nextInt(16);
+        int j = chunkcoordintpair.e() + world.random.nextInt(16);
+        int k = chunk.a(HeightMap.Type.WORLD_SURFACE, i, j) + 1;
+        int l = world.random.nextInt(k + 1);
+
+        return new BlockPosition(i, l, j);
+    }
+
+    public static boolean a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, Fluid fluid) {
+        return iblockdata.o(iblockaccess, blockposition) ? false : (iblockdata.isPowerSource() ? false : (!fluid.isEmpty() ? false : !iblockdata.a(TagsBlock.RAILS)));
+    }
+
+    public static boolean a(EntityPositionTypes.Surface entitypositiontypes_surface, IWorldReader iworldreader, BlockPosition blockposition, @Nullable EntityTypes<?> entitytypes) {
+        if (entitypositiontypes_surface == EntityPositionTypes.Surface.NO_RESTRICTIONS) {
+            return true;
+        } else if (entitytypes != null && iworldreader.getWorldBorder().a(blockposition)) {
             IBlockData iblockdata = iworldreader.getType(blockposition);
             Fluid fluid = iworldreader.getFluid(blockposition);
+            BlockPosition blockposition1 = blockposition.up();
+            BlockPosition blockposition2 = blockposition.down();
 
             switch (entitypositiontypes_surface) {
-            case IN_WATER:
-                return fluid.a(TagsFluid.WATER) && iworldreader.getFluid(blockposition.down()).a(TagsFluid.WATER) && !iworldreader.getType(blockposition.up()).isOccluding();
-            case ON_GROUND:
-            default:
-                IBlockData iblockdata1 = iworldreader.getType(blockposition.down());
+                case IN_WATER:
+                    return fluid.a(TagsFluid.WATER) && iworldreader.getFluid(blockposition2).a(TagsFluid.WATER) && !iworldreader.getType(blockposition1).isOccluding(iworldreader, blockposition1);
+                case ON_GROUND:
+                default:
+                    IBlockData iblockdata1 = iworldreader.getType(blockposition2);
 
-                if (!iblockdata1.q() && (entitytypes == null || !EntityPositionTypes.a(entitytypes, iblockdata1))) {
-                    return false;
-                } else {
-                    Block block = iblockdata1.getBlock();
-                    boolean flag = block != Blocks.BEDROCK && block != Blocks.BARRIER;
-
-                    return flag && a(iblockdata, fluid) && a(iworldreader.getType(blockposition.up()), iworldreader.getFluid(blockposition.up()));
-                }
+                    return !iblockdata1.a((IBlockAccess) iworldreader, blockposition2, entitytypes) ? false : a((IBlockAccess) iworldreader, blockposition, iblockdata, fluid) && a((IBlockAccess) iworldreader, blockposition1, iworldreader.getType(blockposition1), iworldreader.getFluid(blockposition1));
             }
         } else {
             return false;
@@ -312,7 +216,7 @@ public final class SpawnerCreature {
             int k = i << 4;
             int l = j << 4;
 
-            while (random.nextFloat() < biomebase.e()) {
+            while (random.nextFloat() < biomebase.d()) {
                 BiomeBase.BiomeMeta biomebase_biomemeta = (BiomeBase.BiomeMeta) WeightedRandom.a(random, list);
                 int i1 = biomebase_biomemeta.c + random.nextInt(1 + biomebase_biomemeta.d - biomebase_biomemeta.c);
                 GroupDataEntity groupdataentity = null;
@@ -327,25 +231,34 @@ public final class SpawnerCreature {
                     for (int k2 = 0; !flag && k2 < 4; ++k2) {
                         BlockPosition blockposition = a(generatoraccess, biomebase_biomemeta.b, j1, k1);
 
-                        if (a(EntityPositionTypes.Surface.ON_GROUND, generatoraccess, blockposition, biomebase_biomemeta.b)) {
-                            EntityInsentient entityinsentient;
+                        if (biomebase_biomemeta.b.b() && a(EntityPositionTypes.Surface.ON_GROUND, (IWorldReader) generatoraccess, blockposition, biomebase_biomemeta.b)) {
+                            float f = biomebase_biomemeta.b.i();
+                            double d0 = MathHelper.a((double) j1, (double) k + (double) f, (double) k + 16.0D - (double) f);
+                            double d1 = MathHelper.a((double) k1, (double) l + (double) f, (double) l + 16.0D - (double) f);
+
+                            if (!generatoraccess.c(biomebase_biomemeta.b.a(d0, (double) blockposition.getY(), d1)) || !EntityPositionTypes.a(biomebase_biomemeta.b, generatoraccess, EnumMobSpawn.CHUNK_GENERATION, new BlockPosition(d0, (double) blockposition.getY(), d1), generatoraccess.getRandom())) {
+                                continue;
+                            }
+
+                            Entity entity;
 
                             try {
-                                entityinsentient = (EntityInsentient) biomebase_biomemeta.b.a(generatoraccess.getMinecraftWorld());
+                                entity = biomebase_biomemeta.b.a(generatoraccess.getMinecraftWorld());
                             } catch (Exception exception) {
-                                SpawnerCreature.a.warn("Failed to create mob", exception);
+                                SpawnerCreature.LOGGER.warn("Failed to create mob", exception);
                                 ServerInternalException.reportInternalException(exception); // Paper
                                 continue;
                             }
 
-                            double d0 = MathHelper.a((double) j1, (double) k + (double) entityinsentient.width, (double) k + 16.0D - (double) entityinsentient.width);
-                            double d1 = MathHelper.a((double) k1, (double) l + (double) entityinsentient.width, (double) l + 16.0D - (double) entityinsentient.width);
+                            entity.setPositionRotation(d0, (double) blockposition.getY(), d1, random.nextFloat() * 360.0F, 0.0F);
+                            if (entity instanceof EntityInsentient) {
+                                EntityInsentient entityinsentient = (EntityInsentient) entity;
 
-                            entityinsentient.setPositionRotation(d0, (double) blockposition.getY(), d1, random.nextFloat() * 360.0F, 0.0F);
-                            if (entityinsentient.a(generatoraccess, false) && entityinsentient.a((IWorldReader) generatoraccess)) {
-                                groupdataentity = entityinsentient.prepare(generatoraccess.getDamageScaler(new BlockPosition(entityinsentient)), groupdataentity, (NBTTagCompound) null);
-                                generatoraccess.addEntity(entityinsentient, SpawnReason.CHUNK_GEN); // CraftBukkit
-                                flag = true;
+                                if (entityinsentient.a(generatoraccess, EnumMobSpawn.CHUNK_GENERATION) && entityinsentient.a((IWorldReader) generatoraccess)) {
+                                    groupdataentity = entityinsentient.prepare(generatoraccess, generatoraccess.getDamageScaler(new BlockPosition(entityinsentient)), EnumMobSpawn.CHUNK_GENERATION, groupdataentity, (NBTTagCompound) null);
+                                    generatoraccess.addEntity(entityinsentient, SpawnReason.CHUNK_GEN); // CraftBukkit
+                                    flag = true;
+                                }
                             }
                         }
 
@@ -361,10 +274,10 @@ public final class SpawnerCreature {
         }
     }
 
-    private static BlockPosition a(GeneratorAccess generatoraccess, @Nullable EntityTypes<? extends EntityInsentient> entitytypes, int i, int j) {
-        BlockPosition blockposition = new BlockPosition(i, generatoraccess.a(EntityPositionTypes.b(entitytypes), i, j), j);
+    private static BlockPosition a(IWorldReader iworldreader, @Nullable EntityTypes<?> entitytypes, int i, int j) {
+        BlockPosition blockposition = new BlockPosition(i, iworldreader.a(EntityPositionTypes.b(entitytypes), i, j), j);
         BlockPosition blockposition1 = blockposition.down();
 
-        return generatoraccess.getType(blockposition1).a((IBlockAccess) generatoraccess, blockposition1, PathMode.LAND) ? blockposition1 : blockposition;
+        return iworldreader.getType(blockposition1).a((IBlockAccess) iworldreader, blockposition1, PathMode.LAND) ? blockposition1 : blockposition;
     }
 }

@@ -31,6 +31,7 @@ public class CraftSnowman extends CraftGolem implements Snowman, CraftRangedEnti
         return "CraftSnowman";
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.SNOWMAN;
     }

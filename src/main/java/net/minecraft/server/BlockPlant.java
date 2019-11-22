@@ -6,12 +6,13 @@ public class BlockPlant extends Block {
         super(block_info);
     }
 
-    protected boolean b(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+    protected boolean a_(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
         Block block = iblockdata.getBlock();
 
         return block == Blocks.GRASS_BLOCK || block == Blocks.DIRT || block == Blocks.COARSE_DIRT || block == Blocks.PODZOL || block == Blocks.FARMLAND;
     }
 
+    @Override
     public IBlockData updateState(IBlockData iblockdata, EnumDirection enumdirection, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
         // CraftBukkit start
         if (!iblockdata.canPlace(generatoraccess, blockposition)) {
@@ -23,25 +24,20 @@ public class BlockPlant extends Block {
         // CraftBukkit end
     }
 
+    @Override
     public boolean canPlace(IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) {
         BlockPosition blockposition1 = blockposition.down();
 
-        return this.b(iworldreader.getType(blockposition1), (IBlockAccess) iworldreader, blockposition1);
+        return this.a_(iworldreader.getType(blockposition1), iworldreader, blockposition1);
     }
 
-    public boolean a(IBlockData iblockdata) {
-        return false;
-    }
-
+    @Override
     public TextureType c() {
         return TextureType.CUTOUT;
     }
 
-    public EnumBlockFaceShape a(IBlockAccess iblockaccess, IBlockData iblockdata, BlockPosition blockposition, EnumDirection enumdirection) {
-        return EnumBlockFaceShape.UNDEFINED;
-    }
-
-    public int j(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
-        return 0;
+    @Override
+    public boolean b(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+        return true;
     }
 }

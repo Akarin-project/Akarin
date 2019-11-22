@@ -8,8 +8,8 @@ import javax.annotation.Nullable;
 
 public class EntityLeash extends EntityHanging {
 
-    public EntityLeash(World world) {
-        super(EntityTypes.LEASH_KNOT, world);
+    public EntityLeash(EntityTypes<? extends EntityLeash> entitytypes, World world) {
+        super(entitytypes, world);
     }
 
     public EntityLeash(World world, BlockPosition blockposition) {
@@ -23,39 +23,49 @@ public class EntityLeash extends EntityHanging {
         this.attachedToPlayer = true;
     }
 
+    @Override
     public void setPosition(double d0, double d1, double d2) {
         super.setPosition((double) MathHelper.floor(d0) + 0.5D, (double) MathHelper.floor(d1) + 0.5D, (double) MathHelper.floor(d2) + 0.5D);
     }
 
+    @Override
     protected void updateBoundingBox() {
         this.locX = (double) this.blockPosition.getX() + 0.5D;
         this.locY = (double) this.blockPosition.getY() + 0.5D;
         this.locZ = (double) this.blockPosition.getZ() + 0.5D;
-        if (valid) world.entityJoinedWorld(this, false); // CraftBukkit
+        if (valid) ((WorldServer) world).chunkCheck(this); // CraftBukkit
     }
 
+    @Override
     public void setDirection(EnumDirection enumdirection) {}
 
-    public int getWidth() {
+    @Override
+    public int getHangingWidth() {
         return 9;
     }
 
-    public int getHeight() {
+    @Override
+    public int getHangingHeight() {
         return 9;
     }
 
-    public float getHeadHeight() {
+    @Override
+    protected float getHeadHeight(EntityPose entitypose, EntitySize entitysize) {
         return -0.0625F;
     }
 
+    @Override
     public void a(@Nullable Entity entity) {
         this.a(SoundEffects.ENTITY_LEASH_KNOT_BREAK, 1.0F, 1.0F);
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {}
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {}
 
+    @Override
     public boolean b(EntityHuman entityhuman, EnumHand enumhand) {
         if (this.world.isClientSide) {
             return true;
@@ -69,7 +79,7 @@ public class EntityLeash extends EntityHanging {
 
             while (iterator.hasNext()) {
                 entityinsentient = (EntityInsentient) iterator.next();
-                if (entityinsentient.isLeashed() && entityinsentient.getLeashHolder() == entityhuman) {
+                if (entityinsentient.getLeashHolder() == entityhuman) {
                     // CraftBukkit start
                     if (CraftEventFactory.callPlayerLeashEntityEvent(entityinsentient, this, entityhuman).isCancelled()) {
                         ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutAttachEntity(entityinsentient, entityinsentient.getLeashHolder()));
@@ -113,20 +123,12 @@ public class EntityLeash extends EntityHanging {
         }
     }
 
+    @Override
     public boolean survives() {
-        return this.world.getType(this.blockPosition).getBlock() instanceof BlockFence;
+        return this.world.getType(this.blockPosition).getBlock().a(TagsBlock.FENCES);
     }
 
     public static EntityLeash a(World world, BlockPosition blockposition) {
-        EntityLeash entityleash = new EntityLeash(world, blockposition);
-
-        world.addEntity(entityleash);
-        entityleash.m();
-        return entityleash;
-    }
-
-    @Nullable
-    public static EntityLeash b(World world, BlockPosition blockposition) {
         int i = blockposition.getX();
         int j = blockposition.getY();
         int k = blockposition.getZ();
@@ -137,7 +139,11 @@ public class EntityLeash extends EntityHanging {
 
         do {
             if (!iterator.hasNext()) {
-                return null;
+                EntityLeash entityleash1 = new EntityLeash(world, blockposition);
+
+                world.addEntity(entityleash1);
+                entityleash1.playPlaceSound();
+                return entityleash1;
             }
 
             entityleash = (EntityLeash) iterator.next();
@@ -146,7 +152,13 @@ public class EntityLeash extends EntityHanging {
         return entityleash;
     }
 
-    public void m() {
+    @Override
+    public void playPlaceSound() {
         this.a(SoundEffects.ENTITY_LEASH_KNOT_PLACE, 1.0F, 1.0F);
+    }
+
+    @Override
+    public Packet<?> N() {
+        return new PacketPlayOutSpawnEntity(this, this.getEntityType(), 0, this.getBlockPosition());
     }
 }

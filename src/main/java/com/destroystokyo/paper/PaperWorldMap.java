@@ -12,11 +12,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PaperWorldMap extends HashMap<DimensionManager, WorldServer> {
-    private final List<WorldServer> worlds = new CopyOnWriteArrayList<>(); // Akarin
-    private final List<WorldServer> worldsIterable = new CopyOnWriteArrayList<WorldServer>() { // Akarin
+    private final List<WorldServer> worlds = new ArrayList<>();
+    private final List<WorldServer> worldsIterable = new ArrayList<WorldServer>() {
         @Override
         public Iterator<WorldServer> iterator() {
             Iterator<WorldServer> iterator = super.iterator();
@@ -36,7 +35,7 @@ public class PaperWorldMap extends HashMap<DimensionManager, WorldServer> {
 
                 @Override
                 public void remove() {
-                    worlds.set(last.dimension.getDimensionID()+1, null);
+                    worlds.set(last.worldProvider.getDimensionManager().getDimensionID() + 1, null);
                 }
             };
         }
@@ -116,7 +115,7 @@ public class PaperWorldMap extends HashMap<DimensionManager, WorldServer> {
 
     @Override
     public boolean containsValue(Object value) {
-        return value instanceof WorldServer && get(((WorldServer) value).dimension) != null;
+        return value instanceof WorldServer && get(((WorldServer) value).worldProvider.getDimensionManager()) != null;
     }
 
     @Nonnull
@@ -135,7 +134,7 @@ public class PaperWorldMap extends HashMap<DimensionManager, WorldServer> {
 
                     @Override
                     public DimensionManager next() {
-                        return iterator.next().dimension;
+                        return iterator.next().worldProvider.getDimensionManager();
                     }
 
                     @Override
@@ -173,7 +172,7 @@ public class PaperWorldMap extends HashMap<DimensionManager, WorldServer> {
                     @Override
                     public Entry<DimensionManager, WorldServer> next() {
                         WorldServer entry = iterator.next();
-                        return new SimpleEntry<>(entry.dimension, entry);
+                        return new SimpleEntry<>(entry.worldProvider.getDimensionManager(), entry);
                     }
 
                     @Override

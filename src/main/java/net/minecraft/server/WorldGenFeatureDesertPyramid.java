@@ -1,39 +1,48 @@
 package net.minecraft.server;
 
-public class WorldGenFeatureDesertPyramid extends WorldGenFeatureRandomScattered<WorldGenFeatureDesertPyramidConfiguration> {
+import com.mojang.datafixers.Dynamic;
+import java.util.function.Function;
 
-    public WorldGenFeatureDesertPyramid() {}
+public class WorldGenFeatureDesertPyramid extends WorldGenFeatureRandomScattered<WorldGenFeatureEmptyConfiguration> {
 
-    protected String a() {
+    public WorldGenFeatureDesertPyramid(Function<Dynamic<?>, ? extends WorldGenFeatureEmptyConfiguration> function) {
+        super(function);
+    }
+
+    @Override
+    public String b() {
         return "Desert_Pyramid";
     }
 
-    public int b() {
+    @Override
+    public int c() {
         return 3;
     }
 
-    protected StructureStart a(GeneratorAccess generatoraccess, ChunkGenerator<?> chunkgenerator, SeededRandom seededrandom, int i, int j) {
-        BiomeBase biomebase = chunkgenerator.getWorldChunkManager().getBiome(new BlockPosition((i << 4) + 9, 0, (j << 4) + 9), Biomes.PLAINS);
-
-        return new WorldGenFeatureDesertPyramid.a(generatoraccess, seededrandom, i, j, biomebase);
+    @Override
+    public StructureGenerator.a a() {
+        return WorldGenFeatureDesertPyramid.a::new;
     }
 
+    @Override
     // Spigot start
-    protected int c(World world) {
+    protected int getSeed(World world) {
         return world.spigotConfig.desertSeed;
         // Spigot end
     }
 
     public static class a extends StructureStart {
 
-        public a() {}
+        public a(StructureGenerator<?> structuregenerator, int i, int j, BiomeBase biomebase, StructureBoundingBox structureboundingbox, int k, long l) {
+            super(structuregenerator, i, j, biomebase, structureboundingbox, k, l);
+        }
 
-        public a(GeneratorAccess generatoraccess, SeededRandom seededrandom, int i, int j, BiomeBase biomebase) {
-            super(i, j, biomebase, seededrandom, generatoraccess.getSeed());
-            WorldGenDesertPyramidPiece worldgendesertpyramidpiece = new WorldGenDesertPyramidPiece(seededrandom, i * 16, j * 16);
+        @Override
+        public void a(ChunkGenerator<?> chunkgenerator, DefinedStructureManager definedstructuremanager, int i, int j, BiomeBase biomebase) {
+            WorldGenDesertPyramidPiece worldgendesertpyramidpiece = new WorldGenDesertPyramidPiece(this.d, i * 16, j * 16);
 
-            this.a.add(worldgendesertpyramidpiece);
-            this.a((IBlockAccess) generatoraccess);
+            this.b.add(worldgendesertpyramidpiece);
+            this.b();
         }
     }
 }

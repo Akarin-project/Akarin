@@ -11,13 +11,15 @@ public class PacketHandshakingInSetProtocol implements Packet<PacketHandshakingI
 
     public PacketHandshakingInSetProtocol() {}
 
+    @Override
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
-        this.a = packetdataserializer.g();
+        this.a = packetdataserializer.i();
         this.hostname = packetdataserializer.e(Short.MAX_VALUE); // Spigot
         this.port = packetdataserializer.readUnsignedShort();
-        this.d = EnumProtocol.a(packetdataserializer.g());
+        this.d = EnumProtocol.a(packetdataserializer.i());
     }
 
+    @Override
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
         packetdataserializer.d(this.a);
         packetdataserializer.a(this.hostname);

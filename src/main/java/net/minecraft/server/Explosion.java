@@ -20,7 +20,7 @@ import org.bukkit.event.block.BlockExplodeEvent;
 public class Explosion {
 
     private final boolean a;
-    private final boolean b;
+    private final Explosion.Effect b;
     private final Random c = new Random();
     private final World world;
     private final double posX;
@@ -33,7 +33,7 @@ public class Explosion {
     private final Map<EntityHuman, Vec3D> l = Maps.newHashMap();
     public boolean wasCanceled = false; // CraftBukkit - add field
 
-    public Explosion(World world, @Nullable Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1) {
+    public Explosion(World world, @Nullable Entity entity, double d0, double d1, double d2, float f, boolean flag, Explosion.Effect explosion_effect) {
         this.world = world;
         this.source = entity;
         this.size = (float) Math.max(f, 0.0); // CraftBukkit - clamp bad values
@@ -41,8 +41,43 @@ public class Explosion {
         this.posY = d1;
         this.posZ = d2;
         this.a = flag;
-        this.b = flag1;
+        this.b = explosion_effect;
         this.j = DamageSource.explosion(this);
+    }
+
+    public static float a(Vec3D vec3d, Entity entity) {
+        AxisAlignedBB axisalignedbb = entity.getBoundingBox();
+        double d0 = 1.0D / ((axisalignedbb.maxX - axisalignedbb.minX) * 2.0D + 1.0D);
+        double d1 = 1.0D / ((axisalignedbb.maxY - axisalignedbb.minY) * 2.0D + 1.0D);
+        double d2 = 1.0D / ((axisalignedbb.maxZ - axisalignedbb.minZ) * 2.0D + 1.0D);
+        double d3 = (1.0D - Math.floor(1.0D / d0) * d0) / 2.0D;
+        double d4 = (1.0D - Math.floor(1.0D / d2) * d2) / 2.0D;
+
+        if (d0 >= 0.0D && d1 >= 0.0D && d2 >= 0.0D) {
+            int i = 0;
+            int j = 0;
+
+            for (float f = 0.0F; f <= 1.0F; f = (float) ((double) f + d0)) {
+                for (float f1 = 0.0F; f1 <= 1.0F; f1 = (float) ((double) f1 + d1)) {
+                    for (float f2 = 0.0F; f2 <= 1.0F; f2 = (float) ((double) f2 + d2)) {
+                        double d5 = MathHelper.d((double) f, axisalignedbb.minX, axisalignedbb.maxX);
+                        double d6 = MathHelper.d((double) f1, axisalignedbb.minY, axisalignedbb.maxY);
+                        double d7 = MathHelper.d((double) f2, axisalignedbb.minZ, axisalignedbb.maxZ);
+                        Vec3D vec3d1 = new Vec3D(d5 + d3, d6, d7 + d4);
+
+                        if (entity.world.rayTrace(new RayTrace(vec3d1, vec3d, RayTrace.BlockCollisionOption.OUTLINE, RayTrace.FluidCollisionOption.NONE, entity)).getType() == MovingObjectPosition.EnumMovingObjectType.MISS) {
+                            ++i;
+                        }
+
+                        ++j;
+                    }
+                }
+            }
+
+            return (float) i / (float) j;
+        } else {
+            return 0.0F;
+        }
     }
 
     public void a() {
@@ -79,7 +114,7 @@ public class Explosion {
                             IBlockData iblockdata = this.world.getType(blockposition);
                             Fluid fluid = this.world.getFluid(blockposition);
 
-                            if (!iblockdata.isAir() || !fluid.e()) {
+                            if (!iblockdata.isAir() || !fluid.isEmpty()) {
                                 float f2 = Math.max(iblockdata.getBlock().getDurability(), fluid.l());
 
                                 if (this.source != null) {
@@ -124,8 +159,8 @@ public class Explosion {
         for (int l1 = 0; l1 < list.size(); ++l1) {
             Entity entity = (Entity) list.get(l1);
 
-            if (!entity.bL()) {
-                double d7 = entity.e(this.posX, this.posY, this.posZ) / (double) f3;
+            if (!entity.bS()) {
+                double d7 = (double) (MathHelper.sqrt(entity.c(new Vec3D(this.posX, this.posY, this.posZ))) / f3);
 
                 if (d7 <= 1.0D) {
                     double d8 = entity.locX - this.posX;
@@ -137,7 +172,7 @@ public class Explosion {
                         d8 /= d11;
                         d9 /= d11;
                         d10 /= d11;
-                        double d12 = this.getBlockDensity(vec3d, entity.getBoundingBox()); // Paper - Optimize explosions
+                        double d12 = this.getBlockDensity(vec3d, entity); // Paper - Optimize explosions
                         double d13 = (1.0D - d7) * d12;
 
                         // CraftBukkit start
@@ -156,13 +191,11 @@ public class Explosion {
                             d14 = entity instanceof EntityHuman && world.paperConfig.disableExplosionKnockback ? 0 : EnchantmentProtection.a((EntityLiving) entity, d13); // Paper - Disable explosion knockback
                         }
 
-                        entity.motX += d8 * d14;
-                        entity.motY += d9 * d14;
-                        entity.motZ += d10 * d14;
+                        entity.setMot(entity.getMot().add(d8 * d14, d9 * d14, d10 * d14));
                         if (entity instanceof EntityHuman) {
                             EntityHuman entityhuman = (EntityHuman) entity;
 
-                            if (!entityhuman.isSpectator() && (!entityhuman.u() && !world.paperConfig.disableExplosionKnockback || !entityhuman.abilities.isFlying)) { // Paper - Disable explosion knockback
+                            if (!entityhuman.isSpectator() && (!entityhuman.isCreative() && !world.paperConfig.disableExplosionKnockback || !entityhuman.abilities.isFlying)) { // Paper - Disable explosion knockback
                                 this.l.put(entityhuman, new Vec3D(d8 * d13, d9 * d13, d10 * d13));
                             }
                         }
@@ -174,30 +207,28 @@ public class Explosion {
     }
 
     public void a(boolean flag) {
-        this.world.a((EntityHuman) null, this.posX, this.posY, this.posZ, SoundEffects.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F, (1.0F + (this.world.random.nextFloat() - this.world.random.nextFloat()) * 0.2F) * 0.7F);
-        // Akarin start - this handle by client
-        /*
-        if (this.size >= 2.0F && this.b) {
-            this.world.addParticle(Particles.t, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D);
+        this.world.playSound((EntityHuman) null, this.posX, this.posY, this.posZ, SoundEffects.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F, (1.0F + (this.world.random.nextFloat() - this.world.random.nextFloat()) * 0.2F) * 0.7F);
+        boolean flag1 = this.b != Explosion.Effect.NONE;
+
+        if (this.size >= 2.0F && flag1) {
+            this.world.addParticle(Particles.EXPLOSION_EMITTER, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D);
         } else {
-            this.world.addParticle(Particles.u, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D);
+            this.world.addParticle(Particles.EXPLOSION, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D);
         }
-        */
-        // Akarin end
 
         Iterator iterator;
         BlockPosition blockposition;
 
-        if (this.b) {
+        if (flag1) {
             // CraftBukkit start
-            org.bukkit.craftbukkit.CraftWorld bworld = this.world.getWorld(); // Akarin - CraftWorld
+            org.bukkit.World bworld = this.world.getWorld();
             org.bukkit.entity.Entity explode = this.source == null ? null : this.source.getBukkitEntity();
             Location location = new Location(bworld, this.posX, this.posY, this.posZ);
 
             List<org.bukkit.block.Block> blockList = Lists.newArrayList();
             for (int i1 = this.blocks.size() - 1; i1 >= 0; i1--) {
                 BlockPosition cpos = (BlockPosition) this.blocks.get(i1);
-                org.bukkit.block.Block bblock = bworld.getBlockAt(cpos); // Akarin
+                org.bukkit.block.Block bblock = bworld.getBlockAt(cpos.getX(), cpos.getY(), cpos.getZ());
                 if (bblock.getType() != org.bukkit.Material.AIR) {
                     blockList.add(bblock);
                 }
@@ -208,13 +239,13 @@ public class Explosion {
             float yield;
 
             if (explode != null) {
-                EntityExplodeEvent event = new EntityExplodeEvent(explode, location, blockList, 1.0F / this.size);
+                EntityExplodeEvent event = new EntityExplodeEvent(explode, location, blockList, this.b == Explosion.Effect.DESTROY ? 1.0F / this.size : 1.0F);
                 this.world.getServer().getPluginManager().callEvent(event);
                 cancelled = event.isCancelled();
                 bukkitBlocks = event.blockList();
                 yield = event.getYield();
             } else {
-                BlockExplodeEvent event = new BlockExplodeEvent(location.getBlock(), blockList, 1.0F / this.size);
+                BlockExplodeEvent event = new BlockExplodeEvent(location.getBlock(), blockList, this.b == Explosion.Effect.DESTROY ? 1.0F / this.size : 1.0F);
                 this.world.getServer().getPluginManager().callEvent(event);
                 cancelled = event.isCancelled();
                 bukkitBlocks = event.blockList();
@@ -240,8 +271,6 @@ public class Explosion {
                 IBlockData iblockdata = this.world.getType(blockposition);
                 Block block = iblockdata.getBlock();
 
-                // Akarin start - this handle by client
-                /*
                 if (flag) {
                     double d0 = (double) ((float) blockposition.getX() + this.world.random.nextFloat());
                     double d1 = (double) ((float) blockposition.getY() + this.world.random.nextFloat());
@@ -260,16 +289,20 @@ public class Explosion {
                     d3 *= d7;
                     d4 *= d7;
                     d5 *= d7;
-                    this.world.addParticle(Particles.J, (d0 + this.posX) / 2.0D, (d1 + this.posY) / 2.0D, (d2 + this.posZ) / 2.0D, d3, d4, d5);
-                    this.world.addParticle(Particles.M, d0, d1, d2, d3, d4, d5);
+                    this.world.addParticle(Particles.POOF, (d0 + this.posX) / 2.0D, (d1 + this.posY) / 2.0D, (d2 + this.posZ) / 2.0D, d3, d4, d5);
+                    this.world.addParticle(Particles.SMOKE, d0, d1, d2, d3, d4, d5);
                 }
-                */
-                // Akarin end
 
                 if (!iblockdata.isAir()) {
-                    if (block.a(this)) {
-                        // CraftBukkit - add yield
-                        iblockdata.dropNaturally(this.world, blockposition, yield, 0);
+                    if (block.a(this) && this.world instanceof WorldServer) {
+                        TileEntity tileentity = block.isTileEntity() ? this.world.getTileEntity(blockposition) : null;
+                        LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.world)).a(this.world.random).set(LootContextParameters.POSITION, blockposition).set(LootContextParameters.TOOL, ItemStack.a).setOptional(LootContextParameters.BLOCK_ENTITY, tileentity);
+
+                        if (this.b == Explosion.Effect.DESTROY || yield < 1.0F) { // CraftBukkit - add yield
+                            loottableinfo_builder.set(LootContextParameters.EXPLOSION_RADIUS, 1.0F / yield); // CraftBukkit - add yield
+                        }
+
+                        Block.b(iblockdata, loottableinfo_builder);
                     }
 
                     this.world.setTypeAndData(blockposition, Blocks.AIR.getBlockData(), 3);
@@ -283,7 +316,7 @@ public class Explosion {
 
             while (iterator.hasNext()) {
                 blockposition = (BlockPosition) iterator.next();
-                if (this.world.getType(blockposition).isAir() && this.world.getType(blockposition.down()).f(this.world, blockposition.down()) && this.c.nextInt(3) == 0) {
+                if (this.world.getType(blockposition).isAir() && this.world.getType(blockposition.down()).g(this.world, blockposition.down()) && this.c.nextInt(3) == 0) {
                     // CraftBukkit start - Ignition by explosion
                     if (!org.bukkit.craftbukkit.event.CraftEventFactory.callBlockIgniteEvent(this.world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this).isCancelled()) {
                         this.world.setTypeUpdate(blockposition, Blocks.FIRE.getBlockData());
@@ -322,15 +355,21 @@ public class Explosion {
         return this.blocks;
     }
 
+    public static enum Effect {
+
+        NONE, BREAK, DESTROY;
+
+        private Effect() {}
+    }
     // Paper start - Optimize explosions
-    private float getBlockDensity(Vec3D vec3d, AxisAlignedBB aabb) {
+    private float getBlockDensity(Vec3D vec3d, Entity entity) {
         if (!this.world.paperConfig.optimizeExplosions) {
-            return this.world.a(vec3d, aabb);
+            return a(vec3d, entity);
         }
-        CacheKey key = new CacheKey(this, aabb);
-        float blockDensity = 0f; // Akarin
-        if (!this.world.explosionDensityCache.containsKey(key)) { // Akarin
-            blockDensity = this.world.a(vec3d, aabb);
+        CacheKey key = new CacheKey(this, entity.getBoundingBox());
+        Float blockDensity = this.world.explosionDensityCache.get(key);
+        if (blockDensity == null) {
+            blockDensity = a(vec3d, entity);
             this.world.explosionDensityCache.put(key, blockDensity);
         }
 

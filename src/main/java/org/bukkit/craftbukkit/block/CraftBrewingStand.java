@@ -5,7 +5,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.craftbukkit.inventory.CraftInventoryBrewer;
-import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.inventory.BrewerInventory;
 
 public class CraftBrewingStand extends CraftContainer<TileEntityBrewingStand> implements BrewingStand {
@@ -34,41 +33,21 @@ public class CraftBrewingStand extends CraftContainer<TileEntityBrewingStand> im
 
     @Override
     public int getBrewingTime() {
-        return this.getSnapshot().getProperty(0);
+        return this.getSnapshot().brewTime;
     }
 
     @Override
     public void setBrewingTime(int brewTime) {
-        this.getSnapshot().setProperty(0, brewTime);
+        this.getSnapshot().brewTime = brewTime;
     }
 
     @Override
     public int getFuelLevel() {
-        return this.getSnapshot().getProperty(1);
+        return this.getSnapshot().fuelLevel;
     }
 
     @Override
     public void setFuelLevel(int level) {
-        this.getSnapshot().setProperty(1, level);
-    }
-
-    @Override
-    public String getCustomName() {
-        TileEntityBrewingStand brewingStand = this.getSnapshot();
-        return brewingStand.hasCustomName() ? CraftChatMessage.fromComponent(brewingStand.getCustomName()) : null;
-    }
-
-    @Override
-    public void setCustomName(String name) {
-        this.getSnapshot().setCustomName(CraftChatMessage.fromStringOrNull(name));
-    }
-
-    @Override
-    public void applyTo(TileEntityBrewingStand brewingStand) {
-        super.applyTo(brewingStand);
-
-        if (!this.getSnapshot().hasCustomName()) {
-            brewingStand.setCustomName(null);
-        }
+        this.getSnapshot().fuelLevel = level;
     }
 }

@@ -1,50 +1,46 @@
 package net.minecraft.server;
 
-public class RecipeBookClone extends ShapelessRecipes implements IRecipe { // CraftBukkit - added extends
+public class RecipeBookClone extends ShapelessRecipes { // CraftBukkit - added extends
 
     // CraftBukkit start - Delegate to new parent class with bogus info
     public RecipeBookClone(MinecraftKey minecraftkey) {
-        super(minecraftkey, "", new ItemStack(Items.WRITTEN_BOOK, 0), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.WRITABLE_BOOK)));
+        super(minecraftkey, "", new ItemStack(Items.WRITTEN_BOOK), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.WRITABLE_BOOK)));
     }
     // CraftBukkit end
 
-    public boolean a(IInventory iinventory, World world) {
-        if (!(iinventory instanceof InventoryCrafting)) {
-            return false;
-        } else {
-            int i = 0;
-            ItemStack itemstack = ItemStack.a;
-
-            for (int j = 0; j < iinventory.getSize(); ++j) {
-                ItemStack itemstack1 = iinventory.getItem(j);
-
-                if (!itemstack1.isEmpty()) {
-                    if (itemstack1.getItem() == Items.WRITTEN_BOOK) {
-                        if (!itemstack.isEmpty()) {
-                            return false;
-                        }
-
-                        itemstack = itemstack1;
-                    } else {
-                        if (itemstack1.getItem() != Items.WRITABLE_BOOK) {
-                            return false;
-                        }
-
-                        ++i;
-                    }
-                }
-            }
-
-            return !itemstack.isEmpty() && itemstack.hasTag() && i > 0;
-        }
-    }
-
-    public ItemStack craftItem(IInventory iinventory) {
+    public boolean a(InventoryCrafting inventorycrafting, World world) {
         int i = 0;
         ItemStack itemstack = ItemStack.a;
 
-        for (int j = 0; j < iinventory.getSize(); ++j) {
-            ItemStack itemstack1 = iinventory.getItem(j);
+        for (int j = 0; j < inventorycrafting.getSize(); ++j) {
+            ItemStack itemstack1 = inventorycrafting.getItem(j);
+
+            if (!itemstack1.isEmpty()) {
+                if (itemstack1.getItem() == Items.WRITTEN_BOOK) {
+                    if (!itemstack.isEmpty()) {
+                        return false;
+                    }
+
+                    itemstack = itemstack1;
+                } else {
+                    if (itemstack1.getItem() != Items.WRITABLE_BOOK) {
+                        return false;
+                    }
+
+                    ++i;
+                }
+            }
+        }
+
+        return !itemstack.isEmpty() && itemstack.hasTag() && i > 0;
+    }
+
+    public ItemStack a(InventoryCrafting inventorycrafting) {
+        int i = 0;
+        ItemStack itemstack = ItemStack.a;
+
+        for (int j = 0; j < inventorycrafting.getSize(); ++j) {
+            ItemStack itemstack1 = inventorycrafting.getItem(j);
 
             if (!itemstack1.isEmpty()) {
                 if (itemstack1.getItem() == Items.WRITTEN_BOOK) {
@@ -75,14 +71,14 @@ public class RecipeBookClone extends ShapelessRecipes implements IRecipe { // Cr
         }
     }
 
-    public NonNullList<ItemStack> b(IInventory iinventory) {
-        NonNullList<ItemStack> nonnulllist = NonNullList.a(iinventory.getSize(), ItemStack.a);
+    public NonNullList<ItemStack> b(InventoryCrafting inventorycrafting) {
+        NonNullList<ItemStack> nonnulllist = NonNullList.a(inventorycrafting.getSize(), ItemStack.a);
 
         for (int i = 0; i < nonnulllist.size(); ++i) {
-            ItemStack itemstack = iinventory.getItem(i);
+            ItemStack itemstack = inventorycrafting.getItem(i);
 
-            if (itemstack.getItem().p()) {
-                nonnulllist.set(i, new ItemStack(itemstack.getItem().o()));
+            if (itemstack.getItem().o()) {
+                nonnulllist.set(i, new ItemStack(itemstack.getItem().n()));
             } else if (itemstack.getItem() instanceof ItemWrittenBook) {
                 ItemStack itemstack1 = itemstack.cloneItemStack();
 
@@ -95,7 +91,8 @@ public class RecipeBookClone extends ShapelessRecipes implements IRecipe { // Cr
         return nonnulllist;
     }
 
-    public RecipeSerializer<?> a() {
-        return RecipeSerializers.d;
+    @Override
+    public RecipeSerializer<?> getRecipeSerializer() {
+        return RecipeSerializer.d;
     }
 }

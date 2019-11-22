@@ -23,19 +23,19 @@ public class ArgumentBlock {
 
     public static final SimpleCommandExceptionType a = new SimpleCommandExceptionType(new ChatMessage("argument.block.tag.disallowed", new Object[0]));
     public static final DynamicCommandExceptionType b = new DynamicCommandExceptionType((object) -> {
-        return new ChatMessage("argument.block.id.invalid", new Object[] { object});
+        return new ChatMessage("argument.block.id.invalid", new Object[]{object});
     });
     public static final Dynamic2CommandExceptionType c = new Dynamic2CommandExceptionType((object, object1) -> {
-        return new ChatMessage("argument.block.property.unknown", new Object[] { object, object1});
+        return new ChatMessage("argument.block.property.unknown", new Object[]{object, object1});
     });
     public static final Dynamic2CommandExceptionType d = new Dynamic2CommandExceptionType((object, object1) -> {
-        return new ChatMessage("argument.block.property.duplicate", new Object[] { object1, object});
+        return new ChatMessage("argument.block.property.duplicate", new Object[]{object1, object});
     });
     public static final Dynamic3CommandExceptionType e = new Dynamic3CommandExceptionType((object, object1, object2) -> {
-        return new ChatMessage("argument.block.property.invalid", new Object[] { object, object2, object1});
+        return new ChatMessage("argument.block.property.invalid", new Object[]{object, object2, object1});
     });
     public static final Dynamic2CommandExceptionType f = new Dynamic2CommandExceptionType((object, object1) -> {
-        return new ChatMessage("argument.block.property.novalue", new Object[] { object, object1});
+        return new ChatMessage("argument.block.property.novalue", new Object[]{object, object1});
     });
     public static final SimpleCommandExceptionType g = new SimpleCommandExceptionType(new ChatMessage("argument.block.property.unclosed", new Object[0]));
     private static final Function<SuggestionsBuilder, CompletableFuture<Suggestions>> h = SuggestionsBuilder::buildFuture;
@@ -216,7 +216,7 @@ public class ArgumentBlock {
     }
 
     private static <T extends Comparable<T>> SuggestionsBuilder a(SuggestionsBuilder suggestionsbuilder, IBlockState<T> iblockstate) {
-        Iterator iterator = iblockstate.d().iterator();
+        Iterator iterator = iblockstate.getValues().iterator();
 
         while (iterator.hasNext()) {
             T t0 = (T) iterator.next(); // CraftBukkit - decompile error
@@ -335,15 +335,13 @@ public class ArgumentBlock {
         int i = this.i.getCursor();
 
         this.m = MinecraftKey.a(this.i);
-        if (IRegistry.BLOCK.c(this.m)) {
-            Block block = (Block) IRegistry.BLOCK.getOrDefault(this.m);
-
-            this.n = block.getStates();
-            this.o = block.getBlockData();
-        } else {
+        Block block = (Block) IRegistry.BLOCK.getOptional(this.m).orElseThrow(() -> {
             this.i.setCursor(i);
-            throw ArgumentBlock.b.createWithContext(this.i, this.m.toString());
-        }
+            return ArgumentBlock.b.createWithContext(this.i, this.m.toString());
+        });
+
+        this.n = block.getStates();
+        this.o = block.getBlockData();
     }
 
     public void f() throws CommandSyntaxException {
@@ -498,7 +496,7 @@ public class ArgumentBlock {
         }
     }
 
-    public static String a(IBlockData iblockdata, @Nullable NBTTagCompound nbttagcompound) {
+    public static String a(IBlockData iblockdata) {
         StringBuilder stringbuilder = new StringBuilder(IRegistry.BLOCK.getKey(iblockdata.getBlock()).toString());
 
         if (!iblockdata.a().isEmpty()) {
@@ -516,10 +514,6 @@ public class ArgumentBlock {
             }
 
             stringbuilder.append(']');
-        }
-
-        if (nbttagcompound != null) {
-            stringbuilder.append(nbttagcompound);
         }
 
         return stringbuilder.toString();

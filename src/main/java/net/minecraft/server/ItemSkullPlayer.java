@@ -10,7 +10,8 @@ public class ItemSkullPlayer extends ItemBlockWallable {
         super(block, block1, item_info);
     }
 
-    public IChatBaseComponent i(ItemStack itemstack) {
+    @Override
+    public IChatBaseComponent g(ItemStack itemstack) {
         if (itemstack.getItem() == Items.PLAYER_HEAD && itemstack.hasTag()) {
             String s = null;
             NBTTagCompound nbttagcompound = itemstack.getTag();
@@ -26,13 +27,14 @@ public class ItemSkullPlayer extends ItemBlockWallable {
             }
 
             if (s != null) {
-                return new ChatMessage(this.getName() + ".named", new Object[] { s});
+                return new ChatMessage(this.getName() + ".named", new Object[]{s});
             }
         }
 
-        return super.i(itemstack);
+        return super.g(itemstack);
     }
 
+    @Override
     public boolean a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         if (nbttagcompound.hasKeyOfType("SkullOwner", 8) && !StringUtils.isBlank(nbttagcompound.getString("SkullOwner"))) {

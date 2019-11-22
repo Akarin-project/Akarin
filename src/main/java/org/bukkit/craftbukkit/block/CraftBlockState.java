@@ -1,12 +1,15 @@
 package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
+import java.util.List;
 import net.minecraft.server.BlockPosition;
-import org.bukkit.Location;
-import org.bukkit.block.Block;
+import net.minecraft.server.GeneratorAccess;
+import net.minecraft.server.IBlockData;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftChunk;
@@ -17,10 +20,6 @@ import org.bukkit.material.Attachable;
 import org.bukkit.material.MaterialData;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
-
-import java.util.List;
-import net.minecraft.server.GeneratorAccess;
-import net.minecraft.server.IBlockData;
 
 public class CraftBlockState implements BlockState {
     private final CraftWorld world;
@@ -54,26 +53,31 @@ public class CraftBlockState implements BlockState {
     }
 
     public static CraftBlockState getBlockState(net.minecraft.server.World world, net.minecraft.server.BlockPosition pos, int flag) {
-        return new CraftBlockState(world.getWorld().getBlockAt(pos), flag); // Akarin
+        return new CraftBlockState(world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ()), flag);
     }
 
+    @Override
     public World getWorld() {
         requirePlaced();
         return world;
     }
 
+    @Override
     public int getX() {
         return position.getX();
     }
 
+    @Override
     public int getY() {
         return position.getY();
     }
 
+    @Override
     public int getZ() {
         return position.getZ();
     }
 
+    @Override
     public Chunk getChunk() {
         requirePlaced();
         return chunk;
@@ -102,6 +106,7 @@ public class CraftBlockState implements BlockState {
         this.data = ((CraftBlockData) data).getState();
     }
 
+    @Override
     public void setData(final MaterialData data) {
         Material mat = CraftMagicNumbers.getMaterial(this.data).getItemType();
 
@@ -117,10 +122,12 @@ public class CraftBlockState implements BlockState {
         }
     }
 
+    @Override
     public MaterialData getData() {
         return CraftMagicNumbers.getMaterial(data);
     }
 
+    @Override
     public void setType(final Material type) {
         Preconditions.checkArgument(type != null, "Material cannot be null");
         Preconditions.checkArgument(type.isBlock(), "Material must be a block!");
@@ -130,6 +137,7 @@ public class CraftBlockState implements BlockState {
         }
     }
 
+    @Override
     public Material getType() {
         return CraftMagicNumbers.getMaterial(data.getBlock());
     }
@@ -142,23 +150,28 @@ public class CraftBlockState implements BlockState {
         return flag;
     }
 
+    @Override
     public byte getLightLevel() {
         return getBlock().getLightLevel();
     }
 
+    @Override
     public CraftBlock getBlock() {
         requirePlaced();
         return CraftBlock.at(world.getHandle(), position);
     }
 
+    @Override
     public boolean update() {
         return update(false);
     }
 
+    @Override
     public boolean update(boolean force) {
         return update(force, true);
     }
 
+    @Override
     public boolean update(boolean force, boolean applyPhysics) {
         if (!isPlaced()) {
             return true;
@@ -188,14 +201,17 @@ public class CraftBlockState implements BlockState {
         return true;
     }
 
+    @Override
     public byte getRawData() {
         return CraftMagicNumbers.toLegacyData(data);
     }
 
+    @Override
     public Location getLocation() {
         return new Location(world, getX(), getY(), getZ());
     }
 
+    @Override
     public Location getLocation(Location loc) {
         if (loc != null) {
             loc.setWorld(world);
@@ -209,6 +225,7 @@ public class CraftBlockState implements BlockState {
         return loc;
     }
 
+    @Override
     public void setRawData(byte data) {
         this.data = CraftMagicNumbers.getBlock(getType(), data);
     }
@@ -243,21 +260,25 @@ public class CraftBlockState implements BlockState {
         return hash;
     }
 
+    @Override
     public void setMetadata(String metadataKey, MetadataValue newMetadataValue) {
         requirePlaced();
         chunk.getCraftWorld().getBlockMetadata().setMetadata(getBlock(), metadataKey, newMetadataValue);
     }
 
+    @Override
     public List<MetadataValue> getMetadata(String metadataKey) {
         requirePlaced();
         return chunk.getCraftWorld().getBlockMetadata().getMetadata(getBlock(), metadataKey);
     }
 
+    @Override
     public boolean hasMetadata(String metadataKey) {
         requirePlaced();
         return chunk.getCraftWorld().getBlockMetadata().hasMetadata(getBlock(), metadataKey);
     }
 
+    @Override
     public void removeMetadata(String metadataKey, Plugin owningPlugin) {
         requirePlaced();
         chunk.getCraftWorld().getBlockMetadata().removeMetadata(getBlock(), metadataKey, owningPlugin);

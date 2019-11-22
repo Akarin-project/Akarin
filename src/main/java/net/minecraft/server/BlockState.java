@@ -13,26 +13,28 @@ public abstract class BlockState<T extends Comparable<T>> implements IBlockState
         this.b = s;
     }
 
+    @Override
     public String a() {
         return this.b;
     }
 
+    @Override
     public Class<T> b() {
         return this.a;
     }
 
     public String toString() {
-        return MoreObjects.toStringHelper(this).add("name", this.b).add("clazz", this.a).add("values", this.d()).toString();
+        return MoreObjects.toStringHelper(this).add("name", this.b).add("clazz", this.a).add("values", this.getValues()).toString();
     }
 
     public boolean equals(Object object) {
         return this == object; // Paper - only one instance per configuration
     }
 
-    private static java.util.concurrent.atomic.AtomicInteger hashId = new java.util.concurrent.atomic.AtomicInteger(1);// Paper - only one instance per configuration
+    private static final java.util.concurrent.atomic.AtomicInteger hashId = new java.util.concurrent.atomic.AtomicInteger(1); // Paper - only one instance per configuration
     private final int hashCode = 92821 * hashId.getAndIncrement(); // Paper - only one instance per configuration
     public final int hashCode() {
-        return hashCode; // Paper - only one instance per configuration
+        return this.hashCode; // Paper - only one instance per configuration
     }
 
     public int c() {

@@ -1,12 +1,17 @@
 package com.destroystokyo.paper;
 
 import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray.ChunkEdgeMode;
 import com.destroystokyo.paper.antixray.ChunkPacketBlockControllerAntiXray.EngineMode;
 import net.minecraft.server.MinecraftServer;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.spigotmc.SpigotWorldConfig;
 
@@ -78,10 +83,15 @@ public class PaperWorldConfig {
 
     }
 
-    public double babyZombieMovementSpeed;
-    private void babyZombieMovementSpeed() {
-        babyZombieMovementSpeed = getDouble("baby-zombie-movement-speed", 0.5D); // Player moves at 0.1F, for reference
-        log("Baby zombies will move at the speed of " + babyZombieMovementSpeed);
+    public double babyZombieMovementModifier;
+    private void babyZombieMovementModifier() {
+        babyZombieMovementModifier = getDouble("baby-zombie-movement-modifier", 0.5D);
+        if (PaperConfig.version < 20) {
+            babyZombieMovementModifier = getDouble("baby-zombie-movement-speed", 0.5D);
+            set("baby-zombie-movement-modifier", babyZombieMovementModifier);
+        }
+
+        log("Baby zombies will move at the speed of " + babyZombieMovementModifier);
     }
 
     public int fishingMinTicks;
@@ -142,14 +152,6 @@ public class PaperWorldConfig {
                 set("nether-ceiling-void-damage-height", netherVoidTopDamageHeight);
             }
         }
-    }
-
-    public boolean queueLightUpdates;
-    private void queueLightUpdates() {
-        queueLightUpdates = getBoolean("queue-light-updates", false);
-        log("Lighting Queue enabled: " + queueLightUpdates);
-        log("Warning: This feature may help reduce TPS loss from light, but comes at the cost of buggy light data");
-        log("We are working to improve this feature.");
     }
 
     public boolean disableEndCredits;
@@ -269,11 +271,6 @@ public class PaperWorldConfig {
         }
     }
 
-    public boolean firePhysicsEventForRedstone = false;
-    private void firePhysicsEventForRedstone() {
-        firePhysicsEventForRedstone = getBoolean("fire-physics-event-for-redstone", firePhysicsEventForRedstone);
-    }
-
     public int fixedInhabitedTime;
     private void fixedInhabitedTime() {
         if (PaperConfig.version < 16) {
@@ -288,12 +285,6 @@ public class PaperWorldConfig {
     private void grassUpdateRate() {
         grassUpdateRate = Math.max(0, getInt("grass-spread-tick-rate", grassUpdateRate));
         log("Grass Spread Tick Rate: " + grassUpdateRate);
-    }
-
-    public short keepLoadedRange;
-    private void keepLoadedRange() {
-        keepLoadedRange = (short) (getInt("keep-spawn-loaded-range", Math.min(spigotConfig.viewDistance, 8)) * 16);
-        log( "Keep Spawn Loaded Range: " + (keepLoadedRange/16));
     }
 
     public boolean useVanillaScoreboardColoring;
@@ -341,40 +332,6 @@ public class PaperWorldConfig {
         }
         preventTntFromMovingInWater = getBoolean("prevent-tnt-from-moving-in-water", false);
         log("Prevent TNT from moving in water: " + preventTntFromMovingInWater);
-    }
-
-    public long delayChunkUnloadsBy;
-    private void delayChunkUnloadsBy() {
-        delayChunkUnloadsBy = PaperConfig.getSeconds(getString("delay-chunk-unloads-by", "10s"));
-        if (delayChunkUnloadsBy > 0) {
-            log("Delaying chunk unloads by " + delayChunkUnloadsBy + " seconds");
-            delayChunkUnloadsBy *= 1000;
-        }
-    }
-
-    public boolean skipEntityTickingInChunksScheduledForUnload = true;
-    private void skipEntityTickingInChunksScheduledForUnload() {
-        skipEntityTickingInChunksScheduledForUnload = getBoolean("skip-entity-ticking-in-chunks-scheduled-for-unload", skipEntityTickingInChunksScheduledForUnload);
-    }
-
-    public int autoSavePeriod = -1;
-    private void autoSavePeriod() {
-        autoSavePeriod = getInt("auto-save-interval", -1);
-        if (autoSavePeriod > 0) {
-            log("Auto Save Interval: " +autoSavePeriod + " (" + (autoSavePeriod / 20) + "s)");
-        } else if (autoSavePeriod < 0) {
-            autoSavePeriod = MinecraftServer.getServer().autosavePeriod;
-        }
-    }
-
-    public int maxAutoSaveChunksPerTick = 24;
-    private void maxAutoSaveChunksPerTick() {
-        maxAutoSaveChunksPerTick = getInt("max-auto-save-chunks-per-tick", 24);
-    }
-
-    public int queueSizeAutoSaveThreshold = 50;
-    private void queueSizeAutoSaveThreshold() {
-        queueSizeAutoSaveThreshold = getInt("save-queue-limit-for-auto-save", 50);
     }
 
     public boolean removeCorruptTEs = false;
@@ -429,26 +386,6 @@ public class PaperWorldConfig {
         log("Experience Merge Max Value: " + expMergeMaxValue);
     }
 
-    public int maxChunkSendsPerTick = 81;
-    private void maxChunkSendsPerTick() {
-        maxChunkSendsPerTick = getInt("max-chunk-sends-per-tick", maxChunkSendsPerTick);
-        if (maxChunkSendsPerTick <= 0) {
-            maxChunkSendsPerTick = 81;
-        }
-        log("Max Chunk Sends Per Tick: " + maxChunkSendsPerTick);
-    }
-
-    public int maxChunkGensPerTick = 10;
-    private void maxChunkGensPerTick() {
-        maxChunkGensPerTick = getInt("max-chunk-gens-per-tick", maxChunkGensPerTick);
-        if (maxChunkGensPerTick <= 0) {
-            maxChunkGensPerTick = Integer.MAX_VALUE;
-            log("Max Chunk Gens Per Tick: Unlimited (NOT RECOMMENDED)");
-        } else {
-            log("Max Chunk Gens Per Tick: " + maxChunkGensPerTick);
-        }
-    }
-
     public double squidMaxSpawnHeight;
     private void squidMaxSpawnHeight() {
         squidMaxSpawnHeight = getDouble("squid-spawn-height.maximum", 0.0D);
@@ -472,14 +409,6 @@ public class PaperWorldConfig {
     private void disableEnderpearlExploit() {
         disableEnderpearlExploit = getBoolean("game-mechanics.disable-unloaded-chunk-enderpearl-exploit", disableEnderpearlExploit);
         log("Disable Unloaded Chunk Enderpearl Exploit: " + (disableEnderpearlExploit ? "enabled" : "disabled"));
-    }
-
-    public boolean villagesLoadChunks = false;
-    private void villagesLoadChunks() {
-        villagesLoadChunks = getBoolean("game-mechanics.villages-load-chunks", false);
-        if (villagesLoadChunks) {
-            log("Villages can load chunks - Warning this can cause intense TPS loss. Strongly consider disabling this.");
-        }
     }
 
     public int shieldBlockingDelay = 5;
@@ -507,6 +436,27 @@ public class PaperWorldConfig {
     private void waterOverLavaFlowSpeed() {
         waterOverLavaFlowSpeed = getInt("water-over-lava-flow-speed", 5);
         log("Water over lava flow speed: " + waterOverLavaFlowSpeed);
+    }
+
+    public boolean armorStandTick = true;
+    private void armorStandTick() {
+        this.armorStandTick = this.getBoolean("armor-stands-tick", this.armorStandTick);
+        log("ArmorStand ticking is " + (this.armorStandTick ? "enabled" : "disabled") + " by default");
+    }
+
+    public boolean preventMovingIntoUnloadedChunks = false;
+    private void preventMovingIntoUnloadedChunks() {
+        preventMovingIntoUnloadedChunks = getBoolean("prevent-moving-into-unloaded-chunks", false);
+    }
+
+    public boolean useEigencraftRedstone = false;
+    private void useEigencraftRedstone() {
+        useEigencraftRedstone = this.getBoolean("use-faster-eigencraft-redstone", false);
+        if (useEigencraftRedstone) {
+            log("Using Eigencraft redstone algorithm by theosib.");
+        } else {
+            log("Using vanilla redstone algorithm.");
+        }
     }
 
     public enum DuplicateUUIDMode {
@@ -548,10 +498,35 @@ public class PaperWorldConfig {
         }
     }
 
-    public boolean armorStandTick = true;
-    private void armorStandTick() {
-        this.armorStandTick = this.getBoolean("armor-stands-tick", this.armorStandTick);
-        log("ArmorStand ticking is " + (this.armorStandTick ? "enabled" : "disabled") + " by default");
+    public short keepLoadedRange;
+    private void keepLoadedRange() {
+        keepLoadedRange = (short) (getInt("keep-spawn-loaded-range", Math.min(spigotConfig.viewDistance, 10)) * 16);
+        log( "Keep Spawn Loaded Range: " + (keepLoadedRange/16));
+    }
+
+    public int autoSavePeriod = -1;
+    private void autoSavePeriod() {
+        autoSavePeriod = getInt("auto-save-interval", -1);
+        if (autoSavePeriod > 0) {
+            log("Auto Save Interval: " +autoSavePeriod + " (" + (autoSavePeriod / 20) + "s)");
+        } else if (autoSavePeriod < 0) {
+            autoSavePeriod = net.minecraft.server.MinecraftServer.getServer().autosavePeriod;
+        }
+    }
+
+    public int maxAutoSaveChunksPerTick = 24;
+    private void maxAutoSaveChunksPerTick() {
+        maxAutoSaveChunksPerTick = getInt("max-auto-save-chunks-per-tick", 24);
+    }
+
+    public boolean countAllMobsForSpawning = false;
+    private void countAllMobsForSpawning() {
+        countAllMobsForSpawning = getBoolean("count-all-mobs-for-spawning", false);
+        if (countAllMobsForSpawning) {
+            log("Counting all mobs for spawning. Mob farms may reduce natural spawns elsewhere in world.");
+        } else {
+            log("Using improved mob spawn limits (Only Natural Spawns impact spawn limits for more natural spawns)");
+        }
     }
 
     public boolean antiXray;
@@ -579,33 +554,85 @@ public class PaperWorldConfig {
         maxChunkSectionIndex = getInt("anti-xray.max-chunk-section-index", 3);
         maxChunkSectionIndex = maxChunkSectionIndex > 15 ? 15 : maxChunkSectionIndex;
         updateRadius = getInt("anti-xray.update-radius", 2);
-        hiddenBlocks = getList("anti-xray.hidden-blocks", Arrays.asList("gold_ore", "iron_ore", "coal_ore", "lapis_ore", "mossy_cobblestone", "obsidian", "chest", "diamond_ore", "redstone_ore", "lit_redstone_ore", "clay", "emerald_ore", "ender_chest"));
-        replacementBlocks = getList("anti-xray.replacement-blocks", Arrays.asList("stone", "planks"));
+        hiddenBlocks = getList("anti-xray.hidden-blocks", Arrays.asList("gold_ore", "iron_ore", "coal_ore", "lapis_ore", "mossy_cobblestone", "obsidian", "chest", "diamond_ore", "redstone_ore", "clay", "emerald_ore", "ender_chest"));
+        replacementBlocks = getList("anti-xray.replacement-blocks", Arrays.asList("stone", "oak_planks"));
+        if (PaperConfig.version < 19) {
+            hiddenBlocks.remove("lit_redstone_ore");
+            int index = replacementBlocks.indexOf("planks");
+            if (index != -1) {
+                replacementBlocks.set(index, "oak_planks");
+            }
+            set("anti-xray.hidden-blocks", hiddenBlocks);
+            set("anti-xray.replacement-blocks", replacementBlocks);
+        }
         log("Anti-Xray: " + (antiXray ? "enabled" : "disabled") + " / Engine Mode: " + engineMode.getDescription() + " / Chunk Edge Mode: " + chunkEdgeMode.getDescription() + " / Up to " + ((maxChunkSectionIndex + 1) * 16) + " blocks / Update Radius: " + updateRadius);
     }
 
-    public boolean preventMovingIntoUnloadedChunks = false;
-    private void preventMovingIntoUnloadedChunks() {
-        preventMovingIntoUnloadedChunks = getBoolean("prevent-moving-into-unloaded-chunks", false);
+    public boolean disableRelativeProjectileVelocity;
+    private void disableRelativeProjectileVelocity() {
+        disableRelativeProjectileVelocity = getBoolean("game-mechanics.disable-relative-projectile-velocity", false);
     }
 
-    public boolean useEigencraftRedstone = false;
-    private void useEigencraftRedstone() {
-        useEigencraftRedstone = this.getBoolean("use-faster-eigencraft-redstone", false);
-        if (useEigencraftRedstone) {
-            log("Using Eigencraft redstone algorithm by theosib.");
-        } else {
-            log("Using vanilla redstone algorithm.");
+    public boolean fixZeroTickInstantGrowFarms = true;
+    private void fixZeroTickInstantGrowFarms() {
+        fixZeroTickInstantGrowFarms = getBoolean("fix-zero-tick-instant-grow-farms", fixZeroTickInstantGrowFarms);
+    }
+
+    public boolean altItemDespawnRateEnabled;
+    public Map<Material, Integer> altItemDespawnRateMap;
+    private void altItemDespawnRate() {
+        String path = "alt-item-despawn-rate";
+
+        altItemDespawnRateEnabled = getBoolean(path + ".enabled", false);
+
+        Map<Material, Integer> altItemDespawnRateMapDefault = new EnumMap<>(Material.class);
+        altItemDespawnRateMapDefault.put(Material.COBBLESTONE, 300);
+        for (Material key : altItemDespawnRateMapDefault.keySet()) {
+            config.addDefault("world-settings.default." + path + ".items." + key, altItemDespawnRateMapDefault.get(key));
+        }
+
+        Map<String, Integer> rawMap = new HashMap<>();
+        try {
+            ConfigurationSection mapSection = config.getConfigurationSection("world-settings." + worldName + "." + path + ".items");
+            if (mapSection == null) {
+                mapSection = config.getConfigurationSection("world-settings.default." + path + ".items");
+            }
+            for (String key : mapSection.getKeys(false)) {
+                int val = mapSection.getInt(key);
+                rawMap.put(key, val);
+            }
+        }
+        catch (Exception e) {
+            logError("alt-item-despawn-rate was malformatted");
+            altItemDespawnRateEnabled = false;
+        }
+
+        altItemDespawnRateMap = new EnumMap<>(Material.class);
+        if (!altItemDespawnRateEnabled) {
+            return;
+        }
+
+        for(String key : rawMap.keySet()) {
+            try {
+                altItemDespawnRateMap.put(Material.valueOf(key), rawMap.get(key));
+            } catch (Exception e) {
+                logError("Could not add item " + key + " to altItemDespawnRateMap: " + e.getMessage());
+            }
+        }
+        if(altItemDespawnRateEnabled) {
+            for(Material key : altItemDespawnRateMap.keySet()) {
+                log("Alternative item despawn rate of " + key + ": " + altItemDespawnRateMap.get(key));
+            }
         }
     }
 
-    public boolean countAllMobsForSpawning = false;
-    private void countAllMobsForSpawning() {
-        countAllMobsForSpawning = getBoolean("count-all-mobs-for-spawning", false);
-        if (countAllMobsForSpawning) {
-            log("Counting all mobs for spawning. Mob farms may reduce natural spawns elsewhere in world.");
-        } else {
-            log("Using improved mob spawn limits (Only Natural Spawns impact spawn limits for more natural spawns)");
-        }
+    public boolean perPlayerMobSpawns = false;
+    private void perPlayerMobSpawns() {
+        perPlayerMobSpawns = getBoolean("per-player-mob-spawns", false);
+    }
+
+    public boolean generateFlatBedrock;
+    private void generatorSettings() {
+        generateFlatBedrock = getBoolean("generator-settings.flat-bedrock", false);
     }
 }

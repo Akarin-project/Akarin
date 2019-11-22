@@ -1,36 +1,47 @@
 package net.minecraft.server;
 
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+
 public class PathfinderGoalDefendVillage extends PathfinderGoalTarget {
 
     private final EntityIronGolem a;
     private EntityLiving b;
+    private final PathfinderTargetCondition c = (new PathfinderTargetCondition()).a(64.0D);
 
     public PathfinderGoalDefendVillage(EntityIronGolem entityirongolem) {
         super(entityirongolem, false, true);
         this.a = entityirongolem;
-        this.a(1);
+        this.a(EnumSet.of(PathfinderGoal.Type.TARGET));
     }
 
+    @Override
     public boolean a() {
-        Village village = this.a.l();
+        AxisAlignedBB axisalignedbb = this.a.getBoundingBox().grow(10.0D, 8.0D, 10.0D);
+        List<EntityLiving> list = this.a.world.a(EntityVillager.class, this.c, this.a, axisalignedbb);
+        List<EntityHuman> list1 = this.a.world.a(this.c, (EntityLiving) this.a, axisalignedbb);
+        Iterator iterator = list.iterator();
 
-        if (village == null) {
-            return false;
-        } else {
-            this.b = village.b((EntityLiving) this.a);
-            if (this.b instanceof EntityCreeper) {
-                return false;
-            } else if (this.a(this.b, false)) {
-                return true;
-            } else if (this.e.getRandom().nextInt(20) == 0) {
-                this.b = village.c((EntityLiving) this.a);
-                return this.a(this.b, false);
-            } else {
-                return false;
+        while (iterator.hasNext()) {
+            EntityLiving entityliving = (EntityLiving) iterator.next();
+            EntityVillager entityvillager = (EntityVillager) entityliving;
+            Iterator iterator1 = list1.iterator();
+
+            while (iterator1.hasNext()) {
+                EntityHuman entityhuman = (EntityHuman) iterator1.next();
+                int i = entityvillager.f(entityhuman);
+
+                if (i <= -100) {
+                    this.b = entityhuman;
+                }
             }
         }
+
+        return this.b != null;
     }
 
+    @Override
     public void c() {
         this.a.setGoalTarget(this.b, org.bukkit.event.entity.EntityTargetEvent.TargetReason.DEFEND_VILLAGE, true); // CraftBukkit - reason
         super.c();

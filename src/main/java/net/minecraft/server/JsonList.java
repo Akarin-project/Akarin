@@ -12,11 +12,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.mojang.authlib.GameProfile;
-
-import io.akarin.server.core.AkarinAsyncExecutor;
-import io.akarin.server.misc.CopyOnWriteHashMap;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -29,29 +24,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
-
 import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.Bukkit;
 
 public class JsonList<K, V extends JsonListEntry<K>> {
 
-    protected static final Logger a = LogManager.getLogger();
+    protected static final Logger LOGGER = LogManager.getLogger();
     protected final Gson b;
     private final File c;
     // Paper - replace HashMap is ConcurrentHashMap
-    protected final Map<String, V> d = new CopyOnWriteHashMap<String, V>(); private final Map<String, V> getBackingMap() { return this.d; } // Paper - OBFHELPER // Akarin
+    private final Map<String, V> d = Maps.newConcurrentMap(); private final Map<String, V> getBackingMap() { return this.d; } // Paper - OBFHELPER
     private boolean e = true;
     private static final ParameterizedType f = new ParameterizedType() {
         public Type[] getActualTypeArguments() {
-            return new Type[] { JsonListEntry.class};
+            return new Type[]{JsonListEntry.class};
         }
 
         public Type getRawType() {
@@ -75,7 +64,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
         return this.e;
     }
 
-    public void setEnabled(boolean flag) { a(flag); } // Paper - OBFHeLPER
+    public void setEnabled(boolean flag) { this.a(flag); } // Paper - OBFHeLPER
     public void a(boolean flag) {
         this.e = flag;
     }
@@ -90,7 +79,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
         try {
             this.save();
         } catch (IOException ioexception) {
-            JsonList.a.warn("Could not save the list after adding a user.", ioexception);
+            JsonList.LOGGER.warn("Could not save the list after adding a user.", ioexception);
         }
 
     }
@@ -112,7 +101,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
         try {
             this.save();
         } catch (IOException ioexception) {
-            JsonList.a.warn("Could not save the list after removing a user.", ioexception);
+            JsonList.LOGGER.warn("Could not save the list after removing a user.", ioexception);
         }
 
     }
@@ -179,7 +168,6 @@ public class JsonList<K, V extends JsonListEntry<K>> {
     }
 
     public void save() throws IOException {
-        Runnable runnable = () -> { // Akarin
         this.removeStaleEntries(); // Paper - remove expired values before saving
         Collection<V> collection = this.d.values();
         String s = this.b.toJson(collection);
@@ -188,13 +176,9 @@ public class JsonList<K, V extends JsonListEntry<K>> {
         try {
             bufferedwriter = Files.newWriter(this.c, StandardCharsets.UTF_8);
             bufferedwriter.write(s);
-        } catch (IOException e) { // Akarin
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to save {0}, {1}", new Object[] {this.c.getName(), e.getMessage()}); // Akarin
         } finally {
             IOUtils.closeQuietly(bufferedwriter);
         }
-        }; // Akarin
-        AkarinAsyncExecutor.scheduleSingleAsyncTask(runnable); // Akarin
 
     }
 

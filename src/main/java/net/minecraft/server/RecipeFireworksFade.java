@@ -3,53 +3,49 @@ package net.minecraft.server;
 import com.google.common.collect.Lists;
 import java.util.List;
 
-public class RecipeFireworksFade extends ShapelessRecipes implements IRecipe { // CraftBukkit - added extends
+public class RecipeFireworksFade extends ShapelessRecipes { // CraftBukkit - added extends
 
     private static final RecipeItemStack a = RecipeItemStack.a(Items.FIREWORK_STAR);
 
     // CraftBukkit start - Delegate to new parent class with bogus info
     public RecipeFireworksFade(MinecraftKey minecraftkey) {
-        super(minecraftkey, "", new ItemStack(Items.FIREWORK_STAR, 0), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.FIREWORK_STAR, Items.BONE_MEAL)));
+        super(minecraftkey, "", new ItemStack(Items.FIREWORK_STAR), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.FIREWORK_STAR, Items.BONE_MEAL)));
     }
     // CraftBukkit end
 
-    public boolean a(IInventory iinventory, World world) {
-        if (!(iinventory instanceof InventoryCrafting)) {
-            return false;
-        } else {
-            boolean flag = false;
-            boolean flag1 = false;
+    public boolean a(InventoryCrafting inventorycrafting, World world) {
+        boolean flag = false;
+        boolean flag1 = false;
 
-            for (int i = 0; i < iinventory.getSize(); ++i) {
-                ItemStack itemstack = iinventory.getItem(i);
+        for (int i = 0; i < inventorycrafting.getSize(); ++i) {
+            ItemStack itemstack = inventorycrafting.getItem(i);
 
-                if (!itemstack.isEmpty()) {
-                    if (itemstack.getItem() instanceof ItemDye) {
-                        flag = true;
-                    } else {
-                        if (!RecipeFireworksFade.a.test(itemstack)) {
-                            return false;
-                        }
-
-                        if (flag1) {
-                            return false;
-                        }
-
-                        flag1 = true;
+            if (!itemstack.isEmpty()) {
+                if (itemstack.getItem() instanceof ItemDye) {
+                    flag = true;
+                } else {
+                    if (!RecipeFireworksFade.a.test(itemstack)) {
+                        return false;
                     }
+
+                    if (flag1) {
+                        return false;
+                    }
+
+                    flag1 = true;
                 }
             }
-
-            return flag1 && flag;
         }
+
+        return flag1 && flag;
     }
 
-    public ItemStack craftItem(IInventory iinventory) {
+    public ItemStack a(InventoryCrafting inventorycrafting) {
         List<Integer> list = Lists.newArrayList();
         ItemStack itemstack = null;
 
-        for (int i = 0; i < iinventory.getSize(); ++i) {
-            ItemStack itemstack1 = iinventory.getItem(i);
+        for (int i = 0; i < inventorycrafting.getSize(); ++i) {
+            ItemStack itemstack1 = inventorycrafting.getItem(i);
             Item item = itemstack1.getItem();
 
             if (item instanceof ItemDye) {
@@ -68,7 +64,8 @@ public class RecipeFireworksFade extends ShapelessRecipes implements IRecipe { /
         }
     }
 
-    public RecipeSerializer<?> a() {
-        return RecipeSerializers.i;
+    @Override
+    public RecipeSerializer<?> getRecipeSerializer() {
+        return RecipeSerializer.i;
     }
 }

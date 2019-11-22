@@ -1,12 +1,13 @@
 package net.minecraft.server;
 
+import javax.annotation.Nullable;
+
 public class NibbleArray {
 
-    private final byte[] a;
+    @Nullable
+    protected byte[] a;
 
-    public NibbleArray() {
-        this.a = new byte[2048];
-    }
+    public NibbleArray() {}
 
     public NibbleArray(byte[] abyte) {
         this.a = abyte;
@@ -15,26 +16,38 @@ public class NibbleArray {
         }
     }
 
+    protected NibbleArray(int i) {
+        this.a = new byte[i];
+    }
+
     public int a(int i, int j, int k) {
-        return this.a(this.b(i, j, k));
+        return this.b(this.b(i, j, k));
     }
 
     public void a(int i, int j, int k, int l) {
         this.a(this.b(i, j, k), l);
     }
 
-    private int b(int i, int j, int k) {
+    protected int b(int i, int j, int k) {
         return j << 8 | k << 4 | i;
     }
 
-    public int a(int i) {
-        int j = this.c(i);
+    public int b(int i) { // PAIL: private -> public
+        if (this.a == null) {
+            return 0;
+        } else {
+            int j = this.d(i);
 
-        return this.a[j] >> ((i & 1) << 2) & 15; // Spigot
+            return this.a[j] >> ((i & 1) << 2) & 15; // Spigot
+        }
     }
 
-    public void a(int i, int j) {
-        int k = this.c(i);
+    public void a(int i, int j) { // PAIL: private -> public
+        if (this.a == null) {
+            this.a = new byte[2048];
+        }
+
+        int k = this.d(i);
 
         // Spigot start
         int shift = (i & 1) << 2;
@@ -42,15 +55,45 @@ public class NibbleArray {
         // Spigot end
     }
 
-    private boolean b(int i) {
+    private boolean c(int i) {
         return (i & 1) == 0;
     }
 
-    private int c(int i) {
+    private int d(int i) {
         return i >> 1;
     }
 
     public byte[] asBytes() {
+        if (this.a == null) {
+            this.a = new byte[2048];
+        }
+
         return this.a;
+    }
+
+    public NibbleArray copy() { return this.b(); } // Paper - OBFHELPER
+    public NibbleArray b() {
+        return this.a == null ? new NibbleArray() : new NibbleArray((byte[]) this.a.clone());
+    }
+
+    public String toString() {
+        StringBuilder stringbuilder = new StringBuilder();
+
+        for (int i = 0; i < 4096; ++i) {
+            stringbuilder.append(Integer.toHexString(this.b(i)));
+            if ((i & 15) == 15) {
+                stringbuilder.append("\n");
+            }
+
+            if ((i & 255) == 255) {
+                stringbuilder.append("\n");
+            }
+        }
+
+        return stringbuilder.toString();
+    }
+
+    public boolean c() {
+        return this.a == null;
     }
 }

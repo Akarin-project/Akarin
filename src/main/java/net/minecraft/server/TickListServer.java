@@ -1,44 +1,47 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.bukkit.craftbukkit.util.HashTreeSet; // CraftBukkit
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
 
 public class TickListServer<T> implements TickList<T> {
 
     protected final Predicate<T> a;
-    protected final Function<T, MinecraftKey> b;
-    protected final Function<MinecraftKey, T> c;
-    // protected final Set<NextTickListEntry<T>> nextTickListHash = Sets.newHashSet();
-    protected final HashTreeSet<NextTickListEntry> nextTickList = new HashTreeSet<>(); // CraftBukkit - HashTreeSet
+    private final Function<T, MinecraftKey> b;
+    private final Function<MinecraftKey, T> c;
+    private final Set<NextTickListEntry<T>> nextTickListHash = Sets.newHashSet();
+    private final TreeSet<NextTickListEntry<T>> nextTickList = Sets.newTreeSet(NextTickListEntry.a());
     private final WorldServer f;
-    private final List<NextTickListEntry<T>> g = Lists.newArrayList();
-    private final Consumer<NextTickListEntry<T>> h;
+    private final Queue<NextTickListEntry<T>> g = Queues.newArrayDeque();
+    private final List<NextTickListEntry<T>> h = Lists.newArrayList();
+    private final Consumer<NextTickListEntry<T>> i;
 
     public TickListServer(WorldServer worldserver, Predicate<T> predicate, Function<T, MinecraftKey> function, Function<MinecraftKey, T> function1, Consumer<NextTickListEntry<T>> consumer, String timingsType) { // Paper
         this.a = predicate;
         this.b = function;
         this.c = function1;
         this.f = worldserver;
-        this.h = consumer;
-        // Paper start
-        timingCleanup = co.aikar.timings.WorldTimingsHandler.getTickList(worldserver, timingsType + " - Cleanup");
-        timingTicking = co.aikar.timings.WorldTimingsHandler.getTickList(worldserver, timingsType + " - Ticking");
+        this.i = consumer;
+        this.timingCleanup = co.aikar.timings.WorldTimingsHandler.getTickList(worldserver, timingsType + " - Cleanup");
+        this.timingTicking = co.aikar.timings.WorldTimingsHandler.getTickList(worldserver, timingsType + " - Ticking");
     }
     private final co.aikar.timings.Timing timingCleanup; // Paper
     private final co.aikar.timings.Timing timingTicking; // Paper
     // Paper end
 
-    public void a() {
+    public void b() {
         int i = this.nextTickList.size();
 
         if (false) { // CraftBukkit
@@ -54,35 +57,37 @@ public class TickListServer<T> implements TickList<T> {
                 // CraftBukkit end
             }
 
-            //this.f.methodProfiler.enter("cleaning"); // Akarin
-            timingCleanup.startTimingUnsafe(); // Paper // Akarin
-            NextTickListEntry<T> nextticklistentry; // CraftBukkit - decompile error
+            ChunkProviderServer chunkproviderserver = this.f.getChunkProvider();
+            Iterator<NextTickListEntry<T>> iterator = this.nextTickList.iterator();
 
-            for (int j = 0; j < i; ++j) {
-                nextticklistentry = (NextTickListEntry) this.nextTickList.first();
+            this.f.getMethodProfiler().enter("cleaning");
+
+            this.timingCleanup.startTiming(); // Paper
+            NextTickListEntry nextticklistentry;
+
+            while (i > 0 && iterator.hasNext()) {
+                nextticklistentry = (NextTickListEntry) iterator.next();
                 if (nextticklistentry.b > this.f.getTime()) {
                     break;
                 }
 
-                this.nextTickList.remove(nextticklistentry);
-                // this.nextTickListHash.remove(nextticklistentry); // CraftBukkit - use nextTickList
-                this.g.add(nextticklistentry);
+                if (chunkproviderserver.a(nextticklistentry.a)) {
+                    iterator.remove();
+                    this.nextTickListHash.remove(nextticklistentry);
+                    this.g.add(nextticklistentry);
+                    --i;
+                }
             }
-            timingCleanup.stopTimingUnsafe(); // Paper // Akarin
+            this.timingCleanup.stopTiming(); // Paper
 
-            //this.f.methodProfiler.exit(); // Akarin
-            //this.f.methodProfiler.enter("ticking"); // Akarin
-            timingTicking.startTimingUnsafe(); // Paper // Akarin
-            Iterator iterator = this.g.iterator();
+            this.timingTicking.startTiming(); // Paper
+            this.f.getMethodProfiler().exitEnter("ticking");
 
-            while (iterator.hasNext()) {
-                nextticklistentry = (NextTickListEntry) iterator.next();
-                iterator.remove();
-                boolean flag = false;
-
-                if (this.f.areChunksLoadedBetween(nextticklistentry.a.a(0, 0, 0), nextticklistentry.a.a(0, 0, 0))) {
+            while ((nextticklistentry = (NextTickListEntry) this.g.poll()) != null) {
+                if (chunkproviderserver.a(nextticklistentry.a)) {
                     try {
-                        this.h.accept(nextticklistentry);
+                        this.h.add(nextticklistentry);
+                        this.i.accept(nextticklistentry);
                     } catch (Throwable throwable) {
                         CrashReport crashreport = CrashReport.a(throwable, "Exception while ticking");
                         CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Block being ticked");
@@ -91,69 +96,77 @@ public class TickListServer<T> implements TickList<T> {
                         throw new ReportedException(crashreport);
                     }
                 } else {
-                    this.a(nextticklistentry.a, nextticklistentry.a(), 0);
+                    this.a(nextticklistentry.a, (T) nextticklistentry.b(), 0); // CraftBukkit - decompile error
                 }
             }
 
-            //this.f.methodProfiler.exit(); // Akarin
+            this.f.getMethodProfiler().exit();
+            this.timingTicking.stopTiming(); // Paper
+            this.h.clear();
             this.g.clear();
-            timingTicking.stopTimingUnsafe(); // Paper // Akarin
         }
     }
 
+    @Override
     public boolean b(BlockPosition blockposition, T t0) {
         return this.g.contains(new NextTickListEntry<>(blockposition, t0));
     }
 
-    public List<NextTickListEntry<T>> a(Chunk chunk, boolean flag) {
-        ChunkCoordIntPair chunkcoordintpair = chunk.getPos();
+    @Override
+    public void a(Stream<NextTickListEntry<T>> stream) {
+        stream.forEach(this::a);
+    }
+
+    public List<NextTickListEntry<T>> a(ChunkCoordIntPair chunkcoordintpair, boolean flag, boolean flag1) {
         int i = (chunkcoordintpair.x << 4) - 2;
         int j = i + 16 + 2;
         int k = (chunkcoordintpair.z << 4) - 2;
         int l = k + 16 + 2;
 
-        return this.a(new StructureBoundingBox(i, 0, k, j, 256, l), flag);
+        return this.a(new StructureBoundingBox(i, 0, k, j, 256, l), flag, flag1);
     }
 
-    public List<NextTickListEntry<T>> a(StructureBoundingBox structureboundingbox, boolean flag) {
-        List<NextTickListEntry<T>> list = null;
+    public List<NextTickListEntry<T>> a(StructureBoundingBox structureboundingbox, boolean flag, boolean flag1) {
+        List<NextTickListEntry<T>> list = this.a((List) null, this.nextTickList, structureboundingbox, flag);
 
-        for (int i = 0; i < 2; ++i) {
-            Iterator iterator;
+        if (flag && list != null) {
+            this.nextTickListHash.removeAll(list);
+        }
 
-            if (i == 0) {
-                iterator = this.nextTickList.iterator();
-            } else {
-                iterator = this.g.iterator();
-            }
+        list = this.a(list, this.g, structureboundingbox, flag);
+        if (!flag1) {
+            list = this.a(list, this.h, structureboundingbox, flag);
+        }
 
-            while (iterator.hasNext()) {
-                NextTickListEntry<T> nextticklistentry = (NextTickListEntry) iterator.next();
-                BlockPosition blockposition = nextticklistentry.a;
+        return list == null ? Collections.emptyList() : list;
+    }
 
-                if (blockposition.getX() >= structureboundingbox.a && blockposition.getX() < structureboundingbox.d && blockposition.getZ() >= structureboundingbox.c && blockposition.getZ() < structureboundingbox.f) {
-                    if (flag) {
-                        if (i == 0) {
-                            // this.nextTickListHash.remove(nextticklistentry); // CraftBukkit - removed
-                        }
+    @Nullable
+    private List<NextTickListEntry<T>> a(@Nullable List<NextTickListEntry<T>> list, Collection<NextTickListEntry<T>> collection, StructureBoundingBox structureboundingbox, boolean flag) {
+        Iterator iterator = collection.iterator();
 
-                        iterator.remove();
-                    }
+        while (iterator.hasNext()) {
+            NextTickListEntry<T> nextticklistentry = (NextTickListEntry) iterator.next();
+            BlockPosition blockposition = nextticklistentry.a;
 
-                    if (list == null) {
-                        list = Lists.newArrayList();
-                    }
-
-                    list.add(nextticklistentry);
+            if (blockposition.getX() >= structureboundingbox.a && blockposition.getX() < structureboundingbox.d && blockposition.getZ() >= structureboundingbox.c && blockposition.getZ() < structureboundingbox.f) {
+                if (flag) {
+                    iterator.remove();
                 }
+
+                if (list == null) {
+                    list = Lists.newArrayList();
+                }
+
+                ((List) list).add(nextticklistentry);
             }
         }
 
-        return (List) (list == null ? Collections.emptyList() : list);
+        return (List) list;
     }
 
     public void a(StructureBoundingBox structureboundingbox, BlockPosition blockposition) {
-        List<NextTickListEntry<T>> list = this.a(structureboundingbox, false);
+        List<NextTickListEntry<T>> list = this.a(structureboundingbox, false, false);
         Iterator iterator = list.iterator();
 
         while (iterator.hasNext()) {
@@ -161,74 +174,62 @@ public class TickListServer<T> implements TickList<T> {
 
             if (structureboundingbox.b((BaseBlockPosition) nextticklistentry.a)) {
                 BlockPosition blockposition1 = nextticklistentry.a.a((BaseBlockPosition) blockposition);
+                T t0 = nextticklistentry.b();
 
-                this.b(blockposition1, nextticklistentry.a(), (int) (nextticklistentry.b - this.f.getWorldData().getTime()), nextticklistentry.c);
+                this.a(new NextTickListEntry<>(blockposition1, t0, nextticklistentry.b, nextticklistentry.c));
             }
         }
 
     }
 
-    public NBTTagList a(Chunk chunk) {
-        List<NextTickListEntry<T>> list = this.a(chunk, false);
-        long i = this.f.getTime();
+    public NBTTagList a(ChunkCoordIntPair chunkcoordintpair) {
+        List<NextTickListEntry<T>> list = this.a(chunkcoordintpair, false, true);
+
+        return a(this.b, list, this.f.getTime());
+    }
+
+    public static <T> NBTTagList a(Function<T, MinecraftKey> function, Iterable<NextTickListEntry<T>> iterable, long i) {
         NBTTagList nbttaglist = new NBTTagList();
-        Iterator iterator = list.iterator();
+        Iterator iterator = iterable.iterator();
 
         while (iterator.hasNext()) {
             NextTickListEntry<T> nextticklistentry = (NextTickListEntry) iterator.next();
             NBTTagCompound nbttagcompound = new NBTTagCompound();
 
-            nbttagcompound.setString("i", ((MinecraftKey) this.b.apply(nextticklistentry.a())).toString());
+            nbttagcompound.setString("i", ((MinecraftKey) function.apply(nextticklistentry.b())).toString());
             nbttagcompound.setInt("x", nextticklistentry.a.getX());
             nbttagcompound.setInt("y", nextticklistentry.a.getY());
             nbttagcompound.setInt("z", nextticklistentry.a.getZ());
             nbttagcompound.setInt("t", (int) (nextticklistentry.b - i));
             nbttagcompound.setInt("p", nextticklistentry.c.a());
-            nbttaglist.add((NBTBase) nbttagcompound);
+            nbttaglist.add(nbttagcompound);
         }
 
         return nbttaglist;
     }
 
-    public void a(NBTTagList nbttaglist) {
-        for (int i = 0; i < nbttaglist.size(); ++i) {
-            NBTTagCompound nbttagcompound = nbttaglist.getCompound(i);
-            T t0 = this.c.apply(new MinecraftKey(nbttagcompound.getString("i")));
-
-            if (t0 != null) {
-                this.b(new BlockPosition(nbttagcompound.getInt("x"), nbttagcompound.getInt("y"), nbttagcompound.getInt("z")), t0, nbttagcompound.getInt("t"), TickListPriority.a(nbttagcompound.getInt("p")));
-            }
-        }
-
-    }
-
+    @Override
     public boolean a(BlockPosition blockposition, T t0) {
-        return this.nextTickList.contains(new NextTickListEntry<>(blockposition, t0)); // CraftBukkit
+        return this.nextTickListHash.contains(new NextTickListEntry<>(blockposition, t0));
     }
 
+    @Override
     public void a(BlockPosition blockposition, T t0, int i, TickListPriority ticklistpriority) {
         if (!this.a.test(t0)) {
-            if (this.f.isLoaded(blockposition)) {
-                this.c(blockposition, t0, i, ticklistpriority);
-            }
-
-        }
-    }
-
-    protected void b(BlockPosition blockposition, T t0, int i, TickListPriority ticklistpriority) {
-        if (!this.a.test(t0)) {
-            this.c(blockposition, t0, i, ticklistpriority);
+            this.a(new NextTickListEntry<>(blockposition, t0, (long) i + this.f.getTime(), ticklistpriority));
         }
 
     }
 
-    private void c(BlockPosition blockposition, T t0, int i, TickListPriority ticklistpriority) {
-        NextTickListEntry<T> nextticklistentry = new NextTickListEntry<>(blockposition, t0, (long) i + this.f.getTime(), ticklistpriority);
-
-        // CraftBukkit - use nextTickList
-        if (!this.nextTickList.contains(nextticklistentry)) {
+    private void a(NextTickListEntry<T> nextticklistentry) {
+        if (!this.nextTickListHash.contains(nextticklistentry)) {
+            this.nextTickListHash.add(nextticklistentry);
             this.nextTickList.add(nextticklistentry);
         }
 
+    }
+
+    public int a() {
+        return this.nextTickListHash.size();
     }
 }

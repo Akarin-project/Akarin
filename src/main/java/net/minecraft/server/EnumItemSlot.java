@@ -48,6 +48,21 @@ public enum EnumItemSlot {
         throw new IllegalArgumentException("Invalid slot '" + s + "'");
     }
 
+    public static EnumItemSlot a(EnumItemSlot.Function enumitemslot_function, int i) {
+        EnumItemSlot[] aenumitemslot = values();
+        int j = aenumitemslot.length;
+
+        for (int k = 0; k < j; ++k) {
+            EnumItemSlot enumitemslot = aenumitemslot[k];
+
+            if (enumitemslot.a() == enumitemslot_function && enumitemslot.b() == i) {
+                return enumitemslot;
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid slot '" + enumitemslot_function + "': " + i);
+    }
+
     public static enum Function {
 
         HAND, ARMOR;

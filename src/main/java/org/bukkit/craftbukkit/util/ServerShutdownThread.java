@@ -1,6 +1,5 @@
 package org.bukkit.craftbukkit.util;
 
-import net.minecraft.server.ExceptionWorldConflict;
 import net.minecraft.server.MinecraftServer;
 
 public class ServerShutdownThread extends Thread {
@@ -15,9 +14,7 @@ public class ServerShutdownThread extends Thread {
         try {
             org.spigotmc.AsyncCatcher.enabled = false; // Spigot
             org.spigotmc.AsyncCatcher.shuttingDown = true; // Paper
-            server.stop();
-        } catch (ExceptionWorldConflict ex) {
-            ex.printStackTrace();
+            server.close();
         } finally {
             try {
                 net.minecrell.terminalconsole.TerminalConsoleAppender.close(); // Paper - Use TerminalConsoleAppender

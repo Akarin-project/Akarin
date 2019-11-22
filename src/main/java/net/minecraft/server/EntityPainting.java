@@ -9,8 +9,8 @@ public class EntityPainting extends EntityHanging {
 
     public Paintings art;
 
-    public EntityPainting(World world) {
-        super(EntityTypes.PAINTING, world);
+    public EntityPainting(EntityTypes<? extends EntityPainting> entitytypes, World world) {
+        super(entitytypes, world);
         // CraftBukkit start - generate a non-null painting
         List<Paintings> list = Lists.newArrayList(Paintings.a);
         this.art = (Paintings) list.get(this.random.nextInt(list.size()));
@@ -31,7 +31,7 @@ public class EntityPainting extends EntityHanging {
             this.setDirection(enumdirection);
             if (this.survives()) {
                 list.add(paintings);
-                int j = paintings.b() * paintings.c();
+                int j = paintings.getWidth() * paintings.getHeight();
 
                 if (j > i) {
                     i = j;
@@ -44,7 +44,7 @@ public class EntityPainting extends EntityHanging {
 
             while (iterator.hasNext()) {
                 paintings = (Paintings) iterator.next();
-                if (paintings.b() * paintings.c() < i) {
+                if (paintings.getWidth() * paintings.getHeight() < i) {
                     iterator.remove();
                 }
             }
@@ -55,26 +55,31 @@ public class EntityPainting extends EntityHanging {
         this.setDirection(enumdirection);
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         nbttagcompound.setString("Motive", IRegistry.MOTIVE.getKey(this.art).toString());
         super.b(nbttagcompound);
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
-        this.art = (Paintings) IRegistry.MOTIVE.getOrDefault(MinecraftKey.a(nbttagcompound.getString("Motive")));
+        this.art = (Paintings) IRegistry.MOTIVE.get(MinecraftKey.a(nbttagcompound.getString("Motive")));
         super.a(nbttagcompound);
     }
 
-    public int getWidth() {
-        return this.art.b();
+    @Override
+    public int getHangingWidth() {
+        return this.art == null ? 1 : this.art.getWidth();
     }
 
-    public int getHeight() {
-        return this.art.c();
+    @Override
+    public int getHangingHeight() {
+        return this.art == null ? 1 : this.art.getHeight();
     }
 
+    @Override
     public void a(@Nullable Entity entity) {
-        if (this.world.getGameRules().getBoolean("doEntityDrops")) {
+        if (this.world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS)) {
             this.a(SoundEffects.ENTITY_PAINTING_BREAK, 1.0F, 1.0F);
             if (entity instanceof EntityHuman) {
                 EntityHuman entityhuman = (EntityHuman) entity;
@@ -88,11 +93,18 @@ public class EntityPainting extends EntityHanging {
         }
     }
 
-    public void m() {
+    @Override
+    public void playPlaceSound() {
         this.a(SoundEffects.ENTITY_PAINTING_PLACE, 1.0F, 1.0F);
     }
 
+    @Override
     public void setPositionRotation(double d0, double d1, double d2, float f, float f1) {
         this.setPosition(d0, d1, d2);
+    }
+
+    @Override
+    public Packet<?> N() {
+        return new PacketPlayOutSpawnEntityPainting(this);
     }
 }

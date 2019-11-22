@@ -33,14 +33,17 @@ public class CraftSkeletonHorse extends CraftAbstractHorse implements SkeletonHo
         return (EntityHorseSkeleton) super.getHandle();
     }
 
+    @Override
     public int getTrapTime() {
         return getHandle().getTrapTime();
     }
 
+    @Override
     public boolean isTrap() {
         return getHandle().isTrap();
     }
 
+    @Override
     public void setTrap(boolean trap) {
         getHandle().setTrap(trap);
     }

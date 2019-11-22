@@ -67,36 +67,37 @@ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
         return new BaseBlockPosition(this.getY() * baseblockposition.getZ() - this.getZ() * baseblockposition.getY(), this.getZ() * baseblockposition.getX() - this.getX() * baseblockposition.getZ(), this.getX() * baseblockposition.getY() - this.getY() * baseblockposition.getX());
     }
 
-    public double h(int i, int j, int k) {
-        double d0 = (double) (this.getX() - i);
-        double d1 = (double) (this.getY() - j);
-        double d2 = (double) (this.getZ() - k);
+    public boolean a(BaseBlockPosition baseblockposition, double d0) {
+        return this.distanceSquared((double) baseblockposition.x, (double) baseblockposition.y, (double) baseblockposition.z, false) < d0 * d0; // Paper
+    }
 
-        return Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
+    public boolean a(IPosition iposition, double d0) {
+        return this.distanceSquared(iposition.getX(), iposition.getY(), iposition.getZ(), true) < d0 * d0;
     }
 
     public double m(BaseBlockPosition baseblockposition) {
-        return this.h(baseblockposition.getX(), baseblockposition.getY(), baseblockposition.getZ());
+        return this.distanceSquared((double) baseblockposition.getX(), (double) baseblockposition.getY(), (double) baseblockposition.getZ(), true);
     }
 
-    public double distanceSquared(double d0, double d1, double d2) {
-        double d3 = (double) this.getX() - d0;
-        double d4 = (double) this.getY() - d1;
-        double d5 = (double) this.getZ() - d2;
-
-        return d3 * d3 + d4 * d4 + d5 * d5;
+    public double a(IPosition iposition, boolean flag) {
+        return this.distanceSquared(iposition.getX(), iposition.getY(), iposition.getZ(), flag);
     }
 
-    public double g(double d0, double d1, double d2) {
-        double d3 = (double) this.getX() + 0.5D - d0;
-        double d4 = (double) this.getY() + 0.5D - d1;
-        double d5 = (double) this.getZ() + 0.5D - d2;
+    public double distanceSquared(double d0, double d1, double d2, boolean flag) {
+        double d3 = flag ? 0.5D : 0.0D;
+        double d4 = (double) this.getX() + d3 - d0;
+        double d5 = (double) this.getY() + d3 - d1;
+        double d6 = (double) this.getZ() + d3 - d2;
 
-        return d3 * d3 + d4 * d4 + d5 * d5;
+        return d4 * d4 + d5 * d5 + d6 * d6;
     }
 
-    public double n(BaseBlockPosition baseblockposition) {
-        return this.distanceSquared((double) baseblockposition.getX(), (double) baseblockposition.getY(), (double) baseblockposition.getZ());
+    public int n(BaseBlockPosition baseblockposition) {
+        float f = (float) Math.abs(baseblockposition.getX() - this.x); // Paper
+        float f1 = (float) Math.abs(baseblockposition.getY() - this.y); // Paper
+        float f2 = (float) Math.abs(baseblockposition.getZ() - this.z); // Paper
+
+        return (int) (f + f1 + f2);
     }
 
     public String toString() {

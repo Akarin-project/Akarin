@@ -22,6 +22,6 @@ public class CraftBlockTag extends CraftTag<Block, Material> {
 
     @Override
     public Set<Material> getValues() {
-        return com.koloboke.collect.set.hash.HashObjSets.newImmutableSet(getHandle().a().stream().map((block) -> CraftMagicNumbers.getMaterial(block)).collect(Collectors.toSet())); // Akarin - koloboke
+        return Collections.unmodifiableSet(getHandle().a().stream().map((block) -> CraftMagicNumbers.getMaterial(block)).collect(Collectors.toSet()));
     }
 }

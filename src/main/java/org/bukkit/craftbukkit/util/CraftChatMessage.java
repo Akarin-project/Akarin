@@ -1,21 +1,19 @@
 package org.bukkit.craftbukkit.util;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import net.minecraft.server.ChatClickable;
+import net.minecraft.server.ChatClickable.EnumClickAction;
 import net.minecraft.server.ChatComponentText;
+import net.minecraft.server.ChatMessage;
 import net.minecraft.server.ChatModifier;
 import net.minecraft.server.EnumChatFormat;
-import net.minecraft.server.ChatClickable.EnumClickAction;
 import net.minecraft.server.IChatBaseComponent;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import net.minecraft.server.ChatMessage;
 import org.bukkit.ChatColor;
 
 public final class CraftChatMessage {
@@ -142,6 +140,10 @@ public final class CraftChatMessage {
         return (message == null || message.isEmpty()) ? null : new ChatComponentText(message);
     }
 
+    public static IChatBaseComponent wrapOrEmpty(String message) {
+        return (message == null) ? new ChatComponentText("") : new ChatComponentText(message);
+    }
+
     public static IChatBaseComponent fromStringOrNull(String message) {
         return fromStringOrNull(message, false);
     }
@@ -208,7 +210,7 @@ public final class CraftChatMessage {
                 ChatModifier modifier = text.getChatModifier() != null ?
                         text.getChatModifier() : new ChatModifier();
                 List<IChatBaseComponent> extras = new ArrayList<IChatBaseComponent>();
-                List<IChatBaseComponent> extrasOld = new ArrayList<IChatBaseComponent>(text.a());
+                List<IChatBaseComponent> extrasOld = new ArrayList<IChatBaseComponent>(text.getSiblings());
                 component = text = new ChatComponentText("");
 
                 int pos = 0;
@@ -243,21 +245,21 @@ public final class CraftChatMessage {
             }
         }
 
-        List extras = component.a();
+        List<IChatBaseComponent> extras = component.getSiblings();
         for (int i = 0; i < extras.size(); i++) {
-            IChatBaseComponent comp = (IChatBaseComponent) extras.get(i);
-            if (comp.getChatModifier() != null && comp.getChatModifier().h() == null) {
+            IChatBaseComponent comp = extras.get(i);
+            if (comp.getChatModifier() != null && comp.getChatModifier().getClickEvent() == null) {
                 extras.set(i, fixComponent(comp, matcher));
             }
         }
 
         if (component instanceof ChatMessage) {
-            Object[] subs = ((ChatMessage) component).l();
+            Object[] subs = ((ChatMessage) component).getArgs();
             for (int i = 0; i < subs.length; i++) {
                 Object comp = subs[i];
                 if (comp instanceof IChatBaseComponent) {
                     IChatBaseComponent c = (IChatBaseComponent) comp;
-                    if (c.getChatModifier() != null && c.getChatModifier().h() == null) {
+                    if (c.getChatModifier() != null && c.getChatModifier().getClickEvent() == null) {
                         subs[i] = fixComponent(c, matcher);
                     }
                 } else if (comp instanceof String && matcher.reset((String)comp).find()) {

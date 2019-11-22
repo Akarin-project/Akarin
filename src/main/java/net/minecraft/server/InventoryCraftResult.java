@@ -11,7 +11,7 @@ import org.bukkit.entity.HumanEntity;
 public class InventoryCraftResult implements IInventory, RecipeHolder {
 
     private final NonNullList<ItemStack> items;
-    private IRecipe b;
+    private IRecipe<?> b;
 
     // CraftBukkit start
     private int maxStack = MAX_STACK;
@@ -31,6 +31,11 @@ public class InventoryCraftResult implements IInventory, RecipeHolder {
         return new java.util.ArrayList<HumanEntity>();
     }
 
+    @Override
+    public int getMaxStackSize() {
+        return maxStack;
+    }
+
     public void setMaxStackSize(int size) {
         maxStack = size;
     }
@@ -45,11 +50,13 @@ public class InventoryCraftResult implements IInventory, RecipeHolder {
         this.items = NonNullList.a(1, ItemStack.a);
     }
 
+    @Override
     public int getSize() {
         return 1;
     }
 
-    public boolean P_() {
+    @Override
+    public boolean isNotEmpty() {
         Iterator iterator = this.items.iterator();
 
         ItemStack itemstack;
@@ -65,73 +72,47 @@ public class InventoryCraftResult implements IInventory, RecipeHolder {
         return false;
     }
 
+    @Override
     public ItemStack getItem(int i) {
         return (ItemStack) this.items.get(0);
     }
 
-    public IChatBaseComponent getDisplayName() {
-        return new ChatComponentText("Result");
-    }
-
-    public boolean hasCustomName() {
-        return false;
-    }
-
-    @Nullable
-    public IChatBaseComponent getCustomName() {
-        return null;
-    }
-
+    @Override
     public ItemStack splitStack(int i, int j) {
         return ContainerUtil.a(this.items, 0);
     }
 
+    @Override
     public ItemStack splitWithoutUpdate(int i) {
         return ContainerUtil.a(this.items, 0);
     }
 
+    @Override
     public void setItem(int i, ItemStack itemstack) {
         this.items.set(0, itemstack);
     }
 
-    public int getMaxStackSize() {
-        return maxStack; // CraftBukkit
-    }
-
+    @Override
     public void update() {}
 
+    @Override
     public boolean a(EntityHuman entityhuman) {
         return true;
     }
 
-    public void startOpen(EntityHuman entityhuman) {}
-
-    public void closeContainer(EntityHuman entityhuman) {}
-
-    public boolean b(int i, ItemStack itemstack) {
-        return true;
-    }
-
-    public int getProperty(int i) {
-        return 0;
-    }
-
-    public void setProperty(int i, int j) {}
-
-    public int h() {
-        return 0;
-    }
-
+    @Override
     public void clear() {
         this.items.clear();
     }
 
-    public void a(@Nullable IRecipe irecipe) {
+    @Override
+    public void a(@Nullable IRecipe<?> irecipe) {
         this.b = irecipe;
     }
 
     @Nullable
-    public IRecipe i() {
+    @Override
+    public IRecipe<?> U_() {
         return this.b;
     }
 }

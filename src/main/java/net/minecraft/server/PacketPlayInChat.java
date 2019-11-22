@@ -16,10 +16,12 @@ public class PacketPlayInChat implements Packet<PacketListenerPlayIn> {
         this.a = s;
     }
 
+    @Override
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
         this.a = packetdataserializer.e(256);
     }
 
+    @Override
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
         packetdataserializer.a(this.a);
     }

@@ -5,29 +5,31 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 
 public class RecipeBookServer extends RecipeBook {
 
-    private static final Logger g = LogManager.getLogger();
-    private final CraftingManager h;
+    private static final Logger LOGGER = LogManager.getLogger();
+    private final CraftingManager l;
 
     public RecipeBookServer(CraftingManager craftingmanager) {
-        this.h = craftingmanager;
+        this.l = craftingmanager;
     }
 
-    public int a(Collection<IRecipe> collection, EntityPlayer entityplayer) {
+    public int a(Collection<IRecipe<?>> collection, EntityPlayer entityplayer) {
         List<MinecraftKey> list = Lists.newArrayList();
         int i = 0;
         Iterator iterator = collection.iterator();
 
         while (iterator.hasNext()) {
-            IRecipe irecipe = (IRecipe) iterator.next();
+            IRecipe<?> irecipe = (IRecipe) iterator.next();
             MinecraftKey minecraftkey = irecipe.getKey();
 
-            if (!this.a.contains(minecraftkey) && !irecipe.c() && CraftEventFactory.handlePlayerRecipeListUpdateEvent(entityplayer, minecraftkey)) { // CraftBukkit
+            if (!this.a.contains(minecraftkey) && !irecipe.isComplex() && CraftEventFactory.handlePlayerRecipeListUpdateEvent(entityplayer, minecraftkey)) { // CraftBukkit
                 this.a(minecraftkey);
                 this.c(minecraftkey);
                 list.add(minecraftkey);
@@ -40,13 +42,13 @@ public class RecipeBookServer extends RecipeBook {
         return i;
     }
 
-    public int b(Collection<IRecipe> collection, EntityPlayer entityplayer) {
+    public int b(Collection<IRecipe<?>> collection, EntityPlayer entityplayer) {
         List<MinecraftKey> list = Lists.newArrayList();
         int i = 0;
         Iterator iterator = collection.iterator();
 
         while (iterator.hasNext()) {
-            IRecipe irecipe = (IRecipe) iterator.next();
+            IRecipe<?> irecipe = (IRecipe) iterator.next();
             MinecraftKey minecraftkey = irecipe.getKey();
 
             if (this.a.contains(minecraftkey)) {
@@ -65,7 +67,7 @@ public class RecipeBookServer extends RecipeBook {
         entityplayer.playerConnection.sendPacket(new PacketPlayOutRecipes(packetplayoutrecipes_action, list, Collections.emptyList(), this.c, this.d, this.e, this.f));
     }
 
-    public NBTTagCompound e() {
+    public NBTTagCompound save() {
         NBTTagCompound nbttagcompound = new NBTTagCompound();
 
         nbttagcompound.setBoolean("isGuiOpen", this.c);
@@ -77,12 +79,12 @@ public class RecipeBookServer extends RecipeBook {
 
         while (iterator.hasNext()) {
             MinecraftKey minecraftkey = (MinecraftKey) iterator.next();
-
             // Paper start - ignore missing recipes
-            IRecipe recipe = this.h.a(minecraftkey);
-            if (recipe == null) continue;
+            final Optional<? extends IRecipe<?>> recipe = this.l.a(minecraftkey);
+            if (!recipe.isPresent()) continue;
             // Paper end
-            nbttaglist.add((NBTBase) (new NBTTagString(minecraftkey.toString())));
+
+            nbttaglist.add(new NBTTagString(minecraftkey.toString()));
         }
 
         nbttagcompound.set("recipes", nbttaglist);
@@ -91,12 +93,12 @@ public class RecipeBookServer extends RecipeBook {
 
         while (iterator1.hasNext()) {
             MinecraftKey minecraftkey1 = (MinecraftKey) iterator1.next();
-
             // Paper start - ignore missing recipes
-            IRecipe recipe = this.h.a(minecraftkey1);
-            if (recipe == null) continue;
+            final Optional<? extends IRecipe<?>> recipe = this.l.a(minecraftkey1);
+            if (!recipe.isPresent()) continue;
             // Paper end
-            nbttaglist1.add((NBTBase) (new NBTTagString(minecraftkey1.toString())));
+
+            nbttaglist1.add(new NBTTagString(minecraftkey1.toString()));
         }
 
         nbttagcompound.set("toBeDisplayed", nbttaglist1);
@@ -110,27 +112,27 @@ public class RecipeBookServer extends RecipeBook {
         this.f = nbttagcompound.getBoolean("isFurnaceFilteringCraftable");
         NBTTagList nbttaglist = nbttagcompound.getList("recipes", 8);
 
-        for (int i = 0; i < nbttaglist.size(); ++i) {
-            MinecraftKey minecraftkey = new MinecraftKey(nbttaglist.getString(i));
-            IRecipe irecipe = this.h.a(minecraftkey);
-
-            if (irecipe == null) {
-                RecipeBookServer.g.error("Tried to load unrecognized recipe: {} removed now.", minecraftkey);
-            } else {
-                this.a(irecipe);
-            }
-        }
-
+        this.a(nbttaglist, this::a);
         NBTTagList nbttaglist1 = nbttagcompound.getList("toBeDisplayed", 8);
 
-        for (int j = 0; j < nbttaglist1.size(); ++j) {
-            MinecraftKey minecraftkey1 = new MinecraftKey(nbttaglist1.getString(j));
-            IRecipe irecipe1 = this.h.a(minecraftkey1);
+        this.a(nbttaglist1, this::f);
+    }
 
-            if (irecipe1 == null) {
-                RecipeBookServer.g.error("Tried to load unrecognized recipe: {} removed now.", minecraftkey1);
-            } else {
-                this.f(irecipe1);
+    private void a(NBTTagList nbttaglist, Consumer<IRecipe<?>> consumer) {
+        for (int i = 0; i < nbttaglist.size(); ++i) {
+            String s = nbttaglist.getString(i);
+
+            try {
+                MinecraftKey minecraftkey = new MinecraftKey(s);
+                Optional<? extends IRecipe<?>> optional = this.l.a(minecraftkey);
+
+                if (!optional.isPresent()) {
+                    RecipeBookServer.LOGGER.error("Tried to load unrecognized recipe: {} removed now.", minecraftkey);
+                } else {
+                    consumer.accept(optional.get());
+                }
+            } catch (ResourceKeyInvalidException resourcekeyinvalidexception) {
+                RecipeBookServer.LOGGER.error("Tried to load improperly formatted recipe: {} removed now.", s);
             }
         }
 

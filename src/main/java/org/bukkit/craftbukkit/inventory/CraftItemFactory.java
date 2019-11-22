@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -10,8 +10,6 @@ import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import com.google.common.collect.ImmutableSet;
 
 public final class CraftItemFactory implements ItemFactory {
     static final Color DEFAULT_LEATHER_COLOR = Color.fromRGB(0xA06540);
@@ -34,12 +32,14 @@ public final class CraftItemFactory implements ItemFactory {
             .add("generic.luck")
             .add("horse.jumpStrength")
             .add("zombie.spawnReinforcements")
+            .add("generic.attackKnockback")
             .build();
     }
 
     private CraftItemFactory() {
     }
 
+    @Override
     public boolean isApplicable(ItemMeta meta, ItemStack itemstack) {
         if (itemstack == null) {
             return false;
@@ -47,6 +47,7 @@ public final class CraftItemFactory implements ItemFactory {
         return isApplicable(meta, itemstack.getType());
     }
 
+    @Override
     public boolean isApplicable(ItemMeta meta, Material type) {
         type = CraftLegacy.fromLegacy(type); // This may be called from legacy item stacks, try to get the right material
         if (type == null || meta == null) {
@@ -59,6 +60,7 @@ public final class CraftItemFactory implements ItemFactory {
         return ((CraftMetaItem) meta).applicableTo(type);
     }
 
+    @Override
     public ItemMeta getItemMeta(Material material) {
         Validate.notNull(material, "Material cannot be null");
         return getItemMeta(material, null);
@@ -87,6 +89,7 @@ public final class CraftItemFactory implements ItemFactory {
         case ZOMBIE_WALL_HEAD:
             return meta instanceof CraftMetaSkull ? meta : new CraftMetaSkull(meta);
         case LEATHER_HELMET:
+        case LEATHER_HORSE_ARMOR:
         case LEATHER_CHESTPLATE:
         case LEATHER_LEGGINGS:
         case LEATHER_BOOTS:
@@ -139,18 +142,20 @@ public final class CraftItemFactory implements ItemFactory {
             return meta instanceof CraftMetaBanner ? meta : new CraftMetaBanner(meta);
         case BAT_SPAWN_EGG:
         case BLAZE_SPAWN_EGG:
+        case CAT_SPAWN_EGG:
         case CAVE_SPIDER_SPAWN_EGG:
         case CHICKEN_SPAWN_EGG:
         case COD_SPAWN_EGG:
         case COW_SPAWN_EGG:
         case CREEPER_SPAWN_EGG:
         case DOLPHIN_SPAWN_EGG:
-        case DROWNED_SPAWN_EGG:
         case DONKEY_SPAWN_EGG:
+        case DROWNED_SPAWN_EGG:
         case ELDER_GUARDIAN_SPAWN_EGG:
         case ENDERMAN_SPAWN_EGG:
         case ENDERMITE_SPAWN_EGG:
         case EVOKER_SPAWN_EGG:
+        case FOX_SPAWN_EGG:
         case GHAST_SPAWN_EGG:
         case GUARDIAN_SPAWN_EGG:
         case HORSE_SPAWN_EGG:
@@ -160,12 +165,15 @@ public final class CraftItemFactory implements ItemFactory {
         case MOOSHROOM_SPAWN_EGG:
         case MULE_SPAWN_EGG:
         case OCELOT_SPAWN_EGG:
+        case PANDA_SPAWN_EGG:
         case PARROT_SPAWN_EGG:
         case PHANTOM_SPAWN_EGG:
         case PIG_SPAWN_EGG:
+        case PILLAGER_SPAWN_EGG:
         case POLAR_BEAR_SPAWN_EGG:
         case PUFFERFISH_SPAWN_EGG:
         case RABBIT_SPAWN_EGG:
+        case RAVAGER_SPAWN_EGG:
         case SALMON_SPAWN_EGG:
         case SHEEP_SPAWN_EGG:
         case SHULKER_SPAWN_EGG:
@@ -176,11 +184,13 @@ public final class CraftItemFactory implements ItemFactory {
         case SPIDER_SPAWN_EGG:
         case SQUID_SPAWN_EGG:
         case STRAY_SPAWN_EGG:
+        case TRADER_LLAMA_SPAWN_EGG:
         case TROPICAL_FISH_SPAWN_EGG:
         case TURTLE_SPAWN_EGG:
         case VEX_SPAWN_EGG:
         case VILLAGER_SPAWN_EGG:
         case VINDICATOR_SPAWN_EGG:
+        case WANDERING_TRADER_SPAWN_EGG:
         case WITCH_SPAWN_EGG:
         case WITHER_SKELETON_SPAWN_EGG:
         case WOLF_SPAWN_EGG:
@@ -189,17 +199,28 @@ public final class CraftItemFactory implements ItemFactory {
         case ZOMBIE_SPAWN_EGG:
         case ZOMBIE_VILLAGER_SPAWN_EGG:
             return meta instanceof CraftMetaSpawnEgg ? meta : new CraftMetaSpawnEgg(meta);
+        case ARMOR_STAND:
+            return meta instanceof CraftMetaArmorStand ? meta : new CraftMetaArmorStand(meta);
         case KNOWLEDGE_BOOK:
             return meta instanceof CraftMetaKnowledgeBook ? meta : new CraftMetaKnowledgeBook(meta);
-        case ARMOR_STAND:
-            return meta instanceof CraftMetaArmorStand ? meta : new CraftMetaArmorStand(meta); // Paper
         case FURNACE:
         case CHEST:
         case TRAPPED_CHEST:
         case JUKEBOX:
         case DISPENSER:
         case DROPPER:
-        case SIGN:
+        case ACACIA_SIGN:
+        case ACACIA_WALL_SIGN:
+        case BIRCH_SIGN:
+        case BIRCH_WALL_SIGN:
+        case DARK_OAK_SIGN:
+        case DARK_OAK_WALL_SIGN:
+        case JUNGLE_SIGN:
+        case JUNGLE_WALL_SIGN:
+        case OAK_SIGN:
+        case OAK_WALL_SIGN:
+        case SPRUCE_SIGN:
+        case SPRUCE_WALL_SIGN:
         case SPAWNER:
         case BREWING_STAND:
         case ENCHANTING_TABLE:
@@ -230,14 +251,26 @@ public final class CraftItemFactory implements ItemFactory {
         case RED_SHULKER_BOX:
         case BLACK_SHULKER_BOX:
         case ENDER_CHEST:
-            return new CraftMetaBlockState(meta, material);
+        case BARREL:
+        case BELL:
+        case BLAST_FURNACE:
+        case CAMPFIRE:
+        case JIGSAW:
+        case LECTERN:
+        case SMOKER:
+          return new CraftMetaBlockState(meta, material);
         case TROPICAL_FISH_BUCKET:
             return meta instanceof CraftMetaTropicalFishBucket ? meta : new CraftMetaTropicalFishBucket(meta);
+        case CROSSBOW:
+            return meta instanceof CraftMetaCrossbow ? meta : new CraftMetaCrossbow(meta);
+        case SUSPICIOUS_STEW:
+            return meta instanceof CraftMetaSuspiciousStew ? meta : new CraftMetaSuspiciousStew(meta);
         default:
             return new CraftMetaItem(meta);
         }
     }
 
+    @Override
     public boolean equals(ItemMeta meta1, ItemMeta meta2) {
         if (meta1 == meta2) {
             return true;
@@ -275,11 +308,13 @@ public final class CraftItemFactory implements ItemFactory {
         return instance;
     }
 
+    @Override
     public ItemMeta asMetaFor(ItemMeta meta, ItemStack stack) {
         Validate.notNull(stack, "Stack cannot be null");
         return asMetaFor(meta, stack.getType());
     }
 
+    @Override
     public ItemMeta asMetaFor(ItemMeta meta, Material material) {
         Validate.notNull(material, "Material cannot be null");
         if (!(meta instanceof CraftMetaItem)) {
@@ -288,6 +323,7 @@ public final class CraftItemFactory implements ItemFactory {
         return getItemMeta(material, (CraftMetaItem) meta);
     }
 
+    @Override
     public Color getDefaultLeatherColor() {
         return DEFAULT_LEATHER_COLOR;
     }

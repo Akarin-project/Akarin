@@ -1,207 +1,147 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Lists;
-import java.util.Iterator;
+import com.mojang.datafixers.util.Either;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReferenceArray;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class PlayerChunk {
 
-    private static final Logger a = LogManager.getLogger();
-    private final PlayerChunkMap playerChunkMap;
-    public final List<EntityPlayer> players = Lists.newArrayList();
-    private final ChunkCoordIntPair location;
-    private final short[] dirtyBlocks = new short[64];
-    @Nullable
-    public Chunk chunk;
+    public static final Either<IChunkAccess, PlayerChunk.Failure> UNLOADED_CHUNK_ACCESS = Either.right(PlayerChunk.Failure.b);
+    public static final CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> UNLOADED_CHUNK_ACCESS_FUTURE = CompletableFuture.completedFuture(PlayerChunk.UNLOADED_CHUNK_ACCESS);
+    public static final Either<Chunk, PlayerChunk.Failure> UNLOADED_CHUNK = Either.right(PlayerChunk.Failure.b);
+    private static final CompletableFuture<Either<Chunk, PlayerChunk.Failure>> UNLOADED_CHUNK_FUTURE = CompletableFuture.completedFuture(PlayerChunk.UNLOADED_CHUNK);
+    private static final List<ChunkStatus> CHUNK_STATUSES = ChunkStatus.a();
+    private static final PlayerChunk.State[] CHUNK_STATES = PlayerChunk.State.values();
+    private final AtomicReferenceArray<CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>>> statusFutures;
+    private volatile CompletableFuture<Either<Chunk, PlayerChunk.Failure>> fullChunkFuture;
+    private volatile CompletableFuture<Either<Chunk, PlayerChunk.Failure>> tickingFuture;
+    private volatile CompletableFuture<Either<Chunk, PlayerChunk.Failure>> entityTickingFuture;
+    private CompletableFuture<IChunkAccess> chunkSave;
+    public int oldTicketLevel;
+    private int ticketLevel;
+    private int n;
+    final ChunkCoordIntPair location; // Paper - private -> package
+    private final short[] dirtyBlocks;
     private int dirtyCount;
-    private int h;
-    private long i;
-    boolean done; // Paper - package-private
-    boolean chunkExists; // Paper
-    // Paper start
-    PaperAsyncChunkProvider.CancellableChunkRequest chunkRequest;
-    private java.util.function.Consumer<Chunk> chunkLoadedConsumer = chunk -> {
-        chunkRequest = null;
-        PlayerChunk pChunk = PlayerChunk.this;
-        pChunk.chunk = chunk;
-        markChunkUsed(); // Paper - delay chunk unloads
-    };
-    private boolean markedHigh = false;
-    void checkHighPriority(EntityPlayer player) {
-        if (done || markedHigh || chunk != null) {
-            return;
-        }
-        final double dist = getDistance(player.locX, player.locZ);
-        if (dist > 8) {
-            return;
-        }
-        if (dist >= 3 && getDistance(player, 5) > 3.5) {
-            return;
-        }
+    private int r;
+    private int s;
+    private int t;
+    private int u;
+    private final LightEngine lightEngine;
+    private final PlayerChunk.c w;
+    public final PlayerChunk.d players;
+    private boolean hasBeenLoaded;
 
-        markedHigh = true;
-        playerChunkMap.getWorld().getChunkProvider().bumpPriority(location);
-        if (chunkRequest == null) {
-            requestChunkIfNeeded(PlayerChunkMap.CAN_GEN_CHUNKS.test(player));
-        }
-    }
-    private void requestChunkIfNeeded(boolean flag) {
-        if (chunkRequest == null) {
-            chunkRequest = this.playerChunkMap.getWorld().getChunkProvider().requestChunk(this.location.x, this.location.z, flag, markedHigh, chunkLoadedConsumer);
-            this.chunk = chunkRequest.getChunk(); // Paper)
-            markChunkUsed(); // Paper - delay chunk unloads
-        }
-    }
-    private double getDistance(EntityPlayer player, int inFront) {
-        final float yaw = MathHelper.normalizeYaw(player.yaw);
-        final double x = player.locX + (inFront * Math.cos(Math.toRadians(yaw)));
-        final double z = player.locZ + (inFront * Math.sin(Math.toRadians(yaw)));
-        return getDistance(x, z);
+    public PlayerChunk(ChunkCoordIntPair chunkcoordintpair, int i, LightEngine lightengine, PlayerChunk.c playerchunk_c, PlayerChunk.d playerchunk_d) {
+        this.statusFutures = new AtomicReferenceArray(PlayerChunk.CHUNK_STATUSES.size());
+        this.fullChunkFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
+        this.tickingFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
+        this.entityTickingFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
+        this.chunkSave = CompletableFuture.completedFuture(null); // CraftBukkit - decompile error
+        this.dirtyBlocks = new short[64];
+        this.location = chunkcoordintpair;
+        this.lightEngine = lightengine;
+        this.w = playerchunk_c;
+        this.players = playerchunk_d;
+        this.oldTicketLevel = PlayerChunkMap.GOLDEN_TICKET + 1;
+        this.ticketLevel = this.oldTicketLevel;
+        this.n = this.oldTicketLevel;
+        this.a(i);
     }
 
-    private double getDistance(double blockX, double blockZ) {
-        final double x = location.x - ((int)Math.floor(blockX) >> 4);
-        final double z = location.z - ((int)Math.floor(blockZ) >> 4);
-        return Math.sqrt((x * x) + (z * z));
+    // CraftBukkit start
+    public Chunk getFullChunk() {
+        if (!getChunkState(this.oldTicketLevel).isAtLeast(PlayerChunk.State.BORDER)) return null; // note: using oldTicketLevel for isLoaded checks
+        CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> statusFuture = this.getStatusFutureUnchecked(ChunkStatus.FULL);
+        Either<IChunkAccess, PlayerChunk.Failure> either = (Either<IChunkAccess, PlayerChunk.Failure>) statusFuture.getNow(null);
+        return either == null ? null : (Chunk) either.left().orElse(null);
+    }
+    // CraftBukkit end
+    // Paper start - "real" get full chunk immediately
+    public Chunk getFullChunkIfCached() {
+        // Note: Copied from above without ticket level check
+        CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> statusFuture = this.getStatusFutureUnchecked(ChunkStatus.FULL);
+        Either<IChunkAccess, PlayerChunk.Failure> either = (Either<IChunkAccess, PlayerChunk.Failure>) statusFuture.getNow(null);
+        return either == null ? null : (Chunk) either.left().orElse(null);
     }
 
-    public PlayerChunk(PlayerChunkMap playerchunkmap, int i, int j) {
-        this.playerChunkMap = playerchunkmap;
-        this.location = new ChunkCoordIntPair(i, j);
-        ChunkProviderServer chunkproviderserver = playerchunkmap.getWorld().getChunkProvider();
-
-        chunkproviderserver.a(i, j);
-        this.chunk = chunkproviderserver.getChunkAt(i, j, false, false); // Paper
-        this.chunkExists = this.chunk != null || chunkproviderserver.chunkGoingToExists(i, j); // Paper
-        markChunkUsed(); // Paper - delay chunk unloads
+    public IChunkAccess getAvailableChunkNow() {
+        // TODO can we just getStatusFuture(EMPTY)?
+        for (ChunkStatus curr = ChunkStatus.FULL, next = curr.getPreviousStatus(); curr != next; curr = next, next = next.getPreviousStatus()) {
+            CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> future = this.getStatusFutureUnchecked(curr);
+            Either<IChunkAccess, PlayerChunk.Failure> either = future.getNow(null);
+            if (either == null || !either.left().isPresent()) {
+                continue;
+            }
+            return either.left().get();
+        }
+        return null;
     }
-
-    // Paper start
-    private void markChunkUsed() {
-        if (!chunkHasPlayers && chunkRequest != null) {
-            chunkRequest.cancel();
-            chunkRequest = null;
-        }
-        if (chunk == null) {
-            return;
-        }
-        if (chunkHasPlayers) {
-            chunk.scheduledForUnload = null;
-        } else if (chunk.scheduledForUnload == null) {
-            chunk.scheduledForUnload = System.currentTimeMillis();
-        }
-    }
-    private boolean chunkHasPlayers = false;
     // Paper end
 
-    public ChunkCoordIntPair a() {
-        return this.location;
+    public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> getStatusFutureUnchecked(ChunkStatus chunkstatus) {
+        CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = (CompletableFuture) this.statusFutures.get(chunkstatus.c());
+
+        return completablefuture == null ? PlayerChunk.UNLOADED_CHUNK_ACCESS_FUTURE : completablefuture;
     }
 
-    public void a(EntityPlayer entityplayer) {
-        if (this.players.contains(entityplayer)) {
-            PlayerChunk.a.debug("Failed to add player. {} already is in chunk {}, {}", entityplayer, this.location.x, this.location.z);
-        } else {
-            if (this.players.isEmpty()) {
-                this.i = this.playerChunkMap.getWorld().getTime();
-                chunkHasPlayers = true; // Paper - delay chunk unloads
-                markChunkUsed(); // Paper - delay chunk unloads
-            }
-
-            this.players.add(entityplayer);
-            if (this.done) {
-                this.sendChunk(entityplayer);
-            } else checkHighPriority(entityplayer); // Paper
-
-        }
+    public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> b(ChunkStatus chunkstatus) {
+        return getChunkStatus(this.ticketLevel).b(chunkstatus) ? this.getStatusFutureUnchecked(chunkstatus) : PlayerChunk.UNLOADED_CHUNK_ACCESS_FUTURE;
     }
 
-    public void b(EntityPlayer entityplayer) {
-        if (this.players.contains(entityplayer)) {
-            if (this.done) {
-                entityplayer.playerConnection.sendPacket(new PacketPlayOutUnloadChunk(this.location.x, this.location.z));
-            }
-
-            this.players.remove(entityplayer);
-            if (this.players.isEmpty()) {
-                chunkHasPlayers = false; // Paper - delay chunk unloads
-                markChunkUsed(); // Paper - delay chunk unloads
-                this.playerChunkMap.b(this);
-            }
-
-        }
+    public CompletableFuture<Either<Chunk, PlayerChunk.Failure>> a() {
+        return this.tickingFuture;
     }
 
-    public boolean a(boolean flag) {
-        if (this.chunk != null) {
-            return true;
-        } else {
-            // Paper start - async chunks
-            requestChunkIfNeeded(flag);
-            // Paper end
-            return this.chunk != null;
-        }
+    public CompletableFuture<Either<Chunk, PlayerChunk.Failure>> b() {
+        return this.entityTickingFuture;
     }
 
-    public boolean sendAll() { return b(); } // Paper - OBFHELPER
-    public boolean b() {
-        if (this.done) {
-            return true;
-        } else if (this.chunk == null) {
-            return false;
-        } else if (!this.chunk.isReady()) {
-            return false;
-        } else if (!this.chunk.world.chunkPacketBlockController.onChunkPacketCreate(this.chunk, '\uffff', false)) { // Paper - Anti-Xray - Load nearby chunks if necessary
-            return false; // Paper - Anti-Xray - Wait and try again later
-        } else {
-            this.dirtyCount = 0;
-            this.h = 0;
-            this.done = true;
-            if (!this.players.isEmpty()) {
-                Packet<?> packet = new PacketPlayOutMapChunk(this.chunk, 65535);
-                Iterator iterator = this.players.iterator();
+    public CompletableFuture<Either<Chunk, PlayerChunk.Failure>> c() {
+        return this.fullChunkFuture;
+    }
 
-                while (iterator.hasNext()) {
-                    EntityPlayer entityplayer = (EntityPlayer) iterator.next();
+    @Nullable
+    public Chunk getChunk() {
+        CompletableFuture<Either<Chunk, PlayerChunk.Failure>> completablefuture = this.a();
+        Either<Chunk, PlayerChunk.Failure> either = (Either) completablefuture.getNow(null); // CraftBukkit - decompile error
 
-                    entityplayer.playerConnection.sendPacket(packet);
-                    this.playerChunkMap.getWorld().getTracker().a(entityplayer, this.chunk);
+        return either == null ? null : (Chunk) either.left().orElse(null); // CraftBukkit - decompile error
+    }
+
+    @Nullable
+    public IChunkAccess f() {
+        for (int i = PlayerChunk.CHUNK_STATUSES.size() - 1; i >= 0; --i) {
+            ChunkStatus chunkstatus = (ChunkStatus) PlayerChunk.CHUNK_STATUSES.get(i);
+            CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = this.getStatusFutureUnchecked(chunkstatus);
+
+            if (!completablefuture.isCompletedExceptionally()) {
+                Optional<IChunkAccess> optional = ((Either) completablefuture.getNow(PlayerChunk.UNLOADED_CHUNK_ACCESS)).left();
+
+                if (optional.isPresent()) {
+                    return (IChunkAccess) optional.get();
                 }
             }
-
-            return true;
         }
+
+        return null;
     }
 
-    public void sendChunk(EntityPlayer entityplayer) {
-        if (this.done) {
-            this.chunk.world.chunkPacketBlockController.onChunkPacketCreate(this.chunk, '\uffff', true); // Paper - Anti-Xray - Load nearby chunks if necessary
-            entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunk(this.chunk, 65535));
-            this.playerChunkMap.getWorld().getTracker().a(entityplayer, this.chunk);
-        }
-    }
-
-    public void c() {
-        long i = this.playerChunkMap.getWorld().getTime();
-
-        if (this.chunk != null) {
-            this.chunk.b(this.chunk.m() + i - this.i);
-        }
-
-        this.i = i;
+    public CompletableFuture<IChunkAccess> getChunkSave() {
+        return this.chunkSave;
     }
 
     public void a(int i, int j, int k) {
-        if (this.done) {
-            if (this.dirtyCount == 0) {
-                this.playerChunkMap.a(this);
-            }
+        Chunk chunk = this.getChunk();
 
-            this.h |= 1 << (j >> 4);
+        if (chunk != null) {
+            this.r |= 1 << (j >> 4);
             if (this.dirtyCount < 64) {
                 short short0 = (short) (i << 12 | k << 8 | j);
 
@@ -217,114 +157,330 @@ public class PlayerChunk {
         }
     }
 
-    public void a(Packet<?> packet) {
-        if (this.done) {
-            for (int i = 0; i < this.players.size(); ++i) {
-                ((EntityPlayer) this.players.get(i)).playerConnection.sendPacket(packet);
+    public void a(EnumSkyBlock enumskyblock, int i) {
+        Chunk chunk = this.getChunk();
+
+        if (chunk != null) {
+            chunk.setNeedsSaving(true);
+            if (enumskyblock == EnumSkyBlock.SKY) {
+                this.u |= 1 << i - -1;
+            } else {
+                this.t |= 1 << i - -1;
             }
 
         }
     }
 
-    public void d() {
-        if (this.done && this.chunk != null) {
-            if (this.dirtyCount != 0) {
-                int i;
-                int j;
-                int k;
+    public void a(Chunk chunk) {
+        if (this.dirtyCount != 0 || this.u != 0 || this.t != 0) {
+            World world = chunk.getWorld();
 
-                if (this.dirtyCount == 1) {
-                    i = (this.dirtyBlocks[0] >> 12 & 15) + this.location.x * 16;
-                    j = this.dirtyBlocks[0] & 255;
-                    k = (this.dirtyBlocks[0] >> 8 & 15) + this.location.z * 16;
-                    BlockPosition blockposition = new BlockPosition(i, j, k);
+            if (this.dirtyCount == 64) {
+                // Paper start - Anti-Xray - Load nearby chunks if necessary
+                if (!chunk.world.chunkPacketBlockController.onChunkPacketCreate(chunk, '\uffff', false)) {
+                    return;
+                }
+                // Paper end
+                this.s = -1;
+            }
 
-                    this.a((Packet) (new PacketPlayOutBlockChange(this.playerChunkMap.getWorld(), blockposition)));
-                    if (this.playerChunkMap.getWorld().getType(blockposition).getBlock().isTileEntity()) {
-                        this.a(this.playerChunkMap.getWorld().getTileEntity(blockposition));
-                    }
-                } else if (this.dirtyCount == 64) {
-                    // Paper - Anti-Xray - Loading chunks here could cause a ConcurrentModificationException #1104
-                    // Paper - Anti-Xray - TODO: Check if this is still the case for 1.13
-                    //this.chunk.world.chunkPacketBlockController.onChunkPacketCreate(this.chunk, this.h, true); // Paper - Anti-Xray - Load nearby chunks if necessary
-                    this.a((Packet) (new PacketPlayOutMapChunk(this.chunk, this.h)));
-                } else {
-                    this.a((Packet) (new PacketPlayOutMultiBlockChange(this.dirtyCount, this.dirtyBlocks, this.chunk)));
+            int i;
+            int j;
 
-                    for (i = 0; i < this.dirtyCount; ++i) {
-                        j = (this.dirtyBlocks[i] >> 12 & 15) + this.location.x * 16;
-                        k = this.dirtyBlocks[i] & 255;
-                        int l = (this.dirtyBlocks[i] >> 8 & 15) + this.location.z * 16;
-                        BlockPosition blockposition1 = new BlockPosition(j, k, l);
-
-                        if (this.playerChunkMap.getWorld().getType(blockposition1).getBlock().isTileEntity()) {
-                            this.a(this.playerChunkMap.getWorld().getTileEntity(blockposition1));
-                        }
-                    }
+            if (this.u != 0 || this.t != 0) {
+                this.a(new PacketPlayOutLightUpdate(chunk.getPos(), this.lightEngine, this.u & ~this.s, this.t & ~this.s), true);
+                i = this.u & this.s;
+                j = this.t & this.s;
+                if (i != 0 || j != 0) {
+                    this.a(new PacketPlayOutLightUpdate(chunk.getPos(), this.lightEngine, i, j), false);
                 }
 
-                this.dirtyCount = 0;
-                this.h = 0;
+                this.u = 0;
+                this.t = 0;
+                this.s &= ~(this.u & this.t);
             }
+
+            int k;
+
+            if (this.dirtyCount == 1) {
+                i = (this.dirtyBlocks[0] >> 12 & 15) + this.location.x * 16;
+                j = this.dirtyBlocks[0] & 255;
+                k = (this.dirtyBlocks[0] >> 8 & 15) + this.location.z * 16;
+                BlockPosition blockposition = new BlockPosition(i, j, k);
+
+                this.a(new PacketPlayOutBlockChange(world, blockposition), false);
+                if (world.getType(blockposition).getBlock().isTileEntity()) {
+                    this.a(world, blockposition);
+                }
+            } else if (this.dirtyCount == 64) {
+                this.a(new PacketPlayOutMapChunk(chunk, this.r, true), false); // Paper - Anti-Xray
+            } else if (this.dirtyCount != 0) {
+                this.a(new PacketPlayOutMultiBlockChange(this.dirtyCount, this.dirtyBlocks, chunk), false);
+
+                for (i = 0; i < this.dirtyCount; ++i) {
+                    j = (this.dirtyBlocks[i] >> 12 & 15) + this.location.x * 16;
+                    k = this.dirtyBlocks[i] & 255;
+                    int l = (this.dirtyBlocks[i] >> 8 & 15) + this.location.z * 16;
+                    BlockPosition blockposition1 = new BlockPosition(j, k, l);
+
+                    if (world.getType(blockposition1).getBlock().isTileEntity()) {
+                        this.a(world, blockposition1);
+                    }
+                }
+            }
+
+            this.dirtyCount = 0;
+            this.r = 0;
         }
     }
 
-    private void a(@Nullable TileEntity tileentity) {
+    private void a(World world, BlockPosition blockposition) {
+        TileEntity tileentity = world.getTileEntity(blockposition);
+
         if (tileentity != null) {
             PacketPlayOutTileEntityData packetplayouttileentitydata = tileentity.getUpdatePacket();
 
             if (packetplayouttileentitydata != null) {
-                this.a((Packet) packetplayouttileentitydata);
+                this.a(packetplayouttileentitydata, false);
             }
         }
 
     }
 
-    public boolean d(EntityPlayer entityplayer) {
-        return this.players.contains(entityplayer);
+    private void a(Packet<?> packet, boolean flag) {
+        this.players.a(this.location, flag).forEach((entityplayer) -> {
+            entityplayer.playerConnection.sendPacket(packet);
+        });
     }
 
-    public boolean a(Predicate<EntityPlayer> predicate) {
-        return this.players.stream().anyMatch(predicate);
-    }
+    public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> a(ChunkStatus chunkstatus, PlayerChunkMap playerchunkmap) {
+        int i = chunkstatus.c();
+        CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = (CompletableFuture) this.statusFutures.get(i);
 
-    public boolean a(double d0, Predicate<EntityPlayer> predicate) {
-        int i = 0;
+        if (completablefuture != null) {
+            Either<IChunkAccess, PlayerChunk.Failure> either = (Either) completablefuture.getNow(null); // CraftBukkit - decompile error
 
-        for (int j = this.players.size(); i < j; ++i) {
-            EntityPlayer entityplayer = (EntityPlayer) this.players.get(i);
-
-            if (predicate.test(entityplayer) && this.location.a(entityplayer) < d0 * d0) {
-                return true;
+            if (either == null || either.left().isPresent()) {
+                return completablefuture;
             }
         }
 
-        return false;
+        if (getChunkStatus(this.ticketLevel).b(chunkstatus)) {
+            CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture1 = playerchunkmap.a(this, chunkstatus);
+
+            this.a(completablefuture1);
+            this.statusFutures.set(i, completablefuture1);
+            return completablefuture1;
+        } else {
+            return completablefuture == null ? PlayerChunk.UNLOADED_CHUNK_ACCESS_FUTURE : completablefuture;
+        }
     }
 
-    public boolean isDone() { return e(); } // Paper - OBFHELPER
-    public boolean e() {
-        return this.done;
+    private void a(CompletableFuture<? extends Either<? extends IChunkAccess, PlayerChunk.Failure>> completablefuture) {
+        this.chunkSave = this.chunkSave.thenCombine(completablefuture, (ichunkaccess, either) -> {
+            return (IChunkAccess) either.map((ichunkaccess1) -> {
+                return ichunkaccess1;
+            }, (playerchunk_failure) -> {
+                return ichunkaccess;
+            });
+        });
     }
 
-    @Nullable
-    public Chunk f() {
-        return this.chunk;
+    public ChunkCoordIntPair i() {
+        return this.location;
     }
 
-    public double g() {
-        double d0 = Double.MAX_VALUE;
-        Iterator iterator = this.players.iterator();
+    public int getTicketLevel() {
+        return this.ticketLevel;
+    }
 
-        while (iterator.hasNext()) {
-            EntityPlayer entityplayer = (EntityPlayer) iterator.next();
-            double d1 = this.location.a(entityplayer);
+    public int k() {
+        return this.n;
+    }
 
-            if (d1 < d0) {
-                d0 = d1;
+    private void d(int i) {
+        this.n = i;
+    }
+
+    public void a(int i) {
+        this.ticketLevel = i;
+    }
+
+    protected void a(PlayerChunkMap playerchunkmap) {
+        ChunkStatus chunkstatus = getChunkStatus(this.oldTicketLevel);
+        ChunkStatus chunkstatus1 = getChunkStatus(this.ticketLevel);
+        boolean flag = this.oldTicketLevel <= PlayerChunkMap.GOLDEN_TICKET;
+        boolean flag1 = this.ticketLevel <= PlayerChunkMap.GOLDEN_TICKET; // Paper - diff on change: (flag1 = new ticket level is in loadable range)
+        PlayerChunk.State playerchunk_state = getChunkState(this.oldTicketLevel);
+        PlayerChunk.State playerchunk_state1 = getChunkState(this.ticketLevel);
+        // CraftBukkit start
+        // ChunkUnloadEvent: Called before the chunk is unloaded: isChunkLoaded is still true and chunk can still be modified by plugins.
+        if (playerchunk_state.isAtLeast(PlayerChunk.State.BORDER) && !playerchunk_state1.isAtLeast(PlayerChunk.State.BORDER)) {
+            this.getStatusFutureUnchecked(ChunkStatus.FULL).thenAcceptAsync((either) -> {
+                either.ifLeft((chunkAccess) -> {
+                    Chunk chunk = (Chunk) chunkAccess;
+                    // Minecraft will apply the chunks tick lists to the world once the chunk got loaded, and then store the tick
+                    // lists again inside the chunk once the chunk becomes inaccessible and set the chunk's needsSaving flag.
+                    // These actions may however happen deferred, so we manually set the needsSaving flag already here.
+                    chunk.setNeedsSaving(true);
+                    chunk.unloadCallback();
+                });
+            }, playerchunkmap.callbackExecutor);
+
+            // Run callback right away if the future was already done
+            playerchunkmap.callbackExecutor.run();
+        }
+        // CraftBukkit end
+        CompletableFuture completablefuture;
+
+        if (flag) {
+            Either<IChunkAccess, PlayerChunk.Failure> either = Either.right(new PlayerChunk.Failure() {
+                public String toString() {
+                    return "Unloaded ticket level " + PlayerChunk.this.location.toString();
+                }
+            });
+
+            // Paper start
+            if (!flag1) {
+                playerchunkmap.world.asyncChunkTaskManager.cancelChunkLoad(this.location.x, this.location.z);
+            }
+            // Paper end
+
+            for (int i = flag1 ? chunkstatus1.c() + 1 : 0; i <= chunkstatus.c(); ++i) {
+                completablefuture = (CompletableFuture) this.statusFutures.get(i);
+                if (completablefuture != null) {
+                    completablefuture.complete(either);
+                } else {
+                    this.statusFutures.set(i, CompletableFuture.completedFuture(either));
+                }
             }
         }
 
-        return d0;
+        boolean flag2 = playerchunk_state.isAtLeast(PlayerChunk.State.BORDER);
+        boolean flag3 = playerchunk_state1.isAtLeast(PlayerChunk.State.BORDER);
+
+        this.hasBeenLoaded |= flag3;
+        if (!flag2 && flag3) {
+            this.fullChunkFuture = playerchunkmap.b(this);
+            this.a(this.fullChunkFuture);
+        }
+
+        if (flag2 && !flag3) {
+            completablefuture = this.fullChunkFuture;
+            this.fullChunkFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
+            this.a(((CompletableFuture<Either<Chunk, PlayerChunk.Failure>>) completablefuture).thenApply((either1) -> { // CraftBukkit - decompile error
+                playerchunkmap.getClass();
+                return either1.ifLeft(playerchunkmap::a);
+            }));
+        }
+
+        boolean flag4 = playerchunk_state.isAtLeast(PlayerChunk.State.TICKING);
+        boolean flag5 = playerchunk_state1.isAtLeast(PlayerChunk.State.TICKING);
+
+        if (!flag4 && flag5) {
+            this.tickingFuture = playerchunkmap.a(this);
+            this.a(this.tickingFuture);
+        }
+
+        if (flag4 && !flag5) {
+            this.tickingFuture.complete(PlayerChunk.UNLOADED_CHUNK);
+            this.tickingFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
+        }
+
+        boolean flag6 = playerchunk_state.isAtLeast(PlayerChunk.State.ENTITY_TICKING);
+        boolean flag7 = playerchunk_state1.isAtLeast(PlayerChunk.State.ENTITY_TICKING);
+
+        if (!flag6 && flag7) {
+            if (this.entityTickingFuture != PlayerChunk.UNLOADED_CHUNK_FUTURE) {
+                throw new IllegalStateException();
+            }
+
+            this.entityTickingFuture = playerchunkmap.b(this.location);
+            this.a(this.entityTickingFuture);
+        }
+
+        if (flag6 && !flag7) {
+            this.entityTickingFuture.complete(PlayerChunk.UNLOADED_CHUNK);
+            this.entityTickingFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
+        }
+
+        this.w.a(this.location, this::k, this.ticketLevel, this::d);
+        this.oldTicketLevel = this.ticketLevel;
+        // CraftBukkit start
+        // ChunkLoadEvent: Called after the chunk is loaded: isChunkLoaded returns true and chunk is ready to be modified by plugins.
+        if (!playerchunk_state.isAtLeast(PlayerChunk.State.BORDER) && playerchunk_state1.isAtLeast(PlayerChunk.State.BORDER)) {
+            this.getStatusFutureUnchecked(ChunkStatus.FULL).thenAcceptAsync((either) -> {
+                either.ifLeft((chunkAccess) -> {
+                    Chunk chunk = (Chunk) chunkAccess;
+                    chunk.loadCallback();
+                });
+            }, playerchunkmap.callbackExecutor);
+
+            // Run callback right away if the future was already done
+            playerchunkmap.callbackExecutor.run();
+        }
+        // CraftBukkit end
+    }
+
+    public static ChunkStatus getChunkStatus(int i) {
+        return i < 33 ? ChunkStatus.FULL : ChunkStatus.a(i - 33);
+    }
+
+    public static PlayerChunk.State getChunkState(int i) {
+        return PlayerChunk.CHUNK_STATES[MathHelper.clamp(33 - i + 1, 0, PlayerChunk.CHUNK_STATES.length - 1)];
+    }
+
+    public boolean hasBeenLoaded() {
+        return this.hasBeenLoaded;
+    }
+
+    public void m() {
+        this.hasBeenLoaded = getChunkState(this.ticketLevel).isAtLeast(PlayerChunk.State.BORDER);
+    }
+
+    public void a(ProtoChunkExtension protochunkextension) {
+        for (int i = 0; i < this.statusFutures.length(); ++i) {
+            CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = (CompletableFuture) this.statusFutures.get(i);
+
+            if (completablefuture != null) {
+                Optional<IChunkAccess> optional = ((Either) completablefuture.getNow(PlayerChunk.UNLOADED_CHUNK_ACCESS)).left();
+
+                if (optional.isPresent() && optional.get() instanceof ProtoChunk) {
+                    this.statusFutures.set(i, CompletableFuture.completedFuture(Either.left(protochunkextension)));
+                }
+            }
+        }
+
+        this.a(CompletableFuture.completedFuture(Either.left(protochunkextension.u())));
+    }
+
+    public interface d {
+
+        Stream<EntityPlayer> a(ChunkCoordIntPair chunkcoordintpair, boolean flag);
+    }
+
+    public interface c {
+
+        void a(ChunkCoordIntPair chunkcoordintpair, IntSupplier intsupplier, int i, IntConsumer intconsumer);
+    }
+
+    public interface Failure {
+
+        PlayerChunk.Failure b = new PlayerChunk.Failure() {
+            public String toString() {
+                return "UNLOADED";
+            }
+        };
+    }
+
+    public static enum State {
+
+        INACCESSIBLE, BORDER, TICKING, ENTITY_TICKING;
+
+        private State() {}
+
+        public boolean isAtLeast(PlayerChunk.State playerchunk_state) {
+            return this.ordinal() >= playerchunk_state.ordinal();
+        }
     }
 }

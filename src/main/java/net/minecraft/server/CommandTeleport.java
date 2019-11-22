@@ -23,7 +23,7 @@ public class CommandTeleport {
     public static void a(com.mojang.brigadier.CommandDispatcher<CommandListenerWrapper> com_mojang_brigadier_commanddispatcher) {
         LiteralCommandNode<CommandListenerWrapper> literalcommandnode = com_mojang_brigadier_commanddispatcher.register((LiteralArgumentBuilder) ((LiteralArgumentBuilder) ((LiteralArgumentBuilder) ((LiteralArgumentBuilder) CommandDispatcher.a("teleport").requires((commandlistenerwrapper) -> {
             return commandlistenerwrapper.hasPermission(2);
-        })).then(((RequiredArgumentBuilder) CommandDispatcher.a("targets", (ArgumentType) ArgumentEntity.b()).then(((RequiredArgumentBuilder) ((RequiredArgumentBuilder) CommandDispatcher.a("location", (ArgumentType) ArgumentVec3.a()).executes((commandcontext) -> {
+        })).then(((RequiredArgumentBuilder) CommandDispatcher.a("targets", (ArgumentType) ArgumentEntity.multipleEntities()).then(((RequiredArgumentBuilder) ((RequiredArgumentBuilder) CommandDispatcher.a("location", (ArgumentType) ArgumentVec3.a()).executes((commandcontext) -> {
             return a((CommandListenerWrapper) commandcontext.getSource(), ArgumentEntity.b(commandcontext, "targets"), ((CommandListenerWrapper) commandcontext.getSource()).getWorld(), ArgumentVec3.b(commandcontext, "location"), (IVectorPosition) null, (CommandTeleport.a) null);
         })).then(CommandDispatcher.a("rotation", (ArgumentType) ArgumentRotation.a()).executes((commandcontext) -> {
             return a((CommandListenerWrapper) commandcontext.getSource(), ArgumentEntity.b(commandcontext, "targets"), ((CommandListenerWrapper) commandcontext.getSource()).getWorld(), ArgumentVec3.b(commandcontext, "location"), ArgumentRotation.a(commandcontext, "rotation"), (CommandTeleport.a) null);
@@ -52,13 +52,13 @@ public class CommandTeleport {
         while (iterator.hasNext()) {
             Entity entity1 = (Entity) iterator.next();
 
-            a(commandlistenerwrapper, entity1, (WorldServer) entity.world, entity.locX, entity.locY, entity.locZ, EnumSet.noneOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class), entity.yaw, entity.pitch, (CommandTeleport.a) null); // SPIGOT-4245, MC-128441 - use target world as destination
+            a(commandlistenerwrapper, entity1, (WorldServer) entity.world, entity.locX, entity.locY, entity.locZ, EnumSet.noneOf(PacketPlayOutPosition.EnumPlayerTeleportFlags.class), entity.yaw, entity.pitch, (CommandTeleport.a) null);
         }
 
         if (collection.size() == 1) {
-            commandlistenerwrapper.sendMessage(new ChatMessage("commands.teleport.success.entity.single", new Object[] { ((Entity) collection.iterator().next()).getScoreboardDisplayName(), entity.getScoreboardDisplayName()}), true);
+            commandlistenerwrapper.sendMessage(new ChatMessage("commands.teleport.success.entity.single", new Object[]{((Entity) collection.iterator().next()).getScoreboardDisplayName(), entity.getScoreboardDisplayName()}), true);
         } else {
-            commandlistenerwrapper.sendMessage(new ChatMessage("commands.teleport.success.entity.multiple", new Object[] { collection.size(), entity.getScoreboardDisplayName()}), true);
+            commandlistenerwrapper.sendMessage(new ChatMessage("commands.teleport.success.entity.multiple", new Object[]{collection.size(), entity.getScoreboardDisplayName()}), true);
         }
 
         return collection.size();
@@ -107,9 +107,9 @@ public class CommandTeleport {
         }
 
         if (collection.size() == 1) {
-            commandlistenerwrapper.sendMessage(new ChatMessage("commands.teleport.success.location.single", new Object[] { ((Entity) collection.iterator().next()).getScoreboardDisplayName(), vec3d.x, vec3d.y, vec3d.z}), true);
+            commandlistenerwrapper.sendMessage(new ChatMessage("commands.teleport.success.location.single", new Object[]{((Entity) collection.iterator().next()).getScoreboardDisplayName(), vec3d.x, vec3d.y, vec3d.z}), true);
         } else {
-            commandlistenerwrapper.sendMessage(new ChatMessage("commands.teleport.success.location.multiple", new Object[] { collection.size(), vec3d.x, vec3d.y, vec3d.z}), true);
+            commandlistenerwrapper.sendMessage(new ChatMessage("commands.teleport.success.location.multiple", new Object[]{collection.size(), vec3d.x, vec3d.y, vec3d.z}), true);
         }
 
         return collection.size();
@@ -117,9 +117,12 @@ public class CommandTeleport {
 
     private static void a(CommandListenerWrapper commandlistenerwrapper, Entity entity, WorldServer worldserver, double d0, double d1, double d2, Set<PacketPlayOutPosition.EnumPlayerTeleportFlags> set, float f, float f1, @Nullable CommandTeleport.a commandteleport_a) {
         if (entity instanceof EntityPlayer) {
+            ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(new BlockPosition(d0, d1, d2));
+
+            worldserver.getChunkProvider().addTicket(TicketType.POST_TELEPORT, chunkcoordintpair, 1, entity.getId());
             entity.stopRiding();
             if (((EntityPlayer) entity).isSleeping()) {
-                ((EntityPlayer) entity).a(true, true, false);
+                ((EntityPlayer) entity).wakeup(true, true, false);
             }
 
             if (worldserver == entity.world) {
@@ -153,14 +156,11 @@ public class CommandTeleport {
                 entity.setPositionRotation(d0, d1, d2, f2, f3);
                 entity.setHeadRotation(f2);
             } else {
-                WorldServer worldserver1 = (WorldServer) entity.world;
-
-                worldserver1.kill(entity);
+                entity.decouple();
                 entity.dimension = worldserver.worldProvider.getDimensionManager();
-                entity.dead = false;
                 Entity entity1 = entity;
 
-                entity = entity.P().a((World) worldserver);
+                entity = entity.getEntityType().a((World) worldserver);
                 if (entity == null) {
                     return;
                 }
@@ -168,12 +168,7 @@ public class CommandTeleport {
                 entity.v(entity1);
                 entity.setPositionRotation(d0, d1, d2, f2, f3);
                 entity.setHeadRotation(f2);
-                boolean flag = entity.attachedToPlayer;
-
-                entity.attachedToPlayer = true;
-                worldserver.addEntity(entity);
-                entity.attachedToPlayer = flag;
-                worldserver.entityJoinedWorld(entity, false);
+                worldserver.addEntityTeleport(entity);
                 entity1.dead = true;
             }
         }
@@ -182,8 +177,8 @@ public class CommandTeleport {
             commandteleport_a.a(commandlistenerwrapper, entity);
         }
 
-        if (!(entity instanceof EntityLiving) || !((EntityLiving) entity).dc()) {
-            entity.motY = 0.0D;
+        if (!(entity instanceof EntityLiving) || !((EntityLiving) entity).isGliding()) {
+            entity.setMot(entity.getMot().d(1.0D, 0.0D, 1.0D));
             entity.onGround = true;
         }
 

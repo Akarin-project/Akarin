@@ -1,7 +1,14 @@
 package net.minecraft.server;
 
+import java.util.Spliterators.AbstractSpliterator;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import javax.annotation.Nullable;
+
 public class ChunkCoordIntPair {
 
+    public static final long a = pair(1875016, 1875016);
     public final int x;
     public final int z;
 
@@ -20,22 +27,21 @@ public class ChunkCoordIntPair {
         this.z = (int) (i >> 32);
     }
 
-    public long asLong() { return a(); } // Paper
-    public long a() {
-        return a(this.x, this.z);
+    public long pair() {
+        return pair(this.x, this.z);
     }
 
-    public static long asLong(final BlockPosition pos) { return a(pos.getX() >> 4, pos.getZ() >> 4); } // Paper - OBFHELPER
-    public static long asLong(int x, int z) { return a(x, z); } // Paper - OBFHELPER
-    public static long a(int i, int j) {
+    public static long asLong(final BlockPosition pos) { return pair(pos.getX() >> 4, pos.getZ() >> 4); } // Paper - OBFHELPER
+    public static long asLong(int x, int z) { return pair(x, z); } // Paper - OBFHELPER
+        public static long pair(int i, int j) {
         return (long) i & 4294967295L | ((long) j & 4294967295L) << 32;
     }
 
-    public static int a(long i) {
+    public static int getX(long i) {
         return (int) (i & 4294967295L);
     }
 
-    public static int b(long i) {
+    public static int getZ(long i) {
         return (int) (i >>> 32 & 4294967295L);
     }
 
@@ -58,15 +64,6 @@ public class ChunkCoordIntPair {
         }
     }
 
-    public double a(Entity entity) {
-        double d0 = (double) (this.x * 16 + 8);
-        double d1 = (double) (this.z * 16 + 8);
-        double d2 = d0 - entity.locX;
-        double d3 = d1 - entity.locZ;
-
-        return d2 * d2 + d3 * d3;
-    }
-
     public int d() {
         return this.x << 4;
     }
@@ -83,6 +80,22 @@ public class ChunkCoordIntPair {
         return (this.z << 4) + 15;
     }
 
+    public int getRegionX() {
+        return this.x >> 5;
+    }
+
+    public int getRegionZ() {
+        return this.z >> 5;
+    }
+
+    public int j() {
+        return this.x & 31;
+    }
+
+    public int k() {
+        return this.z & 31;
+    }
+
     public BlockPosition a(int i, int j, int k) {
         return new BlockPosition((this.x << 4) + i, j, (this.z << 4) + k);
     }
@@ -91,7 +104,45 @@ public class ChunkCoordIntPair {
         return "[" + this.x + ", " + this.z + "]";
     }
 
-    public BlockPosition h() {
+    public BlockPosition l() {
         return new BlockPosition(this.x << 4, 0, this.z << 4);
+    }
+
+    public static Stream<ChunkCoordIntPair> a(ChunkCoordIntPair chunkcoordintpair, int i) {
+        return a(new ChunkCoordIntPair(chunkcoordintpair.x - i, chunkcoordintpair.z - i), new ChunkCoordIntPair(chunkcoordintpair.x + i, chunkcoordintpair.z + i));
+    }
+
+    public static Stream<ChunkCoordIntPair> a(final ChunkCoordIntPair chunkcoordintpair, final ChunkCoordIntPair chunkcoordintpair1) {
+        int i = Math.abs(chunkcoordintpair.x - chunkcoordintpair1.x) + 1;
+        int j = Math.abs(chunkcoordintpair.z - chunkcoordintpair1.z) + 1;
+        final int k = chunkcoordintpair.x < chunkcoordintpair1.x ? 1 : -1;
+        final int l = chunkcoordintpair.z < chunkcoordintpair1.z ? 1 : -1;
+
+        return StreamSupport.stream(new AbstractSpliterator<ChunkCoordIntPair>((long) (i * j), 64) {
+            @Nullable
+            private ChunkCoordIntPair e;
+
+            public boolean tryAdvance(Consumer<? super ChunkCoordIntPair> consumer) {
+                if (this.e == null) {
+                    this.e = chunkcoordintpair;
+                } else {
+                    int i1 = this.e.x;
+                    int j1 = this.e.z;
+
+                    if (i1 == chunkcoordintpair1.x) {
+                        if (j1 == chunkcoordintpair1.z) {
+                            return false;
+                        }
+
+                        this.e = new ChunkCoordIntPair(chunkcoordintpair.x, j1 + l);
+                    } else {
+                        this.e = new ChunkCoordIntPair(i1 + k, j1);
+                    }
+                }
+
+                consumer.accept(this.e);
+                return true;
+            }
+        }, false);
     }
 }

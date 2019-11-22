@@ -1,21 +1,21 @@
 package org.bukkit.craftbukkit.entity;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import net.minecraft.server.DamageSource;
 import net.minecraft.server.EntityArmorStand;
 import net.minecraft.server.EntityArrow;
 import net.minecraft.server.EntityDragonFireball;
 import net.minecraft.server.EntityEgg;
 import net.minecraft.server.EntityEnderPearl;
+import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityFishingHook;
 import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.EntityLargeFireball;
 import net.minecraft.server.EntityLiving;
@@ -25,16 +25,16 @@ import net.minecraft.server.EntityProjectile;
 import net.minecraft.server.EntityShulkerBullet;
 import net.minecraft.server.EntitySmallFireball;
 import net.minecraft.server.EntitySnowball;
-import net.minecraft.server.EntityThrownExpBottle;
-import net.minecraft.server.EntityTippedArrow;
 import net.minecraft.server.EntitySpectralArrow;
+import net.minecraft.server.EntityThrownExpBottle;
 import net.minecraft.server.EntityThrownTrident;
+import net.minecraft.server.EntityTippedArrow;
+import net.minecraft.server.EntityTypes;
 import net.minecraft.server.EntityWither;
 import net.minecraft.server.EntityWitherSkull;
 import net.minecraft.server.GenericAttributes;
 import net.minecraft.server.MobEffect;
 import net.minecraft.server.MobEffectList;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
@@ -47,7 +47,9 @@ import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.inventory.CraftEntityEquipment;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.potion.CraftPotionUtil;
-import org.bukkit.entity.Arrow;
+import org.bukkit.craftbukkit.entity.memory.CraftMemoryKey;
+import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.DragonFireball;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.EnderPearl;
@@ -70,6 +72,7 @@ import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.TippedArrow;
 import org.bukkit.entity.Trident;
 import org.bukkit.entity.WitherSkull;
+import org.bukkit.entity.memory.MemoryKey;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EntityEquipment;
@@ -93,16 +96,18 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         }
     }
 
+    @Override
     public double getHealth() {
         return Math.min(Math.max(0, getHandle().getHealth()), getMaxHealth());
     }
 
+    @Override
     public void setHealth(double health) {
         health = (float) health;
         if ((health < 0) || (health > getMaxHealth())) {
             // Paper - Be more informative
             throw new IllegalArgumentException("Health must be between 0 and " + getMaxHealth() + ", but was " + health
-                    + ". (attribute base value: " + this.getHandle().getAttributeInstance(GenericAttributes.maxHealth).b()
+                    + ". (attribute base value: " + this.getHandle().getAttributeInstance(GenericAttributes.MAX_HEALTH).getBaseValue()
                     + (this instanceof CraftPlayer ? ", player: " + this.getName() + ')' : ')'));
         }
 
@@ -113,28 +118,45 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         }
     }
 
+    @Override
+    public double getAbsorptionAmount() {
+        return getHandle().getAbsorptionHearts();
+    }
+
+    @Override
+    public void setAbsorptionAmount(double amount) {
+        Preconditions.checkArgument(amount >= 0 && Double.isFinite(amount), "amount < 0 or non-finite");
+
+        getHandle().setAbsorptionHearts((float) amount);
+    }
+
+    @Override
     public double getMaxHealth() {
         return getHandle().getMaxHealth();
     }
 
+    @Override
     public void setMaxHealth(double amount) {
         Validate.isTrue(amount > 0, "Max health must be greater than 0");
 
-        getHandle().getAttributeInstance(GenericAttributes.maxHealth).setValue(amount);
+        getHandle().getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(amount);
 
         if (getHealth() > amount) {
             setHealth(amount);
         }
     }
 
+    @Override
     public void resetMaxHealth() {
-        setMaxHealth(getHandle().getAttributeInstance(GenericAttributes.maxHealth).getAttribute().getDefault());
+        setMaxHealth(getHandle().getAttributeInstance(GenericAttributes.MAX_HEALTH).getAttribute().getDefault());
     }
 
+    @Override
     public double getEyeHeight() {
         return getHandle().getHeadHeight();
     }
 
+    @Override
     public double getEyeHeight(boolean ignorePose) {
         return getEyeHeight();
     }
@@ -162,51 +184,58 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return blocks;
     }
 
+    @Override
     public List<Block> getLineOfSight(Set<Material> transparent, int maxDistance) {
         return getLineOfSight(transparent, maxDistance, 0);
     }
 
+    @Override
     public Block getTargetBlock(Set<Material> transparent, int maxDistance) {
         List<Block> blocks = getLineOfSight(transparent, maxDistance, 1);
         return blocks.get(0);
     }
 
     // Paper start
+    @Override
     public Block getTargetBlock(int maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode fluidMode) {
         net.minecraft.server.MovingObjectPosition rayTrace = getHandle().getRayTrace(maxDistance, net.minecraft.server.MCUtil.getNMSFluidCollisionOption(fluidMode));
-        return rayTrace == null ? null : org.bukkit.craftbukkit.block.CraftBlock.at(getHandle().world, rayTrace.getBlockPosition());
+        return !(rayTrace instanceof net.minecraft.server.MovingObjectPositionBlock) ? null : org.bukkit.craftbukkit.block.CraftBlock.at(getHandle().world, ((net.minecraft.server.MovingObjectPositionBlock)rayTrace).getBlockPosition());
     }
 
+    @Override
     public org.bukkit.block.BlockFace getTargetBlockFace(int maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode fluidMode) {
         net.minecraft.server.MovingObjectPosition rayTrace = getHandle().getRayTrace(maxDistance, net.minecraft.server.MCUtil.getNMSFluidCollisionOption(fluidMode));
-        return rayTrace == null ? null : net.minecraft.server.MCUtil.toBukkitBlockFace(rayTrace.direction);
+        return !(rayTrace instanceof net.minecraft.server.MovingObjectPositionBlock) ? null : net.minecraft.server.MCUtil.toBukkitBlockFace(((net.minecraft.server.MovingObjectPositionBlock)rayTrace).getDirection());
     }
 
+    @Override
     public com.destroystokyo.paper.block.TargetBlockInfo getTargetBlockInfo(int maxDistance, com.destroystokyo.paper.block.TargetBlockInfo.FluidMode fluidMode) {
         net.minecraft.server.MovingObjectPosition rayTrace = getHandle().getRayTrace(maxDistance, net.minecraft.server.MCUtil.getNMSFluidCollisionOption(fluidMode));
-        return rayTrace == null ? null : new com.destroystokyo.paper.block.TargetBlockInfo(org.bukkit.craftbukkit.block.CraftBlock.at(getHandle().world, rayTrace.getBlockPosition()), net.minecraft.server.MCUtil.toBukkitBlockFace(rayTrace.direction));
+        return  !(rayTrace instanceof net.minecraft.server.MovingObjectPositionBlock) ? null :
+            new com.destroystokyo.paper.block.TargetBlockInfo(org.bukkit.craftbukkit.block.CraftBlock.at(getHandle().world, ((net.minecraft.server.MovingObjectPositionBlock)rayTrace).getBlockPosition()),
+                net.minecraft.server.MCUtil.toBukkitBlockFace(((net.minecraft.server.MovingObjectPositionBlock)rayTrace).getDirection()));
     }
 
     public Entity getTargetEntity(int maxDistance, boolean ignoreBlocks) {
-        net.minecraft.server.MovingObjectPosition rayTrace = rayTraceEntity(maxDistance, ignoreBlocks);
-        return rayTrace == null ? null : rayTrace.entity.getBukkitEntity();
+        net.minecraft.server.MovingObjectPositionEntity rayTrace = rayTraceEntity(maxDistance, ignoreBlocks);
+        return rayTrace == null ? null : rayTrace.getEntity().getBukkitEntity();
     }
 
     public com.destroystokyo.paper.entity.TargetEntityInfo getTargetEntityInfo(int maxDistance, boolean ignoreBlocks) {
-        net.minecraft.server.MovingObjectPosition rayTrace = rayTraceEntity(maxDistance, ignoreBlocks);
-        return rayTrace == null ? null : new com.destroystokyo.paper.entity.TargetEntityInfo(rayTrace.entity.getBukkitEntity(), new org.bukkit.util.Vector(rayTrace.pos.x, rayTrace.pos.y, rayTrace.pos.z));
+        net.minecraft.server.MovingObjectPositionEntity rayTrace = rayTraceEntity(maxDistance, ignoreBlocks);
+        return rayTrace == null ? null : new com.destroystokyo.paper.entity.TargetEntityInfo(rayTrace.getEntity().getBukkitEntity(), new org.bukkit.util.Vector(rayTrace.getPos().x, rayTrace.getPos().y, rayTrace.getPos().z));
     }
 
-    public net.minecraft.server.MovingObjectPosition rayTraceEntity(int maxDistance, boolean ignoreBlocks) {
-        net.minecraft.server.MovingObjectPosition rayTrace = getHandle().getTargetEntity(maxDistance);
+    public net.minecraft.server.MovingObjectPositionEntity rayTraceEntity(int maxDistance, boolean ignoreBlocks) {
+        net.minecraft.server.MovingObjectPositionEntity rayTrace = getHandle().getTargetEntity(maxDistance);
         if (rayTrace == null) {
             return null;
         }
         if (!ignoreBlocks) {
-            net.minecraft.server.MovingObjectPosition rayTraceBlocks = getHandle().getRayTrace(maxDistance, net.minecraft.server.FluidCollisionOption.NEVER);
+            net.minecraft.server.MovingObjectPosition rayTraceBlocks = getHandle().getRayTrace(maxDistance, net.minecraft.server.RayTrace.FluidCollisionOption.NONE);
             if (rayTraceBlocks != null) {
                 net.minecraft.server.Vec3D eye = getHandle().getEyePosition(1.0F);
-                if (eye.distanceSquared(rayTraceBlocks.pos) <= eye.distanceSquared(rayTrace.pos)) {
+                if (eye.distanceSquared(rayTraceBlocks.getPos()) <= eye.distanceSquared(rayTrace.getPos())) {
                     return null;
                 }
             }
@@ -215,6 +244,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
     // Paper end
 
+    @Override
     public List<Block> getLastTwoTargetBlocks(Set<Material> transparent, int maxDistance) {
         return getLineOfSight(transparent, maxDistance, 2);
     }
@@ -242,26 +272,32 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return this.getWorld().rayTraceBlocks(eyeLocation, direction, maxDistance, fluidCollisionMode, false);
     }
 
+    @Override
     public int getRemainingAir() {
         return getHandle().getAirTicks();
     }
 
+    @Override
     public void setRemainingAir(int ticks) {
         getHandle().setAirTicks(ticks);
     }
 
+    @Override
     public int getMaximumAir() {
         return getHandle().maxAirTicks;
     }
 
+    @Override
     public void setMaximumAir(int ticks) {
         getHandle().maxAirTicks = ticks;
     }
 
+    @Override
     public void damage(double amount) {
         damage(amount, null);
     }
 
+    @Override
     public void damage(double amount, org.bukkit.entity.Entity source) {
         DamageSource reason = DamageSource.GENERIC;
 
@@ -274,32 +310,39 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         entity.damageEntity(reason, (float) amount);
     }
 
+    @Override
     public Location getEyeLocation() {
         Location loc = getLocation();
         loc.setY(loc.getY() + getEyeHeight());
         return loc;
     }
 
+    @Override
     public int getMaximumNoDamageTicks() {
         return getHandle().maxNoDamageTicks;
     }
 
+    @Override
     public void setMaximumNoDamageTicks(int ticks) {
         getHandle().maxNoDamageTicks = ticks;
     }
 
+    @Override
     public double getLastDamage() {
         return getHandle().lastDamage;
     }
 
+    @Override
     public void setLastDamage(double damage) {
         getHandle().lastDamage = (float) damage;
     }
 
+    @Override
     public int getNoDamageTicks() {
         return getHandle().noDamageTicks;
     }
 
+    @Override
     public void setNoDamageTicks(int ticks) {
         getHandle().noDamageTicks = ticks;
     }
@@ -318,6 +361,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return "CraftLivingEntity{" + "id=" + getEntityId() + '}';
     }
 
+    @Override
     public Player getKiller() {
         return getHandle().killer == null ? null : (Player) getHandle().killer.getBukkitEntity();
     }
@@ -332,10 +376,12 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
     // Paper end
 
+    @Override
     public boolean addPotionEffect(PotionEffect effect) {
         return addPotionEffect(effect, false);
     }
 
+    @Override
     public boolean addPotionEffect(PotionEffect effect, boolean force) {
         if (hasPotionEffect(effect.getType())) {
             if (!force) {
@@ -347,6 +393,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return true;
     }
 
+    @Override
     public boolean addPotionEffects(Collection<PotionEffect> effects) {
         boolean success = true;
         for (PotionEffect effect : effects) {
@@ -355,6 +402,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return success;
     }
 
+    @Override
     public boolean hasPotionEffect(PotionEffectType type) {
         return getHandle().hasEffect(MobEffectList.fromId(type.getId()));
     }
@@ -365,10 +413,12 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return (handle == null) ? null : new PotionEffect(PotionEffectType.getById(MobEffectList.getId(handle.getMobEffect())), handle.getDuration(), handle.getAmplifier(), handle.isAmbient(), handle.isShowParticles());
     }
 
+    @Override
     public void removePotionEffect(PotionEffectType type) {
         getHandle().removeEffect(MobEffectList.fromId(type.getId()), EntityPotionEffectEvent.Cause.PLUGIN);
     }
 
+    @Override
     public Collection<PotionEffect> getActivePotionEffects() {
         List<PotionEffect> effects = new ArrayList<PotionEffect>();
         for (MobEffect handle : getHandle().effects.values()) {
@@ -377,10 +427,12 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return effects;
     }
 
+    @Override
     public <T extends Projectile> T launchProjectile(Class<? extends T> projectile) {
         return launchProjectile(projectile, null);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity) {
         net.minecraft.server.World world = ((CraftWorld) getWorld()).getHandle();
@@ -395,7 +447,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         } else if (EnderPearl.class.isAssignableFrom(projectile)) {
             launch = new EntityEnderPearl(world, getHandle());
             ((EntityProjectile) launch).a(getHandle(), getHandle().pitch, getHandle().yaw, 0.0F, 1.5F, 1.0F); // ItemEnderPearl
-        } else if (Arrow.class.isAssignableFrom(projectile)) {
+        } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
             if (TippedArrow.class.isAssignableFrom(projectile)) {
                 launch = new EntityTippedArrow(world, getHandle());
                 ((EntityTippedArrow) launch).setType(CraftPotionUtil.fromBukkit(new PotionData(PotionType.WATER, false, false)));
@@ -409,16 +461,18 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             ((EntityArrow) launch).a(getHandle(), getHandle().pitch, getHandle().yaw, 0.0F, 3.0F, 1.0F); // ItemBow
         } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
             if (LingeringPotion.class.isAssignableFrom(projectile)) {
-                launch = new EntityPotion(world, getHandle(), CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.LINGERING_POTION, 1)));
+                launch = new EntityPotion(world, getHandle());
+                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.LINGERING_POTION, 1)));
             } else {
-                launch = new EntityPotion(world, getHandle(), CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.SPLASH_POTION, 1)));
+                launch = new EntityPotion(world, getHandle());
+                ((EntityPotion) launch).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.SPLASH_POTION, 1)));
             }
             ((EntityProjectile) launch).a(getHandle(), getHandle().pitch, getHandle().yaw, -20.0F, 0.5F, 1.0F); // ItemSplashPotion
         } else if (ThrownExpBottle.class.isAssignableFrom(projectile)) {
             launch = new EntityThrownExpBottle(world, getHandle());
             ((EntityProjectile) launch).a(getHandle(), getHandle().pitch, getHandle().yaw, -20.0F, 0.7F, 1.0F); // ItemExpBottle
         } else if (FishHook.class.isAssignableFrom(projectile) && getHandle() instanceof EntityHuman) {
-            launch = new EntityFishingHook(world, (EntityHuman) getHandle());
+            launch = new EntityFishingHook((EntityHuman) getHandle(), world, 0, 0);
         } else if (Fireball.class.isAssignableFrom(projectile)) {
             Location location = getEyeLocation();
             Vector direction = location.getDirection().multiply(10);
@@ -439,7 +493,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             Location location = getEyeLocation();
             Vector direction = location.getDirection();
 
-            launch = new EntityLlamaSpit(world);
+            launch = EntityTypes.LLAMA_SPIT.a(world);
 
             ((EntityLlamaSpit) launch).shooter = getHandle();
             ((EntityLlamaSpit) launch).shoot(direction.getX(), direction.getY(), direction.getZ(), 1.5F, 10.0F); // EntityLlama
@@ -461,32 +515,39 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return (T) launch.getBukkitEntity();
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.UNKNOWN;
     }
 
+    @Override
     public boolean hasLineOfSight(Entity other) {
         return getHandle().hasLineOfSight(((CraftEntity) other).getHandle());
     }
 
+    @Override
     public boolean getRemoveWhenFarAway() {
         return getHandle() instanceof EntityInsentient && !((EntityInsentient) getHandle()).persistent;
     }
 
+    @Override
     public void setRemoveWhenFarAway(boolean remove) {
         if (getHandle() instanceof EntityInsentient) {
             ((EntityInsentient) getHandle()).persistent = !remove;
         }
     }
 
+    @Override
     public EntityEquipment getEquipment() {
         return equipment;
     }
 
+    @Override
     public void setCanPickupItems(boolean pickup) {
         getHandle().canPickUpLoot = pickup;
     }
 
+    @Override
     public boolean getCanPickupItems() {
         return getHandle().canPickUpLoot;
     }
@@ -500,6 +561,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return super.teleport(location, cause);
     }
 
+    @Override
     public boolean isLeashed() {
         if (!(getHandle() instanceof EntityInsentient)) {
             return false;
@@ -507,6 +569,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return ((EntityInsentient) getHandle()).getLeashHolder() != null;
     }
 
+    @Override
     public Entity getLeashHolder() throws IllegalStateException {
         if (!isLeashed()) {
             throw new IllegalStateException("Entity not leashed");
@@ -522,6 +585,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         return true;
     }
 
+    @Override
     public boolean setLeashHolder(Entity holder) {
         if ((getHandle() instanceof EntityWither) || !(getHandle() instanceof EntityInsentient)) {
             return false;
@@ -566,6 +630,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
 
     @Override
+    public boolean isSleeping() {
+        return getHandle().isSleeping();
+    }
+
+    @Override
     public AttributeInstance getAttribute(Attribute attribute) {
         return getHandle().craftAttributes.getAttribute(attribute);
     }
@@ -590,6 +659,16 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     @Override
     public boolean isCollidable() {
         return getHandle().collides;
+    }
+
+    @Override
+    public <T> T getMemory(MemoryKey<T> memoryKey) {
+        return (T) getHandle().getBehaviorController().getMemory(CraftMemoryKey.fromMemoryKey(memoryKey)).map(CraftMemoryMapper::fromNms).orElse(null);
+    }
+
+    @Override
+    public <T> void setMemory(MemoryKey<T> memoryKey, T t) {
+        getHandle().getBehaviorController().setMemory(CraftMemoryKey.fromMemoryKey(memoryKey), CraftMemoryMapper.toNms(t));
     }
 
     // Paper start

@@ -1,44 +1,52 @@
 package net.minecraft.server;
 
-public class WorldGenFeatureIgloo extends WorldGenFeatureRandomScattered<WorldGenFeatureIglooConfiguration> {
+import com.mojang.datafixers.Dynamic;
+import java.util.function.Function;
 
-    public WorldGenFeatureIgloo() {}
+public class WorldGenFeatureIgloo extends WorldGenFeatureRandomScattered<WorldGenFeatureEmptyConfiguration> {
 
-    protected String a() {
+    public WorldGenFeatureIgloo(Function<Dynamic<?>, ? extends WorldGenFeatureEmptyConfiguration> function) {
+        super(function);
+    }
+
+    @Override
+    public String b() {
         return "Igloo";
     }
 
-    public int b() {
+    @Override
+    public int c() {
         return 3;
     }
 
-    protected StructureStart a(GeneratorAccess generatoraccess, ChunkGenerator<?> chunkgenerator, SeededRandom seededrandom, int i, int j) {
-        BiomeBase biomebase = chunkgenerator.getWorldChunkManager().getBiome(new BlockPosition((i << 4) + 9, 0, (j << 4) + 9), Biomes.PLAINS);
-
-        return new WorldGenFeatureIgloo.a(generatoraccess, chunkgenerator, seededrandom, i, j, biomebase);
+    @Override
+    public StructureGenerator.a a() {
+        return WorldGenFeatureIgloo.a::new;
     }
 
+    @Override
     // Spigot start
-    protected int c(World world) {
+    protected int getSeed(World world) {
         return world.spigotConfig.iglooSeed;
         // Spigot end
     }
 
     public static class a extends StructureStart {
 
-        public a() {}
+        public a(StructureGenerator<?> structuregenerator, int i, int j, BiomeBase biomebase, StructureBoundingBox structureboundingbox, int k, long l) {
+            super(structuregenerator, i, j, biomebase, structureboundingbox, k, l);
+        }
 
-        public a(GeneratorAccess generatoraccess, ChunkGenerator<?> chunkgenerator, SeededRandom seededrandom, int i, int j, BiomeBase biomebase) {
-            super(i, j, biomebase, seededrandom, generatoraccess.getSeed());
-            WorldGenFeatureIglooConfiguration worldgenfeatureiglooconfiguration = (WorldGenFeatureIglooConfiguration) chunkgenerator.getFeatureConfiguration(biomebase, WorldGenerator.j);
+        @Override
+        public void a(ChunkGenerator<?> chunkgenerator, DefinedStructureManager definedstructuremanager, int i, int j, BiomeBase biomebase) {
+            WorldGenFeatureEmptyConfiguration worldgenfeatureemptyconfiguration = (WorldGenFeatureEmptyConfiguration) chunkgenerator.getFeatureConfiguration(biomebase, WorldGenerator.IGLOO);
             int k = i * 16;
             int l = j * 16;
             BlockPosition blockposition = new BlockPosition(k, 90, l);
-            EnumBlockRotation enumblockrotation = EnumBlockRotation.values()[seededrandom.nextInt(EnumBlockRotation.values().length)];
-            DefinedStructureManager definedstructuremanager = generatoraccess.getDataManager().h();
+            EnumBlockRotation enumblockrotation = EnumBlockRotation.values()[this.d.nextInt(EnumBlockRotation.values().length)];
 
-            WorldGenIglooPiece.a(definedstructuremanager, blockposition, enumblockrotation, this.a, seededrandom, worldgenfeatureiglooconfiguration);
-            this.a((IBlockAccess) generatoraccess);
+            WorldGenIglooPiece.a(definedstructuremanager, blockposition, enumblockrotation, this.b, this.d, worldgenfeatureemptyconfiguration);
+            this.b();
         }
     }
 }

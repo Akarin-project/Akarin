@@ -1,65 +1,36 @@
 package net.minecraft.server;
 
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import java.util.function.Predicate;
 
-public class ItemBow extends Item {
+public class ItemBow extends ItemProjectileWeapon {
 
     public ItemBow(Item.Info item_info) {
         super(item_info);
         // CraftBukkit start - obfuscator went a little crazy
         /*
         this.a(new MinecraftKey("pull"), (itemstack, world, entityliving) -> {
-            return entityliving == null ? 0.0F : (entityliving.cW().getItem() != Items.BOW ? 0.0F : (float) (itemstack.k() - entityliving.cX()) / 20.0F);
+            return entityliving == null ? 0.0F : (entityliving.dl().getItem() != Items.BOW ? 0.0F : (float) (itemstack.k() - entityliving.dm()) / 20.0F);
         });
         this.a(new MinecraftKey("pulling"), (itemstack, world, entityliving) -> {
-            return entityliving != null && entityliving.isHandRaised() && entityliving.cW() == itemstack ? 1.0F : 0.0F;
+            return entityliving != null && entityliving.isHandRaised() && entityliving.dl() == itemstack ? 1.0F : 0.0F;
         });
         */
         // CraftBukkit end
     }
 
-    private ItemStack a(EntityHuman entityhuman, ItemStack bow) { // Paper
-        if (this.e_(entityhuman, bow, entityhuman.b(EnumHand.OFF_HAND))) { // Paper
-            return entityhuman.b(EnumHand.OFF_HAND);
-        } else if (this.e_(entityhuman, bow, entityhuman.b(EnumHand.MAIN_HAND))) {
-            return entityhuman.b(EnumHand.MAIN_HAND);
-        } else {
-            for (int i = 0; i < entityhuman.inventory.getSize(); ++i) {
-                ItemStack itemstack = entityhuman.inventory.getItem(i);
-
-                if (this.e_(entityhuman, bow, itemstack)) {
-                    return itemstack;
-                }
-            }
-
-            return ItemStack.a;
-        }
-    }
-
-    // Paper start
-    protected boolean e_(EntityHuman player, ItemStack bow, ItemStack itemstack) {
-        return itemstack.getItem() instanceof ItemArrow && (
-                !(player instanceof EntityPlayer) ||
-                new com.destroystokyo.paper.event.player.PlayerReadyArrowEvent(
-                        ((EntityPlayer) player).getBukkitEntity(),
-                        CraftItemStack.asCraftMirror(bow),
-                        CraftItemStack.asCraftMirror(itemstack)
-                    ).callEvent());
-        // Paper end
-    }
-
+    @Override
     public void a(ItemStack itemstack, World world, EntityLiving entityliving, int i) {
         if (entityliving instanceof EntityHuman) {
             EntityHuman entityhuman = (EntityHuman) entityliving;
             boolean flag = entityhuman.abilities.canInstantlyBuild || EnchantmentManager.getEnchantmentLevel(Enchantments.ARROW_INFINITE, itemstack) > 0;
-            ItemStack itemstack1 = this.a(entityhuman, itemstack); // Paper
+            ItemStack itemstack1 = entityhuman.f(itemstack);
 
             if (!itemstack1.isEmpty() || flag) {
                 if (itemstack1.isEmpty()) {
                     itemstack1 = new ItemStack(Items.ARROW);
                 }
 
-                int j = this.c(itemstack) - i;
+                int j = this.f_(itemstack) - i;
                 float f = a(j);
 
                 if ((double) f >= 0.1D) {
@@ -98,9 +69,11 @@ public class ItemBow extends Item {
                         }
                         // CraftBukkit end
 
-                        itemstack.damage(1, entityhuman);
+                        itemstack.damage(1, entityhuman, (entityhuman1) -> {
+                            entityhuman1.d(entityhuman.getRaisedHand());
+                        });
                         consumeArrow = event.getConsumeArrow(); // Paper
-                        if (!consumeArrow || flag1 || (entityhuman.abilities.canInstantlyBuild && ((itemstack1.getItem() == Items.SPECTRAL_ARROW) || (itemstack1.getItem() == Items.TIPPED_ARROW)))) { // Paper - add !consumeArrow
+                        if (!consumeArrow || flag1 || (entityhuman.abilities.canInstantlyBuild && ((itemstack1.getItem() == Items.SPECTRAL_ARROW) || (itemstack1.getItem() == Items.TIPPED_ARROW)))) { // Paper - add
                             entityarrow.fromPlayer = EntityArrow.PickupStatus.CREATIVE_ONLY;
                         }
 
@@ -116,7 +89,7 @@ public class ItemBow extends Item {
                         // CraftBukkit end
                     }
 
-                    world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0F, 1.0F / (ItemBow.i.nextFloat() * 0.4F + 1.2F) + f * 0.5F);
+                    world.playSound((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0F, 1.0F / (ItemBow.i.nextFloat() * 0.4F + 1.2F) + f * 0.5F);
                     if (!flag1 && !entityhuman.abilities.canInstantlyBuild && consumeArrow) { // Paper
                         itemstack1.subtract(1);
                         if (itemstack1.isEmpty()) {
@@ -141,17 +114,20 @@ public class ItemBow extends Item {
         return f;
     }
 
-    public int c(ItemStack itemstack) {
+    @Override
+    public int f_(ItemStack itemstack) {
         return 72000;
     }
 
-    public EnumAnimation d(ItemStack itemstack) {
+    @Override
+    public EnumAnimation e_(ItemStack itemstack) {
         return EnumAnimation.BOW;
     }
 
+    @Override
     public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
         ItemStack itemstack = entityhuman.b(enumhand);
-        boolean flag = !this.a(entityhuman, itemstack).isEmpty(); // Paper
+        boolean flag = !entityhuman.f(itemstack).isEmpty();
 
         if (!entityhuman.abilities.canInstantlyBuild && !flag) {
             return flag ? new InteractionResultWrapper<>(EnumInteractionResult.PASS, itemstack) : new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
@@ -161,7 +137,8 @@ public class ItemBow extends Item {
         }
     }
 
-    public int c() {
-        return 1;
+    @Override
+    public Predicate<ItemStack> b() {
+        return ItemBow.a;
     }
 }

@@ -9,6 +9,7 @@ public class ItemArmorStand extends Item {
         super(item_info);
     }
 
+    @Override
     public EnumInteractionResult a(ItemActionContext itemactioncontext) {
         EnumDirection enumdirection = itemactioncontext.getClickedFace();
 
@@ -32,21 +33,21 @@ public class ItemArmorStand extends Item {
                     ItemStack itemstack = itemactioncontext.getItemStack();
 
                     if (!world.isClientSide) {
-                        world.setAir(blockposition);
-                        world.setAir(blockposition1);
-                        EntityArmorStand entityarmorstand = EntityTypes.ARMOR_STAND.create(world); // Paper
+                        world.a(blockposition, false);
+                        world.a(blockposition1, false);
+                        EntityArmorStand entityarmorstand = new EntityArmorStand(world, d0 + 0.5D, d1, d2 + 0.5D);
                         float f = (float) MathHelper.d((MathHelper.g(itemactioncontext.h() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
 
                         entityarmorstand.setPositionRotation(d0 + 0.5D, d1, d2 + 0.5D, f, 0.0F);
                         this.a(entityarmorstand, world.random);
-                        EntityTypes.a(world, itemactioncontext.getEntity(), entityarmorstand, itemstack.getTag());
+                        EntityTypes.a(world, itemactioncontext.getEntity(), (Entity) entityarmorstand, itemstack.getTag());
                         // CraftBukkit start
                         if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityPlaceEvent(itemactioncontext, entityarmorstand).isCancelled()) {
                             return EnumInteractionResult.FAIL;
                         }
                         // CraftBukkit end
                         world.addEntity(entityarmorstand);
-                        world.a((EntityHuman) null, entityarmorstand.locX, entityarmorstand.locY, entityarmorstand.locZ, SoundEffects.ENTITY_ARMOR_STAND_PLACE, SoundCategory.BLOCKS, 0.75F, 0.8F);
+                        world.playSound((EntityHuman) null, entityarmorstand.locX, entityarmorstand.locY, entityarmorstand.locZ, SoundEffects.ENTITY_ARMOR_STAND_PLACE, SoundCategory.BLOCKS, 0.75F, 0.8F);
                     }
 
                     itemstack.subtract(1);

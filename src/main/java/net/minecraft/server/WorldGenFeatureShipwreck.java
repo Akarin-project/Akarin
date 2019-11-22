@@ -1,49 +1,60 @@
 package net.minecraft.server;
 
+import com.mojang.datafixers.Dynamic;
+import java.util.function.Function;
+
 public class WorldGenFeatureShipwreck extends WorldGenFeatureRandomScattered<WorldGenFeatureShipwreckConfiguration> {
 
-    public WorldGenFeatureShipwreck() {}
+    public WorldGenFeatureShipwreck(Function<Dynamic<?>, ? extends WorldGenFeatureShipwreckConfiguration> function) {
+        super(function);
+    }
 
-    protected String a() {
+    @Override
+    public String b() {
         return "Shipwreck";
     }
 
-    public int b() {
+    @Override
+    public int c() {
         return 3;
     }
 
-    protected StructureStart a(GeneratorAccess generatoraccess, ChunkGenerator<?> chunkgenerator, SeededRandom seededrandom, int i, int j) {
-        BiomeBase biomebase = chunkgenerator.getWorldChunkManager().getBiome(new BlockPosition((i << 4) + 9, 0, (j << 4) + 9), (BiomeBase) null);
-
-        return new WorldGenFeatureShipwreck.a(generatoraccess, chunkgenerator, seededrandom, i, j, biomebase);
+    @Override
+    public StructureGenerator.a a() {
+        return WorldGenFeatureShipwreck.a::new;
     }
 
+    @Override
     // Spigot start
-    protected int c(World world) {
+    protected int getSeed(World world) {
         return world.spigotConfig.shipwreckSeed;
         // Spigot end
     }
 
+    @Override
     protected int a(ChunkGenerator<?> chunkgenerator) {
         return chunkgenerator.getSettings().j();
     }
 
+    @Override
     protected int b(ChunkGenerator<?> chunkgenerator) {
         return chunkgenerator.getSettings().k();
     }
 
     public static class a extends StructureStart {
 
-        public a() {}
+        public a(StructureGenerator<?> structuregenerator, int i, int j, BiomeBase biomebase, StructureBoundingBox structureboundingbox, int k, long l) {
+            super(structuregenerator, i, j, biomebase, structureboundingbox, k, l);
+        }
 
-        public a(GeneratorAccess generatoraccess, ChunkGenerator<?> chunkgenerator, SeededRandom seededrandom, int i, int j, BiomeBase biomebase) {
-            super(i, j, biomebase, seededrandom, generatoraccess.getSeed());
-            WorldGenFeatureShipwreckConfiguration worldgenfeatureshipwreckconfiguration = (WorldGenFeatureShipwreckConfiguration) chunkgenerator.getFeatureConfiguration(biomebase, WorldGenerator.k);
-            EnumBlockRotation enumblockrotation = EnumBlockRotation.values()[seededrandom.nextInt(EnumBlockRotation.values().length)];
+        @Override
+        public void a(ChunkGenerator<?> chunkgenerator, DefinedStructureManager definedstructuremanager, int i, int j, BiomeBase biomebase) {
+            WorldGenFeatureShipwreckConfiguration worldgenfeatureshipwreckconfiguration = (WorldGenFeatureShipwreckConfiguration) chunkgenerator.getFeatureConfiguration(biomebase, WorldGenerator.SHIPWRECK);
+            EnumBlockRotation enumblockrotation = EnumBlockRotation.values()[this.d.nextInt(EnumBlockRotation.values().length)];
             BlockPosition blockposition = new BlockPosition(i * 16, 90, j * 16);
 
-            WorldGenShipwreck.a(generatoraccess.getDataManager().h(), blockposition, enumblockrotation, this.a, seededrandom, worldgenfeatureshipwreckconfiguration);
-            this.a((IBlockAccess) generatoraccess);
+            WorldGenShipwreck.a(definedstructuremanager, blockposition, enumblockrotation, this.b, this.d, worldgenfeatureshipwreckconfiguration);
+            this.b();
         }
     }
 }

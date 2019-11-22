@@ -39,7 +39,7 @@ public class ArgumentEntity implements ArgumentType<EntitySelector> {
         return ((EntitySelector) commandcontext.getArgument(s, EntitySelector.class)).a((CommandListenerWrapper) commandcontext.getSource());
     }
 
-    public static ArgumentEntity b() {
+    public static ArgumentEntity multipleEntities() {
         return new ArgumentEntity(false, false);
     }
 
@@ -54,7 +54,7 @@ public class ArgumentEntity implements ArgumentType<EntitySelector> {
     }
 
     public static Collection<? extends Entity> c(CommandContext<CommandListenerWrapper> commandcontext, String s) throws CommandSyntaxException {
-        return ((EntitySelector) commandcontext.getArgument(s, EntitySelector.class)).b((CommandListenerWrapper) commandcontext.getSource());
+        return ((EntitySelector) commandcontext.getArgument(s, EntitySelector.class)).getEntities((CommandListenerWrapper) commandcontext.getSource());
     }
 
     public static Collection<EntityPlayer> d(CommandContext<CommandListenerWrapper> commandcontext, String s) throws CommandSyntaxException {
@@ -92,7 +92,7 @@ public class ArgumentEntity implements ArgumentType<EntitySelector> {
         // CraftBukkit end
         boolean flag = false;
         ArgumentParserSelector argumentparserselector = new ArgumentParserSelector(stringreader);
-        EntitySelector entityselector = argumentparserselector.s(overridePermissions); // CraftBukkit
+        EntitySelector entityselector = argumentparserselector.parse(overridePermissions); // CraftBukkit
 
         if (entityselector.a() > 1 && this.h) {
             if (this.i) {
@@ -119,7 +119,7 @@ public class ArgumentEntity implements ArgumentType<EntitySelector> {
             ArgumentParserSelector argumentparserselector = new ArgumentParserSelector(stringreader, icompletionprovider.hasPermission(2));
 
             try {
-                argumentparserselector.s();
+                argumentparserselector.parse();
             } catch (CommandSyntaxException commandsyntaxexception) {
                 ;
             }
@@ -157,6 +157,7 @@ public class ArgumentEntity implements ArgumentType<EntitySelector> {
             packetdataserializer.writeByte(b0);
         }
 
+        @Override
         public ArgumentEntity b(PacketDataSerializer packetdataserializer) {
             byte b0 = packetdataserializer.readByte();
 

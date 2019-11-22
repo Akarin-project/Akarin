@@ -1,5 +1,6 @@
 package com.destroystokyo.paper;
 
+import com.destroystokyo.paper.io.chunk.ChunkTaskManager;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 
@@ -71,8 +72,8 @@ public class PaperConfig {
         commands = new HashMap<String, Command>();
         commands.put("paper", new PaperCommand("paper"));
 
-        version = getInt("config-version", 18);
-        set("config-version", 18);
+        version = getInt("config-version", 20);
+        set("config-version", 20);
         readConfig(PaperConfig.class, null);
     }
 
@@ -199,13 +200,7 @@ public class PaperConfig {
         return config.getString(path, config.getString(path));
     }
 
-    public static int maxTickMsLostLightQueue;
-    private static void lightQueue() {
-        int badSetting = config.getInt("queue-light-updates-max-loss", 10);
-        config.set("queue-light-updates-max-loss", null);
-        maxTickMsLostLightQueue = getInt("settings.queue-light-updates-max-loss", badSetting);
-    }
-
+    public static String timingsServerName;
     private static void timings() {
         boolean timings = getBoolean("timings.enabled", true);
         boolean verboseTimings = getBoolean("timings.verbose", true);
@@ -213,6 +208,7 @@ public class PaperConfig {
         TimingsManager.hiddenConfigs = getList("timings.hidden-config-entries", Lists.newArrayList("database", "settings.bungeecord-addresses"));
         int timingHistoryInterval = getInt("timings.history-interval", 300);
         int timingHistoryLength = getInt("timings.history-length", 3600);
+        timingsServerName = getString("timings.server-name", "Unknown Server");
 
 
         Timings.setVerboseTimingsEnabled(verboseTimings);
@@ -223,13 +219,8 @@ public class PaperConfig {
         log("Timings: " + timings +
                 " - Verbose: " + verboseTimings +
                 " - Interval: " + timeSummary(Timings.getHistoryInterval() / 20) +
-                " - Length: " + timeSummary(Timings.getHistoryLength() / 20));
-    }
-
-    public static boolean enableFileIOThreadSleep;
-    private static void enableFileIOThreadSleep() {
-        enableFileIOThreadSleep = getBoolean("settings.sleep-between-chunk-saves", false);
-        if (enableFileIOThreadSleep) Bukkit.getLogger().info("Enabled sleeping between chunk saves, beware of memory issues");
+                " - Length: " + timeSummary(Timings.getHistoryLength() / 20) +
+                " - Server Name: " + timingsServerName);
     }
 
     public static boolean loadPermsBeforePlugins = true;
@@ -239,7 +230,7 @@ public class PaperConfig {
 
     public static int regionFileCacheSize = 256;
     private static void regionFileCacheSize() {
-        regionFileCacheSize = getInt("settings.region-file-cache-size", 256);
+        regionFileCacheSize = Math.max(getInt("settings.region-file-cache-size", 256), 4);
     }
 
     public static boolean enablePlayerCollisions = true;
@@ -275,17 +266,6 @@ public class PaperConfig {
     private static void flyingKickMessages() {
         flyingKickPlayerMessage = getString("messages.kick.flying-player", flyingKickPlayerMessage);
         flyingKickVehicleMessage = getString("messages.kick.flying-vehicle", flyingKickVehicleMessage);
-    }
-
-    public static int playerAutoSaveRate = -1;
-    public static int maxPlayerAutoSavePerTick = 10;
-    private static void playerAutoSaveRate() {
-        playerAutoSaveRate = getInt("settings.player-auto-save-rate", -1);
-        maxPlayerAutoSavePerTick = getInt("settings.max-player-auto-save-per-tick", -1);
-        if (maxPlayerAutoSavePerTick == -1) { // -1 Automatic / "Recommended"
-            // 10 should be safe for everyone unless your mass spamming player auto save
-            maxPlayerAutoSavePerTick = (playerAutoSaveRate == -1 || playerAutoSaveRate > 100) ? 10 : 20;
-        }
     }
 
     public static boolean suggestPlayersWhenNullTabCompletions = true;
@@ -389,59 +369,6 @@ public class PaperConfig {
         }
     }
 
-    public static boolean asyncChunks = false;
-    public static boolean asyncChunkGeneration = true;
-    public static boolean asyncChunkGenThreadPerWorld = true;
-    public static int asyncChunkLoadThreads = -1;
-    private static void asyncChunks() {
-        if (version < 15) {
-            boolean enabled = config.getBoolean("settings.async-chunks", true);
-            ConfigurationSection section = config.createSection("settings.async-chunks");
-            section.set("enable", enabled);
-            section.set("load-threads", -1);
-            section.set("generation", true);
-            section.set("thread-per-world-generation", true);
-        }
-
-        asyncChunks = getBoolean("settings.async-chunks.enable", true);
-        asyncChunkGeneration = getBoolean("settings.async-chunks.generation", true);
-        asyncChunkGenThreadPerWorld = getBoolean("settings.async-chunks.thread-per-world-generation", true);
-        asyncChunkLoadThreads = getInt("settings.async-chunks.load-threads", -1);
-        if (asyncChunkLoadThreads <= 0) {
-            asyncChunkLoadThreads = (int) Math.min(Integer.getInteger("paper.maxChunkThreads", 8), Runtime.getRuntime().availableProcessors() * 1.5);
-        }
-
-        // Let Shared Host set some limits
-        String sharedHostEnvGen = System.getenv("PAPER_ASYNC_CHUNKS_SHARED_HOST_GEN");
-        String sharedHostEnvLoad = System.getenv("PAPER_ASYNC_CHUNKS_SHARED_HOST_LOAD");
-        if ("1".equals(sharedHostEnvGen)) {
-            log("Async Chunks - Generation: Your host has requested to use a single thread world generation");
-            asyncChunkGenThreadPerWorld = false;
-        } else if ("2".equals(sharedHostEnvGen)) {
-            log("Async Chunks - Generation: Your host has disabled async world generation - You will experience lag from world generation");
-            asyncChunkGeneration = false;
-        }
-
-        if (sharedHostEnvLoad != null) {
-            try {
-                asyncChunkLoadThreads = Math.max(1, Math.min(asyncChunkLoadThreads, Integer.parseInt(sharedHostEnvLoad)));
-            } catch (NumberFormatException ignored) {}
-        }
-
-        if (!asyncChunks) {
-            log("Async Chunks: Disabled - Chunks will be managed synchronosuly, and will cause tremendous lag.");
-        } else {
-            log("Async Chunks: Enabled - Chunks will be loaded much faster, without lag.");
-            if (!asyncChunkGeneration) {
-                log("Async Chunks - Generation: Disabled - Chunks will be generated synchronosuly, and will cause tremendous lag.");
-            } else if (asyncChunkGenThreadPerWorld) {
-                log("Async Chunks - Generation: Enabled - Chunks will be generated much faster, without lag.");
-            } else {
-                log("Async Chunks - Generation: Enabled (Single Thread) - Chunks will be generated much faster, without lag.");
-            }
-        }
-    }
-
     public static boolean velocitySupport;
     public static boolean velocityOnlineMode;
     public static byte[] velocitySecretKey;
@@ -461,5 +388,65 @@ public class PaperConfig {
     private static void maxBookSize() {
         maxBookPageSize = getInt("settings.book-size.page-max", maxBookPageSize);
         maxBookTotalSizeMultiplier = getDouble("settings.book-size.total-multiplier", maxBookTotalSizeMultiplier);
+    }
+
+    public static boolean asyncChunks = false;
+    //public static boolean asyncChunkGeneration = true; // Leave out for now until we can control this
+    //public static boolean asyncChunkGenThreadPerWorld = true; // Leave out for now until we can control this
+    public static int asyncChunkLoadThreads = -1;
+    private static void asyncChunks() {
+        if (version < 15) {
+            boolean enabled = config.getBoolean("settings.async-chunks", true);
+            ConfigurationSection section = config.createSection("settings.async-chunks");
+            section.set("enable", enabled);
+            section.set("load-threads", -1);
+            section.set("generation", true);
+            section.set("thread-per-world-generation", true);
+        }
+
+        // TODO load threads now control async chunk save for unloading chunks, look into renaming this?
+
+        asyncChunks = getBoolean("settings.async-chunks.enable", true);
+        //asyncChunkGeneration = getBoolean("settings.async-chunks.generation", true); // Leave out for now until we can control this
+        //asyncChunkGenThreadPerWorld = getBoolean("settings.async-chunks.thread-per-world-generation", true); // Leave out for now until we can control this
+        asyncChunkLoadThreads = getInt("settings.async-chunks.load-threads", -1);
+        if (asyncChunkLoadThreads <= 0) {
+            asyncChunkLoadThreads = (int) Math.min(Integer.getInteger("paper.maxChunkThreads", 8), Math.max(1, Runtime.getRuntime().availableProcessors() - 1));
+        }
+
+        // Let Shared Host set some limits
+        String sharedHostEnvGen = System.getenv("PAPER_ASYNC_CHUNKS_SHARED_HOST_GEN");
+        String sharedHostEnvLoad = System.getenv("PAPER_ASYNC_CHUNKS_SHARED_HOST_LOAD");
+        /* Ignore temporarily - we cannot control the gen threads (for now)
+        if ("1".equals(sharedHostEnvGen)) {
+            log("Async Chunks - Generation: Your host has requested to use a single thread world generation");
+            asyncChunkGenThreadPerWorld = false;
+        } else if ("2".equals(sharedHostEnvGen)) {
+            log("Async Chunks - Generation: Your host has disabled async world generation - You will experience lag from world generation");
+            asyncChunkGeneration = false;
+        }
+         */
+
+        if (sharedHostEnvLoad != null) {
+            try {
+                asyncChunkLoadThreads = Math.max(1, Math.min(asyncChunkLoadThreads, Integer.parseInt(sharedHostEnvLoad)));
+            } catch (NumberFormatException ignored) {}
+        }
+
+        if (!asyncChunks) {
+            log("Async Chunks: Disabled - Chunks will be managed synchronosuly, and will cause tremendous lag.");
+        } else {
+            ChunkTaskManager.initGlobalLoadThreads(asyncChunkLoadThreads);
+            log("Async Chunks: Enabled - Chunks will be loaded much faster, without lag.");
+            /* Ignore temporarily - we cannot control the gen threads (for now)
+            if (!asyncChunkGeneration) {
+                log("Async Chunks - Generation: Disabled - Chunks will be generated synchronosuly, and will cause tremendous lag.");
+            } else if (asyncChunkGenThreadPerWorld) {
+                log("Async Chunks - Generation: Enabled - Chunks will be generated much faster, without lag.");
+            } else {
+                log("Async Chunks - Generation: Enabled (Single Thread) - Chunks will be generated much faster, without lag.");
+            }
+            */
+        }
     }
 }

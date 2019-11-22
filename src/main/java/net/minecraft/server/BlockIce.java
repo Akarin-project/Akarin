@@ -9,28 +9,20 @@ public class BlockIce extends BlockHalfTransparent {
         super(block_info);
     }
 
-    public int j(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
-        return Blocks.WATER.getBlockData().b(iblockaccess, blockposition);
-    }
-
+    @Override
     public TextureType c() {
         return TextureType.TRANSLUCENT;
     }
 
+    @Override
     public void a(World world, EntityHuman entityhuman, BlockPosition blockposition, IBlockData iblockdata, @Nullable TileEntity tileentity, ItemStack itemstack) {
-        entityhuman.b(StatisticList.BLOCK_MINED.b(this));
-        entityhuman.applyExhaustion(0.005F);
-        if (this.X_() && EnchantmentManager.getEnchantmentLevel(Enchantments.SILK_TOUCH, itemstack) > 0) {
-            a(world, blockposition, this.t(iblockdata));
-        } else {
+        super.a(world, entityhuman, blockposition, iblockdata, tileentity, itemstack);
+        if (EnchantmentManager.getEnchantmentLevel(Enchantments.SILK_TOUCH, itemstack) == 0) {
             if (world.worldProvider.isNether()) {
-                world.setAir(blockposition);
+                world.a(blockposition, false);
                 return;
             }
 
-            int i = EnchantmentManager.getEnchantmentLevel(Enchantments.LOOT_BONUS_BLOCKS, itemstack);
-
-            iblockdata.a(world, blockposition, i);
             Material material = world.getType(blockposition.down()).getMaterial();
 
             if (material.isSolid() || material.isLiquid()) {
@@ -40,33 +32,35 @@ public class BlockIce extends BlockHalfTransparent {
 
     }
 
-    public int a(IBlockData iblockdata, Random random) {
-        return 0;
-    }
-
-    public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
-        if (world.getBrightness(EnumSkyBlock.BLOCK, blockposition) > 11 - iblockdata.b(world, blockposition)) {
-            this.b(iblockdata, world, blockposition);
+    @Override
+    public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
+        if (world.getBrightness(EnumSkyBlock.BLOCK, blockposition) > 11 - iblockdata.b((IBlockAccess) world, blockposition)) {
+            this.melt(iblockdata, world, blockposition);
         }
 
     }
 
-    protected void b(IBlockData iblockdata, World world, BlockPosition blockposition) {
+    protected void melt(IBlockData iblockdata, World world, BlockPosition blockposition) {
         // CraftBukkit start
         if (org.bukkit.craftbukkit.event.CraftEventFactory.callBlockFadeEvent(world, blockposition, world.worldProvider.isNether() ? Blocks.AIR.getBlockData() : Blocks.WATER.getBlockData()).isCancelled()) {
             return;
         }
         // CraftBukkit end
         if (world.worldProvider.isNether()) {
-            world.setAir(blockposition);
+            world.a(blockposition, false);
         } else {
-            iblockdata.a(world, blockposition, 0);
             world.setTypeUpdate(blockposition, Blocks.WATER.getBlockData());
             world.a(blockposition, Blocks.WATER, blockposition);
         }
     }
 
+    @Override
     public EnumPistonReaction getPushReaction(IBlockData iblockdata) {
         return EnumPistonReaction.NORMAL;
+    }
+
+    @Override
+    public boolean a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, EntityTypes<?> entitytypes) {
+        return entitytypes == EntityTypes.POLAR_BEAR;
     }
 }

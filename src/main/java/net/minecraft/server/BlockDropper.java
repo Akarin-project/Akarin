@@ -13,18 +13,21 @@ public class BlockDropper extends BlockDispenser {
         super(block_info);
     }
 
+    @Override
     protected IDispenseBehavior a(ItemStack itemstack) {
         return BlockDropper.c;
     }
 
-    public TileEntity a(IBlockAccess iblockaccess) {
+    @Override
+    public TileEntity createTile(IBlockAccess iblockaccess) {
         return new TileEntityDropper();
     }
 
+    @Override
     public void dispense(World world, BlockPosition blockposition) {
         SourceBlock sourceblock = new SourceBlock(world, blockposition);
         TileEntityDispenser tileentitydispenser = (TileEntityDispenser) sourceblock.getTileEntity();
-        int i = tileentitydispenser.p();
+        int i = tileentitydispenser.h();
 
         if (i < 0) {
             world.triggerEffect(1001, blockposition, 0);

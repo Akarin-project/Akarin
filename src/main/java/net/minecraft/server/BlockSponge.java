@@ -15,15 +15,17 @@ public class BlockSponge extends Block {
         super(block_info);
     }
 
-    public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1) {
+    @Override
+    public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
         if (iblockdata1.getBlock() != iblockdata.getBlock()) {
             this.a(world, blockposition);
         }
     }
 
-    public void doPhysics(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, BlockPosition blockposition1) {
+    @Override
+    public void doPhysics(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, BlockPosition blockposition1, boolean flag) {
         this.a(world, blockposition);
-        super.doPhysics(iblockdata, world, blockposition, block, blockposition1);
+        super.doPhysics(iblockdata, world, blockposition, block, blockposition1, flag);
     }
 
     protected void a(World world, BlockPosition blockposition) {
@@ -51,8 +53,10 @@ public class BlockSponge extends Block {
             for (int l = 0; l < k; ++l) {
                 EnumDirection enumdirection = aenumdirection[l];
                 BlockPosition blockposition2 = blockposition1.shift(enumdirection);
-                IBlockData iblockdata = world.getType(blockposition2);
-                Fluid fluid = world.getFluid(blockposition2);
+                // CraftBukkit start
+                IBlockData iblockdata = blockList.getType(blockposition2);
+                Fluid fluid = blockList.getFluid(blockposition2);
+                // CraftBukkit end
                 Material material = iblockdata.getMaterial();
 
                 if (fluid.a(TagsFluid.WATER)) {
@@ -68,8 +72,12 @@ public class BlockSponge extends Block {
                             queue.add(new Tuple<>(blockposition2, j + 1));
                         }
                     } else if (material == Material.WATER_PLANT || material == Material.REPLACEABLE_WATER_PLANT) {
-                        // iblockdata.a(world, blockposition2, 0);
-                        blockList.setTypeAndData(blockposition2, Blocks.AIR.getBlockData(), 3); // CraftBukkit
+                        // CraftBukkit start
+                        // TileEntity tileentity = iblockdata.getBlock().isTileEntity() ? world.getTileEntity(blockposition2) : null;
+
+                        // a(iblockdata, world, blockposition2, tileentity);
+                        blockList.setTypeAndData(blockposition2, Blocks.AIR.getBlockData(), 3);
+                        // CraftBukkit end
                         ++i;
                         if (j < 6) {
                             queue.add(new Tuple<>(blockposition2, j + 1));
@@ -85,7 +93,7 @@ public class BlockSponge extends Block {
         // CraftBukkit start
         List<CraftBlockState> blocks = blockList.getList(); // Is a clone
         if (!blocks.isEmpty()) {
-            final org.bukkit.block.Block bblock = world.getWorld().getBlockAt(blockposition); // Akarin
+            final org.bukkit.block.Block bblock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
 
             SpongeAbsorbEvent event = new SpongeAbsorbEvent(bblock, (List<org.bukkit.block.BlockState>) (List) blocks);
             world.getServer().getPluginManager().callEvent(event);
@@ -106,9 +114,10 @@ public class BlockSponge extends Block {
                     } else if (iblockdata.getBlock() instanceof BlockFluids) {
                         // NOP
                     } else if (material == Material.WATER_PLANT || material == Material.REPLACEABLE_WATER_PLANT) {
+                        TileEntity tileentity = iblockdata.getBlock().isTileEntity() ? world.getTileEntity(blockposition2) : null;
                         // Paper start
                         if (block.getHandle().getMaterial() == Material.AIR) {
-                            iblockdata.dropNaturally(world, blockposition2, 0);
+                            dropNaturally(iblockdata, world, blockposition2, tileentity);
                         }
                         // Paper end
                     }
@@ -121,4 +130,3 @@ public class BlockSponge extends Block {
         return i > 0;
     }
 }
-

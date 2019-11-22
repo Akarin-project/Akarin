@@ -1,6 +1,6 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Collections2;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -12,18 +12,14 @@ import com.google.gson.JsonParseException;
 import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import com.koloboke.collect.map.hash.HashObjObjMaps;
-import com.mojang.datafixers.DataFixTypes;
 import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.types.JsonOps;
-
-import io.akarin.server.core.AkarinAsyncExecutor;
-
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 public class AdvancementDataPlayer {
 
-    private static final Logger a = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson b = (new GsonBuilder()).registerTypeAdapter(AdvancementProgress.class, new AdvancementProgress.a()).registerTypeAdapter(MinecraftKey.class, new MinecraftKey.a()).setPrettyPrinting().create();
     private static final TypeToken<Map<MinecraftKey, AdvancementProgress>> c = new TypeToken<Map<MinecraftKey, AdvancementProgress>>() {
     };
@@ -87,7 +83,7 @@ public class AdvancementDataPlayer {
     }
 
     private void d() {
-        Iterator iterator = this.d.getAdvancementData().b().iterator();
+        Iterator iterator = this.d.getAdvancementData().a().iterator();
 
         while (iterator.hasNext()) {
             Advancement advancement = (Advancement) iterator.next();
@@ -121,7 +117,7 @@ public class AdvancementDataPlayer {
     }
 
     private void f() {
-        Iterator iterator = this.d.getAdvancementData().b().iterator();
+        Iterator iterator = this.d.getAdvancementData().a().iterator();
 
         while (iterator.hasNext()) {
             Advancement advancement = (Advancement) iterator.next();
@@ -144,11 +140,11 @@ public class AdvancementDataPlayer {
                     jsonreader.setLenient(false);
                     Dynamic<JsonElement> dynamic = new Dynamic(JsonOps.INSTANCE, Streams.parse(jsonreader));
 
-                    if (!dynamic.get("DataVersion").flatMap(Dynamic::getNumberValue).isPresent()) {
+                    if (!dynamic.get("DataVersion").asNumber().isPresent()) {
                         dynamic = dynamic.set("DataVersion", dynamic.createInt(1343));
                     }
 
-                    dynamic = this.d.az().update(DataFixTypes.ADVANCEMENTS, dynamic, dynamic.getInt("DataVersion"), 1631);
+                    dynamic = this.d.aB().update(DataFixTypes.ADVANCEMENTS.a(), dynamic, dynamic.get("DataVersion").asInt(0), SharedConstants.a().getWorldVersion());
                     dynamic = dynamic.remove("DataVersion");
                     Map<MinecraftKey, AdvancementProgress> map = (Map) AdvancementDataPlayer.b.getAdapter(AdvancementDataPlayer.c).fromJsonTree((JsonElement) dynamic.getValue());
 
@@ -165,8 +161,8 @@ public class AdvancementDataPlayer {
 
                         if (advancement == null) {
                             // CraftBukkit start
-                            if (((MinecraftKey) entry.getKey()).b().equals("minecraft")) {
-                                AdvancementDataPlayer.a.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", entry.getKey(), this.e);
+                            if (entry.getKey().getNamespace().equals("minecraft")) {
+                                AdvancementDataPlayer.LOGGER.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", entry.getKey(), this.e);
                             }
                             // CraftBukkit end
                         } else {
@@ -191,9 +187,9 @@ public class AdvancementDataPlayer {
 
                 }
             } catch (JsonParseException jsonparseexception) {
-                AdvancementDataPlayer.a.error("Couldn't parse player advancements in {}", this.e, jsonparseexception);
+                AdvancementDataPlayer.LOGGER.error("Couldn't parse player advancements in {}", this.e, jsonparseexception);
             } catch (IOException ioexception) {
-                AdvancementDataPlayer.a.error("Couldn't access player advancements in {}", this.e, ioexception);
+                AdvancementDataPlayer.LOGGER.error("Couldn't access player advancements in {}", this.e, ioexception);
             }
         }
 
@@ -202,33 +198,6 @@ public class AdvancementDataPlayer {
         this.d();
     }
 
-    // Akarin start - copied from below
-    public Map<MinecraftKey, AdvancementProgress> toSerializableMap() {
-        Map<MinecraftKey, AdvancementProgress> map = HashObjObjMaps.newMutableMap();
-        Iterator<Entry<Advancement, AdvancementProgress>> iterator = this.data.entrySet().iterator();
-
-        while (iterator.hasNext()) {
-            Entry<Advancement, AdvancementProgress> entry = iterator.next();
-            AdvancementProgress advancementprogress = (AdvancementProgress) entry.getValue();
-
-            if (advancementprogress.b()) {
-                map.put(((Advancement) entry.getKey()).getName(), advancementprogress);
-            }
-        }
-        return map;
-    }
-    public void save(Map<MinecraftKey, AdvancementProgress> serializableMap) {
-        if (this.e.getParentFile() != null) {
-            this.e.getParentFile().mkdirs();
-        }
-
-        try {
-            Files.write(AdvancementDataPlayer.b.toJson(serializableMap), this.e, StandardCharsets.UTF_8);
-        } catch (IOException ioexception) {
-            AdvancementDataPlayer.a.error("Couldn't save player advancements to {}", this.e, ioexception);
-        }
-    }
-    // Akarin end
     public void c() {
         if (org.spigotmc.SpigotConfig.disableAdvancementSaving) return;
         Map<MinecraftKey, AdvancementProgress> map = Maps.newHashMap();
@@ -247,10 +216,56 @@ public class AdvancementDataPlayer {
             this.e.getParentFile().mkdirs();
         }
 
+        JsonElement jsonelement = AdvancementDataPlayer.b.toJsonTree(map);
+
+        jsonelement.getAsJsonObject().addProperty("DataVersion", SharedConstants.a().getWorldVersion());
+
         try {
-            Files.write(AdvancementDataPlayer.b.toJson(map), this.e, StandardCharsets.UTF_8);
+            FileOutputStream fileoutputstream = new FileOutputStream(this.e);
+            Throwable throwable = null;
+
+            try {
+                OutputStreamWriter outputstreamwriter = new OutputStreamWriter(fileoutputstream, Charsets.UTF_8.newEncoder());
+                Throwable throwable1 = null;
+
+                try {
+                    AdvancementDataPlayer.b.toJson(jsonelement, outputstreamwriter);
+                } catch (Throwable throwable2) {
+                    throwable1 = throwable2;
+                    throw throwable2;
+                } finally {
+                    if (outputstreamwriter != null) {
+                        if (throwable1 != null) {
+                            try {
+                                outputstreamwriter.close();
+                            } catch (Throwable throwable3) {
+                                throwable1.addSuppressed(throwable3);
+                            }
+                        } else {
+                            outputstreamwriter.close();
+                        }
+                    }
+
+                }
+            } catch (Throwable throwable4) {
+                throwable = throwable4;
+                throw throwable4;
+            } finally {
+                if (fileoutputstream != null) {
+                    if (throwable != null) {
+                        try {
+                            fileoutputstream.close();
+                        } catch (Throwable throwable5) {
+                            throwable.addSuppressed(throwable5);
+                        }
+                    } else {
+                        fileoutputstream.close();
+                    }
+                }
+
+            }
         } catch (IOException ioexception) {
-            AdvancementDataPlayer.a.error("Couldn't save player advancements to {}", this.e, ioexception);
+            AdvancementDataPlayer.LOGGER.error("Couldn't save player advancements to {}", this.e, ioexception);
         }
 
     }
@@ -273,8 +288,8 @@ public class AdvancementDataPlayer {
             if (!flag1 && advancementprogress.isDone()) {
                 this.player.world.getServer().getPluginManager().callEvent(new org.bukkit.event.player.PlayerAdvancementDoneEvent(this.player.getBukkitEntity(), advancement.bukkit)); // CraftBukkit
                 advancement.d().a(this.player);
-                if (advancement.c() != null && advancement.c().i() && this.player.world.getGameRules().getBoolean("announceAdvancements")) {
-                    this.d.getPlayerList().sendMessage(new ChatMessage("chat.type.advancement." + advancement.c().e().a(), new Object[] { this.player.getScoreboardDisplayName(), advancement.j()}));
+                if (advancement.c() != null && advancement.c().i() && this.player.world.getGameRules().getBoolean(GameRules.ANNOUNCE_ADVANCEMENTS)) {
+                    this.d.getPlayerList().sendMessage(new ChatMessage("chat.type.advancement." + advancement.c().e().a(), new Object[]{this.player.getScoreboardDisplayName(), advancement.j()}));
                 }
             }
         }

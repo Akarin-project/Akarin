@@ -3,8 +3,8 @@ package net.minecraft.server;
 public class TileEntityEnderChest extends TileEntity { // Paper - Remove ITickable
 
     public float a;
-    public float e;
-    public int f;
+    public float b;
+    public int c;
     private int g;
 
     public TileEntityEnderChest() {
@@ -13,45 +13,47 @@ public class TileEntityEnderChest extends TileEntity { // Paper - Remove ITickab
 
     public void tick() {
         if (++this.g % 20 * 4 == 0) {
-            this.world.playBlockAction(this.position, Blocks.ENDER_CHEST, 1, this.f);
+            this.world.playBlockAction(this.position, Blocks.ENDER_CHEST, 1, this.c);
         }
 
-        this.e = this.a;
-        // Paper start
-        /*
+        this.b = this.a;
+        /* // Paper
         int i = this.position.getX();
         int j = this.position.getY();
         int k = this.position.getZ();
         float f = 0.1F;
         double d0;
-
-        */
         // Paper start
+        */
     }
+
     private void doOpenLogic() {
         int i = this.position.getX();
         int j = this.position.getY();
         int k = this.position.getZ();
+        double d0;
         // Paper end
-        if (this.f > 0 && this.a == 0.0F) {
+
+        if (this.c > 0 && this.a == 0.0F) {
             double d1 = (double) i + 0.5D;
 
-            double d0 = (double) k + 0.5D; // Paper
-            this.world.a((EntityHuman) null, d1, (double) j + 0.5D, d0, SoundEffects.BLOCK_ENDER_CHEST_OPEN, SoundCategory.BLOCKS, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
+            d0 = (double) k + 0.5D;
+            this.world.playSound((EntityHuman) null, d1, (double) j + 0.5D, d0, SoundEffects.BLOCK_ENDER_CHEST_OPEN, SoundCategory.BLOCKS, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
         }
         // Paper start
     }
+
     private void doCloseLogic() {
         int i = this.position.getX();
         int j = this.position.getY();
         int k = this.position.getZ();
-        this.e = this.a;
         double d0;
+
+        if (this.c == 0) { /* && this.a > 0.0F || this.c > 0 && this.a < 1.0F) {
         // Paper end
-        if (this.f == 0 && this.a > 0.0F || this.f > 0 && this.a < 1.0F) {
             float f1 = this.a;
 
-            if (this.f > 0) {
+            if (this.c > 0) {
                 this.a += 0.1F;
             } else {
                 this.a -= 0.1F;
@@ -64,11 +66,14 @@ public class TileEntityEnderChest extends TileEntity { // Paper - Remove ITickab
             float f2 = 0.5F;
 
             if (this.a < 0.5F && f1 >= 0.5F) {
+            // Paper start
+            */
                 d0 = (double) i + 0.5D;
                 double d2 = (double) k + 0.5D;
 
-                this.world.a((EntityHuman) null, d0, (double) j + 0.5D, d2, SoundEffects.BLOCK_ENDER_CHEST_CLOSE, SoundCategory.BLOCKS, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
-            }
+            MCUtil.scheduleTask(10, () -> {
+                this.world.playSound((EntityHuman) null, d0, (double) j + 0.5D, d2, SoundEffects.BLOCK_ENDER_CHEST_CLOSE, SoundCategory.BLOCKS, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
+            });
 
             if (this.a < 0.0F) {
                 this.a = 0.0F;
@@ -77,33 +82,35 @@ public class TileEntityEnderChest extends TileEntity { // Paper - Remove ITickab
 
     }
 
-    public boolean c(int i, int j) {
+    @Override
+    public boolean setProperty(int i, int j) {
         if (i == 1) {
-            this.f = j;
+            this.c = j;
             return true;
         } else {
-            return super.c(i, j);
+            return super.setProperty(i, j);
         }
     }
 
-    public void y() {
+    @Override
+    public void V_() {
         this.invalidateBlockCache();
-        super.y();
-    }
-
-    public void c() {
-        ++this.f;
-        this.world.playBlockAction(this.position, Blocks.ENDER_CHEST, 1, this.f);
-        doOpenLogic(); // Paper
+        super.V_();
     }
 
     public void d() {
-        --this.f;
-        this.world.playBlockAction(this.position, Blocks.ENDER_CHEST, 1, this.f);
+        ++this.c;
+        this.world.playBlockAction(this.position, Blocks.ENDER_CHEST, 1, this.c);
+        doOpenLogic(); // Paper
+    }
+
+    public void f() {
+        --this.c;
+        this.world.playBlockAction(this.position, Blocks.ENDER_CHEST, 1, this.c);
         doCloseLogic(); // Paper
     }
 
     public boolean a(EntityHuman entityhuman) {
-        return this.world.getTileEntity(this.position) != this ? false : entityhuman.d((double) this.position.getX() + 0.5D, (double) this.position.getY() + 0.5D, (double) this.position.getZ() + 0.5D) <= 64.0D;
+        return this.world.getTileEntity(this.position) != this ? false : entityhuman.e((double) this.position.getX() + 0.5D, (double) this.position.getY() + 0.5D, (double) this.position.getZ() + 0.5D) <= 64.0D;
     }
 }

@@ -1,36 +1,38 @@
 package net.minecraft.server;
 
+import java.util.EnumSet;
 import java.util.Random;
-import javax.annotation.Nullable;
 
 public class EntityGhast extends EntityFlying implements IMonster {
 
-    private static final DataWatcherObject<Boolean> a = DataWatcher.a(EntityGhast.class, DataWatcherRegistry.i);
-    private int b = 1;
+    private static final DataWatcherObject<Boolean> b = DataWatcher.a(EntityGhast.class, DataWatcherRegistry.i);
+    private int c = 1;
 
-    public EntityGhast(World world) {
-        super(EntityTypes.GHAST, world);
-        this.setSize(4.0F, 4.0F);
-        this.fireProof = true;
-        this.b_ = 5;
+    public EntityGhast(EntityTypes<? extends EntityGhast> entitytypes, World world) {
+        super(entitytypes, world);
+        this.f = 5;
         this.moveController = new EntityGhast.ControllerGhast(this);
     }
 
-    protected void n() {
+    @Override
+    protected void initPathfinder() {
         this.goalSelector.a(5, new EntityGhast.PathfinderGoalGhastIdleMove(this));
         this.goalSelector.a(7, new EntityGhast.PathfinderGoalGhastMoveTowardsTarget(this));
         this.goalSelector.a(7, new EntityGhast.PathfinderGoalGhastAttackTarget(this));
-        this.targetSelector.a(1, new PathfinderGoalTargetNearestPlayer(this));
+        this.targetSelector.a(1, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, 10, true, false, (entityliving) -> {
+            return Math.abs(entityliving.locY - this.locY) <= 4.0D;
+        }));
     }
 
-    public void a(boolean flag) {
-        this.datawatcher.set(EntityGhast.a, flag);
+    public void r(boolean flag) {
+        this.datawatcher.set(EntityGhast.b, flag);
     }
 
     public int getPower() {
-        return this.b;
+        return this.c;
     }
 
+    @Override
     public void tick() {
         super.tick();
         if (!this.world.isClientSide && this.world.getDifficulty() == EnumDifficulty.PEACEFUL) {
@@ -39,6 +41,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
 
     }
 
+    @Override
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable(damagesource)) {
             return false;
@@ -50,64 +53,70 @@ public class EntityGhast extends EntityFlying implements IMonster {
         }
     }
 
-    protected void x_() {
-        super.x_();
-        this.datawatcher.register(EntityGhast.a, false);
+    @Override
+    protected void initDatawatcher() {
+        super.initDatawatcher();
+        this.datawatcher.register(EntityGhast.b, false);
     }
 
+    @Override
     protected void initAttributes() {
         super.initAttributes();
-        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(10.0D);
+        this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(10.0D);
         this.getAttributeInstance(GenericAttributes.FOLLOW_RANGE).setValue(100.0D);
     }
 
-    public SoundCategory bV() {
+    @Override
+    public SoundCategory getSoundCategory() {
         return SoundCategory.HOSTILE;
     }
 
-    protected SoundEffect D() {
+    @Override
+    protected SoundEffect getSoundAmbient() {
         return SoundEffects.ENTITY_GHAST_AMBIENT;
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return SoundEffects.ENTITY_GHAST_HURT;
     }
 
-    protected SoundEffect cs() {
+    @Override
+    protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_GHAST_DEATH;
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.aq;
-    }
-
-    protected float cD() {
+    @Override
+    protected float getSoundVolume() {
         return 10.0F;
     }
 
-    public boolean a(GeneratorAccess generatoraccess, boolean flag) {
-        return this.random.nextInt(20) == 0 && super.a(generatoraccess, flag) && generatoraccess.getDifficulty() != EnumDifficulty.PEACEFUL;
+    public static boolean b(EntityTypes<EntityGhast> entitytypes, GeneratorAccess generatoraccess, EnumMobSpawn enummobspawn, BlockPosition blockposition, Random random) {
+        return generatoraccess.getDifficulty() != EnumDifficulty.PEACEFUL && random.nextInt(20) == 0 && a(entitytypes, generatoraccess, enummobspawn, blockposition, random);
     }
 
-    public int dg() {
+    @Override
+    public int dC() {
         return 1;
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
-        nbttagcompound.setInt("ExplosionPower", this.b);
+        nbttagcompound.setInt("ExplosionPower", this.c);
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         if (nbttagcompound.hasKeyOfType("ExplosionPower", 99)) {
-            this.b = nbttagcompound.getInt("ExplosionPower");
+            this.c = nbttagcompound.getInt("ExplosionPower");
         }
 
     }
 
-    public float getHeadHeight() {
+    @Override
+    protected float b(EntityPose entitypose, EntitySize entitysize) {
         return 2.6F;
     }
 
@@ -120,23 +129,27 @@ public class EntityGhast extends EntityFlying implements IMonster {
             this.ghast = entityghast;
         }
 
+        @Override
         public boolean a() {
             return this.ghast.getGoalTarget() != null;
         }
 
+        @Override
         public void c() {
             this.a = 0;
         }
 
+        @Override
         public void d() {
-            this.ghast.a(false);
+            this.ghast.r(false);
         }
 
+        @Override
         public void e() {
             EntityLiving entityliving = this.ghast.getGoalTarget();
             double d0 = 64.0D;
 
-            if (entityliving.h(this.ghast) < 4096.0D && this.ghast.hasLineOfSight(entityliving)) {
+            if (entityliving.h((Entity) this.ghast) < 4096.0D && this.ghast.hasLineOfSight(entityliving)) {
                 World world = this.ghast.world;
 
                 ++this.a;
@@ -148,7 +161,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
                     double d1 = 4.0D;
                     Vec3D vec3d = this.ghast.f(1.0F);
                     double d2 = entityliving.locX - (this.ghast.locX + vec3d.x * 4.0D);
-                    double d3 = entityliving.getBoundingBox().minY + (double) (entityliving.length / 2.0F) - (0.5D + this.ghast.locY + (double) (this.ghast.length / 2.0F));
+                    double d3 = entityliving.getBoundingBox().minY + (double) (entityliving.getHeight() / 2.0F) - (0.5D + this.ghast.locY + (double) (this.ghast.getHeight() / 2.0F));
                     double d4 = entityliving.locZ - (this.ghast.locZ + vec3d.z * 4.0D);
 
                     world.a((EntityHuman) null, 1016, new BlockPosition(this.ghast), 0);
@@ -157,7 +170,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
                     // CraftBukkit - set bukkitYield when setting explosionpower
                     entitylargefireball.bukkitYield = entitylargefireball.yield = this.ghast.getPower();
                     entitylargefireball.locX = this.ghast.locX + vec3d.x * 4.0D;
-                    entitylargefireball.locY = this.ghast.locY + (double) (this.ghast.length / 2.0F) + 0.5D;
+                    entitylargefireball.locY = this.ghast.locY + (double) (this.ghast.getHeight() / 2.0F) + 0.5D;
                     entitylargefireball.locZ = this.ghast.locZ + vec3d.z * 4.0D;
                     world.addEntity(entitylargefireball);
                     this.a = -40;
@@ -166,7 +179,7 @@ public class EntityGhast extends EntityFlying implements IMonster {
                 --this.a;
             }
 
-            this.ghast.a(this.a > 10);
+            this.ghast.r(this.a > 10);
         }
     }
 
@@ -176,27 +189,31 @@ public class EntityGhast extends EntityFlying implements IMonster {
 
         public PathfinderGoalGhastMoveTowardsTarget(EntityGhast entityghast) {
             this.a = entityghast;
-            this.a(2);
+            this.a(EnumSet.of(PathfinderGoal.Type.LOOK));
         }
 
+        @Override
         public boolean a() {
             return true;
         }
 
+        @Override
         public void e() {
             if (this.a.getGoalTarget() == null) {
-                this.a.yaw = -((float) MathHelper.c(this.a.motX, this.a.motZ)) * 57.295776F;
-                this.a.aQ = this.a.yaw;
+                Vec3D vec3d = this.a.getMot();
+
+                this.a.yaw = -((float) MathHelper.d(vec3d.x, vec3d.z)) * 57.295776F;
+                this.a.aK = this.a.yaw;
             } else {
                 EntityLiving entityliving = this.a.getGoalTarget();
                 double d0 = 64.0D;
 
-                if (entityliving.h(this.a) < 4096.0D) {
+                if (entityliving.h((Entity) this.a) < 4096.0D) {
                     double d1 = entityliving.locX - this.a.locX;
                     double d2 = entityliving.locZ - this.a.locZ;
 
-                    this.a.yaw = -((float) MathHelper.c(d1, d2)) * 57.295776F;
-                    this.a.aQ = this.a.yaw;
+                    this.a.yaw = -((float) MathHelper.d(d1, d2)) * 57.295776F;
+                    this.a.aK = this.a.yaw;
                 }
             }
 
@@ -209,9 +226,10 @@ public class EntityGhast extends EntityFlying implements IMonster {
 
         public PathfinderGoalGhastIdleMove(EntityGhast entityghast) {
             this.a = entityghast;
-            this.a(1);
+            this.a(EnumSet.of(PathfinderGoal.Type.MOVE));
         }
 
+        @Override
         public boolean a() {
             ControllerMove controllermove = this.a.getControllerMove();
 
@@ -227,10 +245,12 @@ public class EntityGhast extends EntityFlying implements IMonster {
             }
         }
 
+        @Override
         public boolean b() {
             return false;
         }
 
+        @Override
         public void c() {
             Random random = this.a.getRandom();
             double d0 = this.a.locX + (double) ((random.nextFloat() * 2.0F - 1.0F) * 16.0F);
@@ -251,20 +271,17 @@ public class EntityGhast extends EntityFlying implements IMonster {
             this.i = entityghast;
         }
 
+        @Override
         public void a() {
             if (this.h == ControllerMove.Operation.MOVE_TO) {
-                double d0 = this.b - this.i.locX;
-                double d1 = this.c - this.i.locY;
-                double d2 = this.d - this.i.locZ;
-                double d3 = d0 * d0 + d1 * d1 + d2 * d2;
-
                 if (this.j-- <= 0) {
                     this.j += this.i.getRandom().nextInt(5) + 2;
-                    d3 = (double) MathHelper.sqrt(d3);
-                    if (this.b(this.b, this.c, this.d, d3)) {
-                        this.i.motX += d0 / d3 * 0.1D;
-                        this.i.motY += d1 / d3 * 0.1D;
-                        this.i.motZ += d2 / d3 * 0.1D;
+                    Vec3D vec3d = new Vec3D(this.b - this.i.locX, this.c - this.i.locY, this.d - this.i.locZ);
+                    double d0 = vec3d.f();
+
+                    vec3d = vec3d.d();
+                    if (this.a(vec3d, MathHelper.f(d0))) {
+                        this.i.setMot(this.i.getMot().e(vec3d.a(0.1D)));
                     } else {
                         this.h = ControllerMove.Operation.WAIT;
                     }
@@ -273,14 +290,11 @@ public class EntityGhast extends EntityFlying implements IMonster {
             }
         }
 
-        private boolean b(double d0, double d1, double d2, double d3) {
-            double d4 = (d0 - this.i.locX) / d3;
-            double d5 = (d1 - this.i.locY) / d3;
-            double d6 = (d2 - this.i.locZ) / d3;
+        private boolean a(Vec3D vec3d, int i) {
             AxisAlignedBB axisalignedbb = this.i.getBoundingBox();
 
-            for (int i = 1; (double) i < d3; ++i) {
-                axisalignedbb = axisalignedbb.d(d4, d5, d6);
+            for (int j = 1; j < i; ++j) {
+                axisalignedbb = axisalignedbb.b(vec3d);
                 if (!this.i.world.getCubes(this.i, axisalignedbb)) {
                     return false;
                 }

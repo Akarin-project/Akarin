@@ -3,126 +3,100 @@ package net.minecraft.server;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 
 public class EntityPufferFish extends EntityFish {
 
-    private static final DataWatcherObject<Integer> a = DataWatcher.a(EntityPufferFish.class, DataWatcherRegistry.b);
-    private int b;
+    private static final DataWatcherObject<Integer> b = DataWatcher.a(EntityPufferFish.class, DataWatcherRegistry.b);
     private int c;
-    private static final Predicate<EntityLiving> bC = (entityliving) -> {
-        return entityliving == null ? false : (entityliving instanceof EntityHuman && (((EntityHuman) entityliving).isSpectator() || ((EntityHuman) entityliving).u()) ? false : entityliving.getMonsterType() != EnumMonsterType.e);
+    private int d;
+    private static final Predicate<EntityLiving> bz = (entityliving) -> {
+        return entityliving == null ? false : (entityliving instanceof EntityHuman && (entityliving.isSpectator() || ((EntityHuman) entityliving).isCreative()) ? false : entityliving.getMonsterType() != EnumMonsterType.e);
     };
-    private float bD = -1.0F;
-    private float bE;
 
-    public EntityPufferFish(World world) {
-        super(EntityTypes.PUFFERFISH, world);
-        this.setSize(0.7F, 0.7F);
+    public EntityPufferFish(EntityTypes<? extends EntityPufferFish> entitytypes, World world) {
+        super(entitytypes, world);
     }
 
-    protected void x_() {
-        super.x_();
-        this.datawatcher.register(EntityPufferFish.a, 0);
+    @Override
+    protected void initDatawatcher() {
+        super.initDatawatcher();
+        this.datawatcher.register(EntityPufferFish.b, 0);
     }
 
     public int getPuffState() {
-        return (Integer) this.datawatcher.get(EntityPufferFish.a);
+        return (Integer) this.datawatcher.get(EntityPufferFish.b);
     }
 
     public void setPuffState(int i) {
-        this.datawatcher.set(EntityPufferFish.a, i);
-        this.d(i);
+        this.datawatcher.set(EntityPufferFish.b, i);
     }
 
-    private void d(int i) {
-        float f = 1.0F;
-
-        if (i == 1) {
-            f = 0.7F;
-        } else if (i == 0) {
-            f = 0.5F;
-        }
-
-        this.a(f);
-    }
-
-    public final void setSize(float f, float f1) {
-        boolean flag = this.bD > 0.0F;
-
-        this.bD = f;
-        this.bE = f1;
-        if (!flag) {
-            this.a(1.0F);
-        }
-
-    }
-
-    private void a(float f) {
-        super.setSize(this.bD * f, this.bE * f);
-    }
-
+    @Override
     public void a(DataWatcherObject<?> datawatcherobject) {
-        this.d(this.getPuffState());
+        if (EntityPufferFish.b.equals(datawatcherobject)) {
+            this.updateSize();
+        }
+
         super.a(datawatcherobject);
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
         nbttagcompound.setInt("PuffState", this.getPuffState());
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         this.setPuffState(nbttagcompound.getInt("PuffState"));
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.aF;
-    }
-
+    @Override
     protected ItemStack l() {
         return new ItemStack(Items.PUFFERFISH_BUCKET);
     }
 
-    protected void n() {
-        super.n();
+    @Override
+    protected void initPathfinder() {
+        super.initPathfinder();
         this.goalSelector.a(1, new EntityPufferFish.a(this));
     }
 
+    @Override
     public void tick() {
-        if (this.isAlive() && !this.world.isClientSide) {
-            if (this.b > 0) {
+        if (!this.world.isClientSide && this.isAlive() && this.df()) {
+            if (this.c > 0) {
                 if (this.getPuffState() == 0) {
-                    this.a(SoundEffects.ENTITY_PUFFER_FISH_BLOW_UP, this.cD(), this.cE());
+                    this.a(SoundEffects.ENTITY_PUFFER_FISH_BLOW_UP, this.getSoundVolume(), this.cV());
                     this.setPuffState(1);
-                } else if (this.b > 40 && this.getPuffState() == 1) {
-                    this.a(SoundEffects.ENTITY_PUFFER_FISH_BLOW_UP, this.cD(), this.cE());
+                } else if (this.c > 40 && this.getPuffState() == 1) {
+                    this.a(SoundEffects.ENTITY_PUFFER_FISH_BLOW_UP, this.getSoundVolume(), this.cV());
                     this.setPuffState(2);
                 }
 
-                ++this.b;
+                ++this.c;
             } else if (this.getPuffState() != 0) {
-                if (this.c > 60 && this.getPuffState() == 2) {
-                    this.a(SoundEffects.ENTITY_PUFFER_FISH_BLOW_OUT, this.cD(), this.cE());
+                if (this.d > 60 && this.getPuffState() == 2) {
+                    this.a(SoundEffects.ENTITY_PUFFER_FISH_BLOW_OUT, this.getSoundVolume(), this.cV());
                     this.setPuffState(1);
-                } else if (this.c > 100 && this.getPuffState() == 1) {
-                    this.a(SoundEffects.ENTITY_PUFFER_FISH_BLOW_OUT, this.cD(), this.cE());
+                } else if (this.d > 100 && this.getPuffState() == 1) {
+                    this.a(SoundEffects.ENTITY_PUFFER_FISH_BLOW_OUT, this.getSoundVolume(), this.cV());
                     this.setPuffState(0);
                 }
 
-                ++this.c;
+                ++this.d;
             }
         }
 
         super.tick();
     }
 
+    @Override
     public void movementTick() {
         super.movementTick();
-        if (this.getPuffState() > 0) {
-            List<EntityInsentient> list = this.world.a(EntityInsentient.class, this.getBoundingBox().g(0.3D), EntityPufferFish.bC);
+        if (this.isAlive() && this.getPuffState() > 0) {
+            List<EntityInsentient> list = this.world.a(EntityInsentient.class, this.getBoundingBox().g(0.3D), EntityPufferFish.bz);
             Iterator iterator = list.iterator();
 
             while (iterator.hasNext()) {
@@ -146,7 +120,8 @@ public class EntityPufferFish extends EntityFish {
 
     }
 
-    public void d(EntityHuman entityhuman) {
+    @Override
+    public void pickup(EntityHuman entityhuman) {
         int i = this.getPuffState();
 
         if (entityhuman instanceof EntityPlayer && i > 0 && entityhuman.damageEntity(DamageSource.mobAttack(this), (float) (1 + i))) {
@@ -156,20 +131,40 @@ public class EntityPufferFish extends EntityFish {
 
     }
 
-    protected SoundEffect D() {
+    @Override
+    protected SoundEffect getSoundAmbient() {
         return SoundEffects.ENTITY_PUFFER_FISH_AMBIENT;
     }
 
-    protected SoundEffect cs() {
+    @Override
+    protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_PUFFER_FISH_DEATH;
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return SoundEffects.ENTITY_PUFFER_FISH_HURT;
     }
 
-    protected SoundEffect dz() {
+    @Override
+    protected SoundEffect getSoundFlop() {
         return SoundEffects.ENTITY_PUFFER_FISH_FLOP;
+    }
+
+    @Override
+    public EntitySize a(EntityPose entitypose) {
+        return super.a(entitypose).a(r(this.getPuffState()));
+    }
+
+    private static float r(int i) {
+        switch (i) {
+            case 0:
+                return 0.5F;
+            case 1:
+                return 0.7F;
+            default:
+                return 1.0F;
+        }
     }
 
     static class a extends PathfinderGoal {
@@ -180,23 +175,27 @@ public class EntityPufferFish extends EntityFish {
             this.a = entitypufferfish;
         }
 
+        @Override
         public boolean a() {
-            List<EntityLiving> list = this.a.world.a(EntityLiving.class, this.a.getBoundingBox().g(2.0D), EntityPufferFish.bC);
+            List<EntityLiving> list = this.a.world.a(EntityLiving.class, this.a.getBoundingBox().g(2.0D), EntityPufferFish.bz);
 
             return !list.isEmpty();
         }
 
+        @Override
         public void c() {
-            this.a.b = 1;
+            this.a.c = 1;
+            this.a.d = 0;
+        }
+
+        @Override
+        public void d() {
             this.a.c = 0;
         }
 
-        public void d() {
-            this.a.b = 0;
-        }
-
+        @Override
         public boolean b() {
-            List<EntityLiving> list = this.a.world.a(EntityLiving.class, this.a.getBoundingBox().g(2.0D), EntityPufferFish.bC);
+            List<EntityLiving> list = this.a.world.a(EntityLiving.class, this.a.getBoundingBox().g(2.0D), EntityPufferFish.bz);
 
             return !list.isEmpty();
         }

@@ -3,30 +3,30 @@ package org.bukkit.craftbukkit.inventory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
-
 import net.minecraft.server.IHopper;
 import net.minecraft.server.IInventory;
 import net.minecraft.server.InventoryCrafting;
 import net.minecraft.server.InventoryEnderChest;
 import net.minecraft.server.InventoryMerchant;
 import net.minecraft.server.PlayerInventory;
-import net.minecraft.server.TileEntityBeacon;
+import net.minecraft.server.TileEntityBarrel;
+import net.minecraft.server.TileEntityBlastFurnace;
 import net.minecraft.server.TileEntityBrewingStand;
 import net.minecraft.server.TileEntityDispenser;
 import net.minecraft.server.TileEntityDropper;
 import net.minecraft.server.TileEntityFurnace;
+import net.minecraft.server.TileEntityLectern;
 import net.minecraft.server.TileEntityShulkerBox;
-
+import net.minecraft.server.TileEntitySmoker;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.Material;
-import org.bukkit.craftbukkit.util.CraftChatMessage;
-import org.bukkit.craftbukkit.util.CraftLegacy;
 
 public class CraftInventory implements Inventory {
     protected final IInventory inventory;
@@ -39,14 +39,12 @@ public class CraftInventory implements Inventory {
         return inventory;
     }
 
+    @Override
     public int getSize() {
         return getInventory().getSize();
     }
 
-    public String getName() {
-        return CraftChatMessage.fromComponent(getInventory().getDisplayName());
-    }
-
+    @Override
     public ItemStack getItem(int index) {
         net.minecraft.server.ItemStack item = getInventory().getItem(index);
         return item.isEmpty() ? null : CraftItemStack.asCraftMirror(item);
@@ -74,12 +72,14 @@ public class CraftInventory implements Inventory {
         setContents(items);
     }
 
+    @Override
     public ItemStack[] getContents() {
         List<net.minecraft.server.ItemStack> mcItems = getInventory().getContents();
 
         return asCraftMirror(mcItems);
     }
 
+    @Override
     public void setContents(ItemStack[] items) {
         if (getSize() < items.length) {
             throw new IllegalArgumentException("Invalid inventory size; expected " + getSize() + " or less");
@@ -94,10 +94,12 @@ public class CraftInventory implements Inventory {
         }
     }
 
+    @Override
     public void setItem(int index, ItemStack item) {
         getInventory().setItem(index, CraftItemStack.asNMSCopy(item));
     }
 
+    @Override
     public boolean contains(Material material) {
         Validate.notNull(material, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
@@ -109,6 +111,7 @@ public class CraftInventory implements Inventory {
         return false;
     }
 
+    @Override
     public boolean contains(ItemStack item) {
         if (item == null) {
             return false;
@@ -121,6 +124,7 @@ public class CraftInventory implements Inventory {
         return false;
     }
 
+    @Override
     public boolean contains(Material material, int amount) {
         Validate.notNull(material, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
@@ -137,6 +141,7 @@ public class CraftInventory implements Inventory {
         return false;
     }
 
+    @Override
     public boolean contains(ItemStack item, int amount) {
         if (item == null) {
             return false;
@@ -152,6 +157,7 @@ public class CraftInventory implements Inventory {
         return false;
     }
 
+    @Override
     public boolean containsAtLeast(ItemStack item, int amount) {
         if (item == null) {
             return false;
@@ -167,6 +173,7 @@ public class CraftInventory implements Inventory {
         return false;
     }
 
+    @Override
     public HashMap<Integer, ItemStack> all(Material material) {
         Validate.notNull(material, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
@@ -182,6 +189,7 @@ public class CraftInventory implements Inventory {
         return slots;
     }
 
+    @Override
     public HashMap<Integer, ItemStack> all(ItemStack item) {
         HashMap<Integer, ItemStack> slots = new HashMap<Integer, ItemStack>();
         if (item != null) {
@@ -195,6 +203,7 @@ public class CraftInventory implements Inventory {
         return slots;
     }
 
+    @Override
     public int first(Material material) {
         Validate.notNull(material, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
@@ -208,6 +217,7 @@ public class CraftInventory implements Inventory {
         return -1;
     }
 
+    @Override
     public int first(ItemStack item) {
         return first(item, true);
     }
@@ -233,6 +243,7 @@ public class CraftInventory implements Inventory {
         return -1;
     }
 
+    @Override
     public int firstEmpty() {
         ItemStack[] inventory = getStorageContents();
         for (int i = 0; i < inventory.length; i++) {
@@ -271,6 +282,7 @@ public class CraftInventory implements Inventory {
         return -1;
     }
 
+    @Override
     public HashMap<Integer, ItemStack> addItem(ItemStack... items) {
         Validate.noNullElements(items, "Item cannot be null");
         HashMap<Integer, ItemStack> leftover = new HashMap<Integer, ItemStack>();
@@ -336,6 +348,7 @@ public class CraftInventory implements Inventory {
         return leftover;
     }
 
+    @Override
     public HashMap<Integer, ItemStack> removeItem(ItemStack... items) {
         // Paper start
         return removeItem(false, items);
@@ -397,6 +410,7 @@ public class CraftInventory implements Inventory {
         return getInventory().getMaxStackSize();
     }
 
+    @Override
     public void remove(Material material) {
         Validate.notNull(material, "Material cannot be null");
         material = CraftLegacy.fromLegacy(material);
@@ -408,6 +422,7 @@ public class CraftInventory implements Inventory {
         }
     }
 
+    @Override
     public void remove(ItemStack item) {
         ItemStack[] items = getStorageContents();
         for (int i = 0; i < items.length; i++) {
@@ -417,20 +432,24 @@ public class CraftInventory implements Inventory {
         }
     }
 
+    @Override
     public void clear(int index) {
         setItem(index, null);
     }
 
+    @Override
     public void clear() {
         for (int i = 0; i < getSize(); i++) {
             clear(i);
         }
     }
 
+    @Override
     public ListIterator<ItemStack> iterator() {
         return new InventoryIterator(this);
     }
 
+    @Override
     public ListIterator<ItemStack> iterator(int index) {
         if (index < 0) {
             index += getSize() + 1; // ie, with -1, previous() will return the last element
@@ -438,16 +457,14 @@ public class CraftInventory implements Inventory {
         return new InventoryIterator(this, index);
     }
 
+    @Override
     public List<HumanEntity> getViewers() {
         return this.inventory.getViewers();
     }
 
-    public String getTitle() {
-        return getName();
-    }
-
+    @Override
     public InventoryType getType() {
-        // Thanks to Droppers extending Dispensers, order is important.
+        // Thanks to Droppers extending Dispensers, Blast Furnaces & Smokers extending Furnace, order is important.
         if (inventory instanceof InventoryCrafting) {
             return inventory.getSize() >= 9 ? InventoryType.WORKBENCH : InventoryType.CRAFTING;
         } else if (inventory instanceof PlayerInventory) {
@@ -456,6 +473,10 @@ public class CraftInventory implements Inventory {
             return InventoryType.DROPPER;
         } else if (inventory instanceof TileEntityDispenser) {
             return InventoryType.DISPENSER;
+        } else if (inventory instanceof TileEntityBlastFurnace) {
+            return InventoryType.BLAST_FURNACE;
+        } else if (inventory instanceof TileEntitySmoker) {
+            return InventoryType.SMOKER;
         } else if (inventory instanceof TileEntityFurnace) {
             return InventoryType.FURNACE;
         } else if (this instanceof CraftInventoryEnchanting) {
@@ -468,7 +489,7 @@ public class CraftInventory implements Inventory {
             return InventoryType.ENDER_CHEST;
         } else if (inventory instanceof InventoryMerchant) {
             return InventoryType.MERCHANT;
-        } else if (inventory instanceof TileEntityBeacon) {
+        } else if (this instanceof CraftInventoryBeacon) {
             return InventoryType.BEACON;
         } else if (this instanceof CraftInventoryAnvil) {
            return InventoryType.ANVIL;
@@ -476,19 +497,34 @@ public class CraftInventory implements Inventory {
             return InventoryType.HOPPER;
         } else if (inventory instanceof TileEntityShulkerBox) {
             return InventoryType.SHULKER_BOX;
+        } else if (inventory instanceof TileEntityBarrel) {
+            return InventoryType.BARREL;
+        } else if (inventory instanceof TileEntityLectern.LecternInventory) {
+            return InventoryType.LECTERN;
+        } else if (this instanceof CraftInventoryLoom) {
+            return InventoryType.LOOM;
+        } else if (this instanceof CraftInventoryCartography) {
+            return InventoryType.CARTOGRAPHY;
+        } else if (this instanceof CraftInventoryGrindstone) {
+            return InventoryType.GRINDSTONE;
+        } else if (this instanceof CraftInventoryStonecutter) {
+            return InventoryType.STONECUTTER;
         } else {
             return InventoryType.CHEST;
         }
     }
 
+    @Override
     public InventoryHolder getHolder() {
         return inventory.getOwner();
     }
 
+    @Override
     public int getMaxStackSize() {
         return inventory.getMaxStackSize();
     }
 
+    @Override
     public void setMaxStackSize(int size) {
         inventory.setMaxStackSize(size);
     }

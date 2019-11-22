@@ -2,60 +2,62 @@ package net.minecraft.server;
 
 import java.util.Iterator;
 import java.util.List;
-import javax.annotation.Nullable;
 
 public class EntityGuardianElder extends EntityGuardian {
 
-    public EntityGuardianElder(World world) {
-        super(EntityTypes.ELDER_GUARDIAN, world);
-        this.setSize(this.width * 2.35F, this.length * 2.35F);
-        this.di();
+    public static final float b = EntityTypes.ELDER_GUARDIAN.i() / EntityTypes.GUARDIAN.i();
+
+    public EntityGuardianElder(EntityTypes<? extends EntityGuardianElder> entitytypes, World world) {
+        super(entitytypes, world);
+        this.setPersistent();
         if (this.goalRandomStroll != null) {
             this.goalRandomStroll.setTimeBetweenMovement(400);
         }
 
     }
 
+    @Override
     public void initAttributes() {
         super.initAttributes();
         this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.30000001192092896D);
         this.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).setValue(8.0D);
-        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(80.0D);
+        this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(80.0D);
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.E;
-    }
-
+    @Override
     public int l() {
         return 60;
     }
 
-    protected SoundEffect D() {
-        return this.aq() ? SoundEffects.ENTITY_ELDER_GUARDIAN_AMBIENT : SoundEffects.ENTITY_ELDER_GUARDIAN_AMBIENT_LAND;
+    @Override
+    protected SoundEffect getSoundAmbient() {
+        return this.av() ? SoundEffects.ENTITY_ELDER_GUARDIAN_AMBIENT : SoundEffects.ENTITY_ELDER_GUARDIAN_AMBIENT_LAND;
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
-        return this.aq() ? SoundEffects.ENTITY_ELDER_GUARDIAN_HURT : SoundEffects.ENTITY_ELDER_GUARDIAN_HURT_LAND;
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
+        return this.av() ? SoundEffects.ENTITY_ELDER_GUARDIAN_HURT : SoundEffects.ENTITY_ELDER_GUARDIAN_HURT_LAND;
     }
 
-    protected SoundEffect cs() {
-        return this.aq() ? SoundEffects.ENTITY_ELDER_GUARDIAN_DEATH : SoundEffects.ENTITY_ELDER_GUARDIAN_DEATH_LAND;
+    @Override
+    protected SoundEffect getSoundDeath() {
+        return this.av() ? SoundEffects.ENTITY_ELDER_GUARDIAN_DEATH : SoundEffects.ENTITY_ELDER_GUARDIAN_DEATH_LAND;
     }
 
-    protected SoundEffect dA() {
+    @Override
+    protected SoundEffect getSoundFlop() {
         return SoundEffects.ENTITY_ELDER_GUARDIAN_FLOP;
     }
 
+    @Override
     protected void mobTick() {
         super.mobTick();
         boolean flag = true;
 
         if ((this.ticksLived + this.getId()) % 1200 == 0) {
             MobEffectList mobeffectlist = MobEffects.SLOWER_DIG;
-            List<EntityPlayer> list = this.world.b(EntityPlayer.class, (entityplayer) -> {
-                return this.h(entityplayer) < 2500.0D && entityplayer.playerInteractManager.c();
+            List<EntityPlayer> list = ((WorldServer) this.world).a((entityplayer) -> {
+                return this.h((Entity) entityplayer) < 2500.0D && entityplayer.playerInteractManager.c();
             });
             boolean flag1 = true;
             boolean flag2 = true;
@@ -72,7 +74,7 @@ public class EntityGuardianElder extends EntityGuardian {
             }
         }
 
-        if (!this.dw()) {
+        if (!this.dL()) {
             this.a(new BlockPosition(this), 16);
         }
 

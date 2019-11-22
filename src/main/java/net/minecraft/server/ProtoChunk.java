@@ -5,26 +5,29 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map.Entry;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ProtoChunk implements IChunkAccess {
 
-    private static final Logger a = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private final ChunkCoordIntPair b;
-    private boolean c;
-    private final AtomicInteger d;
-    private BiomeBase[] e;
+    private volatile boolean c;
+    private BiomeBase[] d;
+    @Nullable
+    private volatile LightEngine e;
     private final Map<HeightMap.Type, HeightMap> f;
     private volatile ChunkStatus g;
     private final Map<BlockPosition, TileEntity> h;
@@ -40,26 +43,29 @@ public class ProtoChunk implements IChunkAccess {
     private final ProtoChunkTickList<FluidType> r;
     private long s;
     private final Map<WorldGenStage.Features, BitSet> t;
-    private boolean u;
-    private GeneratorAccess world; // Paper - Anti-Xray
-
-    // Paper start - Anti-Xray - Support default constructors
-    public ProtoChunk(int i, int j, ChunkConverter chunkconverter) {
-        this(new ChunkCoordIntPair(i, j), chunkconverter, null);
-    }
+    private volatile boolean u;
+    private final GeneratorAccess world; // Paper - Anti-Xray
 
     public ProtoChunk(ChunkCoordIntPair chunkcoordintpair, ChunkConverter chunkconverter) {
-        this(chunkcoordintpair, chunkconverter, null);
+        // Paper start - add world parameter
+        this(chunkcoordintpair, chunkconverter, (GeneratorAccess)null);
     }
-
-    public ProtoChunk(int i, int j, ChunkConverter chunkconverter, GeneratorAccess world) {
-        this(new ChunkCoordIntPair(i, j), chunkconverter, world);
-    }
-
     public ProtoChunk(ChunkCoordIntPair chunkcoordintpair, ChunkConverter chunkconverter, GeneratorAccess world) {
+        // Paper end
+        this(chunkcoordintpair, chunkconverter, (ChunkSection[]) null, new ProtoChunkTickList<>((block) -> {
+            return block == null || block.getBlockData().isAir();
+        }, chunkcoordintpair), new ProtoChunkTickList<>((fluidtype) -> {
+            return fluidtype == null || fluidtype == FluidTypes.EMPTY;
+        }, chunkcoordintpair), world); // Paper - add world parameter
+    }
+
+    public ProtoChunk(ChunkCoordIntPair chunkcoordintpair, ChunkConverter chunkconverter, @Nullable ChunkSection[] achunksection, ProtoChunkTickList<Block> protochunkticklist, ProtoChunkTickList<FluidType> protochunkticklist1) {
+        // Paper start - add world parameter
+        this(chunkcoordintpair, chunkconverter, achunksection, protochunkticklist, protochunkticklist1, (GeneratorAccess)null);
+    }
+    public ProtoChunk(ChunkCoordIntPair chunkcoordintpair, ChunkConverter chunkconverter, @Nullable ChunkSection[] achunksection, ProtoChunkTickList<Block> protochunkticklist, ProtoChunkTickList<FluidType> protochunkticklist1, GeneratorAccess world) {
         this.world = world;
-    // Paper end
-        this.d = new AtomicInteger();
+        // Paper end
         this.f = Maps.newEnumMap(HeightMap.Type.class);
         this.g = ChunkStatus.EMPTY;
         this.h = Maps.newHashMap();
@@ -73,105 +79,159 @@ public class ProtoChunk implements IChunkAccess {
         this.t = Maps.newHashMap();
         this.b = chunkcoordintpair;
         this.p = chunkconverter;
-        this.q = new ProtoChunkTickList<>((block) -> {
-            return block == null || block.getBlockData().isAir();
-        }, IRegistry.BLOCK::getKey, IRegistry.BLOCK::getOrDefault, chunkcoordintpair);
-        this.r = new ProtoChunkTickList<>((fluidtype) -> {
-            return fluidtype == null || fluidtype == FluidTypes.EMPTY;
-        }, IRegistry.FLUID::getKey, IRegistry.FLUID::getOrDefault, chunkcoordintpair);
-    }
-
-    public static ShortList a(ShortList[] ashortlist, int i) {
-        if (ashortlist[i] == null) {
-            ashortlist[i] = new ShortArrayList();
+        this.q = protochunkticklist;
+        this.r = protochunkticklist1;
+        if (achunksection != null) {
+            if (this.j.length == achunksection.length) {
+                System.arraycopy(achunksection, 0, this.j, 0, this.j.length);
+            } else {
+                ProtoChunk.LOGGER.warn("Could not set level chunk sections, array length is {} instead of {}", achunksection.length, this.j.length);
+            }
         }
 
-        return ashortlist[i];
     }
 
-    @Nullable
+    // Paper start - If loaded util
+    @Override
+    public Fluid getFluidIfLoaded(BlockPosition blockposition) {
+        return this.getFluid(blockposition);
+    }
+
+    @Override
+    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
+        return this.getType(blockposition);
+    }
+    // Paper end
+
+    @Override
     public IBlockData getType(BlockPosition blockposition) {
-        int i = blockposition.getX();
-        int j = blockposition.getY();
-        int k = blockposition.getZ();
+        int i = blockposition.getY();
 
-        return j >= 0 && j < 256 ? (this.j[j >> 4] == Chunk.a ? Blocks.AIR.getBlockData() : this.j[j >> 4].getType(i & 15, j & 15, k & 15)) : Blocks.VOID_AIR.getBlockData();
+        if (World.b(i)) {
+            return Blocks.VOID_AIR.getBlockData();
+        } else {
+            ChunkSection chunksection = this.getSections()[i >> 4];
+
+            return ChunkSection.a(chunksection) ? Blocks.AIR.getBlockData() : chunksection.getType(blockposition.getX() & 15, i & 15, blockposition.getZ() & 15);
+        }
     }
 
+    @Override
     public Fluid getFluid(BlockPosition blockposition) {
-        int i = blockposition.getX();
-        int j = blockposition.getY();
-        int k = blockposition.getZ();
+        int i = blockposition.getY();
 
-        return j >= 0 && j < 256 && this.j[j >> 4] != Chunk.a ? this.j[j >> 4].b(i & 15, j & 15, k & 15) : FluidTypes.EMPTY.i();
+        if (World.b(i)) {
+            return FluidTypes.EMPTY.i();
+        } else {
+            ChunkSection chunksection = this.getSections()[i >> 4];
+
+            return ChunkSection.a(chunksection) ? FluidTypes.EMPTY.i() : chunksection.b(blockposition.getX() & 15, i & 15, blockposition.getZ() & 15);
+        }
     }
 
-    public List<BlockPosition> j() {
-        return this.l;
+    @Override
+    public Stream<BlockPosition> m() {
+        return this.l.stream();
     }
 
-    public ShortList[] p() {
+    public ShortList[] w() {
         ShortList[] ashortlist = new ShortList[16];
         Iterator iterator = this.l.iterator();
 
         while (iterator.hasNext()) {
             BlockPosition blockposition = (BlockPosition) iterator.next();
 
-            a(ashortlist, blockposition.getY() >> 4).add(i(blockposition));
+            IChunkAccess.a(ashortlist, blockposition.getY() >> 4).add(l(blockposition));
         }
 
         return ashortlist;
     }
 
-    public void a(short short0, int i) {
-        this.h(a(short0, i, this.b));
+    public void b(short short0, int i) {
+        this.k(a(short0, i, this.b));
     }
 
-    public void h(BlockPosition blockposition) {
-        this.l.add(blockposition);
+    public void k(BlockPosition blockposition) {
+        this.l.add(blockposition.immutableCopy());
     }
 
     @Nullable
+    @Override
     public IBlockData setType(BlockPosition blockposition, IBlockData iblockdata, boolean flag) {
         int i = blockposition.getX();
         int j = blockposition.getY();
         int k = blockposition.getZ();
 
         if (j >= 0 && j < 256) {
-            if (iblockdata.e() > 0) {
-                this.l.add(new BlockPosition((i & 15) + this.getPos().d(), j, (k & 15) + this.getPos().e()));
-            }
-
-            if (this.j[j >> 4] == Chunk.a) {
-                if (iblockdata.getBlock() == Blocks.AIR) {
-                    return iblockdata;
+            if (this.j[j >> 4] == Chunk.a && iblockdata.getBlock() == Blocks.AIR) {
+                return iblockdata;
+            } else {
+                if (iblockdata.h() > 0) {
+                    this.l.add(new BlockPosition((i & 15) + this.getPos().d(), j, (k & 15) + this.getPos().e()));
                 }
 
-                this.j[j >> 4] = new ChunkSection(j >> 4 << 4, this.x(), this, this.world, true); // Paper - Anti-Xray
+                ChunkSection chunksection = this.a(j >> 4);
+                IBlockData iblockdata1 = chunksection.setType(i & 15, j & 15, k & 15, iblockdata);
+
+                if (this.g.b(ChunkStatus.FEATURES) && iblockdata != iblockdata1 && (iblockdata.b((IBlockAccess) this, blockposition) != iblockdata1.b((IBlockAccess) this, blockposition) || iblockdata.h() != iblockdata1.h() || iblockdata.g() || iblockdata1.g())) {
+                    LightEngine lightengine = this.e();
+
+                    lightengine.a(blockposition);
+                }
+
+                EnumSet<HeightMap.Type> enumset = this.getChunkStatus().h();
+                EnumSet<HeightMap.Type> enumset1 = null;
+                Iterator iterator = enumset.iterator();
+
+                HeightMap.Type heightmap_type;
+
+                while (iterator.hasNext()) {
+                    heightmap_type = (HeightMap.Type) iterator.next();
+                    HeightMap heightmap = (HeightMap) this.f.get(heightmap_type);
+
+                    if (heightmap == null) {
+                        if (enumset1 == null) {
+                            enumset1 = EnumSet.noneOf(HeightMap.Type.class);
+                        }
+
+                        enumset1.add(heightmap_type);
+                    }
+                }
+
+                if (enumset1 != null) {
+                    HeightMap.a(this, enumset1);
+                }
+
+                iterator = enumset.iterator();
+
+                while (iterator.hasNext()) {
+                    heightmap_type = (HeightMap.Type) iterator.next();
+                    ((HeightMap) this.f.get(heightmap_type)).a(i & 15, j, k & 15, iblockdata);
+                }
+
+                return iblockdata1;
             }
-
-            IBlockData iblockdata1 = this.j[j >> 4].getType(i & 15, j & 15, k & 15);
-
-            this.j[j >> 4].setType(i & 15, j & 15, k & 15, iblockdata);
-            if (this.u) {
-                this.c(HeightMap.Type.MOTION_BLOCKING).a(i & 15, j, k & 15, iblockdata);
-                this.c(HeightMap.Type.MOTION_BLOCKING_NO_LEAVES).a(i & 15, j, k & 15, iblockdata);
-                this.c(HeightMap.Type.OCEAN_FLOOR).a(i & 15, j, k & 15, iblockdata);
-                this.c(HeightMap.Type.WORLD_SURFACE).a(i & 15, j, k & 15, iblockdata);
-            }
-
-            return iblockdata1;
         } else {
             return Blocks.VOID_AIR.getBlockData();
         }
     }
 
-    public void a(BlockPosition blockposition, TileEntity tileentity) {
+    public ChunkSection a(int i) {
+        if (this.j[i] == Chunk.a) {
+            this.j[i] = new ChunkSection(i << 4, this, this.world, true); // Paper - Anti-Xray
+        }
+
+        return this.j[i];
+    }
+
+    @Override
+    public void setTileEntity(BlockPosition blockposition, TileEntity tileentity) {
         tileentity.setPosition(blockposition);
         this.h.put(blockposition, tileentity);
     }
 
-    public Set<BlockPosition> q() {
+    @Override
+    public Set<BlockPosition> c() {
         Set<BlockPosition> set = Sets.newHashSet(this.i.keySet());
 
         set.addAll(this.h.keySet());
@@ -179,11 +239,12 @@ public class ProtoChunk implements IChunkAccess {
     }
 
     @Nullable
+    @Override
     public TileEntity getTileEntity(BlockPosition blockposition) {
         return (TileEntity) this.h.get(blockposition);
     }
 
-    public Map<BlockPosition, TileEntity> r() {
+    public Map<BlockPosition, TileEntity> x() {
         return this.h;
     }
 
@@ -191,6 +252,7 @@ public class ProtoChunk implements IChunkAccess {
         this.k.add(nbttagcompound);
     }
 
+    @Override
     public void a(Entity entity) {
         NBTTagCompound nbttagcompound = new NBTTagCompound();
 
@@ -198,180 +260,120 @@ public class ProtoChunk implements IChunkAccess {
         this.b(nbttagcompound);
     }
 
-    public List<NBTTagCompound> s() {
+    public List<NBTTagCompound> y() {
         return this.k;
     }
 
+    @Override
     public void a(BiomeBase[] abiomebase) {
-        this.e = abiomebase;
+        this.d = abiomebase;
     }
 
+    @Override
     public BiomeBase[] getBiomeIndex() {
-        return this.e;
+        return this.d;
     }
 
-    public void a(boolean flag) {
+    @Override
+    public void setNeedsSaving(boolean flag) {
         this.c = flag;
     }
 
-    public boolean h() {
+    @Override
+    public boolean isNeedsSaving() {
         return this.c;
     }
 
-    public ChunkStatus i() {
+    @Override
+    public ChunkStatus getChunkStatus() {
         return this.g;
     }
 
     public void a(ChunkStatus chunkstatus) {
         this.g = chunkstatus;
-        this.a(true);
+        this.setNeedsSaving(true);
     }
 
-    public void c(String s) {
-        this.a(ChunkStatus.a(s));
-    }
-
+    @Override
     public ChunkSection[] getSections() {
         return this.j;
     }
 
-    public int a(EnumSkyBlock enumskyblock, BlockPosition blockposition, boolean flag) {
-        int i = blockposition.getX() & 15;
-        int j = blockposition.getY();
-        int k = blockposition.getZ() & 15;
-        int l = j >> 4;
-
-        if (l >= 0 && l <= this.j.length - 1) {
-            ChunkSection chunksection = this.j[l];
-
-            return chunksection == Chunk.a ? (this.c(blockposition) ? enumskyblock.c : 0) : (enumskyblock == EnumSkyBlock.SKY ? (!flag ? 0 : chunksection.c(i, j & 15, k)) : (enumskyblock == EnumSkyBlock.BLOCK ? chunksection.d(i, j & 15, k) : enumskyblock.c));
-        } else {
-            return 0;
-        }
-    }
-
-    public int a(BlockPosition blockposition, int i, boolean flag) {
-        int j = blockposition.getX() & 15;
-        int k = blockposition.getY();
-        int l = blockposition.getZ() & 15;
-        int i1 = k >> 4;
-
-        if (i1 >= 0 && i1 <= this.j.length - 1) {
-            ChunkSection chunksection = this.j[i1];
-
-            if (chunksection == Chunk.a) {
-                return this.x() && i < EnumSkyBlock.SKY.c ? EnumSkyBlock.SKY.c - i : 0;
-            } else {
-                int j1 = flag ? chunksection.c(j, k & 15, l) : 0;
-
-                j1 -= i;
-                int k1 = chunksection.d(j, k & 15, l);
-
-                if (k1 > j1) {
-                    j1 = k1;
-                }
-
-                return j1;
-            }
-        } else {
-            return 0;
-        }
-    }
-
-    public boolean c(BlockPosition blockposition) {
-        int i = blockposition.getX() & 15;
-        int j = blockposition.getY();
-        int k = blockposition.getZ() & 15;
-
-        return j >= this.a(HeightMap.Type.MOTION_BLOCKING, i, k);
-    }
-
-    public void a(ChunkSection[] achunksection) {
-        if (this.j.length != achunksection.length) {
-            ProtoChunk.a.warn("Could not set level chunk sections, array length is {} instead of {}", achunksection.length, this.j.length);
-        } else {
-            System.arraycopy(achunksection, 0, this.j, 0, this.j.length);
-        }
-    }
-
-    public Set<HeightMap.Type> t() {
-        return this.f.keySet();
-    }
-
     @Nullable
-    public HeightMap b(HeightMap.Type heightmap_type) {
-        return (HeightMap) this.f.get(heightmap_type);
+    @Override
+    public LightEngine e() {
+        return this.e;
     }
 
+    @Override
+    public Collection<Entry<HeightMap.Type, HeightMap>> f() {
+        return Collections.unmodifiableSet(this.f.entrySet());
+    }
+
+    @Override
     public void a(HeightMap.Type heightmap_type, long[] along) {
-        this.c(heightmap_type).a(along);
+        this.b(heightmap_type).a(along);
     }
 
-    public void a(HeightMap.Type... aheightmap_type) {
-        HeightMap.Type[] aheightmap_type1 = aheightmap_type;
-        int i = aheightmap_type.length;
-
-        for (int j = 0; j < i; ++j) {
-            HeightMap.Type heightmap_type = aheightmap_type1[j];
-
-            this.c(heightmap_type);
-        }
-
-    }
-
-    private HeightMap c(HeightMap.Type heightmap_type) {
+    @Override
+    public HeightMap b(HeightMap.Type heightmap_type) {
         return (HeightMap) this.f.computeIfAbsent(heightmap_type, (heightmap_type1) -> {
-            HeightMap heightmap = new HeightMap(this, heightmap_type1);
-
-            heightmap.a();
-            return heightmap;
+            return new HeightMap(this, heightmap_type1);
         });
     }
 
+    @Override
     public int a(HeightMap.Type heightmap_type, int i, int j) {
         HeightMap heightmap = (HeightMap) this.f.get(heightmap_type);
 
         if (heightmap == null) {
-            this.a(heightmap_type);
+            HeightMap.a(this, EnumSet.of(heightmap_type));
             heightmap = (HeightMap) this.f.get(heightmap_type);
         }
 
         return heightmap.a(i & 15, j & 15) - 1;
     }
 
+    @Override
     public ChunkCoordIntPair getPos() {
         return this.b;
     }
 
+    @Override
     public void setLastSaved(long i) {}
 
     @Nullable
+    @Override
     public StructureStart a(String s) {
         return (StructureStart) this.n.get(s);
     }
 
+    @Override
     public void a(String s, StructureStart structurestart) {
         this.n.put(s, structurestart);
         this.c = true;
     }
 
-    public Map<String, StructureStart> e() {
-        return com.koloboke.collect.map.hash.HashObjObjMaps.newImmutableMap(this.n); // Akarin - koloboke
+    @Override
+    public Map<String, StructureStart> h() {
+        return Collections.unmodifiableMap(this.n);
     }
 
+    @Override
     public void a(Map<String, StructureStart> map) {
         this.n.clear();
         this.n.putAll(map);
         this.c = true;
     }
 
-    @Nullable
+    @Override
     public LongSet b(String s) {
         return (LongSet) this.o.computeIfAbsent(s, (s1) -> {
             return new LongOpenHashSet();
         });
     }
 
+    @Override
     public void a(String s, long i) {
         ((LongSet) this.o.computeIfAbsent(s, (s1) -> {
             return new LongOpenHashSet();
@@ -379,43 +381,19 @@ public class ProtoChunk implements IChunkAccess {
         this.c = true;
     }
 
-    public Map<String, LongSet> f() {
+    @Override
+    public Map<String, LongSet> v() {
         return Collections.unmodifiableMap(this.o);
     }
 
+    @Override
     public void b(Map<String, LongSet> map) {
         this.o.clear();
         this.o.putAll(map);
         this.c = true;
     }
 
-    public void a(EnumSkyBlock enumskyblock, boolean flag, BlockPosition blockposition, int i) {
-        int j = blockposition.getX() & 15;
-        int k = blockposition.getY();
-        int l = blockposition.getZ() & 15;
-        int i1 = k >> 4;
-
-        if (i1 < 16 && i1 >= 0) {
-            if (this.j[i1] == Chunk.a) {
-                if (i == enumskyblock.c) {
-                    return;
-                }
-
-                this.j[i1] = new ChunkSection(i1 << 4, this.x(), this, this.world, true); // Paper - Anti-Xray
-            }
-
-            if (enumskyblock == EnumSkyBlock.SKY) {
-                if (flag) {
-                    this.j[i1].a(j, k & 15, l, i);
-                }
-            } else if (enumskyblock == EnumSkyBlock.BLOCK) {
-                this.j[i1].b(j, k & 15, l, i);
-            }
-
-        }
-    }
-
-    public static short i(BlockPosition blockposition) {
+    public static short l(BlockPosition blockposition) {
         int i = blockposition.getX();
         int j = blockposition.getY();
         int k = blockposition.getZ();
@@ -434,62 +412,78 @@ public class ProtoChunk implements IChunkAccess {
         return new BlockPosition(j, k, l);
     }
 
-    public void e(BlockPosition blockposition) {
-        if (!World.k(blockposition)) {
-            a(this.m, blockposition.getY() >> 4).add(i(blockposition));
+    @Override
+    public void f(BlockPosition blockposition) {
+        if (!World.isOutsideWorld(blockposition)) {
+            IChunkAccess.a(this.m, blockposition.getY() >> 4).add(l(blockposition));
         }
 
     }
 
-    public ShortList[] u() {
+    @Override
+    public ShortList[] l() {
         return this.m;
     }
 
-    public void b(short short0, int i) {
-        a(this.m, i).add(short0);
+    @Override
+    public void a(short short0, int i) {
+        IChunkAccess.a(this.m, i).add(short0);
     }
 
-    public ProtoChunkTickList<Block> k() {
+    @Override
+    public ProtoChunkTickList<Block> n() {
         return this.q;
     }
 
-    public ProtoChunkTickList<FluidType> l() {
+    @Override
+    public ProtoChunkTickList<FluidType> o() {
         return this.r;
     }
 
-    private boolean x() {
-        return true;
-    }
-
-    public ChunkConverter v() {
+    @Override
+    public ChunkConverter p() {
         return this.p;
     }
 
+    @Override
     public void b(long i) {
         this.s = i;
     }
 
-    public long m() {
+    @Override
+    public long q() {
         return this.s;
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         this.i.put(new BlockPosition(nbttagcompound.getInt("x"), nbttagcompound.getInt("y"), nbttagcompound.getInt("z")), nbttagcompound);
     }
 
-    public Map<BlockPosition, NBTTagCompound> w() {
-        return com.koloboke.collect.map.hash.HashObjObjMaps.newImmutableMap(this.i); // Akarin - koloboke
+    public Map<BlockPosition, NBTTagCompound> z() {
+        return Collections.unmodifiableMap(this.i);
     }
 
-    public NBTTagCompound g(BlockPosition blockposition) {
+    @Override
+    public NBTTagCompound i(BlockPosition blockposition) {
         return (NBTTagCompound) this.i.get(blockposition);
     }
 
-    public void d(BlockPosition blockposition) {
+    @Nullable
+    @Override
+    public NBTTagCompound j(BlockPosition blockposition) {
+        TileEntity tileentity = this.getTileEntity(blockposition);
+
+        return tileentity != null ? tileentity.save(new NBTTagCompound()) : (NBTTagCompound) this.i.get(blockposition);
+    }
+
+    @Override
+    public void removeTileEntity(BlockPosition blockposition) {
         this.h.remove(blockposition);
         this.i.remove(blockposition);
     }
 
+    @Override
     public BitSet a(WorldGenStage.Features worldgenstage_features) {
         return (BitSet) this.t.computeIfAbsent(worldgenstage_features, (worldgenstage_features1) -> {
             return new BitSet(65536);
@@ -500,15 +494,19 @@ public class ProtoChunk implements IChunkAccess {
         this.t.put(worldgenstage_features, bitset);
     }
 
-    public void a(int i) {
-        this.d.addAndGet(i);
+    @Override
+    public void a(LightEngine lightengine) {
+        this.e = lightengine;
     }
 
-    public boolean ab_() {
-        return this.d.get() > 0;
+    @Override
+    public boolean r() {
+        return this.u;
     }
 
+    @Override
     public void b(boolean flag) {
         this.u = flag;
+        this.setNeedsSaving(true);
     }
 }

@@ -8,23 +8,21 @@ import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 
 public class BlockChorusFlower extends Block {
 
-    public static final BlockStateInteger AGE = BlockProperties.V;
+    public static final BlockStateInteger AGE = BlockProperties.ab;
     private final BlockChorusFruit b;
 
     protected BlockChorusFlower(BlockChorusFruit blockchorusfruit, Block.Info block_info) {
         super(block_info);
         this.b = blockchorusfruit;
-        this.v((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockChorusFlower.AGE, 0));
+        this.o((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockChorusFlower.AGE, 0));
     }
 
-    public IMaterial getDropType(IBlockData iblockdata, World world, BlockPosition blockposition, int i) {
-        return Items.AIR;
-    }
-
-    public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
+    @Override
+    public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (!iblockdata.canPlace(world, blockposition)) {
-            world.setAir(blockposition, true);
+            world.b(blockposition, true);
         } else {
+            if (world.paperConfig.fixZeroTickInstantGrowFarms && !randomTick) return; // Paper - fix MC-113809
             BlockPosition blockposition1 = blockposition.up();
 
             if (world.isEmpty(blockposition1) && blockposition1.getY() < 256) {
@@ -62,7 +60,7 @@ public class BlockChorusFlower extends Block {
                         flag = true;
                     }
 
-                    if (flag && a((IWorldReader) world, blockposition1, (EnumDirection) null) && world.isEmpty(blockposition.up(2))) {
+                    if (flag && b((IWorldReader) world, blockposition1, (EnumDirection) null) && world.isEmpty(blockposition.up(2))) {
                         // CraftBukkit start - add event
                         if (CraftEventFactory.handleBlockSpreadEvent(world, blockposition, blockposition1, this.getBlockData().set(BlockChorusFlower.AGE, Integer.valueOf(i)), 2)) {
                             world.setTypeAndData(blockposition, this.b.a((IBlockAccess) world, blockposition), 2);
@@ -81,7 +79,7 @@ public class BlockChorusFlower extends Block {
                             EnumDirection enumdirection = EnumDirection.EnumDirectionLimit.HORIZONTAL.a(random);
                             BlockPosition blockposition2 = blockposition.shift(enumdirection);
 
-                            if (world.isEmpty(blockposition2) && world.isEmpty(blockposition2.down()) && a((IWorldReader) world, blockposition2, enumdirection.opposite())) {
+                            if (world.isEmpty(blockposition2) && world.isEmpty(blockposition2.down()) && b((IWorldReader) world, blockposition2, enumdirection.opposite())) {
                                 // CraftBukkit start - add event
                                 if (CraftEventFactory.handleBlockSpreadEvent(world, blockposition, blockposition2, this.getBlockData().set(BlockChorusFlower.AGE, Integer.valueOf(i + 1)), 2)) {
                                     this.b(world, blockposition2, i + 1);
@@ -123,7 +121,7 @@ public class BlockChorusFlower extends Block {
         world.triggerEffect(1034, blockposition, 0);
     }
 
-    private static boolean a(IWorldReader iworldreader, BlockPosition blockposition, @Nullable EnumDirection enumdirection) {
+    private static boolean b(IWorldReader iworldreader, BlockPosition blockposition, @Nullable EnumDirection enumdirection) {
         Iterator iterator = EnumDirection.EnumDirectionLimit.HORIZONTAL.iterator();
 
         EnumDirection enumdirection1;
@@ -139,10 +137,7 @@ public class BlockChorusFlower extends Block {
         return false;
     }
 
-    public boolean a(IBlockData iblockdata) {
-        return false;
-    }
-
+    @Override
     public IBlockData updateState(IBlockData iblockdata, EnumDirection enumdirection, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
         if (enumdirection != EnumDirection.UP && !iblockdata.canPlace(generatoraccess, blockposition)) {
             generatoraccess.getBlockTickList().a(blockposition, this, 1);
@@ -151,6 +146,7 @@ public class BlockChorusFlower extends Block {
         return super.updateState(iblockdata, enumdirection, iblockdata1, generatoraccess, blockposition, blockposition1);
     }
 
+    @Override
     public boolean canPlace(IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) {
         IBlockData iblockdata1 = iworldreader.getType(blockposition.down());
         Block block = iblockdata1.getBlock();
@@ -184,19 +180,12 @@ public class BlockChorusFlower extends Block {
         }
     }
 
-    public void a(World world, EntityHuman entityhuman, BlockPosition blockposition, IBlockData iblockdata, @Nullable TileEntity tileentity, ItemStack itemstack) {
-        super.a(world, entityhuman, blockposition, iblockdata, tileentity, itemstack);
-        a(world, blockposition, new ItemStack(this));
-    }
-
-    protected ItemStack t(IBlockData iblockdata) {
-        return ItemStack.a;
-    }
-
+    @Override
     public TextureType c() {
         return TextureType.CUTOUT;
     }
 
+    @Override
     protected void a(BlockStateList.a<Block, IBlockData> blockstatelist_a) {
         blockstatelist_a.a(BlockChorusFlower.AGE);
     }
@@ -217,7 +206,7 @@ public class BlockChorusFlower extends Block {
         for (int l = 0; l < k; ++l) {
             BlockPosition blockposition2 = blockposition.up(l + 1);
 
-            if (!a((IWorldReader) generatoraccess, blockposition2, (EnumDirection) null)) {
+            if (!b((IWorldReader) generatoraccess, blockposition2, (EnumDirection) null)) {
                 return;
             }
 
@@ -238,7 +227,7 @@ public class BlockChorusFlower extends Block {
                 EnumDirection enumdirection = EnumDirection.EnumDirectionLimit.HORIZONTAL.a(random);
                 BlockPosition blockposition3 = blockposition.up(k).shift(enumdirection);
 
-                if (Math.abs(blockposition3.getX() - blockposition1.getX()) < i && Math.abs(blockposition3.getZ() - blockposition1.getZ()) < i && generatoraccess.isEmpty(blockposition3) && generatoraccess.isEmpty(blockposition3.down()) && a((IWorldReader) generatoraccess, blockposition3, enumdirection.opposite())) {
+                if (Math.abs(blockposition3.getX() - blockposition1.getX()) < i && Math.abs(blockposition3.getZ() - blockposition1.getZ()) < i && generatoraccess.isEmpty(blockposition3) && generatoraccess.isEmpty(blockposition3.down()) && b((IWorldReader) generatoraccess, blockposition3, enumdirection.opposite())) {
                     flag = true;
                     generatoraccess.setTypeAndData(blockposition3, blockchorusfruit.a((IBlockAccess) generatoraccess, blockposition3), 2);
                     generatoraccess.setTypeAndData(blockposition3.shift(enumdirection.opposite()), blockchorusfruit.a((IBlockAccess) generatoraccess, blockposition3.shift(enumdirection.opposite())), 2);
@@ -253,7 +242,11 @@ public class BlockChorusFlower extends Block {
 
     }
 
-    public EnumBlockFaceShape a(IBlockAccess iblockaccess, IBlockData iblockdata, BlockPosition blockposition, EnumDirection enumdirection) {
-        return EnumBlockFaceShape.UNDEFINED;
+    @Override
+    public void a(World world, IBlockData iblockdata, MovingObjectPositionBlock movingobjectpositionblock, Entity entity) {
+        BlockPosition blockposition = movingobjectpositionblock.getBlockPosition();
+
+        a(world, blockposition, new ItemStack(this));
+        world.b(blockposition, true);
     }
 }

@@ -9,50 +9,49 @@ import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
 public class BlockTripwireHook extends Block {
 
     public static final BlockStateDirection FACING = BlockFacingHorizontal.FACING;
-    public static final BlockStateBoolean POWERED = BlockProperties.t;
+    public static final BlockStateBoolean POWERED = BlockProperties.w;
     public static final BlockStateBoolean ATTACHED = BlockProperties.a;
-    protected static final VoxelShape o = Block.a(5.0D, 0.0D, 10.0D, 11.0D, 10.0D, 16.0D);
-    protected static final VoxelShape p = Block.a(5.0D, 0.0D, 0.0D, 11.0D, 10.0D, 6.0D);
-    protected static final VoxelShape q = Block.a(10.0D, 0.0D, 5.0D, 16.0D, 10.0D, 11.0D);
-    protected static final VoxelShape r = Block.a(0.0D, 0.0D, 5.0D, 6.0D, 10.0D, 11.0D);
+    protected static final VoxelShape d = Block.a(5.0D, 0.0D, 10.0D, 11.0D, 10.0D, 16.0D);
+    protected static final VoxelShape e = Block.a(5.0D, 0.0D, 0.0D, 11.0D, 10.0D, 6.0D);
+    protected static final VoxelShape f = Block.a(10.0D, 0.0D, 5.0D, 16.0D, 10.0D, 11.0D);
+    protected static final VoxelShape g = Block.a(0.0D, 0.0D, 5.0D, 6.0D, 10.0D, 11.0D);
 
     public BlockTripwireHook(Block.Info block_info) {
         super(block_info);
-        this.v((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockTripwireHook.FACING, EnumDirection.NORTH)).set(BlockTripwireHook.POWERED, false)).set(BlockTripwireHook.ATTACHED, false));
+        this.o((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockTripwireHook.FACING, EnumDirection.NORTH)).set(BlockTripwireHook.POWERED, false)).set(BlockTripwireHook.ATTACHED, false));
     }
 
-    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+    @Override
+    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision) {
         switch ((EnumDirection) iblockdata.get(BlockTripwireHook.FACING)) {
-        case EAST:
-        default:
-            return BlockTripwireHook.r;
-        case WEST:
-            return BlockTripwireHook.q;
-        case SOUTH:
-            return BlockTripwireHook.p;
-        case NORTH:
-            return BlockTripwireHook.o;
+            case EAST:
+            default:
+                return BlockTripwireHook.g;
+            case WEST:
+                return BlockTripwireHook.f;
+            case SOUTH:
+                return BlockTripwireHook.e;
+            case NORTH:
+                return BlockTripwireHook.d;
         }
     }
 
-    public boolean a(IBlockData iblockdata) {
-        return false;
-    }
-
+    @Override
     public boolean canPlace(IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) {
         EnumDirection enumdirection = (EnumDirection) iblockdata.get(BlockTripwireHook.FACING);
         BlockPosition blockposition1 = blockposition.shift(enumdirection.opposite());
         IBlockData iblockdata1 = iworldreader.getType(blockposition1);
-        boolean flag = b(iblockdata1.getBlock());
 
-        return !flag && enumdirection.k().c() && iblockdata1.c(iworldreader, blockposition1, enumdirection) == EnumBlockFaceShape.SOLID && !iblockdata1.isPowerSource();
+        return enumdirection.k().c() && iblockdata1.d(iworldreader, blockposition1, enumdirection) && !iblockdata1.isPowerSource();
     }
 
+    @Override
     public IBlockData updateState(IBlockData iblockdata, EnumDirection enumdirection, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
         return enumdirection.opposite() == iblockdata.get(BlockTripwireHook.FACING) && !iblockdata.canPlace(generatoraccess, blockposition) ? Blocks.AIR.getBlockData() : super.updateState(iblockdata, enumdirection, iblockdata1, generatoraccess, blockposition, blockposition1);
     }
 
     @Nullable
+    @Override
     public IBlockData getPlacedState(BlockActionContext blockactioncontext) {
         IBlockData iblockdata = (IBlockData) ((IBlockData) this.getBlockData().set(BlockTripwireHook.POWERED, false)).set(BlockTripwireHook.ATTACHED, false);
         World world = blockactioncontext.getWorld();
@@ -77,6 +76,7 @@ public class BlockTripwireHook extends Block {
         return null;
     }
 
+    @Override
     public void postPlace(World world, BlockPosition blockposition, IBlockData iblockdata, EntityLiving entityliving, ItemStack itemstack) {
         this.a(world, blockposition, iblockdata, false, false, -1, (IBlockData) null);
     }
@@ -137,7 +137,7 @@ public class BlockTripwireHook extends Block {
         }
 
         // CraftBukkit start
-        org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition); // Akarin
+        org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
 
         BlockRedstoneEvent eventRedstone = new BlockRedstoneEvent(block, 15, 0);
         world.getServer().getPluginManager().callEvent(eventRedstone);
@@ -171,19 +171,20 @@ public class BlockTripwireHook extends Block {
 
     }
 
-    public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
+    @Override
+    public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         this.a(world, blockposition, iblockdata, false, true, -1, (IBlockData) null);
     }
 
     private void a(World world, BlockPosition blockposition, boolean flag, boolean flag1, boolean flag2, boolean flag3) {
         if (flag1 && !flag3) {
-            world.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_TRIPWIRE_CLICK_ON, SoundCategory.BLOCKS, 0.4F, 0.6F);
+            world.playSound((EntityHuman) null, blockposition, SoundEffects.BLOCK_TRIPWIRE_CLICK_ON, SoundCategory.BLOCKS, 0.4F, 0.6F);
         } else if (!flag1 && flag3) {
-            world.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_TRIPWIRE_CLICK_OFF, SoundCategory.BLOCKS, 0.4F, 0.5F);
+            world.playSound((EntityHuman) null, blockposition, SoundEffects.BLOCK_TRIPWIRE_CLICK_OFF, SoundCategory.BLOCKS, 0.4F, 0.5F);
         } else if (flag && !flag2) {
-            world.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_TRIPWIRE_ATTACH, SoundCategory.BLOCKS, 0.4F, 0.7F);
+            world.playSound((EntityHuman) null, blockposition, SoundEffects.BLOCK_TRIPWIRE_ATTACH, SoundCategory.BLOCKS, 0.4F, 0.7F);
         } else if (!flag && flag2) {
-            world.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_TRIPWIRE_DETACH, SoundCategory.BLOCKS, 0.4F, 1.2F / (world.random.nextFloat() * 0.2F + 0.9F));
+            world.playSound((EntityHuman) null, blockposition, SoundEffects.BLOCK_TRIPWIRE_DETACH, SoundCategory.BLOCKS, 0.4F, 1.2F / (world.random.nextFloat() * 0.2F + 0.9F));
         }
 
     }
@@ -193,6 +194,7 @@ public class BlockTripwireHook extends Block {
         world.applyPhysics(blockposition.shift(enumdirection.opposite()), this);
     }
 
+    @Override
     public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
         if (!flag && iblockdata.getBlock() != iblockdata1.getBlock()) {
             boolean flag1 = (Boolean) iblockdata.get(BlockTripwireHook.ATTACHED);
@@ -211,35 +213,38 @@ public class BlockTripwireHook extends Block {
         }
     }
 
+    @Override
     public int a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, EnumDirection enumdirection) {
         return (Boolean) iblockdata.get(BlockTripwireHook.POWERED) ? 15 : 0;
     }
 
+    @Override
     public int b(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, EnumDirection enumdirection) {
         return !(Boolean) iblockdata.get(BlockTripwireHook.POWERED) ? 0 : (iblockdata.get(BlockTripwireHook.FACING) == enumdirection ? 15 : 0);
     }
 
+    @Override
     public boolean isPowerSource(IBlockData iblockdata) {
         return true;
     }
 
+    @Override
     public TextureType c() {
         return TextureType.CUTOUT_MIPPED;
     }
 
+    @Override
     public IBlockData a(IBlockData iblockdata, EnumBlockRotation enumblockrotation) {
         return (IBlockData) iblockdata.set(BlockTripwireHook.FACING, enumblockrotation.a((EnumDirection) iblockdata.get(BlockTripwireHook.FACING)));
     }
 
+    @Override
     public IBlockData a(IBlockData iblockdata, EnumBlockMirror enumblockmirror) {
         return iblockdata.a(enumblockmirror.a((EnumDirection) iblockdata.get(BlockTripwireHook.FACING)));
     }
 
+    @Override
     protected void a(BlockStateList.a<Block, IBlockData> blockstatelist_a) {
         blockstatelist_a.a(BlockTripwireHook.FACING, BlockTripwireHook.POWERED, BlockTripwireHook.ATTACHED);
-    }
-
-    public EnumBlockFaceShape a(IBlockAccess iblockaccess, IBlockData iblockdata, BlockPosition blockposition, EnumDirection enumdirection) {
-        return EnumBlockFaceShape.UNDEFINED;
     }
 }

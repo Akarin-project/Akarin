@@ -8,12 +8,12 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 // CraftBukkit end
 
-public class EntityEnderPearl extends EntityProjectile {
+public class EntityEnderPearl extends EntityProjectileThrowable {
 
     private EntityLiving e;
 
-    public EntityEnderPearl(World world) {
-        super(EntityTypes.ENDER_PEARL, world);
+    public EntityEnderPearl(EntityTypes<? extends EntityEnderPearl> entitytypes, World world) {
+        super(entitytypes, world);
     }
 
     public EntityEnderPearl(World world, EntityLiving entityliving) {
@@ -21,19 +21,27 @@ public class EntityEnderPearl extends EntityProjectile {
         this.e = entityliving;
     }
 
+    @Override
+    protected Item i() {
+        return Items.ENDER_PEARL;
+    }
+
+    @Override
     protected void a(MovingObjectPosition movingobjectposition) {
         EntityLiving entityliving = this.getShooter();
 
-        if (movingobjectposition.entity != null) {
-            if (movingobjectposition.entity == this.e) {
+        if (movingobjectposition.getType() == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
+            Entity entity = ((MovingObjectPositionEntity) movingobjectposition).getEntity();
+
+            if (entity == this.e) {
                 return;
             }
 
-            movingobjectposition.entity.damageEntity(DamageSource.projectile(this, entityliving), 0.0F);
+            entity.damageEntity(DamageSource.projectile(this, entityliving), 0.0F);
         }
 
-        if (movingobjectposition.type == MovingObjectPosition.EnumMovingObjectType.BLOCK) {
-            BlockPosition blockposition = movingobjectposition.getBlockPosition();
+        if (movingobjectposition.getType() == MovingObjectPosition.EnumMovingObjectType.BLOCK) {
+            BlockPosition blockposition = ((MovingObjectPositionBlock) movingobjectposition).getBlockPosition();
             TileEntity tileentity = this.world.getTileEntity(blockposition);
 
             if (tileentity instanceof TileEntityEndGateway) {
@@ -54,13 +62,9 @@ public class EntityEnderPearl extends EntityProjectile {
             }
         }
 
-        // Akarin start
-        /*
         for (int i = 0; i < 32; ++i) {
-            this.world.addParticle(Particles.K, this.locX, this.locY + this.random.nextDouble() * 2.0D, this.locZ, this.random.nextGaussian(), 0.0D, this.random.nextGaussian());
+            this.world.addParticle(Particles.PORTAL, this.locX, this.locY + this.random.nextDouble() * 2.0D, this.locZ, this.random.nextGaussian(), 0.0D, this.random.nextGaussian());
         }
-        */
-        // Akarin end
 
         if (!this.world.isClientSide) {
             if (entityliving instanceof EntityPlayer) {
@@ -77,8 +81,8 @@ public class EntityEnderPearl extends EntityProjectile {
                     Bukkit.getPluginManager().callEvent(teleEvent);
 
                     if (!teleEvent.isCancelled() && !entityplayer.playerConnection.isDisconnected()) {
-                        if (this.random.nextFloat() < 0.05F && this.world.getGameRules().getBoolean("doMobSpawning")) {
-                            EntityEndermite entityendermite = EntityTypes.ENDERMITE.create(world); // Paper
+                        if (this.random.nextFloat() < 0.05F && this.world.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING)) {
+                            EntityEndermite entityendermite = (EntityEndermite) EntityTypes.ENDERMITE.a(this.world);
 
                             entityendermite.setPlayerSpawned(true);
                             entityendermite.setPositionRotation(entityliving.locX, entityliving.locY, entityliving.locZ, entityliving.yaw, entityliving.pitch);
@@ -107,6 +111,7 @@ public class EntityEnderPearl extends EntityProjectile {
 
     }
 
+    @Override
     public void tick() {
         EntityLiving entityliving = this.getShooter();
 
@@ -119,6 +124,7 @@ public class EntityEnderPearl extends EntityProjectile {
     }
 
     @Nullable
+    @Override
     public Entity a(DimensionManager dimensionmanager) {
         if (this.shooter.dimension != dimensionmanager) {
             this.shooter = null;

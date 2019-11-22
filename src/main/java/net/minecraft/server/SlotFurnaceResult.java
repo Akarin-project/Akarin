@@ -1,15 +1,8 @@
 package net.minecraft.server;
 
-import java.util.Iterator;
-import java.util.Map.Entry;
-// CraftBukkit start
-import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.FurnaceExtractEvent;
-// CraftBukkit end
-
 public class SlotFurnaceResult extends Slot {
 
-    private final EntityHuman a;public EntityHuman getPlayer() { return a; } // Paper OBFHELPER
+    private final EntityHuman a; public final EntityHuman getPlayer() { return this.a; } // Paper OBFHELPER
     private int b;
 
     public SlotFurnaceResult(EntityHuman entityhuman, IInventory iinventory, int i, int j, int k) {
@@ -17,10 +10,12 @@ public class SlotFurnaceResult extends Slot {
         this.a = entityhuman;
     }
 
+    @Override
     public boolean isAllowed(ItemStack itemstack) {
         return false;
     }
 
+    @Override
     public ItemStack a(int i) {
         if (this.hasItem()) {
             this.b += Math.min(i, this.getItem().getCount());
@@ -29,67 +24,24 @@ public class SlotFurnaceResult extends Slot {
         return super.a(i);
     }
 
+    @Override
     public ItemStack a(EntityHuman entityhuman, ItemStack itemstack) {
         this.c(itemstack);
         super.a(entityhuman, itemstack);
         return itemstack;
     }
 
+    @Override
     protected void a(ItemStack itemstack, int i) {
         this.b += i;
         this.c(itemstack);
     }
 
+    @Override
     protected void c(ItemStack itemstack) {
         itemstack.a(this.a.world, this.a, this.b);
-        if (!this.a.world.isClientSide) {
-            Iterator iterator = ((TileEntityFurnace) this.inventory).q().entrySet().iterator();
-
-            while (iterator.hasNext()) {
-                Entry<MinecraftKey, Integer> entry = (Entry) iterator.next();
-                FurnaceRecipe furnacerecipe = (FurnaceRecipe) this.a.world.getCraftingManager().a((MinecraftKey) entry.getKey());
-                float f;
-
-                if (furnacerecipe != null) {
-                    f = furnacerecipe.g();
-                } else {
-                    f = 0.0F;
-                }
-
-                int i = (Integer) entry.getValue();
-                int j;
-
-                if (f == 0.0F) {
-                    i = 0;
-                } else if (f < 1.0F) {
-                    j = MathHelper.d((float) i * f);
-                    if (j < MathHelper.f((float) i * f) && Math.random() < (double) ((float) i * f - (float) j)) {
-                        ++j;
-                    }
-
-                    i = j;
-                }
-
-                // CraftBukkit start - fire FurnaceExtractEvent
-                Player player = (Player) a.getBukkitEntity();
-                TileEntityFurnace furnace = ((TileEntityFurnace) this.inventory);
-                org.bukkit.block.Block block = a.world.getWorld().getBlockAt(furnace.position); // Akarin
-
-                if (b != 0) {
-                    FurnaceExtractEvent event = new FurnaceExtractEvent(player, block, org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(itemstack.getItem()), b, i);
-                    a.world.getServer().getPluginManager().callEvent(event);
-                    i = event.getExpToDrop();
-                }
-                // CraftBukkit end
-
-                while (i > 0) {
-                    j = EntityExperienceOrb.getOrbValue(i);
-                    i -= j;
-                    this.a.world.addEntity(new EntityExperienceOrb(this.a.world, this.a.locX, this.a.locY + 0.5D, this.a.locZ + 0.5D, j, org.bukkit.entity.ExperienceOrb.SpawnReason.FURNACE, getPlayer())); // Paper
-                }
-            }
-
-            ((RecipeHolder) this.inventory).d(this.a);
+        if (!this.a.world.isClientSide && this.inventory instanceof TileEntityFurnace) {
+            ((TileEntityFurnace) this.inventory).d(this.a, itemstack, this.b); // CraftBukkit
         }
 
         this.b = 0;

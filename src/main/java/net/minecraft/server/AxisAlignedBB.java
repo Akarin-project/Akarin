@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import java.util.Iterator;
+import java.util.Optional;
 import javax.annotation.Nullable;
 
 public class AxisAlignedBB {
@@ -27,6 +28,14 @@ public class AxisAlignedBB {
 
     public AxisAlignedBB(BlockPosition blockposition, BlockPosition blockposition1) {
         this((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ(), (double) blockposition1.getX(), (double) blockposition1.getY(), (double) blockposition1.getZ());
+    }
+
+    public AxisAlignedBB(Vec3D vec3d, Vec3D vec3d1) {
+        this(vec3d.x, vec3d.y, vec3d.z, vec3d1.x, vec3d1.y, vec3d1.z);
+    }
+
+    public static AxisAlignedBB a(StructureBoundingBox structureboundingbox) {
+        return new AxisAlignedBB((double) structureboundingbox.a, (double) structureboundingbox.b, (double) structureboundingbox.c, (double) (structureboundingbox.d + 1), (double) (structureboundingbox.e + 1), (double) (structureboundingbox.f + 1));
     }
 
     public double a(EnumDirection.EnumAxis enumdirection_enumaxis) {
@@ -95,7 +104,11 @@ public class AxisAlignedBB {
         return new AxisAlignedBB(d3, d4, d5, d6, d7, d8);
     }
 
-    public AxisAlignedBB expand(double x, double y, double z) { return b(x, y, z); } // Paper - OBFHELPER
+    public AxisAlignedBB a(Vec3D vec3d) {
+        return this.b(vec3d.x, vec3d.y, vec3d.z);
+    }
+
+    public final AxisAlignedBB expand(double x, double y, double z) { return b(x, y, z); } // Paper - OBFHELPER
     public AxisAlignedBB b(double d0, double d1, double d2) {
         double d3 = this.minX;
         double d4 = this.minY;
@@ -176,7 +189,7 @@ public class AxisAlignedBB {
         return new AxisAlignedBB(this.minX + (double) blockposition.getX(), this.minY + (double) blockposition.getY(), this.minZ + (double) blockposition.getZ(), this.maxX + (double) blockposition.getX(), this.maxY + (double) blockposition.getY(), this.maxZ + (double) blockposition.getZ());
     }
 
-    public AxisAlignedBB a(Vec3D vec3d) {
+    public AxisAlignedBB b(Vec3D vec3d) {
         return this.d(vec3d.x, vec3d.y, vec3d.z);
     }
 
@@ -188,8 +201,8 @@ public class AxisAlignedBB {
         return this.minX < d3 && this.maxX > d0 && this.minY < d4 && this.maxY > d1 && this.minZ < d5 && this.maxZ > d2;
     }
 
-    public boolean contains(Vec3D vec3d) { return b(vec3d); } // Paper - OBFHELPER
-    public boolean b(Vec3D vec3d) {
+    public final boolean contains(Vec3D vec3d) { return c(vec3d); } // Paper - OBFHELPER
+    public boolean c(Vec3D vec3d) {
         return this.e(vec3d.x, vec3d.y, vec3d.z);
     }
 
@@ -198,48 +211,49 @@ public class AxisAlignedBB {
     }
 
     public double a() {
-        double d0 = this.maxX - this.minX;
-        double d1 = this.maxY - this.minY;
-        double d2 = this.maxZ - this.minZ;
+        double d0 = this.b();
+        double d1 = this.c();
+        double d2 = this.d();
 
         return (d0 + d1 + d2) / 3.0D;
     }
 
-    public AxisAlignedBB f(double d0, double d1, double d2) {
-        return this.grow(-d0, -d1, -d2);
+    public double b() {
+        return this.maxX - this.minX;
+    }
+
+    public double c() {
+        return this.maxY - this.minY;
+    }
+
+    public double d() {
+        return this.maxZ - this.minZ;
     }
 
     public AxisAlignedBB shrink(double d0) {
         return this.g(-d0);
     }
 
-    public MovingObjectPosition calculateIntercept(Vec3D vec3d, Vec3D vec3d1) { return b(vec3d, vec3d1); } // Paper - OBFHELPER
-    @Nullable
-    public MovingObjectPosition b(Vec3D vec3d, Vec3D vec3d1) {
-        return this.a(vec3d, vec3d1, (BlockPosition) null);
-    }
-
-    @Nullable
-    public MovingObjectPosition a(Vec3D vec3d, Vec3D vec3d1, @Nullable BlockPosition blockposition) {
-        double[] adouble = new double[] { 1.0D};
-        EnumDirection enumdirection = null;
+    public final Optional<Vec3D> calculateIntercept(Vec3D vec3d, Vec3D vec3d1) { return b(vec3d, vec3d1); } // Paper - OBFHELPER
+    public Optional<Vec3D> b(Vec3D vec3d, Vec3D vec3d1) {
+        double[] adouble = new double[]{1.0D};
         double d0 = vec3d1.x - vec3d.x;
         double d1 = vec3d1.y - vec3d.y;
         double d2 = vec3d1.z - vec3d.z;
+        EnumDirection enumdirection = a(this, vec3d, adouble, (EnumDirection) null, d0, d1, d2);
 
-        enumdirection = a(blockposition == null ? this : this.a(blockposition), vec3d, adouble, enumdirection, d0, d1, d2);
         if (enumdirection == null) {
-            return null;
+            return Optional.empty();
         } else {
             double d3 = adouble[0];
 
-            return new MovingObjectPosition(vec3d.add(d3 * d0, d3 * d1, d3 * d2), enumdirection, blockposition == null ? BlockPosition.ZERO : blockposition);
+            return Optional.of(vec3d.add(d3 * d0, d3 * d1, d3 * d2));
         }
     }
 
     @Nullable
-    public static MovingObjectPosition a(Iterable<AxisAlignedBB> iterable, Vec3D vec3d, Vec3D vec3d1, BlockPosition blockposition) {
-        double[] adouble = new double[] { 1.0D};
+    public static MovingObjectPositionBlock a(Iterable<AxisAlignedBB> iterable, Vec3D vec3d, Vec3D vec3d1, BlockPosition blockposition) {
+        double[] adouble = new double[]{1.0D};
         EnumDirection enumdirection = null;
         double d0 = vec3d1.x - vec3d.x;
         double d1 = vec3d1.y - vec3d.y;
@@ -256,7 +270,7 @@ public class AxisAlignedBB {
         } else {
             double d3 = adouble[0];
 
-            return new MovingObjectPosition(vec3d.add(d3 * d0, d3 * d1, d3 * d2), enumdirection, blockposition);
+            return new MovingObjectPositionBlock(vec3d.add(d3 * d0, d3 * d1, d3 * d2), enumdirection, blockposition, false);
         }
     }
 
@@ -298,6 +312,10 @@ public class AxisAlignedBB {
     }
 
     public String toString() {
-        return "box[" + this.minX + ", " + this.minY + ", " + this.minZ + " -> " + this.maxX + ", " + this.maxY + ", " + this.maxZ + "]";
+        return "box[" + this.minX + ", " + this.minY + ", " + this.minZ + "] -> [" + this.maxX + ", " + this.maxY + ", " + this.maxZ + "]";
+    }
+
+    public Vec3D f() {
+        return new Vec3D(MathHelper.d(0.5D, this.minX, this.maxX), MathHelper.d(0.5D, this.minY, this.maxY), MathHelper.d(0.5D, this.minZ, this.maxZ));
     }
 }

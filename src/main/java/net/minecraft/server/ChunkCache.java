@@ -1,220 +1,178 @@
 package net.minecraft.server;
 
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
-public class ChunkCache implements IIBlockAccess {
+public class ChunkCache implements IWorldReader {
 
-    protected int a;
-    protected int b;
-    protected Chunk[][] c;
+    protected final int a;
+    protected final int b;
+    protected final IChunkAccess[][] c;
     protected boolean d;
-    protected World e;
+    protected final World e;
 
-    public ChunkCache(World world, BlockPosition blockposition, BlockPosition blockposition1, int i) {
+    public ChunkCache(World world, BlockPosition blockposition, BlockPosition blockposition1) {
         this.e = world;
-        this.a = blockposition.getX() - i >> 4;
-        this.b = blockposition.getZ() - i >> 4;
-        int j = blockposition1.getX() + i >> 4;
-        int k = blockposition1.getZ() + i >> 4;
+        this.a = blockposition.getX() >> 4;
+        this.b = blockposition.getZ() >> 4;
+        int i = blockposition1.getX() >> 4;
+        int j = blockposition1.getZ() >> 4;
 
-        this.c = new Chunk[j - this.a + 1][k - this.b + 1];
+        this.c = new IChunkAccess[i - this.a + 1][j - this.b + 1];
         this.d = true;
 
+        int k;
         int l;
-        int i1;
 
-        for (l = this.a; l <= j; ++l) {
-            for (i1 = this.b; i1 <= k; ++i1) {
-                this.c[l - this.a][i1 - this.b] = world.getChunkIfLoaded(l, i1); // Paper
+        for (k = this.a; k <= i; ++k) {
+            for (l = this.b; l <= j; ++l) {
+                this.c[k - this.a][l - this.b] = world.getChunkIfLoadedImmediately(k, l); // Paper
             }
         }
 
-        for (l = blockposition.getX() >> 4; l <= blockposition1.getX() >> 4; ++l) {
-            for (i1 = blockposition.getZ() >> 4; i1 <= blockposition1.getZ() >> 4; ++i1) {
-                Chunk chunk = this.c[l - this.a][i1 - this.b];
+        for (k = blockposition.getX() >> 4; k <= blockposition1.getX() >> 4; ++k) {
+            for (l = blockposition.getZ() >> 4; l <= blockposition1.getZ() >> 4; ++l) {
+                IChunkAccess ichunkaccess = this.c[k - this.a][l - this.b];
 
-                if (chunk != null && !chunk.b(blockposition.getY(), blockposition1.getY())) {
+                if (ichunkaccess != null && !ichunkaccess.a(blockposition.getY(), blockposition1.getY())) {
                     this.d = false;
+                    return;
                 }
             }
         }
 
     }
 
-    @Nullable
-    public TileEntity getTileEntity(BlockPosition blockposition) {
-        return this.a(blockposition, Chunk.EnumTileEntityState.IMMEDIATE);
-    }
-
-    @Nullable
-    public TileEntity a(BlockPosition blockposition, Chunk.EnumTileEntityState chunk_enumtileentitystate) {
-        int i = (blockposition.getX() >> 4) - this.a;
-        int j = (blockposition.getZ() >> 4) - this.b;
-
-        return this.c[i][j].a(blockposition, chunk_enumtileentitystate);
-    }
-
-    public float A(BlockPosition blockposition) {
-        return this.e.worldProvider.i()[this.getLightLevel(blockposition)];
-    }
-
-    public int d(BlockPosition blockposition, int i) {
-        if (this.getType(blockposition).c(this, blockposition)) {
-            int j = 0;
-            EnumDirection[] aenumdirection = EnumDirection.values();
-            int k = aenumdirection.length;
-
-            for (int l = 0; l < k; ++l) {
-                EnumDirection enumdirection = aenumdirection[l];
-                int i1 = this.getLightLevel(blockposition.shift(enumdirection), i);
-
-                if (i1 > j) {
-                    j = i1;
-                }
-
-                if (j >= 15) {
-                    return j;
-                }
-            }
-
-            return j;
-        } else {
-            return this.getLightLevel(blockposition, i);
-        }
-    }
-
-    public WorldProvider o() {
-        return this.e.o();
-    }
-
+    @Override
     public int getLightLevel(BlockPosition blockposition, int i) {
-        if (blockposition.getX() >= -30000000 && blockposition.getZ() >= -30000000 && blockposition.getX() < 30000000 && blockposition.getZ() <= 30000000) {
-            if (blockposition.getY() < 0) {
-                return 0;
-            } else {
-                int j;
+        return this.e.getLightLevel(blockposition, i);
+    }
 
-                if (blockposition.getY() >= 256) {
-                    j = 15 - i;
-                    if (j < 0) {
-                        j = 0;
-                    }
-
-                    return j;
-                } else {
-                    j = (blockposition.getX() >> 4) - this.a;
-                    int k = (blockposition.getZ() >> 4) - this.b;
-
-                    return this.c[j][k].a(blockposition, i);
-                }
-            }
-        } else {
-            return 15;
+    // Paper start - if loaded util
+    @Nullable
+    @Override
+    public IChunkAccess getChunkIfLoadedImmediately(int x, int z) {
+        IChunkAccess chunk = this.getChunkAt(x, z, ChunkStatus.FULL, false);
+        if (chunk instanceof ChunkEmpty) {
+            return null;
         }
+        return chunk;
     }
 
-    public boolean isChunkLoaded(int i, int j, boolean flag) {
-        return this.a(i, j);
+    @Override
+    public Fluid getFluidIfLoaded(BlockPosition blockposition) {
+        IChunkAccess chunk = this.getChunkIfLoadedImmediately(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+        return chunk == null ? null : chunk.getFluid(blockposition);
     }
 
-    public boolean e(BlockPosition blockposition) {
-        return false;
+    @Override
+    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
+        IChunkAccess chunk = this.getChunkIfLoadedImmediately(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+        return chunk == null ? null : chunk.getType(blockposition);
     }
+    // Paper end
 
-    public boolean a(int i, int j) {
+    @Nullable
+    @Override
+    public IChunkAccess getChunkAt(int i, int j, ChunkStatus chunkstatus, boolean flag) {
         int k = i - this.a;
         int l = j - this.b;
 
-        return k >= 0 && k < this.c.length && l >= 0 && l < this.c[k].length;
+        if (k >= 0 && k < this.c.length && l >= 0 && l < this.c[k].length) {
+            IChunkAccess ichunkaccess = this.c[k][l];
+
+            return (IChunkAccess) (ichunkaccess != null ? ichunkaccess : new ChunkEmpty(this.e, new ChunkCoordIntPair(i, j)));
+        } else {
+            return new ChunkEmpty(this.e, new ChunkCoordIntPair(i, j));
+        }
     }
 
+    @Override
+    public boolean isChunkLoaded(int i, int j) {
+        int k = i - this.a;
+        int l = j - this.b;
+
+        return k >= 0 && k < this.c.length && l >= 0 && l < this.c[k].length && this.c[k][l] != null; // Paper - We don't always load chunks
+    }
+
+    @Override
+    public BlockPosition getHighestBlockYAt(HeightMap.Type heightmap_type, BlockPosition blockposition) {
+        return this.e.getHighestBlockYAt(heightmap_type, blockposition);
+    }
+
+    @Override
     public int a(HeightMap.Type heightmap_type, int i, int j) {
-        throw new RuntimeException("NOT IMPLEMENTED!");
+        return this.e.a(heightmap_type, i, j);
     }
 
+    @Override
+    public int c() {
+        return this.e.c();
+    }
+
+    @Override
     public WorldBorder getWorldBorder() {
         return this.e.getWorldBorder();
     }
 
+    @Override
     public boolean a(@Nullable Entity entity, VoxelShape voxelshape) {
-        throw new RuntimeException("This method should never be called here. No entity logic inside Region");
+        return true;
+    }
+
+    @Override
+    public boolean e() {
+        return false;
+    }
+
+    @Override
+    public int getSeaLevel() {
+        return this.e.getSeaLevel();
+    }
+
+    @Override
+    public WorldProvider getWorldProvider() {
+        return this.e.getWorldProvider();
     }
 
     @Nullable
-    public EntityHuman a(double d0, double d1, double d2, double d3, Predicate<Entity> predicate) {
-        throw new RuntimeException("This method should never be called here. No entity logic inside Region");
+    @Override
+    public TileEntity getTileEntity(BlockPosition blockposition) {
+        IChunkAccess ichunkaccess = this.w(blockposition);
+
+        return ichunkaccess.getTileEntity(blockposition);
     }
 
+    @Override
     public IBlockData getType(BlockPosition blockposition) {
-        if (blockposition.getY() >= 0 && blockposition.getY() < 256) {
-            int i = (blockposition.getX() >> 4) - this.a;
-            int j = (blockposition.getZ() >> 4) - this.b;
-
-            if (i >= 0 && i < this.c.length && j >= 0 && j < this.c[i].length) {
-                Chunk chunk = this.c[i][j];
-
-                if (chunk != null) {
-                    return chunk.getType(blockposition);
-                }
-            }
-        }
-
-        return Blocks.AIR.getBlockData();
-    }
-
-    public Fluid getFluid(BlockPosition blockposition) {
-        if (blockposition.getY() >= 0 && blockposition.getY() < 256) {
-            int i = (blockposition.getX() >> 4) - this.a;
-            int j = (blockposition.getZ() >> 4) - this.b;
-
-            if (i >= 0 && i < this.c.length && j >= 0 && j < this.c[i].length) {
-                Chunk chunk = this.c[i][j];
-
-                if (chunk != null) {
-                    return chunk.getFluid(blockposition);
-                }
-            }
-        }
-
-        return FluidTypes.EMPTY.i();
-    }
-
-    public int c() {
-        return 0;
-    }
-
-    public BiomeBase getBiome(BlockPosition blockposition) {
-        int i = (blockposition.getX() >> 4) - this.a;
-        int j = (blockposition.getZ() >> 4) - this.b;
-
-        return this.c[i][j].getBiome(blockposition);
-    }
-
-    public boolean isEmpty(BlockPosition blockposition) {
-        return this.getType(blockposition).isAir();
-    }
-
-    public int getBrightness(EnumSkyBlock enumskyblock, BlockPosition blockposition) {
-        if (blockposition.getY() >= 0 && blockposition.getY() < 256) {
-            int i = (blockposition.getX() >> 4) - this.a;
-            int j = (blockposition.getZ() >> 4) - this.b;
-
-            return this.c[i][j].getBrightness(enumskyblock, blockposition);
+        if (World.isOutsideWorld(blockposition)) {
+            return Blocks.AIR.getBlockData();
         } else {
-            return enumskyblock.c;
+            IChunkAccess ichunkaccess = this.w(blockposition);
+
+            return ichunkaccess.getType(blockposition);
         }
     }
 
-    public int a(BlockPosition blockposition, EnumDirection enumdirection) {
-        return this.getType(blockposition).b((IBlockAccess) this, blockposition, enumdirection);
+    @Override
+    public Fluid getFluid(BlockPosition blockposition) {
+        if (World.isOutsideWorld(blockposition)) {
+            return FluidTypes.EMPTY.i();
+        } else {
+            IChunkAccess ichunkaccess = this.w(blockposition);
+
+            return ichunkaccess.getFluid(blockposition);
+        }
     }
 
-    public boolean e() {
-        throw new RuntimeException("Not yet implemented");
+    @Override
+    public BiomeBase getBiome(BlockPosition blockposition) {
+        IChunkAccess ichunkaccess = this.w(blockposition);
+
+        return ichunkaccess.getBiome(blockposition);
     }
 
-    public int getSeaLevel() {
-        throw new RuntimeException("Not yet implemented");
+    @Override
+    public int getBrightness(EnumSkyBlock enumskyblock, BlockPosition blockposition) {
+        return this.e.getBrightness(enumskyblock, blockposition);
     }
 }

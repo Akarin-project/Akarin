@@ -2,62 +2,73 @@ package net.minecraft.server;
 
 public abstract class EntityHorseChestedAbstract extends EntityHorseAbstract {
 
-    private static final DataWatcherObject<Boolean> bM = DataWatcher.a(EntityHorseChestedAbstract.class, DataWatcherRegistry.i);
+    private static final DataWatcherObject<Boolean> bI = DataWatcher.a(EntityHorseChestedAbstract.class, DataWatcherRegistry.i);
 
-    protected EntityHorseChestedAbstract(EntityTypes<?> entitytypes, World world) {
+    protected EntityHorseChestedAbstract(EntityTypes<? extends EntityHorseChestedAbstract> entitytypes, World world) {
         super(entitytypes, world);
-        this.bK = false;
+        this.bG = false;
     }
 
-    protected void x_() {
-        super.x_();
-        this.datawatcher.register(EntityHorseChestedAbstract.bM, false);
+    @Override
+    protected void initDatawatcher() {
+        super.initDatawatcher();
+        this.datawatcher.register(EntityHorseChestedAbstract.bI, false);
     }
 
+    @Override
     protected void initAttributes() {
         super.initAttributes();
-        this.getAttributeInstance(GenericAttributes.maxHealth).setValue((double) this.ec());
+        this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue((double) this.ex());
         this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.17499999701976776D);
         this.getAttributeInstance(EntityHorseChestedAbstract.attributeJumpStrength).setValue(0.5D);
     }
 
     public boolean isCarryingChest() {
-        return (Boolean) this.datawatcher.get(EntityHorseChestedAbstract.bM);
+        return (Boolean) this.datawatcher.get(EntityHorseChestedAbstract.bI);
     }
 
     public void setCarryingChest(boolean flag) {
-        this.datawatcher.set(EntityHorseChestedAbstract.bM, flag);
+        this.datawatcher.set(EntityHorseChestedAbstract.bI, flag);
     }
 
-    protected int dA() {
-        return this.isCarryingChest() ? 17 : super.dA();
+    @Override
+    protected int getChestSlots() {
+        return this.isCarryingChest() ? 17 : super.getChestSlots();
     }
 
-    public double aJ() {
-        return super.aJ() - 0.25D;
+    @Override
+    public double aP() {
+        return super.aP() - 0.25D;
     }
 
-    protected SoundEffect dB() {
-        super.dB();
+    @Override
+    protected SoundEffect getSoundAngry() {
+        super.getSoundAngry();
         return SoundEffects.ENTITY_DONKEY_ANGRY;
     }
 
-    public void die(DamageSource damagesource) {
-        // super.die(damagesource); // CraftBukkit - moved down
+    @Override
+    protected void cF() {
+        super.cF();
         if (this.isCarryingChest()) {
             if (!this.world.isClientSide) {
                 this.a((IMaterial) Blocks.CHEST);
             }
 
-            // this.setCarryingChest(false); // CraftBukkit - moved down
+            //this.setCarryingChest(false); // Paper - moved to post death logic
         }
-        // CraftBukkit start
-        super.die(damagesource);
-        this.setCarryingChest(false);
-        // CraftBukkit end
 
     }
 
+    // Paper start
+    protected void postDeathDropItems(org.bukkit.event.entity.EntityDeathEvent event) {
+        if (this.isCarryingChest() && (event == null || !event.isCancelled())) {
+            this.setCarryingChest(false);
+        }
+    }
+    // Paper end
+
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
         nbttagcompound.setBoolean("ChestedHorse", this.isCarryingChest());
@@ -72,7 +83,7 @@ public abstract class EntityHorseChestedAbstract extends EntityHorseAbstract {
 
                     nbttagcompound1.setByte("Slot", (byte) i);
                     itemstack.save(nbttagcompound1);
-                    nbttaglist.add((NBTBase) nbttagcompound1);
+                    nbttaglist.add(nbttagcompound1);
                 }
             }
 
@@ -81,6 +92,7 @@ public abstract class EntityHorseChestedAbstract extends EntityHorseAbstract {
 
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         this.setCarryingChest(nbttagcompound.getBoolean("ChestedHorse"));
@@ -99,10 +111,11 @@ public abstract class EntityHorseChestedAbstract extends EntityHorseAbstract {
             }
         }
 
-        this.dS();
+        this.en();
     }
 
-    public boolean c(int i, ItemStack itemstack) {
+    @Override
+    public boolean a_(int i, ItemStack itemstack) {
         if (i == 499) {
             if (this.isCarryingChest() && itemstack.isEmpty()) {
                 this.setCarryingChest(false);
@@ -117,9 +130,10 @@ public abstract class EntityHorseChestedAbstract extends EntityHorseAbstract {
             }
         }
 
-        return super.c(i, itemstack);
+        return super.a_(i, itemstack);
     }
 
+    @Override
     public boolean a(EntityHuman entityhuman, EnumHand enumhand) {
         ItemStack itemstack = entityhuman.b(enumhand);
 
@@ -128,7 +142,7 @@ public abstract class EntityHorseChestedAbstract extends EntityHorseAbstract {
         } else {
             if (!this.isBaby()) {
                 if (this.isTamed() && entityhuman.isSneaking()) {
-                    this.c(entityhuman);
+                    this.e(entityhuman);
                     return true;
                 }
 
@@ -146,19 +160,19 @@ public abstract class EntityHorseChestedAbstract extends EntityHorseAbstract {
                             return true;
                         }
 
-                        this.dZ();
+                        this.eu();
                         return true;
                     }
 
                     if (!this.isCarryingChest() && itemstack.getItem() == Blocks.CHEST.getItem()) {
                         this.setCarryingChest(true);
-                        this.dC();
+                        this.dY();
                         flag = true;
                         this.loadChest();
                     }
 
-                    if (!this.isBaby() && !this.dV() && itemstack.getItem() == Items.SADDLE) {
-                        this.c(entityhuman);
+                    if (!this.isBaby() && !this.eq() && itemstack.getItem() == Items.SADDLE) {
+                        this.e(entityhuman);
                         return true;
                     }
                 }
@@ -181,11 +195,11 @@ public abstract class EntityHorseChestedAbstract extends EntityHorseAbstract {
         }
     }
 
-    protected void dC() {
+    protected void dY() {
         this.a(SoundEffects.ENTITY_DONKEY_CHEST, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
     }
 
-    public int dH() {
+    public int dZ() {
         return 5;
     }
 }

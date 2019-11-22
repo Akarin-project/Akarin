@@ -1,10 +1,6 @@
 package net.minecraft.server;
 
-import com.mojang.datafixers.DataFixTypes;
 import com.mojang.datafixers.DataFixer;
-
-import io.akarin.server.core.AkarinAsyncExecutor;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -22,9 +18,9 @@ import java.util.UUID;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 // CraftBukkit end
 
-public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+public class WorldNBTStorage implements IPlayerFileData {
 
-    private static final Logger b = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private final File baseDir;
     private final File playerDir;
     private final long sessionId = SystemUtils.getMonotonicMillis();
@@ -32,7 +28,6 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
     private final DefinedStructureManager g;
     protected final DataFixer a;
     private UUID uuid = null; // CraftBukkit
-    final Object playerFileLock = new Object(); // Akarin
 
     public WorldNBTStorage(File file, String s, @Nullable MinecraftServer minecraftserver, DataFixer datafixer) {
         this.a = datafixer;
@@ -99,10 +94,42 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             this.g = null;
         }
 
-        this.j();
+        this.h();
     }
 
-    private void j() {
+    public void saveWorldData(WorldData worlddata, @Nullable NBTTagCompound nbttagcompound) {
+        worlddata.d(19133);
+        NBTTagCompound nbttagcompound1 = worlddata.a(nbttagcompound);
+        NBTTagCompound nbttagcompound2 = new NBTTagCompound();
+
+        nbttagcompound2.set("Data", nbttagcompound1);
+
+        try {
+            File file = new File(this.baseDir, "level.dat_new");
+            File file1 = new File(this.baseDir, "level.dat_old");
+            File file2 = new File(this.baseDir, "level.dat");
+
+            NBTCompressedStreamTools.a(nbttagcompound2, (OutputStream) (new FileOutputStream(file)));
+            if (file1.exists()) {
+                file1.delete();
+            }
+
+            file2.renameTo(file1);
+            if (file2.exists()) {
+                file2.delete();
+            }
+
+            file.renameTo(file2);
+            if (file.exists()) {
+                file.delete();
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+
+    }
+
+    private void h() {
         try {
             File file = new File(this.baseDir, "session.lock");
             DataOutputStream dataoutputstream = new DataOutputStream(new FileOutputStream(file));
@@ -141,16 +168,12 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
         }
     }
 
-    public IChunkLoader createChunkLoader(WorldProvider worldprovider) {
-        throw new RuntimeException("Old Chunk Storage is no longer supported.");
-    }
-
     @Nullable
     public WorldData getWorldData() {
         File file = new File(this.baseDir, "level.dat");
 
         if (file.exists()) {
-            WorldData worlddata = WorldLoader.a(file, this.a);
+            WorldData worlddata = Convertable.a(file, this.a);
 
             if (worlddata != null) {
                 return worlddata;
@@ -158,89 +181,43 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
         }
 
         file = new File(this.baseDir, "level.dat_old");
-        return file.exists() ? WorldLoader.a(file, this.a) : null;
-    }
-
-    public void saveWorldData(WorldData worlddata, @Nullable NBTTagCompound nbttagcompound) {
-        NBTTagCompound nbttagcompound1 = worlddata.a(nbttagcompound);
-        NBTTagCompound nbttagcompound2 = new NBTTagCompound();
-
-        nbttagcompound2.set("Data", nbttagcompound1);
-
-        try {
-            File file = new File(this.baseDir, "level.dat_new");
-            File file1 = new File(this.baseDir, "level.dat_old");
-            File file2 = new File(this.baseDir, "level.dat");
-
-            NBTCompressedStreamTools.a(nbttagcompound2, (OutputStream) (new FileOutputStream(file)));
-            if (file1.exists()) {
-                file1.delete();
-            }
-
-            file2.renameTo(file1);
-            if (file2.exists()) {
-                file2.delete();
-            }
-
-            file.renameTo(file2);
-            if (file.exists()) {
-                file.delete();
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-
+        return file.exists() ? Convertable.a(file, this.a) : null;
     }
 
     public void saveWorldData(WorldData worlddata) {
         this.saveWorldData(worlddata, (NBTTagCompound) null);
     }
 
-    // Akarin start
+    @Override
     public void save(EntityHuman entityhuman) {
-        save(entityhuman, true);
-    }
-    // Akarin end
-    public void save(EntityHuman entityhuman, boolean async) {
         if(!com.destroystokyo.paper.PaperConfig.savePlayerData) return; // Paper - Make player data saving configurable
-        Runnable runnable = () -> { // Akarin
         try {
             NBTTagCompound nbttagcompound = entityhuman.save(new NBTTagCompound());
-            File file = new File(this.playerDir, entityhuman.bu() + ".dat.tmp");
-            File file1 = new File(this.playerDir, entityhuman.bu() + ".dat");
+            File file = new File(this.playerDir, entityhuman.getUniqueIDString() + ".dat.tmp");
+            File file1 = new File(this.playerDir, entityhuman.getUniqueIDString() + ".dat");
 
-            synchronized (playerFileLock) { // Akarin
             NBTCompressedStreamTools.a(nbttagcompound, (OutputStream) (new FileOutputStream(file)));
             if (file1.exists()) {
                 file1.delete();
             }
 
             file.renameTo(file1);
-            } // Akarin
         } catch (Exception exception) {
-            WorldNBTStorage.b.error("Failed to save player data for {}", entityhuman.getName(), exception); // Paper
+            WorldNBTStorage.LOGGER.error("Failed to save player data for {}", entityhuman.getName(), exception); // Paper
         }
-        // Akarin start
-        };
-        if (async)
-            AkarinAsyncExecutor.scheduleSingleAsyncTask(runnable);
-        else
-            runnable.run();
-        // Akarin end
 
     }
 
     @Nullable
+    @Override
     public NBTTagCompound load(EntityHuman entityhuman) {
         NBTTagCompound nbttagcompound = null;
 
         try {
-            File file = new File(this.playerDir, entityhuman.bu() + ".dat");
+            File file = new File(this.playerDir, entityhuman.getUniqueIDString() + ".dat");
             // Spigot Start
             boolean usingWrongFile = false;
-            synchronized (playerFileLock) { // Akarin
-            boolean normalFile = file.exists() && file.isFile(); // Akarin - ensures normal file
-            if ( org.bukkit.Bukkit.getOnlineMode() && !normalFile ) // Paper - Check online mode first // Akarin - ensures normal file
+            if ( org.bukkit.Bukkit.getOnlineMode() && !file.exists() ) // Paper - Check online mode first
             {
                 file = new File( this.playerDir, UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
                 if ( file.exists() )
@@ -251,7 +228,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             }
             // Spigot End
 
-            if (normalFile) { // Akarin - avoid double I/O operation
+            if (file.exists() && file.isFile()) {
                 nbttagcompound = NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file)));
             }
             // Spigot Start
@@ -259,10 +236,9 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             {
                 file.renameTo( new File( file.getPath() + ".offline-read" ) );
             }
-            } // Akarin
             // Spigot End
         } catch (Exception exception) {
-            WorldNBTStorage.b.warn("Failed to load player data for {}", entityhuman.getDisplayName().getString());
+            WorldNBTStorage.LOGGER.warn("Failed to load player data for {}", entityhuman.getDisplayName().getString());
         }
 
         if (nbttagcompound != null) {
@@ -287,24 +263,18 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
     // CraftBukkit start
     public NBTTagCompound getPlayerData(String s) {
         try {
-            synchronized (playerFileLock) { // Akarin
             File file1 = new File(this.playerDir, s + ".dat");
 
             if (file1.exists()) {
                 return NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file1)));
             }
-            } // Akarin
         } catch (Exception exception) {
-            b.warn("Failed to load player data for " + s);
+            LOGGER.warn("Failed to load player data for " + s);
         }
 
         return null;
     }
     // CraftBukkit end
-
-    public IPlayerFileData getPlayerFileData() {
-        return this;
-    }
 
     public String[] getSeenPlayers() {
         String[] astring = this.playerDir.list();
@@ -322,20 +292,11 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
         return astring;
     }
 
-    public void a() {}
-
-    public File getDataFile(DimensionManager dimensionmanager, String s) {
-        File file = new File(dimensionmanager.a(this.baseDir), "data");
-
-        file.mkdirs();
-        return new File(file, s + ".dat");
-    }
-
-    public DefinedStructureManager h() {
+    public DefinedStructureManager f() {
         return this.g;
     }
 
-    public DataFixer i() {
+    public DataFixer getDataFixer() {
         return this.a;
     }
 
@@ -349,7 +310,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
                 dis = new DataInputStream(new FileInputStream(file1));
                 return uuid = new UUID(dis.readLong(), dis.readLong());
             } catch (IOException ex) {
-                b.warn("Failed to read " + file1 + ", generating new random UUID", ex);
+                LOGGER.warn("Failed to read " + file1 + ", generating new random UUID", ex);
             } finally {
                 if (dis != null) {
                     try {
@@ -367,7 +328,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
             dos.writeLong(uuid.getMostSignificantBits());
             dos.writeLong(uuid.getLeastSignificantBits());
         } catch (IOException ex) {
-            b.warn("Failed to write " + file1, ex);
+            LOGGER.warn("Failed to write " + file1, ex);
         } finally {
             if (dos != null) {
                 try {

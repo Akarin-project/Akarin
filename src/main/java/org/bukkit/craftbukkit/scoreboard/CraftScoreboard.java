@@ -1,23 +1,21 @@
 package org.bukkit.craftbukkit.scoreboard;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.util.Collection;
 import net.minecraft.server.Scoreboard;
 import net.minecraft.server.ScoreboardObjective;
 import net.minecraft.server.ScoreboardTeam;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Team;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import org.bukkit.craftbukkit.util.CraftChatMessage;
 
 public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
     final Scoreboard board;
@@ -51,12 +49,14 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         return new CraftObjective(this, objective);
     }
 
+    @Override
     public Objective getObjective(String name) throws IllegalArgumentException {
         Validate.notNull(name, "Name cannot be null");
         ScoreboardObjective nms = board.getObjective(name);
         return nms == null ? null : new CraftObjective(this, nms);
     }
 
+    @Override
     public ImmutableSet<Objective> getObjectivesByCriteria(String criteria) throws IllegalArgumentException {
         Validate.notNull(criteria, "Criteria cannot be null");
 
@@ -70,6 +70,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         return objectives.build();
     }
 
+    @Override
     public ImmutableSet<Objective> getObjectives() {
         return ImmutableSet.copyOf(Iterables.transform((Collection<ScoreboardObjective>) this.board.getObjectives(), new Function<ScoreboardObjective, Objective>() {
 
@@ -80,6 +81,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         }));
     }
 
+    @Override
     public Objective getObjective(DisplaySlot slot) throws IllegalArgumentException {
         Validate.notNull(slot, "Display slot cannot be null");
         ScoreboardObjective objective = board.getObjectiveForSlot(CraftScoreboardTranslations.fromBukkitSlot(slot));
@@ -89,12 +91,14 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         return new CraftObjective(this, objective);
     }
 
+    @Override
     public ImmutableSet<Score> getScores(OfflinePlayer player) throws IllegalArgumentException {
         Validate.notNull(player, "OfflinePlayer cannot be null");
 
         return getScores(player.getName());
     }
 
+    @Override
     public ImmutableSet<Score> getScores(String entry) throws IllegalArgumentException {
         Validate.notNull(entry, "Entry cannot be null");
 
@@ -105,12 +109,14 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         return scores.build();
     }
 
+    @Override
     public void resetScores(OfflinePlayer player) throws IllegalArgumentException {
         Validate.notNull(player, "OfflinePlayer cannot be null");
 
         resetScores(player.getName());
     }
 
+    @Override
     public void resetScores(String entry) throws IllegalArgumentException {
         Validate.notNull(entry, "Entry cannot be null");
 
@@ -119,6 +125,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         }
     }
 
+    @Override
     public Team getPlayerTeam(OfflinePlayer player) throws IllegalArgumentException {
         Validate.notNull(player, "OfflinePlayer cannot be null");
 
@@ -126,6 +133,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         return team == null ? null : new CraftTeam(this, team);
     }
 
+    @Override
     public Team getEntryTeam(String entry) throws IllegalArgumentException {
         Validate.notNull(entry, "Entry cannot be null");
 
@@ -133,6 +141,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         return team == null ? null : new CraftTeam(this, team);
     }
 
+    @Override
     public Team getTeam(String teamName) throws IllegalArgumentException {
         Validate.notNull(teamName, "Team name cannot be null");
 
@@ -140,6 +149,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         return team == null ? null : new CraftTeam(this, team);
     }
 
+    @Override
     public ImmutableSet<Team> getTeams() {
         return ImmutableSet.copyOf(Iterables.transform((Collection<ScoreboardTeam>) this.board.getTeams(), new Function<ScoreboardTeam, Team>() {
 
@@ -150,6 +160,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         }));
     }
 
+    @Override
     public Team registerNewTeam(String name) throws IllegalArgumentException {
         Validate.notNull(name, "Team name cannot be null");
         Validate.isTrue(name.length() <= 16, "Team name '" + name + "' is longer than the limit of 16 characters");
@@ -158,6 +169,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         return new CraftTeam(this, board.createTeam(name));
     }
 
+    @Override
     public ImmutableSet<OfflinePlayer> getPlayers() {
         ImmutableSet.Builder<OfflinePlayer> players = ImmutableSet.builder();
         for (Object playerName : board.getPlayers()) {
@@ -166,6 +178,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         return players.build();
     }
 
+    @Override
     public ImmutableSet<String> getEntries() {
         ImmutableSet.Builder<String> entries = ImmutableSet.builder();
         for (Object entry : board.getPlayers()) {
@@ -174,6 +187,7 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
         return entries.build();
     }
 
+    @Override
     public void clearSlot(DisplaySlot slot) throws IllegalArgumentException {
         Validate.notNull(slot, "Slot cannot be null");
         board.setDisplaySlot(CraftScoreboardTranslations.fromBukkitSlot(slot), null);

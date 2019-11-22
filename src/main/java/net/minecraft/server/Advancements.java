@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Advancements {
 
-    private static final Logger a = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     public final Map<MinecraftKey, Advancement> advancements = Maps.newHashMap();
     private final Set<Advancement> c = Sets.newLinkedHashSet();
     private final Set<Advancement> d = Sets.newLinkedHashSet();
@@ -67,22 +67,12 @@ public class Advancements {
                     }
 
                     entry = (Entry) iterator.next();
-                    Advancements.a.error("Couldn't load advancement {}: {}", entry.getKey(), entry.getValue());
+                    Advancements.LOGGER.error("Couldn't load advancement {}: {}", entry.getKey(), entry.getValue());
                 }
             }
         }
 
-        // Advancements.a.info("Loaded {} advancements", this.advancements.size()); // CraftBukkit - moved to AdvancementDataWorld#reload
-    }
-
-    public void a() {
-        this.advancements.clear();
-        this.c.clear();
-        this.d.clear();
-        if (this.e != null) {
-            this.e.a();
-        }
-
+        // Advancements.LOGGER.info("Loaded {} advancements", this.advancements.size()); // CraftBukkit - moved to AdvancementDataWorld#reload
     }
 
     public Iterable<Advancement> b() {
@@ -103,7 +93,5 @@ public class Advancements {
         void a(Advancement advancement);
 
         void c(Advancement advancement);
-
-        void a();
     }
 }

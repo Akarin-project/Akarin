@@ -1,507 +1,819 @@
 package net.minecraft.server;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import com.google.common.annotations.VisibleForTesting;
+import com.mojang.datafixers.DataFixer;
+import com.mojang.datafixers.util.Either;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import com.destroystokyo.paper.exception.ServerInternalException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-// CraftBukkit start
-import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
-import org.bukkit.event.world.ChunkUnloadEvent;
-// CraftBukkit end
+public class ChunkProviderServer extends IChunkProvider {
 
-public class ChunkProviderServer implements IChunkProvider {
-
-    private static final Logger a = LogManager.getLogger();
-    public final LongSet unloadQueue = new LongOpenHashSet();
+    private static final int b = (int) Math.pow(17.0D, 2.0D);
+    private static final List<ChunkStatus> c = ChunkStatus.a(); static final List<ChunkStatus> getPossibleChunkStatuses() { return ChunkProviderServer.c; } // Paper - OBFHELPER
+    private final ChunkMapDistance chunkMapDistance;
     public final ChunkGenerator<?> chunkGenerator;
-    public final IChunkLoader chunkLoader;
-    // Paper start - chunk save stats
-    private long lastQueuedSaves = 0L; // Paper
-    private long lastProcessedSaves = 0L; // Paper
-    private long lastSaveStatPrinted = System.currentTimeMillis();
-    // Paper end
-    public final Long2ObjectMap<Chunk> chunks = new ChunkMap(8192); // Paper - remove synchronize - we keep everything on main for manip
-    private Chunk lastChunk;
-    private final ChunkTaskScheduler chunkScheduler;
-    final SchedulerBatch<ChunkCoordIntPair, ChunkStatus, ProtoChunk> batchScheduler; // Paper
-    public final WorldServer world;
-    final IAsyncTaskHandler asyncTaskHandler; // Paper
+    private final WorldServer world;
+    private final Thread serverThread;
+    private final LightEngineThreaded lightEngine;
+    public final ChunkProviderServer.a serverThreadQueue; // Paper private -> public
+    public final PlayerChunkMap playerChunkMap;
+    private final WorldPersistentData worldPersistentData;
+    private long lastTickTime;
+    public boolean allowMonsters = true;
+    public boolean allowAnimals = true;
+    private final long[] cachePos = new long[4];
+    private final ChunkStatus[] cacheStatus = new ChunkStatus[4];
+    private final IChunkAccess[] cacheChunk = new IChunkAccess[4];
 
-    public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, ChunkGenerator<?> chunkgenerator, IAsyncTaskHandler iasynctaskhandler) {
+    public ChunkProviderServer(WorldServer worldserver, File file, DataFixer datafixer, DefinedStructureManager definedstructuremanager, Executor executor, ChunkGenerator<?> chunkgenerator, int i, WorldLoadListener worldloadlistener, Supplier<WorldPersistentData> supplier) {
         this.world = worldserver;
-        this.chunkLoader = ichunkloader;
+        this.serverThreadQueue = new ChunkProviderServer.a(worldserver);
         this.chunkGenerator = chunkgenerator;
-        this.asyncTaskHandler = iasynctaskhandler;
-        this.chunkScheduler = new ChunkTaskScheduler(0, worldserver, chunkgenerator, ichunkloader, iasynctaskhandler); // CraftBukkit - very buggy, broken in lots of __subtle__ ways. Same goes for async chunk loading. Also Bukkit API / plugins can't handle async events at all anyway.
-        this.batchScheduler = new SchedulerBatch<>(this.chunkScheduler);
+        this.serverThread = Thread.currentThread();
+        File file1 = worldserver.getWorldProvider().getDimensionManager().a(file);
+        File file2 = new File(file1, "data");
+
+        file2.mkdirs();
+        this.worldPersistentData = new WorldPersistentData(file2, datafixer);
+        this.playerChunkMap = new PlayerChunkMap(worldserver, file, datafixer, definedstructuremanager, executor, this.serverThreadQueue, this, this.getChunkGenerator(), worldloadlistener, supplier, i);
+        this.lightEngine = this.playerChunkMap.a();
+        this.chunkMapDistance = this.playerChunkMap.e();
+        this.clearCache();
     }
 
-    public Collection<Chunk> a() {
-        return this.chunks.values();
+    @Override
+    public LightEngineThreaded getLightEngine() {
+        return this.lightEngine;
     }
-
-    public void unload(Chunk chunk) {
-        if (this.world.worldProvider.a(chunk.locX, chunk.locZ)) {
-            this.unloadQueue.add(ChunkCoordIntPair.a(chunk.locX, chunk.locZ));
-        }
-
-    }
-
-    public void b() {
-        ObjectIterator objectiterator = this.chunks.values().iterator();
-
-        while (objectiterator.hasNext()) {
-            Chunk chunk = (Chunk) objectiterator.next();
-
-            this.unload(chunk);
-        }
-
-    }
-
-    public void a(int i, int j) {
-        this.unloadQueue.remove(ChunkCoordIntPair.a(i, j));
-    }
-
-    // Paper start - defaults if Async Chunks is not enabled
-    boolean chunkGoingToExists(int x, int z) {
-        final long k = ChunkCoordIntPair.asLong(x, z);
-        return chunkScheduler.progressCache.containsKey(k);
-    }
-    public void bumpPriority(ChunkCoordIntPair coords) {
-        // do nothing, override in async
-    }
-
-    public List<ChunkCoordIntPair> getSpiralOutChunks(BlockPosition blockposition, int radius) {
-        List<ChunkCoordIntPair> list = com.google.common.collect.Lists.newArrayList();
-
-        list.add(new ChunkCoordIntPair(blockposition.getX() >> 4, blockposition.getZ() >> 4));
-        for (int r = 1; r <= radius; r++) {
-            int x = -r;
-            int z = r;
-
-            // Iterates the edge of half of the box; then negates for other half.
-            while (x <= r && z > -r) {
-                list.add(new ChunkCoordIntPair((blockposition.getX() + (x << 4)) >> 4, (blockposition.getZ() + (z << 4)) >> 4));
-                list.add(new ChunkCoordIntPair((blockposition.getX() - (x << 4)) >> 4, (blockposition.getZ() - (z << 4)) >> 4));
-
-                if (x < r) {
-                    x++;
-                } else {
-                    z--;
-                }
-            }
-        }
-        return list;
-    }
-
-    public Chunk getChunkAt(int x, int z, boolean load, boolean gen, Consumer<Chunk> consumer) {
-        return getChunkAt(x, z, load, gen, false, consumer);
-    }
-    public Chunk getChunkAt(int x, int z, boolean load, boolean gen, boolean priority, Consumer<Chunk> consumer) {
-        Chunk chunk = getChunkAt(x, z, load, gen);
-        if (consumer != null) {
-            consumer.accept(chunk);
-        }
-        return chunk;
-    }
-
-    PaperAsyncChunkProvider.CancellableChunkRequest requestChunk(int x, int z, boolean gen, boolean priority, Consumer<Chunk> consumer) {
-        Chunk chunk = getChunkAt(x, z, gen, priority, consumer);
-        return new PaperAsyncChunkProvider.CancellableChunkRequest() {
-            @Override
-            public void cancel() {
-
-            }
-
-            @Override
-            public Chunk getChunk() {
-                return chunk;
-            }
-        };
-    }
-    // Paper end
 
     @Nullable
-    public Chunk getChunkAt(int i, int j, boolean flag, boolean flag1) {
-        IChunkLoader ichunkloader = this.chunkLoader;
-        Chunk chunk;
-        // Paper start - do already loaded checks before synchronize
-        long k = ChunkCoordIntPair.a(i, j);
-        chunk = (Chunk) this.chunks.get(k);
-        if (chunk != null) {
-            //this.lastChunk = chunk; // Paper remove vanilla lastChunk
-            return chunk;
-        }
-        // Paper end
+    private PlayerChunk getChunk(long i) {
+        return this.playerChunkMap.getVisibleChunk(i);
+    }
 
-        synchronized (this.chunkLoader) {
-            // Paper start - remove vanilla lastChunk, we do it more accurately
-            /* if (this.lastChunk != null && this.lastChunk.locX == i && this.lastChunk.locZ == j) {
-                return this.lastChunk;
-            }*/ // Paper end
+    public int b() {
+        return this.playerChunkMap.c();
+    }
 
-            // Paper start - move up
-            //long k = ChunkCoordIntPair.a(i, j);
-
-            /*chunk = (Chunk) this.chunks.get(k);
-            if (chunk != null) {
-                //this.lastChunk = chunk; // Paper remove vanilla lastChunk
-                return chunk;
-            }*/
-            // Paper end
-
-            if (flag) {
-                try (co.aikar.timings.Timing timing = world.timings.syncChunkLoadTimer.startTiming()) { // Paper
-                    chunk = this.chunkLoader.a(this.world, i, j, (chunk1) -> {
-                        chunk1.setLastSaved(this.world.getTime());
-                        this.chunks.put(ChunkCoordIntPair.a(i, j), chunk1);
-                    });
-                } catch (Exception exception) {
-                    ChunkProviderServer.a.error("Couldn't load chunk", exception);
-                }
-            }
+    private void a(long i, IChunkAccess ichunkaccess, ChunkStatus chunkstatus) {
+        for (int j = 3; j > 0; --j) {
+            this.cachePos[j] = this.cachePos[j - 1];
+            this.cacheStatus[j] = this.cacheStatus[j - 1];
+            this.cacheChunk[j] = this.cacheChunk[j - 1];
         }
 
-        if (chunk != null) {
-            this.asyncTaskHandler.postToMainThread(chunk::addEntities);
-            return chunk;
-        } else if (flag1) {
-            try (co.aikar.timings.Timing timing = world.timings.chunkGeneration.startTiming(true)) { // Paper // Akarin
-                this.batchScheduler.b();
-                this.batchScheduler.a(new ChunkCoordIntPair(i, j));
-                CompletableFuture<ProtoChunk> completablefuture = this.batchScheduler.c();
+        this.cachePos[0] = i;
+        this.cacheStatus[0] = chunkstatus;
+        this.cacheChunk[0] = ichunkaccess;
+    }
 
-                return (Chunk) completablefuture.thenApply(this::a).join();
-            } catch (RuntimeException runtimeexception) {
-                throw this.a(i, j, (Throwable) runtimeexception);
-            }
-            // finally { world.timings.syncChunkLoadTimer.stopTiming(); } // Spigot // Paper
-        } else {
+    // Paper start - "real" get chunk if loaded
+    // Note: Partially copied from the getChunkAt method below
+    @Nullable
+    public Chunk getChunkAtIfCachedImmediately(int x, int z) {
+        long k = ChunkCoordIntPair.pair(x, z);
+
+        // Note: Bypass cache to make this MT-Safe
+
+        PlayerChunk playerChunk = this.getChunk(k);
+        if (playerChunk == null) {
             return null;
         }
-    }
 
-    // CraftBukkit start
-    public Chunk generateChunk(int x, int z) {
-        try {
-            this.batchScheduler.b();
-            ChunkCoordIntPair pos = new ChunkCoordIntPair(x, z);
-            this.chunkScheduler.forcePolluteCache(pos);
-            ((ChunkRegionLoader) this.chunkLoader).blacklist.add(pos.a());
-            this.batchScheduler.a(pos);
-            CompletableFuture<ProtoChunk> completablefuture = this.batchScheduler.c();
-
-            Chunk chunk = (Chunk) completablefuture.thenApply(this::a).join();
-            ((ChunkRegionLoader) this.chunkLoader).blacklist.remove(pos.a());
-            return chunk;
-        } catch (RuntimeException runtimeexception) {
-            throw this.a(x, z, (Throwable) runtimeexception);
-        }
-    }
-    // CraftBukkit end
-
-    public IChunkAccess a(int i, int j, boolean flag) {
-        Chunk chunk = this.getChunkAt(i, j, true, false);
-
-        return (IChunkAccess) (chunk != null ? chunk : (IChunkAccess) this.chunkScheduler.b(new ChunkCoordIntPair(i, j), flag));
-    }
-
-    public CompletableFuture<Void> loadAllChunks(Iterable<ChunkCoordIntPair> iterable, Consumer<Chunk> consumer) { return a(iterable, consumer).thenCompose(protoChunk -> null); } // Paper - overriden in async chunk provider
-    private CompletableFuture<ProtoChunk> a(Iterable<ChunkCoordIntPair> iterable, Consumer<Chunk> consumer) { // Paper - mark private, use above method
-        this.batchScheduler.b();
-        Iterator iterator = iterable.iterator();
-
-        while (iterator.hasNext()) {
-            ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator.next();
-            Chunk chunk = this.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z, true, false);
-
-            if (chunk != null) {
-                consumer.accept(chunk);
-            } else {
-                this.batchScheduler.a(chunkcoordintpair).thenApply(this::a).thenAccept(consumer);
-            }
-        }
-
-        return this.batchScheduler.c();
-    }
-
-    ReportedException generateChunkError(int i, int j, Throwable throwable) { return a(i, j, throwable); } // Paper - OBFHELPER
-    private ReportedException a(int i, int j, Throwable throwable) {
-        CrashReport crashreport = CrashReport.a(throwable, "Exception generating new chunk");
-        CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Chunk to be generated");
-
-        crashreportsystemdetails.a("Location", (Object) String.format("%d,%d", i, j));
-        crashreportsystemdetails.a("Position hash", (Object) ChunkCoordIntPair.a(i, j));
-        crashreportsystemdetails.a("Generator", (Object) this.chunkGenerator);
-        return new ReportedException(crashreport);
-    }
-
-    private Chunk a(IChunkAccess ichunkaccess) {
-        ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
-        int i = chunkcoordintpair.x;
-        int j = chunkcoordintpair.z;
-        long k = ChunkCoordIntPair.a(i, j);
-        Long2ObjectMap long2objectmap = this.chunks;
-        Chunk chunk;
-
-        synchronized (this.chunks) {
-            Chunk chunk1 = (Chunk) this.chunks.get(k);
-
-            if (chunk1 != null) {
-                return chunk1;
-            }
-
-            if (ichunkaccess instanceof Chunk) {
-                chunk = (Chunk) ichunkaccess;
-            } else {
-                if (!(ichunkaccess instanceof ProtoChunk)) {
-                    throw new IllegalStateException();
-                }
-
-                chunk = new Chunk(this.world, (ProtoChunk) ichunkaccess, i, j);
-            }
-
-            this.chunks.put(k, chunk);
-            //this.lastChunk = chunk; // Paper
-        }
-
-        this.asyncTaskHandler.postToMainThread(chunk::addEntities);
-        return chunk;
-    }
-
-    public void saveChunk(IChunkAccess ichunkaccess, boolean unloaded) { // Spigot
-        try (co.aikar.timings.Timing timed = world.timings.chunkSaveData.startTimingUnsafe()) { // Paper - Timings
-            ichunkaccess.setLastSaved(this.world.getTime());
-            this.chunkLoader.saveChunk(this.world, ichunkaccess, unloaded); // Spigot
-        } catch (IOException ioexception) {
-            // Paper start
-            String msg = "Couldn\'t save chunk";
-            ChunkProviderServer.a.error(msg, ioexception);
-            ServerInternalException.reportInternalException(ioexception);
-        } catch (ExceptionWorldConflict exceptionworldconflict) {
-            ChunkProviderServer.a.error("Couldn\'t save chunk; already in use by another instance of Minecraft?", exceptionworldconflict);
-            String msg = "Couldn\'t save chunk; already in use by another instance of Minecraft?";
-            ChunkProviderServer.a.error(msg, exceptionworldconflict);
-            ServerInternalException.reportInternalException(exceptionworldconflict);
-            // Paper end
-        }
-
-    }
-
-    public boolean a(boolean flag) {
-        int i = 0;
-
-        this.chunkScheduler.a(() -> {
-            return true;
-        });
-        IChunkLoader ichunkloader = this.chunkLoader;
-
-        synchronized (this.chunkLoader) {
-            ObjectIterator objectiterator = this.chunks.values().iterator();
-
-            // Paper start
-            final ChunkRegionLoader chunkLoader = (ChunkRegionLoader) world.getChunkProvider().chunkLoader;
-            final int queueSize = chunkLoader.getQueueSize();
-
-            final long now = System.currentTimeMillis();
-            final long timeSince = (now - lastSaveStatPrinted) / 1000;
-            final Integer printRateSecs = Integer.getInteger("printSaveStats");
-            if (printRateSecs != null && timeSince >= printRateSecs) {
-                final String timeStr = "/" + timeSince  +"s";
-                final long queuedSaves = chunkLoader.getQueuedSaves();
-                long queuedDiff = queuedSaves - lastQueuedSaves;
-                lastQueuedSaves = queuedSaves;
-
-                final long processedSaves = chunkLoader.getProcessedSaves();
-                long processedDiff = processedSaves - lastProcessedSaves;
-                lastProcessedSaves = processedSaves;
-
-                lastSaveStatPrinted = now;
-                if (processedDiff > 0 || queueSize > 0 || queuedDiff > 0) {
-                    System.out.println("[Chunk Save Stats] " + world.worldData.getName() +
-                        " - Current: " + queueSize +
-                        " - Queued: " + queuedDiff + timeStr +
-                        " - Processed: " +processedDiff + timeStr
-                    );
-                }
-            }
-            if (!flag && queueSize > world.paperConfig.queueSizeAutoSaveThreshold){
-                return false;
-            }
-            // Paper end
-            while (objectiterator.hasNext()) {
-                Chunk chunk = (Chunk) objectiterator.next();
-
-                if (chunk.c(flag)) {
-                    this.saveChunk(chunk, false); // Spigot
-                    chunk.a(false);
-                    ++i;
-                    if (!flag && i >= world.paperConfig.maxAutoSaveChunksPerTick) { // Spigot - // Paper - Incremental Auto Save - cap max
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-    }
-
-    public void close() {
-        // Paper start - we do not need to wait for chunk generations to finish on close
-        /*try {
-            this.batchScheduler.a();
-        } catch (InterruptedException interruptedexception) {
-            ChunkProviderServer.a.error("Couldn't stop taskManager", interruptedexception);
-        }*/
-        // Paper end
-
-    }
-
-    public void c() {
-        IChunkLoader ichunkloader = this.chunkLoader;
-
-        synchronized (this.chunkLoader) {
-            this.chunkLoader.b();
-        }
-    }
-
-    private static final double UNLOAD_QUEUE_RESIZE_FACTOR = 0.96; // Spigot
-
-    public boolean unloadChunks(BooleanSupplier booleansupplier) {
-        if (!this.world.savingDisabled) {
-            if (!this.unloadQueue.isEmpty()) {
-                // Spigot start
-                org.spigotmc.SlackActivityAccountant activityAccountant = this.world.getMinecraftServer().slackActivityAccountant;
-                activityAccountant.startActivity(0.5);
-                int targetSize = Math.min(this.unloadQueue.size() - 100,  (int) (this.unloadQueue.size() * UNLOAD_QUEUE_RESIZE_FACTOR)); // Paper - Make more aggressive
-                // Spigot end
-                Iterator<Long> iterator = this.unloadQueue.iterator();
-
-                while (iterator.hasNext()) { // Spigot
-                    Long olong = (Long) iterator.next();
-                    iterator.remove(); // Spigot
-                    IChunkLoader ichunkloader = this.chunkLoader;
-
-                    synchronized (this.chunkLoader) {
-                        Chunk chunk = (Chunk) this.chunks.get(olong);
-
-                        if (chunk != null) {
-                            // CraftBukkit start - move unload logic to own method
-                            if (!unloadChunk(chunk, true)) {
-                                continue;
-                            }
-                            // CraftBukkit end
-
-                            // Spigot start
-                            if (!booleansupplier.getAsBoolean() && this.unloadQueue.size() <= targetSize && activityAccountant.activityTimeIsExhausted()) {
-                                break;
-                            }
-                            // Spigot end
-                        }
-                    }
-                }
-                activityAccountant.endActivity(); // Spigot
-            }
-            // Paper start - delayed chunk unloads
-            long now = System.currentTimeMillis();
-            long unloadAfter = world.paperConfig.delayChunkUnloadsBy;
-            if (unloadAfter > 0) {
-                //noinspection Convert2streamapi
-                for (Chunk chunk : chunks.values()) {
-                    if (chunk.scheduledForUnload != null && now - chunk.scheduledForUnload > unloadAfter) {
-                        chunk.scheduledForUnload = null;
-                        unload(chunk);
-                    }
-                }
-            }
-            // Paper end
-
-            this.chunkScheduler.a(booleansupplier);
-        }
-
-        return false;
-    }
-
-    // CraftBukkit start
-    public boolean unloadChunk(Chunk chunk, boolean save) {
-        ChunkUnloadEvent event = new ChunkUnloadEvent(chunk.bukkitChunk, save);
-        this.world.getServer().getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return false;
-        }
-        save = event.isSaveChunk();
-        chunk.lightingQueue.processUnload(); // Paper
-
-        // Update neighbor counts
-        for (int x = -2; x < 3; x++) {
-            for (int z = -2; z < 3; z++) {
-                if (x == 0 && z == 0) {
-                    continue;
-                }
-
-                Chunk neighbor = this.chunks.get(chunk.chunkKey); // Paper
-                if (neighbor != null) {
-                    neighbor.setNeighborUnloaded(-x, -z);
-                    chunk.setNeighborUnloaded(x, z);
-                }
-            }
-        }
-        // Moved from unloadChunks above
-        synchronized (this.chunkLoader) {
-            chunk.removeEntities();
-            if (save) {
-                this.saveChunk(chunk, true); // Spigot
-            }
-            this.chunks.remove(chunk.chunkKey);
-            // this.lastChunk = null; // Paper
-        }
-        return true;
-    }
-    // CraftBukkit end
-
-    public boolean d() {
-        return !this.world.savingDisabled;
-    }
-
-    public String getName() {
-        return "ServerChunkCache: " + this.chunks.size() + " Drop: " + this.unloadQueue.size();
-    }
-
-    public List<BiomeBase.BiomeMeta> a(EnumCreatureType enumcreaturetype, BlockPosition blockposition) {
-        return this.chunkGenerator.getMobsFor(enumcreaturetype, blockposition);
-    }
-
-    public int a(World world, boolean flag, boolean flag1) {
-        return this.chunkGenerator.a(world, flag, flag1);
+        return playerChunk.getFullChunkIfCached();
     }
 
     @Nullable
-    public BlockPosition a(World world, String s, BlockPosition blockposition, int i, boolean flag) {
-        return this.chunkGenerator.findNearestMapFeature(world, s, blockposition, i, flag);
+    public Chunk getChunkAtIfLoadedImmediately(int x, int z) {
+        long k = ChunkCoordIntPair.pair(x, z);
+
+        // Note: Bypass cache since we need to check ticket level, and to make this MT-Safe
+
+        PlayerChunk playerChunk = this.getChunk(k);
+        if (playerChunk == null) {
+            return null;
+        }
+
+        return playerChunk.getFullChunk();
     }
 
+    @Nullable
+    public IChunkAccess getChunkAtImmediately(int x, int z) {
+        long k = ChunkCoordIntPair.pair(x, z);
+
+        // Note: Bypass cache to make this MT-Safe
+
+        PlayerChunk playerChunk = this.getChunk(k);
+        if (playerChunk == null) {
+            return null;
+        }
+
+        return playerChunk.getAvailableChunkNow();
+
+    }
+
+    private long asyncLoadSeqCounter;
+
+    public void getChunkAtAsynchronously(int x, int z, boolean gen, java.util.function.Consumer<Chunk> onComplete) {
+        if (Thread.currentThread() != this.serverThread) {
+            this.serverThreadQueue.execute(() -> {
+                this.getChunkAtAsynchronously(x, z, gen, onComplete);
+            });
+            return;
+        }
+
+        long k = ChunkCoordIntPair.pair(x, z);
+        ChunkCoordIntPair chunkPos = new ChunkCoordIntPair(x, z);
+
+        IChunkAccess ichunkaccess;
+
+        // try cache
+        for (int l = 0; l < 4; ++l) {
+            if (k == this.cachePos[l] && ChunkStatus.FULL == this.cacheStatus[l]) {
+                ichunkaccess = this.cacheChunk[l];
+                if (ichunkaccess != null) { // CraftBukkit - the chunk can become accessible in the meantime TODO for non-null chunks it might also make sense to check that the chunk's state hasn't changed in the meantime
+
+                    // move to first in cache
+
+                    for (int i1 = 3; i1 > 0; --i1) {
+                        this.cachePos[i1] = this.cachePos[i1 - 1];
+                        this.cacheStatus[i1] = this.cacheStatus[i1 - 1];
+                        this.cacheChunk[i1] = this.cacheChunk[i1 - 1];
+                    }
+
+                    this.cachePos[0] = k;
+                    this.cacheStatus[0] = ChunkStatus.FULL;
+                    this.cacheChunk[0] = ichunkaccess;
+
+                    onComplete.accept((Chunk)ichunkaccess);
+
+                    return;
+                }
+            }
+        }
+
+        if (gen) {
+            this.bringToFullStatusAsync(x, z, chunkPos, onComplete);
+            return;
+        }
+
+        IChunkAccess current = this.getChunkAtImmediately(x, z); // we want to bypass ticket restrictions
+        if (current != null) {
+            if (!(current instanceof ProtoChunkExtension) && !(current instanceof net.minecraft.server.Chunk)) {
+                onComplete.accept(null); // the chunk is not gen'd
+                return;
+            }
+            // we know the chunk is at full status here (either in read-only mode or the real thing)
+            this.bringToFullStatusAsync(x, z, chunkPos, onComplete);
+            return;
+        }
+
+        ChunkStatus status = world.getChunkProvider().playerChunkMap.getStatusOnDiskNoLoad(x, z);
+
+        if (status != null && status != ChunkStatus.FULL) {
+            // does not exist on disk
+            onComplete.accept(null);
+            return;
+        }
+
+        if (status == ChunkStatus.FULL) {
+            this.bringToFullStatusAsync(x, z, chunkPos, onComplete);
+            return;
+        }
+
+        // status is null here
+
+        // here we don't know what status it is and we're not supposed to generate
+        // so we asynchronously load empty status
+
+        this.bringToStatusAsync(x, z, chunkPos, ChunkStatus.EMPTY, (IChunkAccess chunk) -> {
+            if (!(chunk instanceof ProtoChunkExtension) && !(chunk instanceof net.minecraft.server.Chunk)) {
+                // the chunk on disk was not a full status chunk
+                onComplete.accept(null);
+                return;
+            }
+            this.bringToFullStatusAsync(x, z, chunkPos, onComplete); // bring to full status if required
+        });
+    }
+
+    private void bringToFullStatusAsync(int x, int z, ChunkCoordIntPair chunkPos, java.util.function.Consumer<Chunk> onComplete) {
+        this.bringToStatusAsync(x, z, chunkPos, ChunkStatus.FULL, (java.util.function.Consumer)onComplete);
+    }
+
+    private void bringToStatusAsync(int x, int z, ChunkCoordIntPair chunkPos, ChunkStatus status, java.util.function.Consumer<IChunkAccess> onComplete) {
+        CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> future = this.getChunkFutureMainThread(x, z, status, true);
+        Long identifier = Long.valueOf(this.asyncLoadSeqCounter++);
+        int ticketLevel = MCUtil.getTicketLevelFor(status);
+        this.addTicketAtLevel(TicketType.ASYNC_LOAD, chunkPos, ticketLevel, identifier);
+
+        future.whenCompleteAsync((Either<IChunkAccess, PlayerChunk.Failure> either, Throwable throwable) -> {
+            // either left -> success
+            // either right -> failure
+
+            if (throwable != null) {
+                throw new RuntimeException(throwable);
+            }
+
+            this.removeTicketAtLevel(TicketType.ASYNC_LOAD, chunkPos, ticketLevel, identifier);
+            this.addTicketAtLevel(TicketType.UNKNOWN, chunkPos, ticketLevel, chunkPos); // allow unloading
+
+            Optional<PlayerChunk.Failure> failure = either.right();
+
+            if (failure.isPresent()) {
+                // failure
+                throw new IllegalStateException("Chunk failed to load: " + failure.get().toString());
+            }
+
+            onComplete.accept(either.left().get());
+
+        }, this.serverThreadQueue);
+    }
+
+    public <T> void addTicketAtLevel(TicketType<T> ticketType, ChunkCoordIntPair chunkPos, int ticketLevel, T identifier) {
+        this.chunkMapDistance.addTicketAtLevel(ticketType, chunkPos, ticketLevel, identifier);
+    }
+
+    public <T> void removeTicketAtLevel(TicketType<T> ticketType, ChunkCoordIntPair chunkPos, int ticketLevel, T identifier) {
+        this.chunkMapDistance.removeTicketAtLevel(ticketType, chunkPos, ticketLevel, identifier);
+    }
+    // Paper end
+
+    @Nullable
+    @Override
+    public IChunkAccess getChunkAt(int i, int j, ChunkStatus chunkstatus, boolean flag) {
+        final int x = i; final int z = j; // Paper - conflict on variable change
+        if (Thread.currentThread() != this.serverThread) {
+            return (IChunkAccess) CompletableFuture.supplyAsync(() -> {
+                return this.getChunkAt(i, j, chunkstatus, flag);
+            }, this.serverThreadQueue).join();
+        } else {
+            long k = ChunkCoordIntPair.pair(i, j);
+
+            IChunkAccess ichunkaccess;
+
+            for (int l = 0; l < 4; ++l) {
+                if (k == this.cachePos[l] && chunkstatus == this.cacheStatus[l]) {
+                    ichunkaccess = this.cacheChunk[l];
+                    if (ichunkaccess != null) { // CraftBukkit - the chunk can become accessible in the meantime TODO for non-null chunks it might also make sense to check that the chunk's state hasn't changed in the meantime
+                        return ichunkaccess;
+                    }
+                }
+            }
+
+            CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = this.getChunkFutureMainThread(i, j, chunkstatus, flag);
+
+            if (!completablefuture.isDone()) { // Paper
+                // Paper start - async chunk io/loading
+                this.world.asyncChunkTaskManager.raisePriority(x, z, com.destroystokyo.paper.io.PrioritizedTaskQueue.HIGHEST_PRIORITY);
+                com.destroystokyo.paper.io.chunk.ChunkTaskManager.pushChunkWait(this.world, x, z);
+                // Paper end
+                com.destroystokyo.paper.io.SyncLoadFinder.logSyncLoad(this.world, x, z); // Paper - sync load info
+                this.world.timings.chunkAwait.startTiming(); // Paper
+            this.serverThreadQueue.awaitTasks(completablefuture::isDone);
+                com.destroystokyo.paper.io.chunk.ChunkTaskManager.popChunkWait(); // Paper - async chunk debug
+                this.world.timings.chunkAwait.stopTiming(); // Paper
+            } // Paper
+            ichunkaccess = (IChunkAccess) ((Either) completablefuture.join()).map((ichunkaccess1) -> {
+                return ichunkaccess1;
+            }, (playerchunk_failure) -> {
+                if (flag) {
+                    throw new IllegalStateException("Chunk not there when requested: " + playerchunk_failure);
+                } else {
+                    return null;
+                }
+            });
+            this.a(k, ichunkaccess, chunkstatus);
+            return ichunkaccess;
+        }
+    }
+
+    @Nullable
+    @Override
+    public Chunk a(int i, int j) {
+        if (Thread.currentThread() != this.serverThread) {
+            return null;
+        } else {
+            long k = ChunkCoordIntPair.pair(i, j);
+
+            for (int l = 0; l < 4; ++l) {
+                if (k == this.cachePos[l] && this.cacheStatus[l] == ChunkStatus.FULL) {
+                    IChunkAccess ichunkaccess = this.cacheChunk[l];
+
+                    return ichunkaccess instanceof Chunk ? (Chunk) ichunkaccess : null;
+                }
+            }
+
+            PlayerChunk playerchunk = this.getChunk(k);
+
+            if (playerchunk == null) {
+                return null;
+            } else {
+                Either<IChunkAccess, PlayerChunk.Failure> either = (Either) playerchunk.b(ChunkStatus.FULL).getNow(null); // Craftbukkit - decompile error
+
+                if (either == null) {
+                    return null;
+                } else {
+                    IChunkAccess ichunkaccess1 = (IChunkAccess) either.left().orElse(null); // Craftbukkit - decompile error
+
+                    if (ichunkaccess1 != null) {
+                        this.a(k, ichunkaccess1, ChunkStatus.FULL);
+                        if (ichunkaccess1 instanceof Chunk) {
+                            return (Chunk) ichunkaccess1;
+                        }
+                    }
+
+                    return null;
+                }
+            }
+        }
+    }
+
+    private void clearCache() {
+        Arrays.fill(this.cachePos, ChunkCoordIntPair.a);
+        Arrays.fill(this.cacheStatus, (Object) null);
+        Arrays.fill(this.cacheChunk, (Object) null);
+    }
+
+    private CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> getChunkFutureMainThread(int i, int j, ChunkStatus chunkstatus, boolean flag) {
+        ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i, j);
+        long k = chunkcoordintpair.pair();
+        int l = 33 + ChunkStatus.a(chunkstatus);
+        PlayerChunk playerchunk = this.getChunk(k);
+
+        // CraftBukkit start - don't add new ticket for currently unloading chunk
+        boolean currentlyUnloading = false;
+        if (playerchunk != null) {
+            PlayerChunk.State oldChunkState = PlayerChunk.getChunkState(playerchunk.oldTicketLevel);
+            PlayerChunk.State currentChunkState = PlayerChunk.getChunkState(playerchunk.getTicketLevel());
+            currentlyUnloading = (oldChunkState.isAtLeast(PlayerChunk.State.BORDER) && !currentChunkState.isAtLeast(PlayerChunk.State.BORDER));
+        }
+        if (flag && !currentlyUnloading) {
+            // CraftBukkit end
+            this.chunkMapDistance.a(TicketType.UNKNOWN, chunkcoordintpair, l, chunkcoordintpair);
+            if (this.a(playerchunk, l)) {
+                GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
+
+                gameprofilerfiller.enter("chunkLoad");
+                this.tickDistanceManager();
+                playerchunk = this.getChunk(k);
+                gameprofilerfiller.exit();
+                if (this.a(playerchunk, l)) {
+                    throw new IllegalStateException("No chunk holder after ticket has been added");
+                }
+            }
+        }
+
+        return this.a(playerchunk, l) ? PlayerChunk.UNLOADED_CHUNK_ACCESS_FUTURE : playerchunk.a(chunkstatus, this.playerChunkMap);
+    }
+
+    private boolean a(@Nullable PlayerChunk playerchunk, int i) {
+        return playerchunk == null || playerchunk.oldTicketLevel > i; // CraftBukkit using oldTicketLevel for isLoaded checks
+    }
+
+    public boolean isLoaded(int i, int j) {
+        PlayerChunk playerchunk = this.getChunk((new ChunkCoordIntPair(i, j)).pair());
+        int k = 33 + ChunkStatus.a(ChunkStatus.FULL);
+
+        return !this.a(playerchunk, k);
+    }
+
+    @Override
+    public IBlockAccess c(int i, int j) {
+        long k = ChunkCoordIntPair.pair(i, j);
+        PlayerChunk playerchunk = this.getChunk(k);
+
+        if (playerchunk == null) {
+            return null;
+        } else {
+            int l = ChunkProviderServer.c.size() - 1;
+
+            while (true) {
+                ChunkStatus chunkstatus = (ChunkStatus) ChunkProviderServer.c.get(l);
+                Optional<IChunkAccess> optional = ((Either) playerchunk.getStatusFutureUnchecked(chunkstatus).getNow(PlayerChunk.UNLOADED_CHUNK_ACCESS)).left();
+
+                if (optional.isPresent()) {
+                    return (IBlockAccess) optional.get();
+                }
+
+                if (chunkstatus == ChunkStatus.LIGHT.e()) {
+                    return null;
+                }
+
+                --l;
+            }
+        }
+    }
+
+    @Override
+    public World getWorld() {
+        return this.world;
+    }
+
+    public boolean runTasks() {
+        return this.serverThreadQueue.executeNext();
+    }
+
+    private boolean tickDistanceManager() {
+        boolean flag = this.chunkMapDistance.a(this.playerChunkMap);
+        boolean flag1 = this.playerChunkMap.b();
+
+        if (!flag && !flag1) {
+            return false;
+        } else {
+            this.clearCache();
+            return true;
+        }
+    }
+
+    @Override
+    public boolean a(Entity entity) {
+        long i = ChunkCoordIntPair.pair(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4);
+
+        return this.a(i, PlayerChunk::b);
+    }
+
+    @Override
+    public boolean a(ChunkCoordIntPair chunkcoordintpair) {
+        return this.a(chunkcoordintpair.pair(), PlayerChunk::b);
+    }
+
+    @Override
+    public boolean a(BlockPosition blockposition) {
+        long i = ChunkCoordIntPair.pair(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+
+        return this.a(i, PlayerChunk::a);
+    }
+
+    public boolean b(Entity entity) {
+        long i = ChunkCoordIntPair.pair(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4);
+
+        return this.a(i, PlayerChunk::c);
+    }
+
+    private boolean a(long i, Function<PlayerChunk, CompletableFuture<Either<Chunk, PlayerChunk.Failure>>> function) {
+        PlayerChunk playerchunk = this.getChunk(i);
+
+        if (playerchunk == null) {
+            return false;
+        } else {
+            Either<Chunk, PlayerChunk.Failure> either = (Either) ((CompletableFuture) function.apply(playerchunk)).getNow(PlayerChunk.UNLOADED_CHUNK);
+
+            return either.left().isPresent();
+        }
+    }
+
+    public void save(boolean flag) {
+        this.tickDistanceManager();
+        try (co.aikar.timings.Timing timed = world.timings.chunkSaveData.startTiming()) { // Paper - Timings
+        this.playerChunkMap.save(flag);
+        } // Paper - Timings
+    }
+
+    // Paper start - duplicate save, but call incremental
+    public void saveIncrementally() {
+        this.tickDistanceManager();
+        try (co.aikar.timings.Timing timed = world.timings.chunkSaveData.startTiming()) { // Paper - Timings
+            this.playerChunkMap.saveIncrementally();
+        } // Paper - Timings
+    }
+    // Paper end
+
+    @Override
+    public void close() throws IOException {
+        // CraftBukkit start
+        close(true);
+    }
+
+    public void close(boolean save) throws IOException {
+        if (save) {
+            this.save(true);
+        }
+        // CraftBukkit end
+        this.lightEngine.close();
+        this.playerChunkMap.close();
+    }
+
+    // CraftBukkit start - modelled on below
+    public void purgeUnload() {
+        this.world.getMethodProfiler().enter("purge");
+        this.chunkMapDistance.purgeTickets();
+        this.tickDistanceManager();
+        this.world.getMethodProfiler().exitEnter("unload");
+        this.playerChunkMap.unloadChunks(() -> true);
+        this.world.getMethodProfiler().exit();
+        this.clearCache();
+    }
+    // CraftBukkit end
+
+    public void tick(BooleanSupplier booleansupplier) {
+        this.world.getMethodProfiler().enter("purge");
+        this.world.timings.doChunkMap.startTiming(); // Spigot
+        this.chunkMapDistance.purgeTickets();
+        this.tickDistanceManager();
+        this.world.timings.doChunkMap.stopTiming(); // Spigot
+        this.world.getMethodProfiler().exitEnter("chunks");
+        this.world.timings.chunks.startTiming(); // Paper - timings
+        this.tickChunks();
+        this.world.timings.chunks.stopTiming(); // Paper - timings
+        this.world.timings.doChunkUnload.startTiming(); // Spigot
+        this.world.getMethodProfiler().exitEnter("unload");
+        this.playerChunkMap.unloadChunks(booleansupplier);
+        this.world.timings.doChunkUnload.stopTiming(); // Spigot
+        this.world.getMethodProfiler().exit();
+        this.clearCache();
+    }
+
+    private void tickChunks() {
+        long i = this.world.getTime();
+        long j = i - this.lastTickTime;
+
+        this.lastTickTime = i;
+        WorldData worlddata = this.world.getWorldData();
+        boolean flag = worlddata.getType() == WorldType.DEBUG_ALL_BLOCK_STATES;
+        boolean flag1 = this.world.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING) && !world.getPlayers().isEmpty(); // CraftBukkit
+
+        if (!flag) {
+            this.world.getMethodProfiler().enter("pollingChunks");
+            int k = this.world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
+            BlockPosition blockposition = this.world.getSpawn();
+            boolean flag2 = world.ticksPerAnimalSpawns != 0L && worlddata.getTime() % world.ticksPerAnimalSpawns == 0L; // CraftBukkit // PAIL: TODO monster ticks
+
+            this.world.getMethodProfiler().enter("naturalSpawnCount");
+            this.world.timings.countNaturalMobs.startTiming(); // Paper - timings
+            int l = this.chunkMapDistance.b();
+            EnumCreatureType[] aenumcreaturetype = EnumCreatureType.values();
+            // Paper start - per player mob spawning
+            int[] worldMobCount;
+            if (this.playerChunkMap.playerMobDistanceMap != null) {
+                // update distance map
+                this.world.timings.playerMobDistanceMapUpdate.startTiming();
+                this.playerChunkMap.playerMobDistanceMap.update(this.world.players, this.playerChunkMap.viewDistance);
+                this.world.timings.playerMobDistanceMapUpdate.stopTiming();
+                // re-set mob counts
+                for (EntityPlayer player : this.world.players) {
+                    Arrays.fill(player.mobCounts, 0);
+                }
+                worldMobCount = this.world.countMobs(true);
+            } else {
+                worldMobCount = this.world.countMobs(false);
+            }
+            // Paper end
+
+            this.world.timings.countNaturalMobs.stopTiming(); // Paper - timings
+            this.world.getMethodProfiler().exit();
+            this.playerChunkMap.f().forEach((playerchunk) -> {
+                Optional<Chunk> optional = ((Either) playerchunk.b().getNow(PlayerChunk.UNLOADED_CHUNK)).left();
+
+                if (optional.isPresent()) {
+                    Chunk chunk = (Chunk) optional.get();
+
+                    this.world.getMethodProfiler().enter("broadcast");
+                    this.world.timings.broadcastChunkUpdates.startTiming(); // Paper - timings
+                    playerchunk.a(chunk);
+                    this.world.timings.broadcastChunkUpdates.stopTiming(); // Paper - timings
+                    this.world.getMethodProfiler().exit();
+                    ChunkCoordIntPair chunkcoordintpair = playerchunk.i();
+
+                    // Paper start - timings
+                    this.world.timings.chunkRangeCheckBig.startTiming();
+                    // note: this is just a copy of the expression in the if
+                    boolean bigRadiusOutsideRange = !this.playerChunkMap.isOutsideOfRange(chunkcoordintpair);
+                    this.world.timings.chunkRangeCheckBig.stopTiming();
+                    if (bigRadiusOutsideRange) {
+                        // Paper end
+                        chunk.b(chunk.q() + j);
+                        // Paper start - timings
+                        this.world.timings.chunkRangeCheckSmall.startTiming();
+                        // note: this is just a copy of the expression in the if
+                        boolean smallRadiusOutsideRange = flag1 && (this.allowMonsters || this.allowAnimals) && this.world.getWorldBorder().isInBounds(chunk.getPos()) && !this.playerChunkMap.isOutsideOfRange(chunkcoordintpair, true);
+                        this.world.timings.chunkRangeCheckSmall.stopTiming();
+                        if (smallRadiusOutsideRange) { // Spigot
+                            // Paper end
+                            this.world.getMethodProfiler().enter("spawner");
+                            this.world.timings.mobSpawn.startTiming(); // Spigot
+                            EnumCreatureType[] aenumcreaturetype1 = aenumcreaturetype;
+                            int i1 = aenumcreaturetype.length;
+
+                            for (int j1 = 0; j1 < i1; ++j1) {
+                                EnumCreatureType enumcreaturetype = aenumcreaturetype1[j1];
+
+                                // CraftBukkit start - Use per-world spawn limits
+                                int limit = enumcreaturetype.b();
+                                switch (enumcreaturetype) {
+                                    case MONSTER:
+                                        limit = world.getWorld().getMonsterSpawnLimit();
+                                        break;
+                                    case CREATURE:
+                                        limit = world.getWorld().getAnimalSpawnLimit();
+                                        break;
+                                    case WATER_CREATURE:
+                                        limit = world.getWorld().getWaterAnimalSpawnLimit();
+                                        break;
+                                    case AMBIENT:
+                                        limit = world.getWorld().getAmbientSpawnLimit();
+                                        break;
+                                }
+
+                                if (limit == 0) {
+                                    continue;
+                                }
+                                // CraftBukkit end
+
+                                if (enumcreaturetype != EnumCreatureType.MISC && (!enumcreaturetype.c() || this.allowAnimals) && (enumcreaturetype.c() || this.allowMonsters) && (!enumcreaturetype.d() || flag2)) {
+                                    int k1 = limit * l / ChunkProviderServer.b; // CraftBukkit - use per-world limits
+
+                                    // Paper start - only allow spawns upto the limit per chunk and update count afterwards
+                                    int currEntityCount = worldMobCount[enumcreaturetype.ordinal()];
+                                    int difference = k1 - currEntityCount;
+
+                                    if (this.world.paperConfig.perPlayerMobSpawns) {
+                                        int minDiff = Integer.MAX_VALUE;
+                                        for (EntityPlayer entityplayer : this.playerChunkMap.playerMobDistanceMap.getPlayersInRange(chunk.getPos())) {
+                                            minDiff = Math.min(limit - this.playerChunkMap.getMobCountNear(entityplayer, enumcreaturetype), minDiff);
+                                        }
+                                        difference = (minDiff == Integer.MAX_VALUE) ? 0 : minDiff;
+                                    }
+
+                                    if (difference > 0) {
+                                        int spawnCount = SpawnerCreature.spawnMobs(enumcreaturetype, this.world, chunk, blockposition, difference,
+                                            this.world.paperConfig.perPlayerMobSpawns ? this.playerChunkMap::updatePlayerMobTypeMap : null);
+                                        worldMobCount[enumcreaturetype.ordinal()] += spawnCount;
+                                        // Paper end
+                                    }
+                                }
+                            }
+
+                            this.world.timings.mobSpawn.stopTiming(); // Spigot
+                            this.world.getMethodProfiler().exit();
+                        }
+
+                        this.world.timings.chunkTicks.startTiming(); // Spigot // Paper
+                        this.world.a(chunk, k);
+                        this.world.timings.chunkTicks.stopTiming(); // Spigot // Paper
+                    }
+                }
+            });
+            this.world.getMethodProfiler().enter("customSpawners");
+            if (flag1) {
+                try (co.aikar.timings.Timing ignored = this.world.timings.miscMobSpawning.startTiming()) { // Paper - timings
+                this.chunkGenerator.doMobSpawning(this.world, this.allowMonsters, this.allowAnimals);
+                } // Paper - timings
+            }
+
+            this.world.getMethodProfiler().exit();
+            this.world.getMethodProfiler().exit();
+        }
+
+        this.playerChunkMap.g();
+    }
+
+    @Override
+    public String getName() {
+        return "ServerChunkCache: " + this.h();
+    }
+
+    @VisibleForTesting
+    public int f() {
+        return this.serverThreadQueue.be();
+    }
+
+    @Override
     public ChunkGenerator<?> getChunkGenerator() {
         return this.chunkGenerator;
     }
 
-    public int g() {
-        return this.chunks.size();
+    public int h() {
+        return this.playerChunkMap.d();
     }
 
-    public boolean isLoaded(int i, int j) {
-        return this.chunks.get(ChunkCoordIntPair.asLong(i, j)) != null; // Paper - use get for last access
+    public void flagDirty(BlockPosition blockposition) {
+        int i = blockposition.getX() >> 4;
+        int j = blockposition.getZ() >> 4;
+        PlayerChunk playerchunk = this.getChunk(ChunkCoordIntPair.pair(i, j));
+
+        if (playerchunk != null) {
+            playerchunk.a(blockposition.getX() & 15, blockposition.getY(), blockposition.getZ() & 15);
+        }
+
+    }
+
+    @Override
+    public void a(EnumSkyBlock enumskyblock, SectionPosition sectionposition) {
+        this.serverThreadQueue.execute(() -> {
+            PlayerChunk playerchunk = this.getChunk(sectionposition.u().pair());
+
+            if (playerchunk != null) {
+                playerchunk.a(enumskyblock, sectionposition.b());
+            }
+
+        });
+    }
+
+    public <T> void addTicket(TicketType<T> tickettype, ChunkCoordIntPair chunkcoordintpair, int i, T t0) {
+        this.chunkMapDistance.addTicket(tickettype, chunkcoordintpair, i, t0);
+    }
+
+    public <T> void removeTicket(TicketType<T> tickettype, ChunkCoordIntPair chunkcoordintpair, int i, T t0) {
+        this.chunkMapDistance.removeTicket(tickettype, chunkcoordintpair, i, t0);
+    }
+
+    @Override
+    public void a(ChunkCoordIntPair chunkcoordintpair, boolean flag) {
+        this.chunkMapDistance.a(chunkcoordintpair, flag);
+    }
+
+    public void movePlayer(EntityPlayer entityplayer) {
+        this.playerChunkMap.movePlayer(entityplayer);
+    }
+
+    public void removeEntity(Entity entity) {
+        this.playerChunkMap.removeEntity(entity);
+    }
+
+    public void addEntity(Entity entity) {
+        this.playerChunkMap.addEntity(entity);
+    }
+
+    public void broadcastIncludingSelf(Entity entity, Packet<?> packet) {
+        this.playerChunkMap.broadcastIncludingSelf(entity, packet);
+    }
+
+    public void broadcast(Entity entity, Packet<?> packet) {
+        this.playerChunkMap.broadcast(entity, packet);
+    }
+
+    public void setViewDistance(int i) {
+        this.playerChunkMap.setViewDistance(i);
+    }
+
+    @Override
+    public void a(boolean flag, boolean flag1) {
+        this.allowMonsters = flag;
+        this.allowAnimals = flag1;
+    }
+
+    public WorldPersistentData getWorldPersistentData() {
+        return this.worldPersistentData;
+    }
+
+    public VillagePlace j() {
+        return this.playerChunkMap.h();
+    }
+
+    final class a extends IAsyncTaskHandler<Runnable> {
+
+        private a(World world) {
+            super("Chunk source main thread executor for " + IRegistry.DIMENSION_TYPE.getKey(world.getWorldProvider().getDimensionManager()));
+        }
+
+        @Override
+        protected Runnable postToMainThread(Runnable runnable) {
+            return runnable;
+        }
+
+        @Override
+        protected boolean canExecute(Runnable runnable) {
+            return true;
+        }
+
+        @Override
+        protected boolean isNotMainThread() {
+            return true;
+        }
+
+        @Override
+        protected Thread getThread() {
+            return ChunkProviderServer.this.serverThread;
+        }
+
+        @Override
+        protected boolean executeNext() {
+        // CraftBukkit start - process pending Chunk loadCallback() and unloadCallback() after each run task
+        try {
+            boolean execChunkTask = com.destroystokyo.paper.io.chunk.ChunkTaskManager.pollChunkWaitQueue() || ChunkProviderServer.this.world.asyncChunkTaskManager.pollNextChunkTask(); // Paper
+            if (ChunkProviderServer.this.tickDistanceManager()) {
+                return true;
+            } else {
+                ChunkProviderServer.this.lightEngine.queueUpdate();
+                return super.executeNext() || execChunkTask; // Paper
+            }
+        } finally {
+            playerChunkMap.callbackExecutor.run();
+        }
+        // CraftBukkit end
+        }
     }
 }

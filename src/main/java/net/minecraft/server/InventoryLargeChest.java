@@ -1,6 +1,5 @@
 package net.minecraft.server;
 
-import javax.annotation.Nullable;
 // CraftBukkit start
 import java.util.ArrayList;
 import java.util.List;
@@ -10,11 +9,10 @@ import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
 // CraftBukkit end
 
-public class InventoryLargeChest implements ITileInventory {
+public class InventoryLargeChest implements IInventory {
 
-    private final IChatBaseComponent a;
-    public final ITileInventory left;
-    public final ITileInventory right;
+    public final IInventory left;
+    public final IInventory right;
 
     // CraftBukkit start - add fields and methods
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
@@ -58,63 +56,49 @@ public class InventoryLargeChest implements ITileInventory {
     }
     // CraftBukkit end
 
-    public InventoryLargeChest(IChatBaseComponent ichatbasecomponent, ITileInventory itileinventory, ITileInventory itileinventory1) {
-        this.a = ichatbasecomponent;
-        if (itileinventory == null) {
-            itileinventory = itileinventory1;
+    public InventoryLargeChest(IInventory iinventory, IInventory iinventory1) {
+        if (iinventory == null) {
+            iinventory = iinventory1;
         }
 
-        if (itileinventory1 == null) {
-            itileinventory1 = itileinventory;
+        if (iinventory1 == null) {
+            iinventory1 = iinventory;
         }
 
-        this.left = itileinventory;
-        this.right = itileinventory1;
-        if (itileinventory.isLocked()) {
-            itileinventory1.setLock(itileinventory.getLock());
-        } else if (itileinventory1.isLocked()) {
-            itileinventory.setLock(itileinventory1.getLock());
-        }
-
+        this.left = iinventory;
+        this.right = iinventory1;
     }
 
+    @Override
     public int getSize() {
         return this.left.getSize() + this.right.getSize();
     }
 
-    public boolean P_() {
-        return this.left.P_() && this.right.P_();
+    @Override
+    public boolean isNotEmpty() {
+        return this.left.isNotEmpty() && this.right.isNotEmpty();
     }
 
     public boolean a(IInventory iinventory) {
         return this.left == iinventory || this.right == iinventory;
     }
 
-    public IChatBaseComponent getDisplayName() {
-        return this.left.hasCustomName() ? this.left.getDisplayName() : (this.right.hasCustomName() ? this.right.getDisplayName() : this.a);
-    }
-
-    public boolean hasCustomName() {
-        return this.left.hasCustomName() || this.right.hasCustomName();
-    }
-
-    @Nullable
-    public IChatBaseComponent getCustomName() {
-        return this.left.hasCustomName() ? this.left.getCustomName() : this.right.getCustomName();
-    }
-
+    @Override
     public ItemStack getItem(int i) {
         return i >= this.left.getSize() ? this.right.getItem(i - this.left.getSize()) : this.left.getItem(i);
     }
 
+    @Override
     public ItemStack splitStack(int i, int j) {
         return i >= this.left.getSize() ? this.right.splitStack(i - this.left.getSize(), j) : this.left.splitStack(i, j);
     }
 
+    @Override
     public ItemStack splitWithoutUpdate(int i) {
         return i >= this.left.getSize() ? this.right.splitWithoutUpdate(i - this.left.getSize()) : this.left.splitWithoutUpdate(i);
     }
 
+    @Override
     public void setItem(int i, ItemStack itemstack) {
         if (i >= this.left.getSize()) {
             this.right.setItem(i - this.left.getSize(), itemstack);
@@ -124,64 +108,40 @@ public class InventoryLargeChest implements ITileInventory {
 
     }
 
+    @Override
     public int getMaxStackSize() {
         return Math.min(this.left.getMaxStackSize(), this.right.getMaxStackSize()); // CraftBukkit - check both sides
     }
 
+    @Override
     public void update() {
         this.left.update();
         this.right.update();
     }
 
+    @Override
     public boolean a(EntityHuman entityhuman) {
         return this.left.a(entityhuman) && this.right.a(entityhuman);
     }
 
+    @Override
     public void startOpen(EntityHuman entityhuman) {
         this.left.startOpen(entityhuman);
         this.right.startOpen(entityhuman);
     }
 
+    @Override
     public void closeContainer(EntityHuman entityhuman) {
         this.left.closeContainer(entityhuman);
         this.right.closeContainer(entityhuman);
     }
 
+    @Override
     public boolean b(int i, ItemStack itemstack) {
-        return true;
+        return i >= this.left.getSize() ? this.right.b(i - this.left.getSize(), itemstack) : this.left.b(i, itemstack);
     }
 
-    public int getProperty(int i) {
-        return 0;
-    }
-
-    public void setProperty(int i, int j) {}
-
-    public int h() {
-        return 0;
-    }
-
-    public boolean isLocked() {
-        return this.left.isLocked() || this.right.isLocked();
-    }
-
-    public void setLock(ChestLock chestlock) {
-        this.left.setLock(chestlock);
-        this.right.setLock(chestlock);
-    }
-
-    public ChestLock getLock() {
-        return this.left.getLock();
-    }
-
-    public String getContainerName() {
-        return this.left.getContainerName();
-    }
-
-    public Container createContainer(PlayerInventory playerinventory, EntityHuman entityhuman) {
-        return new ContainerChest(playerinventory, this, entityhuman);
-    }
-
+    @Override
     public void clear() {
         this.left.clear();
         this.right.clear();

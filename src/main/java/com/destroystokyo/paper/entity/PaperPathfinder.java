@@ -83,11 +83,9 @@ public class PaperPathfinder implements com.destroystokyo.paper.entity.Pathfinde
 
         @Override
         public List<Location> getPoints() {
-            int pathCount = path.getPathCount();
             List<Location> points = new ArrayList<>();
-            PathPoint[] pathPoints = path.getPoints();
-            for (int i = 0; i < pathCount; i++) {
-                points.add(toLoc(pathPoints[i]));
+            for (PathPoint point : path.getPoints()) {
+                points.add(toLoc(point));
             }
             return points;
         }
@@ -103,7 +101,7 @@ public class PaperPathfinder implements com.destroystokyo.paper.entity.Pathfinde
             if (!path.hasNext()) {
                 return null;
             }
-            return toLoc(path.getPoints()[path.getNextIndex()]);
+            return toLoc(path.getPoints().get(path.getNextIndex()));
         }
     }
 

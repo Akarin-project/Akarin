@@ -1,9 +1,9 @@
 package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.server.EntityPainting;
+import net.minecraft.server.EntityTypes;
 import net.minecraft.server.Paintings;
 import net.minecraft.server.WorldServer;
-
 import org.bukkit.Art;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftArt;
@@ -18,30 +18,34 @@ public class CraftPainting extends CraftHanging implements Painting {
         super(server, entity);
     }
 
+    @Override
     public Art getArt() {
         Paintings art = getHandle().art;
         return CraftArt.NotchToBukkit(art);
     }
 
+    @Override
     public boolean setArt(Art art) {
         return setArt(art, false);
     }
 
+    @Override
     public boolean setArt(Art art, boolean force) {
         EntityPainting painting = this.getHandle();
         Paintings oldArt = painting.art;
         painting.art = CraftArt.BukkitToNotch(art);
-        painting.setDirection(painting.direction);
+        painting.setDirection(painting.getDirection());
         if (!force && !painting.survives()) {
             // Revert painting since it doesn't fit
             painting.art = oldArt;
-            painting.setDirection(painting.direction);
+            painting.setDirection(painting.getDirection());
             return false;
         }
         this.update();
         return true;
     }
 
+    @Override
     public boolean setFacingDirection(BlockFace face, boolean force) {
         if (super.setFacingDirection(face, force)) {
             update();
@@ -53,10 +57,10 @@ public class CraftPainting extends CraftHanging implements Painting {
 
     private void update() {
         WorldServer world = ((CraftWorld) getWorld()).getHandle();
-        EntityPainting painting = new EntityPainting(world);
+        EntityPainting painting = EntityTypes.PAINTING.a(world);
         painting.blockPosition = getHandle().blockPosition;
         painting.art = getHandle().art;
-        painting.setDirection(getHandle().direction);
+        painting.setDirection(getHandle().getDirection());
         getHandle().die();
         getHandle().velocityChanged = true; // because this occurs when the painting is broken, so it might be important
         world.addEntity(painting);
@@ -73,6 +77,7 @@ public class CraftPainting extends CraftHanging implements Painting {
         return "CraftPainting{art=" + getArt() + "}";
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.PAINTING;
     }

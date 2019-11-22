@@ -2,14 +2,15 @@ package net.minecraft.server;
 
 public class BlockJukeBox extends BlockTileEntity {
 
-    public static final BlockStateBoolean HAS_RECORD = BlockProperties.l;
+    public static final BlockStateBoolean HAS_RECORD = BlockProperties.n;
 
     protected BlockJukeBox(Block.Info block_info) {
         super(block_info);
-        this.v((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockJukeBox.HAS_RECORD, false));
+        this.o((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockJukeBox.HAS_RECORD, false));
     }
 
-    public boolean interact(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman, EnumHand enumhand, EnumDirection enumdirection, float f, float f1, float f2) {
+    @Override
+    public boolean interact(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman, EnumHand enumhand, MovingObjectPositionBlock movingobjectpositionblock) {
         if ((Boolean) iblockdata.get(BlockJukeBox.HAS_RECORD)) {
             this.dropRecord(world, blockposition);
             iblockdata = (IBlockData) iblockdata.set(BlockJukeBox.HAS_RECORD, false);
@@ -45,8 +46,7 @@ public class BlockJukeBox extends BlockTileEntity {
 
                 if (!itemstack.isEmpty()) {
                     world.triggerEffect(1010, blockposition, 0);
-                    //world.a(blockposition, (SoundEffect) null); // Akarin
-                    tileentityjukebox.setRecord(ItemStack.a);
+                    tileentityjukebox.clear();
                     float f = 0.7F;
                     double d0 = (double) (world.random.nextFloat() * 0.7F) + 0.15000000596046448D;
                     double d1 = (double) (world.random.nextFloat() * 0.7F) + 0.06000000238418579D + 0.6D;
@@ -54,13 +54,14 @@ public class BlockJukeBox extends BlockTileEntity {
                     ItemStack itemstack1 = itemstack.cloneItemStack();
                     EntityItem entityitem = new EntityItem(world, (double) blockposition.getX() + d0, (double) blockposition.getY() + d1, (double) blockposition.getZ() + d2, itemstack1);
 
-                    entityitem.n();
+                    entityitem.defaultPickupDelay();
                     world.addEntity(entityitem);
                 }
             }
         }
     }
 
+    @Override
     public void remove(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
         if (iblockdata.getBlock() != iblockdata1.getBlock()) {
             this.dropRecord(world, blockposition);
@@ -68,20 +69,17 @@ public class BlockJukeBox extends BlockTileEntity {
         }
     }
 
-    public void dropNaturally(IBlockData iblockdata, World world, BlockPosition blockposition, float f, int i) {
-        if (!world.isClientSide) {
-            super.dropNaturally(iblockdata, world, blockposition, f, 0);
-        }
-    }
-
-    public TileEntity a(IBlockAccess iblockaccess) {
+    @Override
+    public TileEntity createTile(IBlockAccess iblockaccess) {
         return new TileEntityJukeBox();
     }
 
+    @Override
     public boolean isComplexRedstone(IBlockData iblockdata) {
         return true;
     }
 
+    @Override
     public int a(IBlockData iblockdata, World world, BlockPosition blockposition) {
         TileEntity tileentity = world.getTileEntity(blockposition);
 
@@ -96,10 +94,12 @@ public class BlockJukeBox extends BlockTileEntity {
         return 0;
     }
 
+    @Override
     public EnumRenderType c(IBlockData iblockdata) {
         return EnumRenderType.MODEL;
     }
 
+    @Override
     protected void a(BlockStateList.a<Block, IBlockData> blockstatelist_a) {
         blockstatelist_a.a(BlockJukeBox.HAS_RECORD);
     }

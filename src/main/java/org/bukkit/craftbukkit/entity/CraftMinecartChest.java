@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.entity;
 
 import com.destroystokyo.paper.loottable.PaperLootableEntityInventory; // Paper
 import net.minecraft.server.EntityMinecartChest;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.entity.EntityType;
@@ -18,6 +17,7 @@ public class CraftMinecartChest extends CraftMinecartContainer implements Storag
         inventory = new CraftInventory(entity);
     }
 
+    @Override
     public Inventory getInventory() {
         return inventory;
     }
@@ -27,6 +27,7 @@ public class CraftMinecartChest extends CraftMinecartContainer implements Storag
         return "CraftMinecartChest{" + "inventory=" + inventory + '}';
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.MINECART_CHEST;
     }

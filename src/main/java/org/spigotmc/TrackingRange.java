@@ -25,7 +25,7 @@ public class TrackingRange
         if ( entity instanceof EntityPlayer )
         {
             return config.playerTrackingRange;
-        }  else if ( entity.activationType == 1 )
+        }  else if ( entity.activationType == ActivationRange.ActivationType.MONSTER || entity.activationType == ActivationRange.ActivationType.RAIDER )
         {
             return config.monsterTrackingRange;
         } else if ( entity instanceof EntityGhast )
@@ -37,13 +37,13 @@ public class TrackingRange
             {
                 return config.monsterActivationRange;
             }
-        } else if ( entity.activationType == 2 )
+        } else if ( entity.activationType == ActivationRange.ActivationType.ANIMAL )
         {
             return config.animalTrackingRange;
         } else if ( entity instanceof EntityItemFrame || entity instanceof EntityPainting || entity instanceof EntityItem || entity instanceof EntityExperienceOrb )
         {
             return config.miscTrackingRange;
-        } else 
+        } else
         {
             return config.otherTrackingRange;
         }

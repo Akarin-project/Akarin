@@ -70,6 +70,7 @@ public abstract class CraftMob extends CraftLivingEntity implements Mob {
     }
 
     // Paper start
+    @Override
     public boolean isInDaylight() {
         return getHandle().isInDaylight();
     }

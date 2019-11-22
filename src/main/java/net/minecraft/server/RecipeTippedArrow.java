@@ -2,7 +2,7 @@ package net.minecraft.server;
 
 import java.util.Collection;
 
-public class RecipeTippedArrow extends ShapedRecipes implements IRecipe { // CraftBukkit
+public class RecipeTippedArrow extends ShapedRecipes { // CraftBukkit
 
     // CraftBukkit start
     public RecipeTippedArrow(MinecraftKey minecraftkey) {
@@ -14,11 +14,11 @@ public class RecipeTippedArrow extends ShapedRecipes implements IRecipe { // Cra
     }
     // CraftBukkit end
 
-    public boolean a(IInventory iinventory, World world) {
-        if (iinventory.U_() == 3 && iinventory.n() == 3) {
-            for (int i = 0; i < iinventory.U_(); ++i) {
-                for (int j = 0; j < iinventory.n(); ++j) {
-                    ItemStack itemstack = iinventory.getItem(i + j * iinventory.U_());
+    public boolean a(InventoryCrafting inventorycrafting, World world) {
+        if (inventorycrafting.g() == 3 && inventorycrafting.f() == 3) {
+            for (int i = 0; i < inventorycrafting.g(); ++i) {
+                for (int j = 0; j < inventorycrafting.f(); ++j) {
+                    ItemStack itemstack = inventorycrafting.getItem(i + j * inventorycrafting.g());
 
                     if (itemstack.isEmpty()) {
                         return false;
@@ -42,8 +42,8 @@ public class RecipeTippedArrow extends ShapedRecipes implements IRecipe { // Cra
         }
     }
 
-    public ItemStack craftItem(IInventory iinventory) {
-        ItemStack itemstack = iinventory.getItem(1 + iinventory.U_());
+    public ItemStack a(InventoryCrafting inventorycrafting) {
+        ItemStack itemstack = inventorycrafting.getItem(1 + inventorycrafting.g());
 
         if (itemstack.getItem() != Items.LINGERING_POTION) {
             return ItemStack.a;
@@ -56,7 +56,8 @@ public class RecipeTippedArrow extends ShapedRecipes implements IRecipe { // Cra
         }
     }
 
-    public RecipeSerializer<?> a() {
-        return RecipeSerializers.k;
+    @Override
+    public RecipeSerializer<?> getRecipeSerializer() {
+        return RecipeSerializer.j;
     }
 }

@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import javax.annotation.Nullable;
 
 // CraftBukkit start
-
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -20,27 +19,29 @@ import org.bukkit.event.block.BlockSpreadEvent;
 
 public class BlockFire extends Block {
 
-    public static final BlockStateInteger AGE = BlockProperties.X;
+    public static final BlockStateInteger AGE = BlockProperties.ad;
     public static final BlockStateBoolean NORTH = BlockSprawling.a;
     public static final BlockStateBoolean EAST = BlockSprawling.b;
     public static final BlockStateBoolean SOUTH = BlockSprawling.c;
-    public static final BlockStateBoolean WEST = BlockSprawling.o;
-    public static final BlockStateBoolean UPPER = BlockSprawling.p;
-    private static final Map<EnumDirection, BlockStateBoolean> r = (Map) BlockSprawling.r.entrySet().stream().filter((entry) -> {
+    public static final BlockStateBoolean WEST = BlockSprawling.d;
+    public static final BlockStateBoolean UPPER = BlockSprawling.e;
+    private static final Map<EnumDirection, BlockStateBoolean> g = (Map) BlockSprawling.g.entrySet().stream().filter((entry) -> {
         return entry.getKey() != EnumDirection.DOWN;
     }).collect(SystemUtils.a());
     private final Object2IntMap<Block> flameChances = new Object2IntOpenHashMap();
-    private final Object2IntMap<Block> t = new Object2IntOpenHashMap();
+    private final Object2IntMap<Block> i = new Object2IntOpenHashMap();
 
     protected BlockFire(Block.Info block_info) {
         super(block_info);
-        this.v((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockFire.AGE, 0)).set(BlockFire.NORTH, false)).set(BlockFire.EAST, false)).set(BlockFire.SOUTH, false)).set(BlockFire.WEST, false)).set(BlockFire.UPPER, false));
+        this.o((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockFire.AGE, 0)).set(BlockFire.NORTH, false)).set(BlockFire.EAST, false)).set(BlockFire.SOUTH, false)).set(BlockFire.WEST, false)).set(BlockFire.UPPER, false));
     }
 
-    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+    @Override
+    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision) {
         return VoxelShapes.a();
     }
 
+    @Override
     public IBlockData updateState(IBlockData iblockdata, EnumDirection enumdirection, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
         // CraftBukkit start
         if (!iblockdata.canPlace(generatoraccess, blockposition)) {
@@ -59,24 +60,26 @@ public class BlockFire extends Block {
     }
 
     @Nullable
+    @Override
     public IBlockData getPlacedState(BlockActionContext blockactioncontext) {
         return this.a((IBlockAccess) blockactioncontext.getWorld(), blockactioncontext.getClickPosition());
     }
 
     public IBlockData a(IBlockAccess iblockaccess, BlockPosition blockposition) {
-        IBlockData iblockdata = iblockaccess.getType(blockposition.down());
+        BlockPosition blockposition1 = blockposition.down();
+        IBlockData iblockdata = iblockaccess.getType(blockposition1);
 
-        if (!iblockdata.q() && !this.k(iblockdata)) {
+        if (!this.j(iblockdata) && !iblockdata.d(iblockaccess, blockposition1, EnumDirection.UP)) {
             IBlockData iblockdata1 = this.getBlockData();
             EnumDirection[] aenumdirection = EnumDirection.values();
             int i = aenumdirection.length;
 
             for (int j = 0; j < i; ++j) {
                 EnumDirection enumdirection = aenumdirection[j];
-                BlockStateBoolean blockstateboolean = (BlockStateBoolean) BlockFire.r.get(enumdirection);
+                BlockStateBoolean blockstateboolean = (BlockStateBoolean) BlockFire.g.get(enumdirection);
 
                 if (blockstateboolean != null) {
-                    iblockdata1 = (IBlockData) iblockdata1.set(blockstateboolean, this.k(iblockaccess.getType(blockposition.shift(enumdirection))));
+                    iblockdata1 = (IBlockData) iblockdata1.set(blockstateboolean, this.j(iblockaccess.getType(blockposition.shift(enumdirection))));
                 }
             }
 
@@ -86,24 +89,21 @@ public class BlockFire extends Block {
         }
     }
 
+    @Override
     public boolean canPlace(IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) {
-        return iworldreader.getType(blockposition.down()).q() || this.d(iworldreader, blockposition);
+        BlockPosition blockposition1 = blockposition.down();
+
+        return iworldreader.getType(blockposition1).d(iworldreader, blockposition1, EnumDirection.UP) || this.canBurn(iworldreader, blockposition);
     }
 
-    public boolean a(IBlockData iblockdata) {
-        return false;
-    }
-
-    public int a(IBlockData iblockdata, Random random) {
-        return 0;
-    }
-
+    @Override
     public int a(IWorldReader iworldreader) {
         return 30;
     }
 
-    public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
-        if (world.getGameRules().getBoolean("doFireTick")) {
+    @Override
+    public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
+        if (world.getGameRules().getBoolean(GameRules.DO_FIRE_TICK)) {
             if (!iblockdata.canPlace(world, blockposition)) {
                 fireExtinguished(world, blockposition); // CraftBukkit - invalid place location
             }
@@ -124,21 +124,23 @@ public class BlockFire extends Block {
 
                 if (!flag) {
                     world.getBlockTickList().a(blockposition, this, this.a((IWorldReader) world) + random.nextInt(10));
-                    if (!this.d(world, blockposition)) {
-                        if (!world.getType(blockposition.down()).q() || i > 3) {
+                    if (!this.canBurn(world, blockposition)) {
+                        BlockPosition blockposition1 = blockposition.down();
+
+                        if (!world.getType(blockposition1).d(world, blockposition1, EnumDirection.UP) || i > 3) {
                             fireExtinguished(world, blockposition); // CraftBukkit
                         }
 
                         return;
                     }
 
-                    if (i == 15 && random.nextInt(4) == 0 && !this.k(world.getType(blockposition.down()))) {
+                    if (i == 15 && random.nextInt(4) == 0 && !this.j(world.getType(blockposition.down()))) {
                         fireExtinguished(world, blockposition); // CraftBukkit
                         return;
                     }
                 }
 
-                boolean flag1 = world.x(blockposition);
+                boolean flag1 = world.s(blockposition);
                 int k = flag1 ? -50 : 0;
 
                 // CraftBukkit start - add source blockposition to burn calls
@@ -161,7 +163,7 @@ public class BlockFire extends Block {
                                     k1 += (j1 - 1) * 100;
                                 }
 
-                                blockposition_mutableblockposition.g(blockposition).d(l, j1, i1);
+                                blockposition_mutableblockposition.g(blockposition).e(l, j1, i1);
                                 if (!world.isLoaded(blockposition_mutableblockposition)) continue; // Paper
                                 int l1 = this.a((IWorldReader) world, (BlockPosition) blockposition_mutableblockposition);
 
@@ -176,7 +178,7 @@ public class BlockFire extends Block {
                                         int j2 = Math.min(15, i + random.nextInt(5) / 4);
 
                                         // CraftBukkit start - Call to stop spread of fire
-                                        if (world.getType(blockposition_mutableblockposition) != Blocks.FIRE) {
+                                        if (world.getType(blockposition_mutableblockposition).getBlock() != Blocks.FIRE) {
                                             if (CraftEventFactory.callBlockIgniteEvent(world, blockposition_mutableblockposition, blockposition).isCancelled()) {
                                                 continue;
                                             }
@@ -199,27 +201,29 @@ public class BlockFire extends Block {
         return world.isRainingAt(blockposition) || world.isRainingAt(blockposition.west()) || world.isRainingAt(blockposition.east()) || world.isRainingAt(blockposition.north()) || world.isRainingAt(blockposition.south());
     }
 
-    private int f(Block block) {
-        return this.t.getInt(block);
+    private int q(IBlockData iblockdata) {
+        return iblockdata.b((IBlockState) BlockProperties.C) && (Boolean) iblockdata.get(BlockProperties.C) ? 0 : this.i.getInt(iblockdata.getBlock());
     }
 
-    private int g(Block block) {
-        return this.flameChances.getInt(block);
+    private int r(IBlockData iblockdata) {
+        return iblockdata.b((IBlockState) BlockProperties.C) && (Boolean) iblockdata.get(BlockProperties.C) ? 0 : this.flameChances.getInt(iblockdata.getBlock());
     }
 
     private void a(World world, BlockPosition blockposition, int i, Random random, int j, BlockPosition sourceposition) { // CraftBukkit add sourceposition
         // Paper start
         final IBlockData iblockdata = world.getTypeIfLoaded(blockposition);
-        if (iblockdata == null) return;
-        int k = this.f(iblockdata.getBlock());
+        if (iblockdata == null) {
+            return;
+        }
+        int k = this.q(iblockdata);
         // Paper end
 
         if (random.nextInt(i) < k) {
             //IBlockData iblockdata = world.getType(blockposition); // Paper
 
             // CraftBukkit start
-            org.bukkit.block.Block theBlock = world.getWorld().getBlockAt(blockposition); // Akarin
-            org.bukkit.block.Block sourceBlock = world.getWorld().getBlockAt(sourceposition); // Akarin
+            org.bukkit.block.Block theBlock = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+            org.bukkit.block.Block sourceBlock = world.getWorld().getBlockAt(sourceposition.getX(), sourceposition.getY(), sourceposition.getZ());
 
             BlockBurnEvent event = new BlockBurnEvent(theBlock, sourceBlock);
             world.getServer().getPluginManager().callEvent(event);
@@ -234,33 +238,34 @@ public class BlockFire extends Block {
 
                 world.setTypeAndData(blockposition, (IBlockData) this.a((IBlockAccess) world, blockposition).set(BlockFire.AGE, l), 3);
             } else {
-                if(iblockdata.getBlock() != Blocks.TNT) world.setAir(blockposition); // Paper - TNTPrimeEvent - We might be cancelling it below, move the setAir down
+                if(iblockdata.getBlock() != Blocks.TNT) world.a(blockposition, false); // Paper - TNTPrimeEvent - We might be cancelling it below, move the setAir down
             }
 
             Block block = iblockdata.getBlock();
 
             if (block instanceof BlockTNT) {
+                BlockTNT blocktnt = (BlockTNT) block;
+
                 // Paper start - TNTPrimeEvent
                 org.bukkit.block.Block tntBlock = MCUtil.toBukkitBlock(world, blockposition);
                 if (!new TNTPrimeEvent(tntBlock, TNTPrimeEvent.PrimeReason.FIRE, null).callEvent()) {
                     return;
                 }
-                world.setAir(blockposition); // setair after non cancelled event, it would usually be air by now
                 // Paper end
-                ((BlockTNT) block).a(world, blockposition);
+                BlockTNT.a(world, blockposition);
             }
         }
 
     }
 
-    private boolean d(IBlockAccess iblockaccess, BlockPosition blockposition) {
+    private boolean canBurn(IBlockAccess iblockaccess, BlockPosition blockposition) {
         EnumDirection[] aenumdirection = EnumDirection.values();
         int i = aenumdirection.length;
 
         for (int j = 0; j < i; ++j) {
             EnumDirection enumdirection = aenumdirection[j];
 
-            if (this.k(iblockaccess.getType(blockposition.shift(enumdirection)))) {
+            if (this.j(iblockaccess.getType(blockposition.shift(enumdirection)))) {
                 return true;
             }
         }
@@ -278,29 +283,28 @@ public class BlockFire extends Block {
 
             for (int k = 0; k < j; ++k) {
                 EnumDirection enumdirection = aenumdirection[k];
-
                 // Paper start
-                final IBlockData type = ((World)iworldreader).getTypeIfLoaded(blockposition.shift(enumdirection));
-                if (type == null) continue;
-                i = Math.max(this.g(type.getBlock()), i);
+                IBlockData iblockdata = iworldreader.getTypeIfLoaded(blockposition.shift(enumdirection));
+                if (iblockdata == null) {
+                    continue;
+                }
                 // Paper end
+                i = Math.max(this.r(iblockdata), i);
             }
 
             return i;
         }
     }
 
-    public boolean j() {
-        return false;
+    public boolean j(IBlockData iblockdata) {
+        return this.r(iblockdata) > 0;
     }
 
-    public boolean k(IBlockData iblockdata) {
-        return this.g(iblockdata.getBlock()) > 0;
-    }
-
-    public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1) {
+    @Override
+    public void onPlace(IBlockData iblockdata, World world, BlockPosition blockposition, IBlockData iblockdata1, boolean flag) {
         if (iblockdata1.getBlock() != iblockdata.getBlock()) {
-            if (world.worldProvider.getDimensionManager() != DimensionManager.OVERWORLD && world.worldProvider.getDimensionManager() != DimensionManager.NETHER || !((BlockPortal) Blocks.NETHER_PORTAL).a((GeneratorAccess) world, blockposition)) {
+            // CraftBukkit - getType()
+            if (world.worldProvider.getDimensionManager().getType() != DimensionManager.OVERWORLD && world.worldProvider.getDimensionManager().getType() != DimensionManager.NETHER || !((BlockPortal) Blocks.NETHER_PORTAL).a((GeneratorAccess) world, blockposition)) {
                 if (!iblockdata.canPlace(world, blockposition)) {
                     fireExtinguished(world, blockposition); // CraftBukkit - fuel block broke
                 } else {
@@ -310,21 +314,19 @@ public class BlockFire extends Block {
         }
     }
 
+    @Override
     public TextureType c() {
         return TextureType.CUTOUT;
     }
 
+    @Override
     protected void a(BlockStateList.a<Block, IBlockData> blockstatelist_a) {
         blockstatelist_a.a(BlockFire.AGE, BlockFire.NORTH, BlockFire.EAST, BlockFire.SOUTH, BlockFire.WEST, BlockFire.UPPER);
     }
 
-    public EnumBlockFaceShape a(IBlockAccess iblockaccess, IBlockData iblockdata, BlockPosition blockposition, EnumDirection enumdirection) {
-        return EnumBlockFaceShape.UNDEFINED;
-    }
-
     public void a(Block block, int i, int j) {
         this.flameChances.put(block, i);
-        this.t.put(block, j);
+        this.i.put(block, j);
     }
 
     public static void d() {
@@ -411,6 +413,9 @@ public class BlockFire extends Block {
         blockfire.a(Blocks.WHITE_TULIP, 60, 100);
         blockfire.a(Blocks.PINK_TULIP, 60, 100);
         blockfire.a(Blocks.OXEYE_DAISY, 60, 100);
+        blockfire.a(Blocks.CORNFLOWER, 60, 100);
+        blockfire.a(Blocks.LILY_OF_THE_VALLEY, 60, 100);
+        blockfire.a(Blocks.WITHER_ROSE, 60, 100);
         blockfire.a(Blocks.WHITE_WOOL, 30, 60);
         blockfire.a(Blocks.ORANGE_WOOL, 30, 60);
         blockfire.a(Blocks.MAGENTA_WOOL, 30, 60);
@@ -447,12 +452,17 @@ public class BlockFire extends Block {
         blockfire.a(Blocks.RED_CARPET, 60, 20);
         blockfire.a(Blocks.BLACK_CARPET, 60, 20);
         blockfire.a(Blocks.DRIED_KELP_BLOCK, 30, 60);
+        blockfire.a(Blocks.BAMBOO, 60, 60);
+        blockfire.a(Blocks.SCAFFOLDING, 60, 60);
+        blockfire.a(Blocks.LECTERN, 30, 20);
+        blockfire.a(Blocks.COMPOSTER, 5, 20);
+        blockfire.a(Blocks.SWEET_BERRY_BUSH, 60, 100);
     }
 
     // CraftBukkit start
     private void fireExtinguished(GeneratorAccess world, BlockPosition position) {
         if (!CraftEventFactory.callBlockFadeEvent(world, position, Blocks.AIR.getBlockData()).isCancelled()) {
-            world.setAir(position);
+            world.a(position, false);
         }
     }
     // CraftBukkit end

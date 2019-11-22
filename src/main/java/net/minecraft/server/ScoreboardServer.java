@@ -18,6 +18,7 @@ public class ScoreboardServer extends Scoreboard {
         this.a = minecraftserver;
     }
 
+    @Override
     public void handleScoreChanged(ScoreboardScore scoreboardscore) {
         super.handleScoreChanged(scoreboardscore);
         if (this.b.contains(scoreboardscore.getObjective())) {
@@ -27,12 +28,14 @@ public class ScoreboardServer extends Scoreboard {
         this.b();
     }
 
+    @Override
     public void handlePlayerRemoved(String s) {
         super.handlePlayerRemoved(s);
         this.sendAll(new PacketPlayOutScoreboardScore(ScoreboardServer.Action.REMOVE, (String) null, s, 0));
         this.b();
     }
 
+    @Override
     public void a(String s, ScoreboardObjective scoreboardobjective) {
         super.a(s, scoreboardobjective);
         if (this.b.contains(scoreboardobjective)) {
@@ -42,6 +45,7 @@ public class ScoreboardServer extends Scoreboard {
         this.b();
     }
 
+    @Override
     public void setDisplaySlot(int i, @Nullable ScoreboardObjective scoreboardobjective) {
         ScoreboardObjective scoreboardobjective1 = this.getObjectiveForSlot(i);
 
@@ -65,6 +69,7 @@ public class ScoreboardServer extends Scoreboard {
         this.b();
     }
 
+    @Override
     public boolean addPlayerToTeam(String s, ScoreboardTeam scoreboardteam) {
         if (super.addPlayerToTeam(s, scoreboardteam)) {
             this.sendAll(new PacketPlayOutScoreboardTeam(scoreboardteam, Arrays.asList(s), 3));
@@ -75,17 +80,20 @@ public class ScoreboardServer extends Scoreboard {
         }
     }
 
+    @Override
     public void removePlayerFromTeam(String s, ScoreboardTeam scoreboardteam) {
         super.removePlayerFromTeam(s, scoreboardteam);
         this.sendAll(new PacketPlayOutScoreboardTeam(scoreboardteam, Arrays.asList(s), 4));
         this.b();
     }
 
+    @Override
     public void handleObjectiveAdded(ScoreboardObjective scoreboardobjective) {
         super.handleObjectiveAdded(scoreboardobjective);
         this.b();
     }
 
+    @Override
     public void handleObjectiveChanged(ScoreboardObjective scoreboardobjective) {
         super.handleObjectiveChanged(scoreboardobjective);
         if (this.b.contains(scoreboardobjective)) {
@@ -95,6 +103,7 @@ public class ScoreboardServer extends Scoreboard {
         this.b();
     }
 
+    @Override
     public void handleObjectiveRemoved(ScoreboardObjective scoreboardobjective) {
         super.handleObjectiveRemoved(scoreboardobjective);
         if (this.b.contains(scoreboardobjective)) {
@@ -104,18 +113,21 @@ public class ScoreboardServer extends Scoreboard {
         this.b();
     }
 
+    @Override
     public void handleTeamAdded(ScoreboardTeam scoreboardteam) {
         super.handleTeamAdded(scoreboardteam);
         this.sendAll(new PacketPlayOutScoreboardTeam(scoreboardteam, 0));
         this.b();
     }
 
+    @Override
     public void handleTeamChanged(ScoreboardTeam scoreboardteam) {
         super.handleTeamChanged(scoreboardteam);
         this.sendAll(new PacketPlayOutScoreboardTeam(scoreboardteam, 2));
         this.b();
     }
 
+    @Override
     public void handleTeamRemoved(ScoreboardTeam scoreboardteam) {
         super.handleTeamRemoved(scoreboardteam);
         this.sendAll(new PacketPlayOutScoreboardTeam(scoreboardteam, 1));
@@ -163,7 +175,7 @@ public class ScoreboardServer extends Scoreboard {
 
     public void e(ScoreboardObjective scoreboardobjective) {
         List<Packet<?>> list = this.getScoreboardScorePacketsForObjective(scoreboardobjective);
-        Iterator iterator = this.a.getPlayerList().v().iterator();
+        Iterator iterator = this.a.getPlayerList().getPlayers().iterator();
 
         while (iterator.hasNext()) {
             EntityPlayer entityplayer = (EntityPlayer) iterator.next();
@@ -196,7 +208,7 @@ public class ScoreboardServer extends Scoreboard {
 
     public void g(ScoreboardObjective scoreboardobjective) {
         List<Packet<?>> list = this.f(scoreboardobjective);
-        Iterator iterator = this.a.getPlayerList().v().iterator();
+        Iterator iterator = this.a.getPlayerList().getPlayers().iterator();
 
         while (iterator.hasNext()) {
             EntityPlayer entityplayer = (EntityPlayer) iterator.next();

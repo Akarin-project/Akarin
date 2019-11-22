@@ -2,99 +2,110 @@ package net.minecraft.server;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
+import java.util.Random;
 import javax.annotation.Nullable;
 import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 
 public class EntityBat extends EntityAmbient {
 
-    private static final DataWatcherObject<Byte> a = DataWatcher.a(EntityBat.class, DataWatcherRegistry.a);
-    private BlockPosition b;
+    private static final DataWatcherObject<Byte> b = DataWatcher.a(EntityBat.class, DataWatcherRegistry.a);
+    private static final PathfinderTargetCondition c = (new PathfinderTargetCondition()).a(4.0D).b();
+    private BlockPosition d;
 
-    public EntityBat(World world) {
-        super(EntityTypes.BAT, world);
-        this.setSize(0.5F, 0.9F);
+    public EntityBat(EntityTypes<? extends EntityBat> entitytypes, World world) {
+        super(entitytypes, world);
         this.setAsleep(true);
     }
 
-    protected void x_() {
-        super.x_();
-        this.datawatcher.register(EntityBat.a, (byte) 0);
+    @Override
+    protected void initDatawatcher() {
+        super.initDatawatcher();
+        this.datawatcher.register(EntityBat.b, (byte) 0);
     }
 
-    protected float cD() {
+    @Override
+    protected float getSoundVolume() {
         return 0.1F;
     }
 
-    protected float cE() {
-        return super.cE() * 0.95F;
+    @Override
+    protected float cV() {
+        return super.cV() * 0.95F;
     }
 
     @Nullable
-    public SoundEffect D() {
+    @Override
+    public SoundEffect getSoundAmbient() {
         return this.isAsleep() && this.random.nextInt(4) != 0 ? null : SoundEffects.ENTITY_BAT_AMBIENT;
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return SoundEffects.ENTITY_BAT_HURT;
     }
 
-    protected SoundEffect cs() {
+    @Override
+    protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_BAT_DEATH;
     }
 
+    @Override
     public boolean isCollidable() {
         return false;
     }
 
-    protected void C(Entity entity) {}
+    @Override
+    protected void D(Entity entity) {}
 
-    protected void cN() {}
+    @Override
+    protected void collideNearby() {}
 
+    @Override
     protected void initAttributes() {
         super.initAttributes();
-        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(6.0D);
+        this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(6.0D);
     }
 
     public boolean isAsleep() {
-        return ((Byte) this.datawatcher.get(EntityBat.a) & 1) != 0;
+        return ((Byte) this.datawatcher.get(EntityBat.b) & 1) != 0;
     }
 
     public void setAsleep(boolean flag) {
-        byte b0 = (Byte) this.datawatcher.get(EntityBat.a);
+        byte b0 = (Byte) this.datawatcher.get(EntityBat.b);
 
         if (flag) {
-            this.datawatcher.set(EntityBat.a, (byte) (b0 | 1));
+            this.datawatcher.set(EntityBat.b, (byte) (b0 | 1));
         } else {
-            this.datawatcher.set(EntityBat.a, (byte) (b0 & -2));
+            this.datawatcher.set(EntityBat.b, (byte) (b0 & -2));
         }
 
     }
 
+    @Override
     public void tick() {
         super.tick();
         if (this.isAsleep()) {
-            this.motX = 0.0D;
-            this.motY = 0.0D;
-            this.motZ = 0.0D;
-            this.locY = (double) MathHelper.floor(this.locY) + 1.0D - (double) this.length;
+            this.setMot(Vec3D.a);
+            this.locY = (double) MathHelper.floor(this.locY) + 1.0D - (double) this.getHeight();
         } else {
-            this.motY *= 0.6000000238418579D;
+            this.setMot(this.getMot().d(1.0D, 0.6D, 1.0D));
         }
 
     }
 
+    @Override
     protected void mobTick() {
         super.mobTick();
         BlockPosition blockposition = new BlockPosition(this);
         BlockPosition blockposition1 = blockposition.up();
 
         if (this.isAsleep()) {
-            if (this.world.getType(blockposition1).isOccluding()) {
+            if (this.world.getType(blockposition1).isOccluding(this.world, blockposition)) {
                 if (this.random.nextInt(200) == 0) {
-                    this.aS = (float) this.random.nextInt(360);
+                    this.aM = (float) this.random.nextInt(360);
                 }
 
-                if (this.world.b(this, 4.0D) != null) {
+                if (this.world.a(EntityBat.c, (EntityLiving) this) != null) {
                     // CraftBukkit Start - Call BatToggleSleepEvent
                     if (CraftEventFactory.handleBatToggleSleepEvent(this, true)) {
                         this.setAsleep(false);
@@ -111,27 +122,27 @@ public class EntityBat extends EntityAmbient {
                 // CraftBukkit End - Call BatToggleSleepEvent
             }
         } else {
-            if (this.b != null && (!this.world.isEmpty(this.b) || this.b.getY() < 1)) {
-                this.b = null;
+            if (this.d != null && (!this.world.isEmpty(this.d) || this.d.getY() < 1)) {
+                this.d = null;
             }
 
-            if (this.b == null || this.random.nextInt(30) == 0 || this.b.distanceSquared((double) ((int) this.locX), (double) ((int) this.locY), (double) ((int) this.locZ)) < 4.0D) {
-                this.b = new BlockPosition((int) this.locX + this.random.nextInt(7) - this.random.nextInt(7), (int) this.locY + this.random.nextInt(6) - 2, (int) this.locZ + this.random.nextInt(7) - this.random.nextInt(7));
+            if (this.d == null || this.random.nextInt(30) == 0 || this.d.a((IPosition) this.getPositionVector(), 2.0D)) {
+                this.d = new BlockPosition(this.locX + (double) this.random.nextInt(7) - (double) this.random.nextInt(7), this.locY + (double) this.random.nextInt(6) - 2.0D, this.locZ + (double) this.random.nextInt(7) - (double) this.random.nextInt(7));
             }
 
-            double d0 = (double) this.b.getX() + 0.5D - this.locX;
-            double d1 = (double) this.b.getY() + 0.1D - this.locY;
-            double d2 = (double) this.b.getZ() + 0.5D - this.locZ;
+            double d0 = (double) this.d.getX() + 0.5D - this.locX;
+            double d1 = (double) this.d.getY() + 0.1D - this.locY;
+            double d2 = (double) this.d.getZ() + 0.5D - this.locZ;
+            Vec3D vec3d = this.getMot();
+            Vec3D vec3d1 = vec3d.add((Math.signum(d0) * 0.5D - vec3d.x) * 0.10000000149011612D, (Math.signum(d1) * 0.699999988079071D - vec3d.y) * 0.10000000149011612D, (Math.signum(d2) * 0.5D - vec3d.z) * 0.10000000149011612D);
 
-            this.motX += (Math.signum(d0) * 0.5D - this.motX) * 0.10000000149011612D;
-            this.motY += (Math.signum(d1) * 0.699999988079071D - this.motY) * 0.10000000149011612D;
-            this.motZ += (Math.signum(d2) * 0.5D - this.motZ) * 0.10000000149011612D;
-            float f = (float) (MathHelper.c(this.motZ, this.motX) * 57.2957763671875D) - 90.0F;
+            this.setMot(vec3d1);
+            float f = (float) (MathHelper.d(vec3d1.z, vec3d1.x) * 57.2957763671875D) - 90.0F;
             float f1 = MathHelper.g(f - this.yaw);
 
-            this.bj = 0.5F;
+            this.bd = 0.5F;
             this.yaw += f1;
-            if (this.random.nextInt(100) == 0 && this.world.getType(blockposition1).isOccluding()) {
+            if (this.random.nextInt(100) == 0 && this.world.getType(blockposition1).isOccluding(this.world, blockposition1)) {
                 // CraftBukkit Start - Call BatToggleSleepEvent
                 if (CraftEventFactory.handleBatToggleSleepEvent(this, false)) {
                     this.setAsleep(true);
@@ -142,18 +153,23 @@ public class EntityBat extends EntityAmbient {
 
     }
 
+    @Override
     protected boolean playStepSound() {
         return false;
     }
 
-    public void c(float f, float f1) {}
+    @Override
+    public void b(float f, float f1) {}
 
+    @Override
     protected void a(double d0, boolean flag, IBlockData iblockdata, BlockPosition blockposition) {}
 
+    @Override
     public boolean isIgnoreBlockTrigger() {
         return true;
     }
 
+    @Override
     public boolean damageEntity(DamageSource damagesource, float f) {
         if (this.isInvulnerable(damagesource)) {
             return false;
@@ -170,36 +186,36 @@ public class EntityBat extends EntityAmbient {
         }
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
-        this.datawatcher.set(EntityBat.a, nbttagcompound.getByte("BatFlags"));
+        this.datawatcher.set(EntityBat.b, nbttagcompound.getByte("BatFlags"));
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
-        nbttagcompound.setByte("BatFlags", (Byte) this.datawatcher.get(EntityBat.a));
+        nbttagcompound.setByte("BatFlags", (Byte) this.datawatcher.get(EntityBat.b));
     }
 
-    public boolean a(GeneratorAccess generatoraccess, boolean flag) {
-        BlockPosition blockposition = new BlockPosition(this.locX, this.getBoundingBox().minY, this.locZ);
-
+    public static boolean b(EntityTypes<EntityBat> entitytypes, GeneratorAccess generatoraccess, EnumMobSpawn enummobspawn, BlockPosition blockposition, Random random) {
         if (blockposition.getY() >= generatoraccess.getSeaLevel()) {
             return false;
         } else {
             int i = generatoraccess.getLightLevel(blockposition);
             byte b0 = 4;
 
-            if (this.dr()) {
+            if (dT()) {
                 b0 = 7;
-            } else if (this.random.nextBoolean()) {
+            } else if (random.nextBoolean()) {
                 return false;
             }
 
-            return i > this.random.nextInt(b0) ? false : super.a(generatoraccess, flag);
+            return i > random.nextInt(b0) ? false : a(entitytypes, generatoraccess, enummobspawn, blockposition, random);
         }
     }
 
-    private boolean dr() {
+    private static boolean dT() {
         LocalDate localdate = LocalDate.now();
         int i = localdate.get(ChronoField.DAY_OF_MONTH);
         int j = localdate.get(ChronoField.MONTH_OF_YEAR);
@@ -207,12 +223,8 @@ public class EntityBat extends EntityAmbient {
         return j == 10 && i >= 20 || j == 11 && i <= 3;
     }
 
-    public float getHeadHeight() {
-        return this.length / 2.0F;
-    }
-
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.an;
+    @Override
+    protected float b(EntityPose entitypose, EntitySize entitysize) {
+        return entitysize.height / 2.0F;
     }
 }

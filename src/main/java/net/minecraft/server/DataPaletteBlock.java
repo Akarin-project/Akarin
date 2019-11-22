@@ -1,9 +1,12 @@
 package net.minecraft.server;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap.Entry;
 import com.destroystokyo.paper.antixray.ChunkPacketInfo; // Paper - Anti-Xray
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,43 +24,29 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
     protected DataBits a; protected DataBits getDataBits() { return this.a; } // Paper - OBFHELPER
     private DataPalette<T> h; private DataPalette<T> getDataPalette() { return this.h; } // Paper - OBFHELPER
     private int i; private int getBitsPerObject() { return this.i; } // Paper - OBFHELPER
-    // Paper start - use read write locks only during generation, disable once back on main thread
-    private static final NoopLock NOOP_LOCK = new NoopLock();
-    private java.util.concurrent.locks.Lock readLock = NOOP_LOCK;
-    private java.util.concurrent.locks.Lock writeLock = NOOP_LOCK;
+    private final com.destroystokyo.paper.util.ReentrantLockWithGetOwner j = new com.destroystokyo.paper.util.ReentrantLockWithGetOwner(); private com.destroystokyo.paper.util.ReentrantLockWithGetOwner getLock() { return this.j; } // Paper - change type to ReentrantLockWithGetOwner // Paper - OBFHELPER
 
-    private static class NoopLock extends ReentrantReadWriteLock.WriteLock {
-        private NoopLock() {
-            super(new ReentrantReadWriteLock());
+    public void a() {
+        // Paper start - log other thread
+        Thread owningThread;
+        if (this.j.isLocked() && (owningThread = this.getLock().getOwner()) != null && owningThread != Thread.currentThread()) {
+            // Paper end
+            String s = (String) Thread.getAllStackTraces().keySet().stream().filter(Objects::nonNull).map((thread) -> {
+                return thread.getName() + ": \n\tat " + (String) Arrays.stream(thread.getStackTrace()).map(Object::toString).collect(Collectors.joining("\n\tat "));
+            }).collect(Collectors.joining("\n"));
+            CrashReport crashreport = new CrashReport("Writing into PalettedContainer from multiple threads (other thread: name: " + owningThread.getName() + ", class: " + owningThread.getClass().toString() + ")", new IllegalStateException()); // Paper - log other thread
+            CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Thread dumps");
+
+            crashreportsystemdetails.a("Thread dumps", (Object) s);
+            throw new ReportedException(crashreport);
+        } else {
+            this.j.lock();
         }
-
-        @Override
-        public final void lock() {
-        }
-
-        @Override
-        public final void unlock() {
-
-        }
     }
 
-    synchronized void enableLocks() {
-        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-        readLock = lock.readLock();
-        writeLock = lock.writeLock();
+    public void b() {
+        this.j.unlock();
     }
-    synchronized void disableLocks() {
-        readLock = NOOP_LOCK;
-        writeLock = NOOP_LOCK;
-    }
-
-    private void b() {
-        writeLock.lock();
-    }
-    private void c() {
-        writeLock.unlock();
-    }
-    // Paper end
 
     public DataPaletteBlock(DataPalette<T> datapalette, RegistryBlockID<T> registryblockid, Function<NBTTagCompound, T> function, Function<T, NBTTagCompound> function1, T t0) {
         // Paper start - Anti-Xray - Support default constructor
@@ -79,17 +68,12 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
                 // Default
                 this.initialize(4);
             } else {
-                // TODO: MathHelper.d(int i) can be used here instead (see DataPaletteBlock#a(NBTTagCompound nbttagcompound, String s, String s1)) but I don't understand the implementation
+                // MathHelper.d() is trailingBits(roundCeilPow2(n)), alternatively; (int)ceil(log2(n)); however it's trash, use numberOfLeadingZeros instead
                 // Count the bits of the maximum array index to initialize a data palette with enough space from the beginning
                 // The length of the array is used because air is also added to the data palette from the beginning
                 // Start with at least 4
                 int maxIndex = predefinedObjects.length >> 4;
-                int bitCount = 4;
-
-                while (maxIndex != 0) {
-                    maxIndex >>= 1;
-                    bitCount++;
-                }
+                int bitCount = (32 - Integer.numberOfLeadingZeros(Math.max(16, maxIndex) - 1));
 
                 // Initialize with at least 15 free indixes
                 this.initialize((1 << bitCount) - predefinedObjects.length < 16 ? bitCount + 1 : bitCount);
@@ -98,6 +82,16 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
         }
         // Paper end
     }
+
+    // Paper start - Anti-Xray - Add predefined objects
+    private void addPredefinedObjects() {
+        if (this.predefinedObjects != null && this.getDataPalette() != this.getDataPaletteGlobal()) {
+            for (int i = 0; i < this.predefinedObjects.length; i++) {
+                this.getDataPalette().getOrCreateIdFor(this.predefinedObjects[i]);
+            }
+        }
+    }
+    // Paper end
 
     private static int b(int i, int j, int k) {
         return j << 8 | k << 4 | i;
@@ -122,18 +116,9 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
         }
     }
 
-    // Paper start - Anti-Xray - Add predefined objects
-    private void addPredefinedObjects() {
-        if (this.predefinedObjects != null && this.getDataPalette() != this.getDataPaletteGlobal()) {
-            for (int i = 0; i < this.predefinedObjects.length; i++) {
-                this.getDataPalette().getOrCreateIdFor(this.predefinedObjects[i]);
-            }
-        }
-    }
-    // Paper end
-
+    @Override
     public int onResize(int i, T t0) {
-        this.b();
+        this.a();
         DataBits databits = this.a;
         DataPalette<T> datapalette = this.h;
 
@@ -151,20 +136,34 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
         }
 
         j = this.h.a(t0);
-        this.c();
+        this.b();
         return j;
     }
 
-    public void setBlock(int i, int j, int k, T t0) {
+    public T setBlock(int i, int j, int k, T t0) {
+        this.a();
+        T t1 = this.a(b(i, j, k), t0);
+
         this.b();
-        this.setBlockIndex(b(i, j, k), t0);
-        this.c();
+        return t1;
+    }
+
+    public T b(int i, int j, int k, T t0) {
+        return this.a(b(i, j, k), t0);
+    }
+
+    protected T a(int i, T t0) {
+        int j = this.h.a(t0);
+        int k = this.a.a(i, j);
+        T t1 = this.h.a(k);
+
+        return t1 == null ? this.g : t1;
     }
 
     protected void setBlockIndex(int i, T t0) {
         int j = this.h.a(t0);
 
-        this.a.a(i, j);
+        this.a.b(i, j);
     }
 
     public T a(int i, int j, int k) {
@@ -172,25 +171,19 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
     }
 
     protected T a(int i) {
-        try { // Paper start - read lock
-            readLock.lock();
-            T object = this.h.a(this.a.a(i)); // Paper - decompile fix
-            return (T)(object == null ? this.g : object);
-        } finally {
-            readLock.unlock();
-        } // Paper end
+        T t0 = this.h.a(this.a.a(i));
+
+        return t0 == null ? this.g : t0;
     }
 
-    // Paper start - Anti-Xray - Support default methods
-    public void writeDataPaletteBlock(PacketDataSerializer packetDataSerializer) { this.b(packetDataSerializer); }
+    public void writeDataPaletteBlock(PacketDataSerializer packetDataSerializer) { this.b(packetDataSerializer); } // Paper - OBFHELPER
     public void b(PacketDataSerializer packetdataserializer) {
-        this.b(packetdataserializer, null, 0);
+        // Paper start - add parameters
+        this.writeDataPaletteBlock(packetdataserializer, null, 0);
     }
-    // Paper end
-
-    public void writeDataPaletteBlock(PacketDataSerializer packetDataSerializer, ChunkPacketInfo<T> chunkPacketInfo, int chunkSectionIndex) { this.b(packetDataSerializer, chunkPacketInfo, chunkSectionIndex); } // Paper - OBFHELPER // Paper - Anti-Xray - Add chunk packet info
-    public void b(PacketDataSerializer packetdataserializer, ChunkPacketInfo<T> chunkPacketInfo, int chunkSectionIndex) { // Paper - Anti-Xray - Add chunk packet info
-        this.b();
+    public void writeDataPaletteBlock(PacketDataSerializer packetdataserializer, ChunkPacketInfo<T> chunkPacketInfo, int chunkSectionIndex) {
+        // Paper end
+        this.a();
         packetdataserializer.writeByte(this.i);
         this.h.b(packetdataserializer);
 
@@ -204,12 +197,11 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
         // Paper end
 
         packetdataserializer.a(this.a.a());
-        this.c();
+        this.b();
     }
 
-    public void a(NBTTagCompound nbttagcompound, String s, String s1) {
-        this.b();
-        NBTTagList nbttaglist = nbttagcompound.getList(s, 10);
+    public void a(NBTTagList nbttaglist, long[] along) {
+        this.a();
         // Paper - Anti-Xray - TODO: Should this.predefinedObjects.length just be added here (faster) or should the contents be compared to calculate the size (less RAM)?
         int i = Math.max(4, MathHelper.d(nbttaglist.size() + (this.predefinedObjects == null ? 0 : this.predefinedObjects.length))); // Paper - Anti-Xray - Calculate the size with predefined objects
 
@@ -219,7 +211,6 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
 
         this.h.a(nbttaglist);
         this.addPredefinedObjects(); // Paper - Anti-Xray - Add predefined objects
-        long[] along = nbttagcompound.o(s1);
         int j = along.length * 64 / 4096;
 
         if (this.h == this.b) {
@@ -229,7 +220,7 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
             DataBits databits = new DataBits(i, 4096, along);
 
             for (int k = 0; k < 4096; ++k) {
-                this.a.a(k, this.b.a(datapalette.a(databits.a(k))));
+                this.a.b(k, this.b.a(datapalette.a(databits.a(k))));
             }
         } else if (j == this.i) {
             System.arraycopy(along, 0, this.a.a(), 0, along.length);
@@ -237,15 +228,15 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
             DataBits databits1 = new DataBits(j, 4096, along);
 
             for (int l = 0; l < 4096; ++l) {
-                this.a.a(l, databits1.a(l));
+                this.a.b(l, databits1.a(l));
             }
         }
 
-        this.c();
+        this.b();
     }
 
-    public void b(NBTTagCompound nbttagcompound, String s, String s1) {
-        this.b();
+    public void a(NBTTagCompound nbttagcompound, String s, String s1) {
+        this.a();
         DataPaletteHash<T> datapalettehash = new DataPaletteHash<>(this.d, this.i, this.c, this.e, this.f);
 
         datapalettehash.a(this.g);
@@ -263,14 +254,35 @@ public class DataPaletteBlock<T> implements DataPaletteExpandable<T> {
         DataBits databits = new DataBits(j, 4096);
 
         for (int k = 0; k < aint.length; ++k) {
-            databits.a(k, aint[k]);
+            databits.b(k, aint[k]);
         }
 
         nbttagcompound.a(s1, databits.a());
-        this.c();
+        this.b();
     }
 
-    public int a() {
+    public int c() {
         return 1 + this.h.a() + PacketDataSerializer.a(this.a.b()) + this.a.a().length * 8;
+    }
+
+    public boolean a(T t0) {
+        return this.h.b(t0);
+    }
+
+    public void a(DataPaletteBlock.a<T> datapaletteblock_a) {
+        Int2IntOpenHashMap int2intopenhashmap = new Int2IntOpenHashMap();
+
+        this.a.a((i) -> {
+            int2intopenhashmap.put(i, int2intopenhashmap.get(i) + 1);
+        });
+        int2intopenhashmap.int2IntEntrySet().forEach((entry) -> {
+            datapaletteblock_a.accept(this.h.a(entry.getIntKey()), entry.getIntValue());
+        });
+    }
+
+    @FunctionalInterface
+    public interface a<T> {
+
+        void accept(T t0, int i);
     }
 }

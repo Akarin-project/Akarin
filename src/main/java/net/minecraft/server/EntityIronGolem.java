@@ -1,125 +1,112 @@
 package net.minecraft.server;
 
-import javax.annotation.Nullable;
-
 public class EntityIronGolem extends EntityGolem {
 
-    protected static final DataWatcherObject<Byte> a = DataWatcher.a(EntityIronGolem.class, DataWatcherRegistry.a);
-    private int b;
-    @Nullable
-    private Village c;
-    private int bC;
-    private int bD;
+    protected static final DataWatcherObject<Byte> b = DataWatcher.a(EntityIronGolem.class, DataWatcherRegistry.a);
+    private int c;
+    private int d;
 
-    public EntityIronGolem(World world) {
-        super(EntityTypes.IRON_GOLEM, world);
-        this.setSize(1.4F, 2.7F);
+    public EntityIronGolem(EntityTypes<? extends EntityIronGolem> entitytypes, World world) {
+        super(entitytypes, world);
+        this.K = 1.0F;
     }
 
-    protected void n() {
+    @Override
+    protected void initPathfinder() {
         this.goalSelector.a(1, new PathfinderGoalMeleeAttack(this, 1.0D, true));
         this.goalSelector.a(2, new PathfinderGoalMoveTowardsTarget(this, 0.9D, 32.0F));
-        this.goalSelector.a(3, new PathfinderGoalMoveThroughVillage(this, 0.6D, true));
-        this.goalSelector.a(4, new PathfinderGoalMoveTowardsRestriction(this, 1.0D));
+        this.goalSelector.a(2, new PathfinderGoalStrollVillage(this, 0.6D));
+        this.goalSelector.a(3, new PathfinderGoalMoveThroughVillage(this, 0.6D, false, 4, () -> {
+            return false;
+        }));
         this.goalSelector.a(5, new PathfinderGoalOfferFlower(this));
         this.goalSelector.a(6, new PathfinderGoalRandomStrollLand(this, 0.6D));
         this.goalSelector.a(7, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 6.0F));
         this.goalSelector.a(8, new PathfinderGoalRandomLookaround(this));
         this.targetSelector.a(1, new PathfinderGoalDefendVillage(this));
-        this.targetSelector.a(2, new PathfinderGoalHurtByTarget(this, false, new Class[0]));
-        this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityInsentient.class, 10, false, true, (entityinsentient) -> {
-            return entityinsentient != null && IMonster.e.test(entityinsentient) && !(entityinsentient instanceof EntityCreeper);
+        this.targetSelector.a(2, new PathfinderGoalHurtByTarget(this, new Class[0]));
+        this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityInsentient.class, 5, false, false, (entityliving) -> {
+            return entityliving instanceof IMonster && !(entityliving instanceof EntityCreeper);
         }));
     }
 
-    protected void x_() {
-        super.x_();
-        this.datawatcher.register(EntityIronGolem.a, (byte) 0);
+    @Override
+    protected void initDatawatcher() {
+        super.initDatawatcher();
+        this.datawatcher.register(EntityIronGolem.b, (byte) 0);
     }
 
-    protected void mobTick() {
-        if (--this.b <= 0) {
-            this.b = 70 + this.random.nextInt(50);
-            this.c = this.world.af().getClosestVillage(new BlockPosition(this), 32);
-            if (this.c == null) {
-                this.dv();
-            } else {
-                BlockPosition blockposition = this.c.a();
-
-                this.a(blockposition, (int) ((float) this.c.b() * 0.6F));
-            }
-        }
-
-        super.mobTick();
-    }
-
+    @Override
     protected void initAttributes() {
         super.initAttributes();
-        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(100.0D);
+        this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(100.0D);
         this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.25D);
-        this.getAttributeInstance(GenericAttributes.c).setValue(1.0D);
+        this.getAttributeInstance(GenericAttributes.KNOCKBACK_RESISTANCE).setValue(1.0D);
     }
 
-    protected int k(int i) {
+    @Override
+    protected int l(int i) {
         return i;
     }
 
-    protected void C(Entity entity) {
+    @Override
+    protected void D(Entity entity) {
         if (entity instanceof IMonster && !(entity instanceof EntityCreeper) && this.getRandom().nextInt(20) == 0) {
             this.setGoalTarget((EntityLiving) entity, org.bukkit.event.entity.EntityTargetLivingEntityEvent.TargetReason.COLLISION, true); // CraftBukkit - set reason
         }
 
-        super.C(entity);
+        super.D(entity);
     }
 
+    @Override
     public void movementTick() {
         super.movementTick();
-        if (this.bC > 0) {
-            --this.bC;
+        if (this.c > 0) {
+            --this.c;
         }
 
-        if (this.bD > 0) {
-            --this.bD;
+        if (this.d > 0) {
+            --this.d;
         }
 
-        // Akarin start - this handle by client
-        /*
-        if (this.motX * this.motX + this.motZ * this.motZ > 2.500000277905201E-7D && this.random.nextInt(5) == 0) {
+        if (b(this.getMot()) > 2.500000277905201E-7D && this.random.nextInt(5) == 0) {
             int i = MathHelper.floor(this.locX);
             int j = MathHelper.floor(this.locY - 0.20000000298023224D);
             int k = MathHelper.floor(this.locZ);
             IBlockData iblockdata = this.world.getType(new BlockPosition(i, j, k));
 
             if (!iblockdata.isAir()) {
-                this.world.addParticle(new ParticleParamBlock(Particles.d, iblockdata), this.locX + ((double) this.random.nextFloat() - 0.5D) * (double) this.width, this.getBoundingBox().minY + 0.1D, this.locZ + ((double) this.random.nextFloat() - 0.5D) * (double) this.width, 4.0D * ((double) this.random.nextFloat() - 0.5D), 0.5D, ((double) this.random.nextFloat() - 0.5D) * 4.0D);
+                this.world.addParticle(new ParticleParamBlock(Particles.BLOCK, iblockdata), this.locX + ((double) this.random.nextFloat() - 0.5D) * (double) this.getWidth(), this.getBoundingBox().minY + 0.1D, this.locZ + ((double) this.random.nextFloat() - 0.5D) * (double) this.getWidth(), 4.0D * ((double) this.random.nextFloat() - 0.5D), 0.5D, ((double) this.random.nextFloat() - 0.5D) * 4.0D);
             }
         }
-        */
-        // Akarin end
 
     }
 
-    public boolean b(Class<? extends EntityLiving> oclass) {
-        return this.isPlayerCreated() && EntityHuman.class.isAssignableFrom(oclass) ? false : (oclass == EntityCreeper.class ? false : super.b(oclass));
+    @Override
+    public boolean a(EntityTypes<?> entitytypes) {
+        return this.isPlayerCreated() && entitytypes == EntityTypes.PLAYER ? false : (entitytypes == EntityTypes.CREEPER ? false : super.a(entitytypes));
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
         nbttagcompound.setBoolean("PlayerCreated", this.isPlayerCreated());
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         this.setPlayerCreated(nbttagcompound.getBoolean("PlayerCreated"));
     }
 
-    public boolean B(Entity entity) {
-        this.bC = 10;
+    @Override
+    public boolean C(Entity entity) {
+        this.c = 10;
         this.world.broadcastEntityEffect(this, (byte) 4);
         boolean flag = entity.damageEntity(DamageSource.mobAttack(this), (float) (7 + this.random.nextInt(15)));
 
         if (flag) {
-            entity.motY += 0.4000000059604645D;
+            entity.setMot(entity.getMot().add(0.0D, 0.4000000059604645D, 0.0D));
             this.a((EntityLiving) this, entity);
         }
 
@@ -127,71 +114,71 @@ public class EntityIronGolem extends EntityGolem {
         return flag;
     }
 
-    public Village l() {
-        return this.c;
-    }
-
-    public void a(boolean flag) {
+    public void r(boolean flag) {
         if (flag) {
-            this.bD = 400;
+            this.d = 400;
             this.world.broadcastEntityEffect(this, (byte) 11);
         } else {
-            this.bD = 0;
+            this.d = 0;
             this.world.broadcastEntityEffect(this, (byte) 34);
         }
 
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return SoundEffects.ENTITY_IRON_GOLEM_HURT;
     }
 
-    protected SoundEffect cs() {
+    @Override
+    protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_IRON_GOLEM_DEATH;
     }
 
+    @Override
     protected void a(BlockPosition blockposition, IBlockData iblockdata) {
         this.a(SoundEffects.ENTITY_IRON_GOLEM_STEP, 1.0F, 1.0F);
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.G;
-    }
-
-    public int dz() {
-        return this.bD;
-    }
-
     public boolean isPlayerCreated() {
-        return ((Byte) this.datawatcher.get(EntityIronGolem.a) & 1) != 0;
+        return ((Byte) this.datawatcher.get(EntityIronGolem.b) & 1) != 0;
     }
 
     public void setPlayerCreated(boolean flag) {
-        byte b0 = (Byte) this.datawatcher.get(EntityIronGolem.a);
+        byte b0 = (Byte) this.datawatcher.get(EntityIronGolem.b);
 
         if (flag) {
-            this.datawatcher.set(EntityIronGolem.a, (byte) (b0 | 1));
+            this.datawatcher.set(EntityIronGolem.b, (byte) (b0 | 1));
         } else {
-            this.datawatcher.set(EntityIronGolem.a, (byte) (b0 & -2));
+            this.datawatcher.set(EntityIronGolem.b, (byte) (b0 & -2));
         }
 
     }
 
+    @Override
     public void die(DamageSource damagesource) {
-        if (!this.isPlayerCreated() && this.killer != null && this.c != null) {
-            this.c.a(this.killer.getProfile().getName(), -5);
-        }
-
         super.die(damagesource);
     }
 
+    @Override
     public boolean a(IWorldReader iworldreader) {
-        BlockPosition blockposition = new BlockPosition(this.locX, this.locY, this.locZ);
-        IBlockData iblockdata = iworldreader.getType(blockposition);
-        IBlockData iblockdata1 = iworldreader.getType(blockposition.down());
-        IBlockData iblockdata2 = iworldreader.getType(blockposition.up());
+        BlockPosition blockposition = new BlockPosition(this);
+        BlockPosition blockposition1 = blockposition.down();
+        IBlockData iblockdata = iworldreader.getType(blockposition1);
 
-        return iblockdata1.q() && SpawnerCreature.a(iblockdata2, iblockdata2.s()) && SpawnerCreature.a(iblockdata, FluidTypes.EMPTY.i()) && iworldreader.getCubes(this, this.getBoundingBox()) && iworldreader.a_(this, this.getBoundingBox());
+        if (!iblockdata.a((IBlockAccess) iworldreader, blockposition1, (Entity) this)) {
+            return false;
+        } else {
+            for (int i = 1; i < 3; ++i) {
+                BlockPosition blockposition2 = blockposition.up(i);
+                IBlockData iblockdata1 = iworldreader.getType(blockposition2);
+
+                if (!SpawnerCreature.a((IBlockAccess) iworldreader, blockposition2, iblockdata1, iblockdata1.p())) {
+                    return false;
+                }
+            }
+
+            return SpawnerCreature.a((IBlockAccess) iworldreader, blockposition, iworldreader.getType(blockposition), FluidTypes.EMPTY.i()) && iworldreader.i(this);
+        }
     }
 }

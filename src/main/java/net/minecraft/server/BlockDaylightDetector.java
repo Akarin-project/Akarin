@@ -2,27 +2,34 @@ package net.minecraft.server;
 
 public class BlockDaylightDetector extends BlockTileEntity {
 
-    public static final BlockStateInteger POWER = BlockProperties.al;
-    public static final BlockStateBoolean b = BlockProperties.m;
+    public static final BlockStateInteger POWER = BlockProperties.as;
+    public static final BlockStateBoolean b = BlockProperties.p;
     protected static final VoxelShape c = Block.a(0.0D, 0.0D, 0.0D, 16.0D, 6.0D, 16.0D);
 
     public BlockDaylightDetector(Block.Info block_info) {
         super(block_info);
-        this.v((IBlockData) ((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockDaylightDetector.POWER, 0)).set(BlockDaylightDetector.b, false));
+        this.o((IBlockData) ((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockDaylightDetector.POWER, 0)).set(BlockDaylightDetector.b, false));
     }
 
-    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+    @Override
+    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision) {
         return BlockDaylightDetector.c;
     }
 
+    @Override
+    public boolean n(IBlockData iblockdata) {
+        return true;
+    }
+
+    @Override
     public int a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, EnumDirection enumdirection) {
         return (Integer) iblockdata.get(BlockDaylightDetector.POWER);
     }
 
-    public static void b(IBlockData iblockdata, World world, BlockPosition blockposition) {
+    public static void d(IBlockData iblockdata, World world, BlockPosition blockposition) {
         if (world.worldProvider.g()) {
             int i = world.getBrightness(EnumSkyBlock.SKY, blockposition) - world.c();
-            float f = world.c(1.0F);
+            float f = world.b(1.0F);
             boolean flag = (Boolean) iblockdata.get(BlockDaylightDetector.b);
 
             if (flag) {
@@ -43,43 +50,40 @@ public class BlockDaylightDetector extends BlockTileEntity {
         }
     }
 
-    public boolean interact(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman, EnumHand enumhand, EnumDirection enumdirection, float f, float f1, float f2) {
-        if (entityhuman.dy()) {
+    @Override
+    public boolean interact(IBlockData iblockdata, World world, BlockPosition blockposition, EntityHuman entityhuman, EnumHand enumhand, MovingObjectPositionBlock movingobjectpositionblock) {
+        if (entityhuman.dQ()) {
             if (world.isClientSide) {
                 return true;
             } else {
                 IBlockData iblockdata1 = (IBlockData) iblockdata.a((IBlockState) BlockDaylightDetector.b);
 
                 world.setTypeAndData(blockposition, iblockdata1, 4);
-                b(iblockdata1, world, blockposition);
+                d(iblockdata1, world, blockposition);
                 return true;
             }
         } else {
-            return super.interact(iblockdata, world, blockposition, entityhuman, enumhand, enumdirection, f, f1, f2);
+            return super.interact(iblockdata, world, blockposition, entityhuman, enumhand, movingobjectpositionblock);
         }
     }
 
-    public boolean a(IBlockData iblockdata) {
-        return false;
-    }
-
+    @Override
     public EnumRenderType c(IBlockData iblockdata) {
         return EnumRenderType.MODEL;
     }
 
+    @Override
     public boolean isPowerSource(IBlockData iblockdata) {
         return true;
     }
 
-    public TileEntity a(IBlockAccess iblockaccess) {
+    @Override
+    public TileEntity createTile(IBlockAccess iblockaccess) {
         return new TileEntityLightDetector();
     }
 
+    @Override
     protected void a(BlockStateList.a<Block, IBlockData> blockstatelist_a) {
         blockstatelist_a.a(BlockDaylightDetector.POWER, BlockDaylightDetector.b);
-    }
-
-    public EnumBlockFaceShape a(IBlockAccess iblockaccess, IBlockData iblockdata, BlockPosition blockposition, EnumDirection enumdirection) {
-        return enumdirection == EnumDirection.DOWN ? EnumBlockFaceShape.SOLID : EnumBlockFaceShape.UNDEFINED;
     }
 }

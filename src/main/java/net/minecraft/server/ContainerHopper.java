@@ -25,35 +25,43 @@ public class ContainerHopper extends Container {
     }
     // CraftBukkit end
 
-    public ContainerHopper(PlayerInventory playerinventory, IInventory iinventory, EntityHuman entityhuman) {
+    public ContainerHopper(int i, PlayerInventory playerinventory) {
+        this(i, playerinventory, new InventorySubcontainer(5));
+    }
+
+    public ContainerHopper(int i, PlayerInventory playerinventory, IInventory iinventory) {
+        super(Containers.HOPPER, i);
         this.hopper = iinventory;
         this.player = playerinventory; // CraftBukkit - save player
-        iinventory.startOpen(entityhuman);
+        a(iinventory, 5);
+        iinventory.startOpen(playerinventory.player);
         boolean flag = true;
 
-        int i;
+        int j;
 
-        for (i = 0; i < iinventory.getSize(); ++i) {
-            this.a(new Slot(iinventory, i, 44 + i * 18, 20));
+        for (j = 0; j < 5; ++j) {
+            this.a(new Slot(iinventory, j, 44 + j * 18, 20));
         }
 
-        for (i = 0; i < 3; ++i) {
-            for (int j = 0; j < 9; ++j) {
-                this.a(new Slot(playerinventory, j + i * 9 + 9, 8 + j * 18, i * 18 + 51));
+        for (j = 0; j < 3; ++j) {
+            for (int k = 0; k < 9; ++k) {
+                this.a(new Slot(playerinventory, k + j * 9 + 9, 8 + k * 18, j * 18 + 51));
             }
         }
 
-        for (i = 0; i < 9; ++i) {
-            this.a(new Slot(playerinventory, i, 8 + i * 18, 109));
+        for (j = 0; j < 9; ++j) {
+            this.a(new Slot(playerinventory, j, 8 + j * 18, 109));
         }
 
     }
 
+    @Override
     public boolean canUse(EntityHuman entityhuman) {
         if (!this.checkReachable) return true; // CraftBukkit
         return this.hopper.a(entityhuman);
     }
 
+    @Override
     public ItemStack shiftClick(EntityHuman entityhuman, int i) {
         ItemStack itemstack = ItemStack.a;
         Slot slot = (Slot) this.slots.get(i);
@@ -73,13 +81,14 @@ public class ContainerHopper extends Container {
             if (itemstack1.isEmpty()) {
                 slot.set(ItemStack.a);
             } else {
-                slot.f();
+                slot.d();
             }
         }
 
         return itemstack;
     }
 
+    @Override
     public void b(EntityHuman entityhuman) {
         super.b(entityhuman);
         this.hopper.closeContainer(entityhuman);

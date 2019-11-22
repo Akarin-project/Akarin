@@ -1,44 +1,45 @@
 package net.minecraft.server;
 
-import javax.annotation.Nullable;
+import java.util.Random;
 
 public class EntityZombieHusk extends EntityZombie {
 
-    public EntityZombieHusk(World world) {
-        super(EntityTypes.HUSK, world);
+    public EntityZombieHusk(EntityTypes<? extends EntityZombieHusk> entitytypes, World world) {
+        super(entitytypes, world);
     }
 
-    public boolean a(GeneratorAccess generatoraccess, boolean flag) {
-        return super.a(generatoraccess, flag) && (flag || generatoraccess.e(new BlockPosition(this)));
+    public static boolean b(EntityTypes<EntityZombieHusk> entitytypes, GeneratorAccess generatoraccess, EnumMobSpawn enummobspawn, BlockPosition blockposition, Random random) {
+        return c(entitytypes, generatoraccess, enummobspawn, blockposition, random) && (enummobspawn == EnumMobSpawn.SPAWNER || generatoraccess.f(blockposition));
     }
 
-    protected boolean L_() {
+    @Override
+    protected boolean I_() {
         return false;
     }
 
-    protected SoundEffect D() {
+    @Override
+    protected SoundEffect getSoundAmbient() {
         return SoundEffects.ENTITY_HUSK_AMBIENT;
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return SoundEffects.ENTITY_HUSK_HURT;
     }
 
-    protected SoundEffect cs() {
+    @Override
+    protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_HUSK_DEATH;
     }
 
-    protected SoundEffect dA() {
+    @Override
+    protected SoundEffect getSoundStep() {
         return SoundEffects.ENTITY_HUSK_STEP;
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.ay;
-    }
-
-    public boolean B(Entity entity) {
-        boolean flag = super.B(entity);
+    @Override
+    public boolean C(Entity entity) {
+        boolean flag = super.C(entity);
 
         if (flag && this.getItemInMainHand().isEmpty() && entity instanceof EntityLiving) {
             float f = this.world.getDamageScaler(new BlockPosition(this)).b();
@@ -49,16 +50,19 @@ public class EntityZombieHusk extends EntityZombie {
         return flag;
     }
 
-    protected boolean dC() {
+    @Override
+    protected boolean dY() {
         return true;
     }
 
-    protected void dE() {
-        this.a(EntityTypes.ZOMBIE.create(world)); // Paper
-        this.world.a((EntityHuman) null, 1041, new BlockPosition((int) this.locX, (int) this.locY, (int) this.locZ), 0);
+    @Override
+    protected void ea() {
+        this.b(EntityTypes.ZOMBIE);
+        this.world.a((EntityHuman) null, 1041, new BlockPosition(this), 0);
     }
 
-    protected ItemStack dB() {
+    @Override
+    protected ItemStack dX() {
         return ItemStack.a;
     }
 }

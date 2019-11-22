@@ -9,16 +9,17 @@ public abstract class DispenseBehaviorProjectile extends DispenseBehaviorItem {
 
     public DispenseBehaviorProjectile() {}
 
+    @Override
     public ItemStack a(ISourceBlock isourceblock, ItemStack itemstack) {
         World world = isourceblock.getWorld();
         IPosition iposition = BlockDispenser.a(isourceblock);
-        EnumDirection enumdirection = (EnumDirection) isourceblock.e().get(BlockDispenser.FACING);
+        EnumDirection enumdirection = (EnumDirection) isourceblock.getBlockData().get(BlockDispenser.FACING);
         IProjectile iprojectile = this.a(world, iposition, itemstack);
 
         // iprojectile.shoot((double) enumdirection.getAdjacentX(), (double) ((float) enumdirection.getAdjacentY() + 0.1F), (double) enumdirection.getAdjacentZ(), this.getPower(), this.a());
         // CraftBukkit start
         ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
-        org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
+        org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
         CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
         BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector((double) enumdirection.getAdjacentX(), (double) ((float) enumdirection.getAdjacentY() + 0.1F), (double) enumdirection.getAdjacentZ()));
@@ -50,6 +51,7 @@ public abstract class DispenseBehaviorProjectile extends DispenseBehaviorItem {
         return itemstack;
     }
 
+    @Override
     protected void a(ISourceBlock isourceblock) {
         isourceblock.getWorld().triggerEffect(1002, isourceblock.getBlockPosition(), 0);
     }

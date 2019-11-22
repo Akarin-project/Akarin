@@ -2,6 +2,7 @@ package net.minecraft.server;
 
 // CraftBukkit start
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.util.CraftVector;
 import org.bukkit.event.block.BlockDispenseEvent;
 // CraftBukkit end
 
@@ -9,16 +10,17 @@ public class DispenseBehaviorItem implements IDispenseBehavior {
 
     public DispenseBehaviorItem() {}
 
+    @Override
     public final ItemStack dispense(ISourceBlock isourceblock, ItemStack itemstack) {
         ItemStack itemstack1 = this.a(isourceblock, itemstack);
 
         this.a(isourceblock);
-        this.a(isourceblock, (EnumDirection) isourceblock.e().get(BlockDispenser.FACING));
+        this.a(isourceblock, (EnumDirection) isourceblock.getBlockData().get(BlockDispenser.FACING));
         return itemstack1;
     }
 
     protected ItemStack a(ISourceBlock isourceblock, ItemStack itemstack) {
-        EnumDirection enumdirection = (EnumDirection) isourceblock.e().get(BlockDispenser.FACING);
+        EnumDirection enumdirection = (EnumDirection) isourceblock.getBlockData().get(BlockDispenser.FACING);
         IPosition iposition = BlockDispenser.a(isourceblock);
         ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
 
@@ -48,18 +50,13 @@ public class DispenseBehaviorItem implements IDispenseBehavior {
         EntityItem entityitem = new EntityItem(world, d0, d1, d2, itemstack);
         double d3 = world.random.nextDouble() * 0.1D + 0.2D;
 
-        entityitem.motX = (double) enumdirection.getAdjacentX() * d3;
-        entityitem.motY = 0.20000000298023224D;
-        entityitem.motZ = (double) enumdirection.getAdjacentZ() * d3;
-        entityitem.motX += world.random.nextGaussian() * 0.007499999832361937D * (double) i;
-        entityitem.motY += world.random.nextGaussian() * 0.007499999832361937D * (double) i;
-        entityitem.motZ += world.random.nextGaussian() * 0.007499999832361937D * (double) i;
+        entityitem.setMot(world.random.nextGaussian() * 0.007499999832361937D * (double) i + (double) enumdirection.getAdjacentX() * d3, world.random.nextGaussian() * 0.007499999832361937D * (double) i + 0.20000000298023224D, world.random.nextGaussian() * 0.007499999832361937D * (double) i + (double) enumdirection.getAdjacentZ() * d3);
 
         // CraftBukkit start
-        org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
+        org.bukkit.block.Block block = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
         CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack);
 
-        BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), new org.bukkit.util.Vector(entityitem.motX, entityitem.motY, entityitem.motZ));
+        BlockDispenseEvent event = new BlockDispenseEvent(block, craftItem.clone(), CraftVector.toBukkit(entityitem.getMot()));
         if (!BlockDispenser.eventFired) {
             world.getServer().getPluginManager().callEvent(event);
         }
@@ -69,9 +66,7 @@ public class DispenseBehaviorItem implements IDispenseBehavior {
         }
 
         entityitem.setItemStack(CraftItemStack.asNMSCopy(event.getItem()));
-        entityitem.motX = event.getVelocity().getX();
-        entityitem.motY = event.getVelocity().getY();
-        entityitem.motZ = event.getVelocity().getZ();
+        entityitem.setMot(CraftVector.toNMS(event.getVelocity()));
 
         if (!event.getItem().getType().equals(craftItem.getType())) {
             // Chain to handler for new item

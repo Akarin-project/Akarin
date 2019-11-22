@@ -1,14 +1,16 @@
 package org.bukkit.craftbukkit.block;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.TileEntity;
-import net.minecraft.server.World;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.TileState;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.persistence.PersistentDataContainer;
 
-public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState {
+public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState implements TileState {
 
     private final Class<T> tileEntityClass;
     private final T tileEntity;
@@ -17,22 +19,33 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
     public CraftBlockEntityState(Block block, Class<T> tileEntityClass) {
         super(block);
 
+        try {// Paper - show location on failure
+
         this.tileEntityClass = tileEntityClass;
 
         // get tile entity from block:
         CraftWorld world = (CraftWorld) this.getWorld();
         this.tileEntity = tileEntityClass.cast(world.getHandle().getTileEntity(this.getPosition()));
+        Preconditions.checkState(this.tileEntity != null, "Tile is null, asynchronous access? " + block);
 
         // Paper start
         this.snapshotDisabled = DISABLE_SNAPSHOT;
         if (DISABLE_SNAPSHOT) {
             this.snapshot = this.tileEntity;
         } else {
-            this.snapshot = this.createSnapshot(this.tileEntity, world.getHandle());
+            this.snapshot = this.createSnapshot(this.tileEntity);
         }
         // copy tile entity data:
         if(this.snapshot != null) {
             this.load(this.snapshot);
+        }
+        // Paper end
+        // Paper start - show location on failure
+        } catch (Throwable thr) {
+            if (thr instanceof ThreadDeath) {
+                throw (ThreadDeath)thr;
+            }
+            throw new RuntimeException("Failed to read BlockState at: world: " + block.getWorld().getName() + " location: (" + block.getX() + ", " + block.getY() + ", " + block.getZ() + ")", thr);
         }
         // Paper end
     }
@@ -50,7 +63,7 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
         if (DISABLE_SNAPSHOT) {
             this.snapshot = this.tileEntity;
         } else {
-            this.snapshot = this.createSnapshot(this.tileEntity, null);
+            this.snapshot = this.createSnapshot(this.tileEntity);
         }
         // copy tile entity data:
         if(this.snapshot != null) {
@@ -59,13 +72,13 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
         // Paper end
     }
 
-    private T createSnapshot(T tileEntity, World world) {
+    private T createSnapshot(T tileEntity) {
         if (tileEntity == null) {
             return null;
         }
 
         NBTTagCompound nbtTagCompound = tileEntity.save(new NBTTagCompound());
-        T snapshot = (T) TileEntity.create(nbtTagCompound, world);
+        T snapshot = (T) TileEntity.create(nbtTagCompound);
 
         return snapshot;
     }
@@ -137,5 +150,10 @@ public class CraftBlockEntityState<T extends TileEntity> extends CraftBlockState
         }
 
         return result;
+    }
+
+    @Override
+    public PersistentDataContainer getPersistentDataContainer() {
+        return this.getSnapshot().persistentDataContainer;
     }
 }

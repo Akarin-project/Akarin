@@ -1,30 +1,22 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 public class ItemRecord extends Item {
 
     private static final Map<SoundEffect, ItemRecord> a = Maps.newHashMap();
-    private static final List<ItemRecord> b = Lists.newArrayList();
-    private final int c;
-    private final SoundEffect d;
+    private final int b;
+    private final SoundEffect c;
 
     protected ItemRecord(int i, SoundEffect soundeffect, Item.Info item_info) {
         super(item_info);
-        this.c = i;
-        this.d = soundeffect;
-        ItemRecord.a.put(this.d, this);
-        ItemRecord.b.add(this);
+        this.b = i;
+        this.c = soundeffect;
+        ItemRecord.a.put(this.c, this);
     }
 
-    public static ItemRecord a(Random random) {
-        return (ItemRecord) ItemRecord.b.get(random.nextInt(ItemRecord.b.size()));
-    }
-
+    @Override
     public EnumInteractionResult a(ItemActionContext itemactioncontext) {
         World world = itemactioncontext.getWorld();
         BlockPosition blockposition = itemactioncontext.getClickPosition();
@@ -52,6 +44,6 @@ public class ItemRecord extends Item {
     }
 
     public int d() {
-        return this.c;
+        return this.b;
     }
 }

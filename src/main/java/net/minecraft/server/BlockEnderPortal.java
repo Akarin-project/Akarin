@@ -1,8 +1,9 @@
 package net.minecraft.server;
 
-import java.util.Random;
-
-import org.bukkit.event.entity.EntityPortalEnterEvent; // CraftBukkit
+// CraftBukkit start
+import org.bukkit.event.entity.EntityPortalEnterEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+// CraftBukkit end
 
 public class BlockEnderPortal extends BlockTileEntity {
 
@@ -12,38 +13,30 @@ public class BlockEnderPortal extends BlockTileEntity {
         super(block_info);
     }
 
-    public TileEntity a(IBlockAccess iblockaccess) {
+    @Override
+    public TileEntity createTile(IBlockAccess iblockaccess) {
         return new TileEntityEnderPortal();
     }
 
-    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+    @Override
+    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision) {
         return BlockEnderPortal.a;
     }
 
-    public boolean a(IBlockData iblockdata) {
-        return false;
-    }
-
-    public int a(IBlockData iblockdata, Random random) {
-        return 0;
-    }
-
+    @Override
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity) {
-        if (!world.isClientSide && !entity.isPassenger() && !entity.isVehicle() && entity.bm() && VoxelShapes.c(VoxelShapes.a(entity.getBoundingBox().d((double) (-blockposition.getX()), (double) (-blockposition.getY()), (double) (-blockposition.getZ()))), iblockdata.getShape(world, blockposition), OperatorBoolean.AND)) {
+        if (!world.isClientSide && !entity.isPassenger() && !entity.isVehicle() && entity.canPortal() && VoxelShapes.c(VoxelShapes.a(entity.getBoundingBox().d((double) (-blockposition.getX()), (double) (-blockposition.getY()), (double) (-blockposition.getZ()))), iblockdata.getShape(world, blockposition), OperatorBoolean.AND)) {
             // CraftBukkit start - Entity in portal
             EntityPortalEnterEvent event = new EntityPortalEnterEvent(entity.getBukkitEntity(), new org.bukkit.Location(world.getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()));
             world.getServer().getPluginManager().callEvent(event);
+
+            if (entity instanceof EntityPlayer) {
+                ((EntityPlayer) entity).a(world.worldProvider.getDimensionManager().getType() == DimensionManager.THE_END ? DimensionManager.OVERWORLD : DimensionManager.THE_END, PlayerTeleportEvent.TeleportCause.END_PORTAL);
+                return;
+            }
+            entity.a(world.worldProvider.getDimensionManager().getType() == DimensionManager.THE_END ? DimensionManager.OVERWORLD : DimensionManager.THE_END);
             // CraftBukkit end
-            entity.a(DimensionManager.THE_END);
         }
 
-    }
-
-    public ItemStack a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata) {
-        return ItemStack.a;
-    }
-
-    public EnumBlockFaceShape a(IBlockAccess iblockaccess, IBlockData iblockdata, BlockPosition blockposition, EnumDirection enumdirection) {
-        return EnumBlockFaceShape.UNDEFINED;
     }
 }

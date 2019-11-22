@@ -2,9 +2,6 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.koloboke.collect.map.hash.HashObjIntMap;
-import com.koloboke.collect.map.hash.HashObjIntMaps;
-
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
 import java.io.IOException;
@@ -12,59 +9,52 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap; // Paper
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class DataWatcher {
 
-    private static final Logger a = LogManager.getLogger();
-    private static final Map<Class<? extends Entity>, Integer> b = HashObjIntMaps.newMutableMap(255); private static final HashObjIntMap<Class<? extends Entity>> entityTypeToIdMap() { return (HashObjIntMap<Class<? extends Entity>>) b; }// Akarin
-    private final Entity c;
-    private final Map<Integer, DataWatcher.Item<?>> d = new ConcurrentHashMap<Integer, DataWatcher.Item<?>>(255); // Paper // Akarin
-    private final ReadWriteLock e = new ReentrantReadWriteLock();
+    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Map<Class<? extends Entity>, Integer> b = Maps.newHashMap();
+    private final Entity entity;
+    private final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<DataWatcher.Item<?>> entries = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>(); // Spigot - use better map // PAIL
+    // private final ReadWriteLock lock = new ReentrantReadWriteLock(); // Spigot - not required
     private boolean f = true;
     private boolean g;
 
     public DataWatcher(Entity entity) {
-        this.c = entity;
+        this.entity = entity;
     }
 
     public static <T> DataWatcherObject<T> a(Class<? extends Entity> oclass, DataWatcherSerializer<T> datawatcherserializer) {
-        if (DataWatcher.a.isDebugEnabled()) {
+        if (DataWatcher.LOGGER.isDebugEnabled()) {
             try {
                 Class<?> oclass1 = Class.forName(Thread.currentThread().getStackTrace()[2].getClassName());
 
                 if (!oclass1.equals(oclass)) {
-                    DataWatcher.a.debug("defineId called for: {} from {}", oclass, oclass1, new RuntimeException());
+                    DataWatcher.LOGGER.debug("defineId called for: {} from {}", oclass, oclass1, new RuntimeException());
                 }
             } catch (ClassNotFoundException classnotfoundexception) {
                 ;
             }
         }
 
-        // Akarin start
-        int i = entityTypeToIdMap().getOrDefault(oclass, -1);
+        int i;
 
-        if (i != -1) {
-            i = i + 1;
-            // Akarin end
+        if (DataWatcher.b.containsKey(oclass)) {
+            i = (Integer) DataWatcher.b.get(oclass) + 1;
         } else {
             int j = 0;
             Class oclass2 = oclass;
 
             while (oclass2 != Entity.class) {
                 oclass2 = oclass2.getSuperclass();
-                // Akarin start
-                int superId = entityTypeToIdMap().getOrDefault(oclass2, -1);
-                if (superId != -1) {
-                    j = superId + 1;
-                    // Akarin end
+                if (DataWatcher.b.containsKey(oclass2)) {
+                    j = (Integer) DataWatcher.b.get(oclass2) + 1;
                     break;
                 }
             }
@@ -80,12 +70,14 @@ public class DataWatcher {
         }
     }
 
+    boolean registrationLocked; // Spigot
     public <T> void register(DataWatcherObject<T> datawatcherobject, T t0) {
+        if (this.registrationLocked) throw new IllegalStateException("Registering datawatcher object after entity initialization"); // Spigot
         int i = datawatcherobject.a();
 
         if (i > 254) {
             throw new IllegalArgumentException("Data value id is too big with " + i + "! (Max is " + 254 + ")");
-        } else if (this.d.containsKey(i)) {
+        } else if (this.entries.containsKey(i)) {
             throw new IllegalArgumentException("Duplicate id value for " + i + "!");
         } else if (DataWatcherRegistry.b(datawatcherobject.b()) < 0) {
             throw new IllegalArgumentException("Unregistered serializer " + datawatcherobject.b() + " for " + i + "!");
@@ -97,29 +89,35 @@ public class DataWatcher {
     private <T> void registerObject(DataWatcherObject<T> datawatcherobject, T t0) {
         DataWatcher.Item<T> datawatcher_item = new DataWatcher.Item<>(datawatcherobject, t0);
 
-        //this.e.writeLock().lock(); // Akarin
-        this.d.put(datawatcherobject.a(), datawatcher_item);
+        // this.lock.writeLock().lock(); // Spigot - not required
+        this.entries.put(datawatcherobject.a(), datawatcher_item);
         this.f = false;
-        //this.e.writeLock().unlock(); // Akarin
+        // this.lock.writeLock().unlock(); // Spigot - not required
     }
 
     private <T> DataWatcher.Item<T> b(DataWatcherObject<T> datawatcherobject) {
-        //this.e.readLock().lock(); // Akarin
+        // Spigot start
+        /*
+        this.lock.readLock().lock();
 
         DataWatcher.Item datawatcher_item;
 
         try {
-            datawatcher_item = (DataWatcher.Item) this.d.get(datawatcherobject.a());
+            datawatcher_item = (DataWatcher.Item) this.entries.get(datawatcherobject.a());
         } catch (Throwable throwable) {
             CrashReport crashreport = CrashReport.a(throwable, "Getting synched entity data");
             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Synched entity data");
 
             crashreportsystemdetails.a("Data ID", (Object) datawatcherobject);
             throw new ReportedException(crashreport);
+        } finally {
+            this.lock.readLock().unlock();
         }
 
-        //this.e.readLock().unlock(); // Akarin
         return datawatcher_item;
+        */
+        return (DataWatcher.Item) this.entries.get(datawatcherobject.a());
+        // Spigot end
     }
 
     public <T> T get(DataWatcherObject<T> datawatcherobject) {
@@ -131,7 +129,7 @@ public class DataWatcher {
 
         if (ObjectUtils.notEqual(t0, datawatcher_item.b())) {
             datawatcher_item.a(t0);
-            this.c.a(datawatcherobject);
+            this.entity.a(datawatcherobject);
             datawatcher_item.a(true);
             this.g = true;
         }
@@ -166,8 +164,8 @@ public class DataWatcher {
         List<DataWatcher.Item<?>> list = null;
 
         if (this.g) {
-            //this.e.readLock().lock(); // Akarin
-            Iterator iterator = this.d.values().iterator();
+            // this.lock.readLock().lock(); // Spigot - not required
+            Iterator iterator = this.entries.values().iterator();
 
             while (iterator.hasNext()) {
                 DataWatcher.Item<?> datawatcher_item = (DataWatcher.Item) iterator.next();
@@ -182,7 +180,7 @@ public class DataWatcher {
                 }
             }
 
-            //this.e.readLock().unlock(); // Akarin
+            // this.lock.readLock().unlock(); // Spigot - not required
         }
 
         this.g = false;
@@ -190,8 +188,8 @@ public class DataWatcher {
     }
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
-        //this.e.readLock().lock(); // Akarin
-        Iterator iterator = this.d.values().iterator();
+        // this.lock.readLock().lock(); // Spigot - not required
+        Iterator iterator = this.entries.values().iterator();
 
         while (iterator.hasNext()) {
             DataWatcher.Item<?> datawatcher_item = (DataWatcher.Item) iterator.next();
@@ -199,7 +197,7 @@ public class DataWatcher {
             a(packetdataserializer, datawatcher_item);
         }
 
-        //this.e.readLock().unlock(); // Akarin
+        // this.lock.readLock().unlock(); // Spigot - not required
         packetdataserializer.writeByte(255);
     }
 
@@ -207,18 +205,18 @@ public class DataWatcher {
     public List<DataWatcher.Item<?>> c() {
         List<DataWatcher.Item<?>> list = null;
 
-        //this.e.readLock().lock(); // Akarin
+        // this.lock.readLock().lock(); // Spigot - not required
 
         DataWatcher.Item datawatcher_item;
 
-        for (Iterator iterator = this.d.values().iterator(); iterator.hasNext(); list.add(datawatcher_item.d())) {
+        for (Iterator iterator = this.entries.values().iterator(); iterator.hasNext(); list.add(datawatcher_item.d())) {
             datawatcher_item = (DataWatcher.Item) iterator.next();
             if (list == null) {
                 list = Lists.newArrayList();
             }
         }
 
-        //this.e.readLock().unlock(); // Akarin
+        // this.lock.readLock().unlock(); // Spigot - not required
         return list;
     }
 
@@ -246,7 +244,7 @@ public class DataWatcher {
                 arraylist = Lists.newArrayList();
             }
 
-            int i = packetdataserializer.g();
+            int i = packetdataserializer.i();
             DataWatcherSerializer<?> datawatcherserializer = DataWatcherRegistry.a(i);
 
             if (datawatcherserializer == null) {
@@ -269,8 +267,8 @@ public class DataWatcher {
 
     public void e() {
         this.g = false;
-        //this.e.readLock().lock(); // Akarin
-        Iterator iterator = this.d.values().iterator();
+        // this.lock.readLock().lock(); // Spigot - not required
+        Iterator iterator = this.entries.values().iterator();
 
         while (iterator.hasNext()) {
             DataWatcher.Item<?> datawatcher_item = (DataWatcher.Item) iterator.next();
@@ -278,7 +276,7 @@ public class DataWatcher {
             datawatcher_item.a(false);
         }
 
-        //this.e.readLock().unlock(); // Akarin
+        // this.lock.readLock().unlock(); // Spigot - not required
     }
 
     public static class Item<T> {

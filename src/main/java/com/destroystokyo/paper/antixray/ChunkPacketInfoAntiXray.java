@@ -8,8 +8,10 @@ public class ChunkPacketInfoAntiXray extends ChunkPacketInfo<IBlockData> impleme
 
     private Chunk[] nearbyChunks;
     private final ChunkPacketBlockControllerAntiXray chunkPacketBlockControllerAntiXray;
+    public Integer ticketHold;
 
-    public ChunkPacketInfoAntiXray(PacketPlayOutMapChunk packetPlayOutMapChunk, Chunk chunk, int chunkSectionSelector, ChunkPacketBlockControllerAntiXray chunkPacketBlockControllerAntiXray) {
+    public ChunkPacketInfoAntiXray(PacketPlayOutMapChunk packetPlayOutMapChunk, Chunk chunk, int chunkSectionSelector,
+                                   ChunkPacketBlockControllerAntiXray chunkPacketBlockControllerAntiXray) {
         super(packetPlayOutMapChunk, chunk, chunkSectionSelector);
         this.chunkPacketBlockControllerAntiXray = chunkPacketBlockControllerAntiXray;
     }

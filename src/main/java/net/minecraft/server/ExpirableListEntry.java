@@ -62,10 +62,12 @@ public abstract class ExpirableListEntry<T> extends JsonListEntry<T> {
 
     public abstract IChatBaseComponent e();
 
+    @Override
     boolean hasExpired() {
         return this.d == null ? false : this.d.before(new Date());
     }
 
+    @Override
     protected void a(JsonObject jsonobject) {
         jsonobject.addProperty("created", ExpirableListEntry.a.format(this.b));
         jsonobject.addProperty("source", this.c);

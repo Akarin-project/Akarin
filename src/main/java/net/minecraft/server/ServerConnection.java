@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -13,9 +12,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
-import io.netty.channel.kqueue.KQueue;
-import io.netty.channel.kqueue.KQueueEventLoopGroup;
-import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -23,46 +19,33 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.concurrent.Future;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ServerConnection {
 
-    private static final Logger d = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     public static final LazyInitVar<NioEventLoopGroup> a = new LazyInitVar<>(() -> {
         return new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Server IO #%d").setDaemon(true).build());
     });
     public static final LazyInitVar<EpollEventLoopGroup> b = new LazyInitVar<>(() -> {
         return new EpollEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Epoll Server IO #%d").setDaemon(true).build());
     });
-    // Akarin start
-    public static final LazyInitVar<KQueueEventLoopGroup> kQueue = new LazyInitVar<>(() -> {
-        return new KQueueEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty KQueue Server IO #%d").setDaemon(true).build());
-    });
-    // Akarin end
     private final MinecraftServer e;
     public volatile boolean c;
     private final List<ChannelFuture> f = Collections.synchronizedList(Lists.newArrayList());
-    private final List<NetworkManager> g = Collections.synchronizedList(Lists.newArrayList()); public final List<NetworkManager> getNetworkManagers() { return this.g; } // Akarin
+    private final List<NetworkManager> g = Collections.synchronizedList(Lists.newArrayList());
     // Paper start - prevent blocking on adding a new network manager while the server is ticking
-    private final List<NetworkManager> pending = Collections.synchronizedList(Lists.newArrayList());
-    // Akarin start
-    public final List<NetworkManager> pendingRemoval = Lists.newArrayList(); // Akarin - avoid same signature
+    private final List<NetworkManager> pending = Collections.synchronizedList(Lists.<NetworkManager>newArrayList());
     private void addPending() {
-        /*synchronized (this.g)*/ { // Akarin
+        synchronized (pending) {
             this.g.addAll(pending); // Paper - OBFHELPER - List of network managers
-            //pending.clear(); // Akarin - move down
+            pending.clear();
         }
-        pending.clear(); // Akarin - move from above
-        // Akarin end
     }
     // Paper end
 
@@ -78,20 +61,14 @@ public class ServerConnection {
             Class oclass;
             LazyInitVar lazyinitvar;
 
-            if (Epoll.isAvailable() && this.e.V()) {
+            if (Epoll.isAvailable() && this.e.X()) {
                 oclass = EpollServerSocketChannel.class;
                 lazyinitvar = ServerConnection.b;
-                ServerConnection.d.info("Using epoll channel type");
-                // Akarin start
-            } else if (KQueue.isAvailable()) {
-                oclass = KQueueServerSocketChannel.class;
-                lazyinitvar = ServerConnection.kQueue;
-                ServerConnection.d.info("Using kqueue channel type");
-                // Akarin end
+                ServerConnection.LOGGER.info("Using epoll channel type");
             } else {
                 oclass = NioServerSocketChannel.class;
                 lazyinitvar = ServerConnection.a;
-                ServerConnection.d.info("Using default channel type");
+                ServerConnection.LOGGER.info("Using default channel type");
             }
 
             this.f.add(((ServerBootstrap) ((ServerBootstrap) (new ServerBootstrap()).channel(oclass)).childHandler(new ChannelInitializer<Channel>() {
@@ -109,9 +86,19 @@ public class ServerConnection {
                     channel.pipeline().addLast("packet_handler", networkmanager);
                     networkmanager.setPacketListener(new HandshakeListener(ServerConnection.this.e, networkmanager));
                 }
-            }).group((EventLoopGroup) lazyinitvar.a()).localAddress(inetaddress, i)).bind().syncUninterruptibly());
+            }).group((EventLoopGroup) lazyinitvar.a()).localAddress(inetaddress, i)).option(ChannelOption.AUTO_READ, false).bind().syncUninterruptibly()); // CraftBukkit
         }
     }
+
+    // CraftBukkit start
+    public void acceptConnections() {
+        synchronized (this.f) { // PAIL: listeningChannels
+            for (ChannelFuture f : this.f) {
+                f.channel().config().setAutoRead(true);
+            }
+        }
+    }
+    // CraftBukkit end
 
     public void b() {
         this.c = false;
@@ -123,7 +110,7 @@ public class ServerConnection {
             try {
                 channelfuture.channel().close().sync();
             } catch (InterruptedException interruptedexception) {
-                ServerConnection.d.error("Interrupted whilst closing channel");
+                ServerConnection.LOGGER.error("Interrupted whilst closing channel");
             }
         }
 
@@ -133,14 +120,8 @@ public class ServerConnection {
         List list = this.g;
 
         synchronized (this.g) {
-            // Akarin start
-            this.g.removeAll(pendingRemoval);
-            pendingRemoval.clear();
-            addPending();
-        } {
-            // Akarin end
             // Spigot Start
-            //addPending(); // Paper // Akarin - move above
+            addPending(); // Paper
             // This prevents players from 'gaming' the server, and strategically relogging to increase their position in the tick order
             if ( org.spigotmc.SpigotConfig.playerShuffle > 0 && MinecraftServer.currentTick % org.spigotmc.SpigotConfig.playerShuffle == 0 )
             {
@@ -165,7 +146,7 @@ public class ServerConnection {
                                 throw new ReportedException(crashreport);
                             }
 
-                            ServerConnection.d.warn("Failed to handle packet for {}", networkmanager.getSocketAddress(), exception);
+                            ServerConnection.LOGGER.warn("Failed to handle packet for {}", networkmanager.getSocketAddress(), exception);
                             ChatComponentText chatcomponenttext = new ChatComponentText("Internal server error");
 
                             networkmanager.sendPacket(new PacketPlayOutKickDisconnect(chatcomponenttext), (future) -> {
@@ -178,7 +159,7 @@ public class ServerConnection {
                         // Fix a race condition where a NetworkManager could be unregistered just before connection.
                         if (networkmanager.preparing) continue;
                         // Spigot End
-                        pendingRemoval.add(networkmanager); // Akarin
+                        iterator.remove();
                         networkmanager.handleDisconnection();
                     }
                 }

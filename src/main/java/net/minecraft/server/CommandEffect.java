@@ -21,11 +21,11 @@ public class CommandEffect {
     public static void a(com.mojang.brigadier.CommandDispatcher<CommandListenerWrapper> com_mojang_brigadier_commanddispatcher) {
         com_mojang_brigadier_commanddispatcher.register((LiteralArgumentBuilder) ((LiteralArgumentBuilder) ((LiteralArgumentBuilder) CommandDispatcher.a("effect").requires((commandlistenerwrapper) -> {
             return commandlistenerwrapper.hasPermission(2);
-        })).then(CommandDispatcher.a("clear").then(((RequiredArgumentBuilder) CommandDispatcher.a("targets", (ArgumentType) ArgumentEntity.b()).executes((commandcontext) -> {
+        })).then(CommandDispatcher.a("clear").then(((RequiredArgumentBuilder) CommandDispatcher.a("targets", (ArgumentType) ArgumentEntity.multipleEntities()).executes((commandcontext) -> {
             return a((CommandListenerWrapper) commandcontext.getSource(), ArgumentEntity.b(commandcontext, "targets"));
         })).then(CommandDispatcher.a("effect", (ArgumentType) ArgumentMobEffect.a()).executes((commandcontext) -> {
             return a((CommandListenerWrapper) commandcontext.getSource(), ArgumentEntity.b(commandcontext, "targets"), ArgumentMobEffect.a(commandcontext, "effect"));
-        }))))).then(CommandDispatcher.a("give").then(CommandDispatcher.a("targets", (ArgumentType) ArgumentEntity.b()).then(((RequiredArgumentBuilder) CommandDispatcher.a("effect", (ArgumentType) ArgumentMobEffect.a()).executes((commandcontext) -> {
+        }))))).then(CommandDispatcher.a("give").then(CommandDispatcher.a("targets", (ArgumentType) ArgumentEntity.multipleEntities()).then(((RequiredArgumentBuilder) CommandDispatcher.a("effect", (ArgumentType) ArgumentMobEffect.a()).executes((commandcontext) -> {
             return a((CommandListenerWrapper) commandcontext.getSource(), ArgumentEntity.b(commandcontext, "targets"), ArgumentMobEffect.a(commandcontext, "effect"), (Integer) null, 0, true);
         })).then(((RequiredArgumentBuilder) CommandDispatcher.a("seconds", (ArgumentType) IntegerArgumentType.integer(1, 1000000)).executes((commandcontext) -> {
             return a((CommandListenerWrapper) commandcontext.getSource(), ArgumentEntity.b(commandcontext, "targets"), ArgumentMobEffect.a(commandcontext, "effect"), IntegerArgumentType.getInteger(commandcontext, "seconds"), 0, true);
@@ -70,9 +70,9 @@ public class CommandEffect {
             throw CommandEffect.a.create();
         } else {
             if (collection.size() == 1) {
-                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.give.success.single", new Object[] { mobeffectlist.d(), ((Entity) collection.iterator().next()).getScoreboardDisplayName(), k / 20}), true);
+                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.give.success.single", new Object[]{mobeffectlist.d(), ((Entity) collection.iterator().next()).getScoreboardDisplayName(), k / 20}), true);
             } else {
-                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.give.success.multiple", new Object[] { mobeffectlist.d(), collection.size(), k / 20}), true);
+                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.give.success.multiple", new Object[]{mobeffectlist.d(), collection.size(), k / 20}), true);
             }
 
             return j;
@@ -95,9 +95,9 @@ public class CommandEffect {
             throw CommandEffect.b.create();
         } else {
             if (collection.size() == 1) {
-                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.clear.everything.success.single", new Object[] { ((Entity) collection.iterator().next()).getScoreboardDisplayName()}), true);
+                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.clear.everything.success.single", new Object[]{((Entity) collection.iterator().next()).getScoreboardDisplayName()}), true);
             } else {
-                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.clear.everything.success.multiple", new Object[] { collection.size()}), true);
+                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.clear.everything.success.multiple", new Object[]{collection.size()}), true);
             }
 
             return i;
@@ -120,9 +120,9 @@ public class CommandEffect {
             throw CommandEffect.c.create();
         } else {
             if (collection.size() == 1) {
-                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.clear.specific.success.single", new Object[] { mobeffectlist.d(), ((Entity) collection.iterator().next()).getScoreboardDisplayName()}), true);
+                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.clear.specific.success.single", new Object[]{mobeffectlist.d(), ((Entity) collection.iterator().next()).getScoreboardDisplayName()}), true);
             } else {
-                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.clear.specific.success.multiple", new Object[] { mobeffectlist.d(), collection.size()}), true);
+                commandlistenerwrapper.sendMessage(new ChatMessage("commands.effect.clear.specific.success.multiple", new Object[]{mobeffectlist.d(), collection.size()}), true);
             }
 
             return i;

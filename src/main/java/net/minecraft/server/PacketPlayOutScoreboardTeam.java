@@ -64,21 +64,22 @@ public class PacketPlayOutScoreboardTeam implements Packet<PacketListenerPlayOut
         }
     }
 
+    @Override
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
         this.a = packetdataserializer.e(16);
         this.i = packetdataserializer.readByte();
         if (this.i == 0 || this.i == 2) {
-            this.b = packetdataserializer.f();
+            this.b = packetdataserializer.h();
             this.j = packetdataserializer.readByte();
             this.e = packetdataserializer.e(40);
             this.f = packetdataserializer.e(40);
             this.g = (EnumChatFormat) packetdataserializer.a(EnumChatFormat.class);
-            this.c = packetdataserializer.f();
-            this.d = packetdataserializer.f();
+            this.c = packetdataserializer.h();
+            this.d = packetdataserializer.h();
         }
 
         if (this.i == 0 || this.i == 3 || this.i == 4) {
-            int i = packetdataserializer.g();
+            int i = packetdataserializer.i();
 
             for (int j = 0; j < i; ++j) {
                 this.h.add(packetdataserializer.e(40));
@@ -87,6 +88,7 @@ public class PacketPlayOutScoreboardTeam implements Packet<PacketListenerPlayOut
 
     }
 
+    @Override
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
         packetdataserializer.a(this.a);
         packetdataserializer.writeByte(this.i);

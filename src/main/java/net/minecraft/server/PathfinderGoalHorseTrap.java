@@ -8,15 +8,17 @@ public class PathfinderGoalHorseTrap extends PathfinderGoal {
         this.a = entityhorseskeleton;
     }
 
+    @Override
     public boolean a() {
         return this.a.world.isPlayerNearby(this.a.locX, this.a.locY, this.a.locZ, 10.0D);
     }
 
+    @Override
     public void e() {
         if (!new com.destroystokyo.paper.event.entity.SkeletonHorseTrapEvent((org.bukkit.entity.SkeletonHorse) this.a.getBukkitEntity()).callEvent()) return; // Paper
         DifficultyDamageScaler difficultydamagescaler = this.a.world.getDamageScaler(new BlockPosition(this.a));
 
-        this.a.s(false);
+        this.a.r(false);
         this.a.setTamed(true);
         this.a.setAgeRaw(0);
         ((WorldServer) this.a.world).strikeLightning(new EntityLightning(this.a.world, this.a.locX, this.a.locY, this.a.locZ, true), org.bukkit.event.weather.LightningStrikeEvent.Cause.TRAP); // CraftBukkit
@@ -36,12 +38,12 @@ public class PathfinderGoalHorseTrap extends PathfinderGoal {
     }
 
     private EntityHorseAbstract a(DifficultyDamageScaler difficultydamagescaler) {
-        EntityHorseSkeleton entityhorseskeleton = EntityTypes.SKELETON_HORSE.create(a.world); // Paper
+        EntityHorseSkeleton entityhorseskeleton = (EntityHorseSkeleton) EntityTypes.SKELETON_HORSE.a(this.a.world);
 
-        entityhorseskeleton.prepare(difficultydamagescaler, (GroupDataEntity) null, (NBTTagCompound) null);
+        entityhorseskeleton.prepare(this.a.world, difficultydamagescaler, EnumMobSpawn.TRIGGERED, (GroupDataEntity) null, (NBTTagCompound) null);
         entityhorseskeleton.setPosition(this.a.locX, this.a.locY, this.a.locZ);
         entityhorseskeleton.noDamageTicks = 60;
-        entityhorseskeleton.di();
+        entityhorseskeleton.setPersistent();
         entityhorseskeleton.setTamed(true);
         entityhorseskeleton.setAgeRaw(0);
         if (!entityhorseskeleton.world.addEntity(entityhorseskeleton, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.TRAP)) return null; // CraftBukkit
@@ -49,12 +51,12 @@ public class PathfinderGoalHorseTrap extends PathfinderGoal {
     }
 
     private EntitySkeleton a(DifficultyDamageScaler difficultydamagescaler, EntityHorseAbstract entityhorseabstract) {
-        EntitySkeleton entityskeleton = EntityTypes.SKELETON.create(entityhorseabstract.world); // Paper
+        EntitySkeleton entityskeleton = (EntitySkeleton) EntityTypes.SKELETON.a(entityhorseabstract.world);
 
-        entityskeleton.prepare(difficultydamagescaler, (GroupDataEntity) null, (NBTTagCompound) null);
+        entityskeleton.prepare(entityhorseabstract.world, difficultydamagescaler, EnumMobSpawn.TRIGGERED, (GroupDataEntity) null, (NBTTagCompound) null);
         entityskeleton.setPosition(entityhorseabstract.locX, entityhorseabstract.locY, entityhorseabstract.locZ);
         entityskeleton.noDamageTicks = 60;
-        entityskeleton.di();
+        entityskeleton.setPersistent();
         if (entityskeleton.getEquipment(EnumItemSlot.HEAD).isEmpty()) {
             entityskeleton.setSlot(EnumItemSlot.HEAD, new ItemStack(Items.IRON_HELMET));
         }

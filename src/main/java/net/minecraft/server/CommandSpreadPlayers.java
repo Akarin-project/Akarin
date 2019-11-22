@@ -19,16 +19,16 @@ import java.util.Set;
 public class CommandSpreadPlayers {
 
     private static final Dynamic4CommandExceptionType a = new Dynamic4CommandExceptionType((object, object1, object2, object3) -> {
-        return new ChatMessage("commands.spreadplayers.failed.teams", new Object[] { object, object1, object2, object3});
+        return new ChatMessage("commands.spreadplayers.failed.teams", new Object[]{object, object1, object2, object3});
     });
     private static final Dynamic4CommandExceptionType b = new Dynamic4CommandExceptionType((object, object1, object2, object3) -> {
-        return new ChatMessage("commands.spreadplayers.failed.entities", new Object[] { object, object1, object2, object3});
+        return new ChatMessage("commands.spreadplayers.failed.entities", new Object[]{object, object1, object2, object3});
     });
 
     public static void a(com.mojang.brigadier.CommandDispatcher<CommandListenerWrapper> com_mojang_brigadier_commanddispatcher) {
         com_mojang_brigadier_commanddispatcher.register((LiteralArgumentBuilder) ((LiteralArgumentBuilder) CommandDispatcher.a("spreadplayers").requires((commandlistenerwrapper) -> {
             return commandlistenerwrapper.hasPermission(2);
-        })).then(CommandDispatcher.a("center", (ArgumentType) ArgumentVec2.a()).then(CommandDispatcher.a("spreadDistance", (ArgumentType) FloatArgumentType.floatArg(0.0F)).then(CommandDispatcher.a("maxRange", (ArgumentType) FloatArgumentType.floatArg(1.0F)).then(CommandDispatcher.a("respectTeams", (ArgumentType) BoolArgumentType.bool()).then(CommandDispatcher.a("targets", (ArgumentType) ArgumentEntity.b()).executes((commandcontext) -> {
+        })).then(CommandDispatcher.a("center", (ArgumentType) ArgumentVec2.a()).then(CommandDispatcher.a("spreadDistance", (ArgumentType) FloatArgumentType.floatArg(0.0F)).then(CommandDispatcher.a("maxRange", (ArgumentType) FloatArgumentType.floatArg(1.0F)).then(CommandDispatcher.a("respectTeams", (ArgumentType) BoolArgumentType.bool()).then(CommandDispatcher.a("targets", (ArgumentType) ArgumentEntity.multipleEntities()).executes((commandcontext) -> {
             return a((CommandListenerWrapper) commandcontext.getSource(), ArgumentVec2.a(commandcontext, "center"), FloatArgumentType.getFloat(commandcontext, "spreadDistance"), FloatArgumentType.getFloat(commandcontext, "maxRange"), BoolArgumentType.getBool(commandcontext, "respectTeams"), ArgumentEntity.b(commandcontext, "targets"));
         })))))));
     }
@@ -44,7 +44,7 @@ public class CommandSpreadPlayers {
         a(vec2f, (double) f, commandlistenerwrapper.getWorld(), random, d0, d1, d2, d3, acommandspreadplayers_a, flag);
         double d4 = a(collection, commandlistenerwrapper.getWorld(), acommandspreadplayers_a, flag);
 
-        commandlistenerwrapper.sendMessage(new ChatMessage("commands.spreadplayers.success." + (flag ? "teams" : "entities"), new Object[] { acommandspreadplayers_a.length, vec2f.i, vec2f.j, String.format(Locale.ROOT, "%.2f", d4)}), true);
+        commandlistenerwrapper.sendMessage(new ChatMessage("commands.spreadplayers.success." + (flag ? "teams" : "entities"), new Object[]{acommandspreadplayers_a.length, vec2f.i, vec2f.j, String.format(Locale.ROOT, "%.2f", d4)}), true);
         return acommandspreadplayers_a.length;
     }
 
@@ -168,7 +168,7 @@ public class CommandSpreadPlayers {
                 commandspreadplayers_a = acommandspreadplayers_a[i++];
             }
 
-            entity.enderTeleportTo((double) ((float) MathHelper.floor(commandspreadplayers_a.a) + 0.5F), (double) commandspreadplayers_a.a((IBlockAccess) worldserver), (double) MathHelper.floor(commandspreadplayers_a.b) + 0.5D);
+            entity.enderTeleportAndLoad((double) ((float) MathHelper.floor(commandspreadplayers_a.a) + 0.5F), (double) commandspreadplayers_a.a((IBlockAccess) worldserver), (double) MathHelper.floor(commandspreadplayers_a.b) + 0.5D);
             d1 = Double.MAX_VALUE;
             CommandSpreadPlayers.a[] acommandspreadplayers_a1 = acommandspreadplayers_a;
             int j = acommandspreadplayers_a.length;
@@ -297,7 +297,7 @@ public class CommandSpreadPlayers {
 
         // CraftBukkit start - add a version of getType which force loads chunks
         private static IBlockData getType(IBlockAccess iblockaccess, BlockPosition position) {
-            ((ChunkProviderServer) ((World) iblockaccess).chunkProvider).getChunkAt(position.getX() >> 4, position.getZ() >> 4, true, true);
+            ((ChunkProviderServer) ((World) iblockaccess).chunkProvider).getChunkAt(position.getX() >> 4, position.getZ() >> 4, true);
             return iblockaccess.getType(position);
         }
         // CraftBukkit end

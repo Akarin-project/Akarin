@@ -34,7 +34,7 @@ public final class PaperConsole extends SimpleTerminalConsole {
 
     @Override
     protected void shutdown() {
-        this.server.safeShutdown();
+        this.server.safeShutdown(false);
     }
 
 }

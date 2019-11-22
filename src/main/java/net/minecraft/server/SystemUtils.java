@@ -1,23 +1,32 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import it.unimi.dsi.fastutil.Hash.Strategy;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,20 +36,21 @@ import org.apache.logging.log4j.Logger;
 
 public class SystemUtils {
 
+    private static final AtomicInteger b = new AtomicInteger(1);
+    private static final ExecutorService c = k();
     public static LongSupplier a = System::nanoTime;
-    private static final Logger b = LogManager.getLogger();
-    private static final Pattern c = Pattern.compile(".*\\.|(?:CON|PRN|AUX|NUL|COM1|COM2|COM3|COM4|COM5|COM6|COM7|COM8|COM9|LPT1|LPT2|LPT3|LPT4|LPT5|LPT6|LPT7|LPT8|LPT9)(?:\\..*)?", 2);
+    private static final Logger LOGGER = LogManager.getLogger();
 
     public static <K, V> Collector<Entry<? extends K, ? extends V>, ?, Map<K, V>> a() {
         return Collectors.toMap(Entry::getKey, Entry::getValue);
     }
 
-    public static <T extends Comparable<T>> String a(IBlockState<T> iblockstate, T object) {
+    public static <T extends Comparable<T>> String a(IBlockState<T> iblockstate, T object) { // Paper - decompile fix
         return iblockstate.a(object); // Paper - decompile fix
     }
 
     public static String a(String s, @Nullable MinecraftKey minecraftkey) {
-        return minecraftkey == null ? s + ".unregistered_sadface" : s + '.' + minecraftkey.b() + '.' + minecraftkey.getKey().replace('/', '.');
+        return minecraftkey == null ? s + ".unregistered_sadface" : s + '.' + minecraftkey.getNamespace() + '.' + minecraftkey.getKey().replace('/', '.');
     }
 
     public static long getMonotonicMillis() {
@@ -55,65 +65,69 @@ public class SystemUtils {
         return Instant.now().toEpochMilli();
     }
 
-    public static SystemUtils.OS e() {
+    private static ExecutorService k() {
+        int i = Math.min(6, Math.max(Runtime.getRuntime().availableProcessors() - 2, 2)); // Paper - use more reasonable default - 2 is hard minimum to avoid using unlimited threads
+        Object object;
+
+        if (i <= 0) {
+            object = MoreExecutors.newDirectExecutorService();
+        } else {
+            object = new ForkJoinPool(i, (forkjoinpool) -> {
+                ForkJoinWorkerThread forkjoinworkerthread = new ForkJoinWorkerThread(forkjoinpool) {
+                };
+
+                forkjoinworkerthread.setName("Server-Worker-" + SystemUtils.b.getAndIncrement());
+                return forkjoinworkerthread;
+            }, (thread, throwable) -> {
+                if (throwable instanceof CompletionException) {
+                    throwable = throwable.getCause();
+                }
+
+                if (throwable instanceof ReportedException) {
+                    DispenserRegistry.a(((ReportedException) throwable).a().e());
+                    System.exit(-1);
+                }
+
+                SystemUtils.LOGGER.error(String.format("Caught exception in thread %s", thread), throwable);
+            }, true);
+        }
+
+        return (ExecutorService) object;
+    }
+
+    public static Executor e() {
+        return SystemUtils.c;
+    }
+
+    public static void f() {
+        SystemUtils.c.shutdown();
+
+        boolean flag;
+
+        try {
+            flag = SystemUtils.c.awaitTermination(3L, TimeUnit.SECONDS);
+        } catch (InterruptedException interruptedexception) {
+            flag = false;
+        }
+
+        if (!flag) {
+            SystemUtils.c.shutdownNow();
+        }
+
+    }
+
+    public static SystemUtils.OS g() {
         String s = System.getProperty("os.name").toLowerCase(Locale.ROOT);
 
         return s.contains("win") ? SystemUtils.OS.WINDOWS : (s.contains("mac") ? SystemUtils.OS.OSX : (s.contains("solaris") ? SystemUtils.OS.SOLARIS : (s.contains("sunos") ? SystemUtils.OS.SOLARIS : (s.contains("linux") ? SystemUtils.OS.LINUX : (s.contains("unix") ? SystemUtils.OS.LINUX : SystemUtils.OS.UNKNOWN)))));
     }
 
-    public static Stream<String> f() {
+    public static Stream<String> h() {
         RuntimeMXBean runtimemxbean = ManagementFactory.getRuntimeMXBean();
 
         return runtimemxbean.getInputArguments().stream().filter((s) -> {
             return s.startsWith("-X");
         });
-    }
-
-    public static boolean a(java.nio.file.Path java_nio_file_path) {
-        java.nio.file.Path java_nio_file_path1 = java_nio_file_path.normalize();
-
-        return java_nio_file_path1.equals(java_nio_file_path);
-    }
-
-    public static boolean b(java.nio.file.Path java_nio_file_path) {
-        Iterator iterator = java_nio_file_path.iterator();
-
-        java.nio.file.Path java_nio_file_path1;
-
-        do {
-            if (!iterator.hasNext()) {
-                return true;
-            }
-
-            java_nio_file_path1 = (java.nio.file.Path) iterator.next();
-        } while (!SystemUtils.c.matcher(java_nio_file_path1.toString()).matches());
-
-        return false;
-    }
-
-    public static java.nio.file.Path a(java.nio.file.Path java_nio_file_path, String s, String s1) {
-        String s2 = s + s1;
-        java.nio.file.Path java_nio_file_path1 = Paths.get(s2);
-
-        if (java_nio_file_path1.endsWith(s1)) {
-            throw new InvalidPathException(s2, "empty resource name");
-        } else {
-            return java_nio_file_path.resolve(java_nio_file_path1);
-        }
-    }
-
-    @Nullable
-    public static <V> V a(FutureTask<V> futuretask, Logger logger) {
-        try {
-            futuretask.run();
-            return futuretask.get();
-        } catch (ExecutionException executionexception) {
-            logger.fatal("Error executing task", executionexception.getCause() != null ? executionexception.getCause() : executionexception); // Paper
-        } catch (InterruptedException interruptedexception) {
-            logger.fatal("Error executing task", interruptedexception);
-        }
-
-        return null;
     }
 
     public static <T> T a(List<T> list) {
@@ -169,8 +183,61 @@ public class SystemUtils {
         return t0;
     }
 
-    public static <K> Strategy<K> g() {
-        return (Strategy<K>) IdentityHashingStrategy.INSTANCE; // Paper - decompile fix
+    public static <K> Strategy<K> i() {
+        return (Strategy<K>) SystemUtils.IdentityHashingStrategy.INSTANCE; // Paper - decompile fix
+    }
+
+    public static <V> CompletableFuture<List<V>> b(List<? extends CompletableFuture<? extends V>> list) {
+        List<V> list1 = Lists.newArrayListWithCapacity(list.size());
+        CompletableFuture<?>[] acompletablefuture = new CompletableFuture[list.size()];
+        CompletableFuture<Void> completablefuture = new CompletableFuture();
+
+        list.forEach((completablefuture1) -> {
+            int i = list1.size();
+
+            list1.add(null); // Paper - decompile fix
+            acompletablefuture[i] = completablefuture1.whenComplete((object, throwable) -> {
+                if (throwable != null) {
+                    completablefuture.completeExceptionally(throwable);
+                } else {
+                    list1.set(i, object);
+                }
+
+            });
+        });
+        return CompletableFuture.allOf(acompletablefuture).applyToEither(completablefuture, (ovoid) -> {
+            return list1;
+        });
+    }
+
+    public static <T> Stream<T> a(Optional<? extends T> optional) {
+        return (Stream) DataFixUtils.orElseGet(optional.map(Stream::of), Stream::empty);
+    }
+
+    public static <T> Optional<T> a(Optional<T> optional, Consumer<T> consumer, Runnable runnable) {
+        if (optional.isPresent()) {
+            consumer.accept(optional.get());
+        } else {
+            runnable.run();
+        }
+
+        return optional;
+    }
+
+    public static Runnable a(Runnable runnable, Supplier<String> supplier) {
+        return runnable;
+    }
+
+    public static Optional<UUID> a(String s, Dynamic<?> dynamic) {
+        return dynamic.get(s + "Most").asNumber().flatMap((number) -> {
+            return dynamic.get(s + "Least").asNumber().map((number1) -> {
+                return new UUID(number.longValue(), number1.longValue());
+            });
+        });
+    }
+
+    public static <T> Dynamic<T> a(String s, UUID uuid, Dynamic<T> dynamic) {
+        return dynamic.set(s + "Most", dynamic.createLong(uuid.getMostSignificantBits())).set(s + "Least", dynamic.createLong(uuid.getLeastSignificantBits()));
     }
 
     static enum IdentityHashingStrategy implements Strategy<Object> {

@@ -42,29 +42,24 @@ public class RestartCommand extends Command
 
     private static void restart(final String restartScript)
     {
-        // Akarin start
-        if (io.akarin.server.core.AkarinGlobalConfig.noResponseDoGC) {
-            System.out.println("Attempting to garbage collect, this may takes a few seconds");
-            System.runFinalization();
-            System.gc();
-        }
-        // Akarin end
         AsyncCatcher.enabled = false; // Disable async catcher incase it interferes with us
         org.spigotmc.AsyncCatcher.shuttingDown = true; // Paper
         try
         {
             // Paper - extract method and cleanup
-            boolean isRestarting = addShutdownHook(restartScript);
-            if (isRestarting) {
-                System.out.println("Attempting to restart with " + SpigotConfig.restartScript);
-            } else {
+            boolean isRestarting = addShutdownHook( restartScript );
+            if ( isRestarting )
+            {
+                System.out.println( "Attempting to restart with " + SpigotConfig.restartScript );
+            } else
+            {
                 System.out.println( "Startup script '" + SpigotConfig.restartScript + "' does not exist! Stopping server." );
             }
-
             // Stop the watchdog
             WatchdogThread.doStop();
 
-            shutdownServer(isRestarting);
+            shutdownServer( isRestarting );
+            // Paper end
         } catch ( Exception ex )
         {
             ex.printStackTrace();
@@ -74,7 +69,7 @@ public class RestartCommand extends Command
     // Paper start - sync copied from above with minor changes, async added
     private static void shutdownServer(boolean isRestarting)
     {
-        if (MinecraftServer.getServer().isMainThread())
+        if ( MinecraftServer.getServer().isMainThread() )
         {
             // Kick all players
             for ( EntityPlayer p : com.google.common.collect.ImmutableList.copyOf( MinecraftServer.getServer().getPlayerList().players ) )
@@ -94,25 +89,23 @@ public class RestartCommand extends Command
             // Actually shutdown
             try
             {
-                MinecraftServer.getServer().stop();
+                MinecraftServer.getServer().close(); // calls stop()
             } catch ( Throwable t )
             {
             }
 
             // Actually stop the JVM
-            System.exit(0);
+            System.exit( 0 );
 
         } else
         {
             // Mark the server to shutdown at the end of the tick
-            MinecraftServer.getServer().safeShutdown(isRestarting);
-
-
+            MinecraftServer.getServer().safeShutdown( false, isRestarting );
 
             // wait 10 seconds to see if we're actually going to try shutdown
             try
             {
-                Thread.sleep(10000);
+                Thread.sleep( 10000 );
             }
             catch (InterruptedException ignored)
             {
@@ -127,9 +120,11 @@ public class RestartCommand extends Command
             System.exit( 0 );
         }
     }
+    // Paper end
 
     // Paper - Split from moved code
-    private static void closeSocket() {
+    private static void closeSocket()
+    {
         // Close the socket so we can rebind with the new process
         MinecraftServer.getServer().getServerConnection().b();
 
@@ -143,33 +138,42 @@ public class RestartCommand extends Command
     }
     // Paper end
 
-    // Paper - copied from above and modified to return if the hook registered
-    private static boolean addShutdownHook(final String restartScript) {
-
+    // Paper start - copied from above and modified to return if the hook registered
+    private static boolean addShutdownHook(String restartScript)
+    {
         String[] split = restartScript.split( " " );
         if ( split.length > 0 && new File( split[0] ).isFile() )
         {
-            Thread shutdownHook = new Thread() {
+            Thread shutdownHook = new Thread()
+            {
                 @Override
-                public void run() {
-                    try {
-                        String os = System.getProperty("os.name").toLowerCase(java.util.Locale.ENGLISH);
-                        if (os.contains("win")) {
-                            Runtime.getRuntime().exec("cmd /c start " + restartScript);
-                        } else {
+                public void run()
+                {
+                    try
+                    {
+                        String os = System.getProperty( "os.name" ).toLowerCase(java.util.Locale.ENGLISH);
+                        if ( os.contains( "win" ) )
+                        {
+                            Runtime.getRuntime().exec( "cmd /c start " + restartScript );
+                        } else
+                        {
                             Runtime.getRuntime().exec( "sh " + restartScript );
                         }
-                    } catch (Exception e) {
+                    } catch ( Exception e )
+                    {
                         e.printStackTrace();
                     }
                 }
             };
 
-            shutdownHook.setDaemon(true);
-            Runtime.getRuntime().addShutdownHook(shutdownHook);
+            shutdownHook.setDaemon( true );
+            Runtime.getRuntime().addShutdownHook( shutdownHook );
             return true;
-        } else {
+        } else
+        {
             return false;
         }
     }
+    // Paper end
+
 }

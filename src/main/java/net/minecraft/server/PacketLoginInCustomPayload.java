@@ -9,8 +9,9 @@ public class PacketLoginInCustomPayload implements Packet<PacketLoginInListener>
 
     public PacketLoginInCustomPayload() {}
 
+    @Override
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
-        this.a = packetdataserializer.g();
+        this.a = packetdataserializer.i();
         if (packetdataserializer.readBoolean()) {
             int i = packetdataserializer.readableBytes();
 
@@ -25,6 +26,7 @@ public class PacketLoginInCustomPayload implements Packet<PacketLoginInListener>
 
     }
 
+    @Override
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
         packetdataserializer.d(this.a);
         if (this.b != null) {

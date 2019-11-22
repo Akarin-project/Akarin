@@ -26,10 +26,9 @@ import java.util.concurrent.Callable;
 
 public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Paper - remove tickable
 
-    private GameProfile a;
-    private int e;
-    private boolean f;
-    public boolean drop = true;
+    public GameProfile gameProfile;
+    private int b;
+    private boolean c;
     private static UserCache userCache;
     private static MinecraftSessionService sessionService;
     // Spigot start
@@ -38,10 +37,10 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
                     .setNameFormat("Head Conversion Thread - %1$d")
                     .build()
     );
-    public static final com.github.benmanes.caffeine.cache.LoadingCache<String, GameProfile> skinCache = com.github.benmanes.caffeine.cache.Caffeine.newBuilder() // Akarin - caffeine
+    public static final LoadingCache<String, GameProfile> skinCache = CacheBuilder.newBuilder()
             .maximumSize( 5000 )
             .expireAfterAccess( 60, TimeUnit.MINUTES )
-            .build( new com.github.benmanes.caffeine.cache.CacheLoader<String, GameProfile>()
+            .build( new CacheLoader<String, GameProfile>()
             {
                 @Override
                 public GameProfile load(String key) throws Exception
@@ -97,18 +96,20 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
         TileEntitySkull.sessionService = minecraftsessionservice;
     }
 
+    @Override
     public NBTTagCompound save(NBTTagCompound nbttagcompound) {
         super.save(nbttagcompound);
-        if (this.a != null) {
+        if (this.gameProfile != null) {
             NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 
-            GameProfileSerializer.serialize(nbttagcompound1, this.a);
+            GameProfileSerializer.serialize(nbttagcompound1, this.gameProfile);
             nbttagcompound.set("Owner", nbttagcompound1);
         }
 
         return nbttagcompound;
     }
 
+    @Override
     public void load(NBTTagCompound nbttagcompound) {
         super.load(nbttagcompound);
         if (nbttagcompound.hasKeyOfType("Owner", 10)) {
@@ -123,23 +124,25 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
 
     }
 
+    // Paper - remove override
     public void tick() {
         Block block = this.getBlock().getBlock();
 
         if (block == Blocks.DRAGON_HEAD || block == Blocks.DRAGON_WALL_HEAD) {
             if (this.world.isBlockIndirectlyPowered(this.position)) {
-                this.f = true;
-                ++this.e;
+                this.c = true;
+                ++this.b;
             } else {
-                this.f = false;
+                this.c = false;
             }
         }
 
     }
 
     @Nullable
-    public GameProfile getGameProfile() {
-        return this.a;
+    @Override
+    public PacketPlayOutTileEntityData getUpdatePacket() {
+        return new PacketPlayOutTileEntityData(this.position, 4, sanitizeTileEntityUUID(this.b())); // Paper
     }
 
     // Paper start
@@ -170,28 +173,24 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
     }
     // Paper end
 
-    @Nullable
-    public PacketPlayOutTileEntityData getUpdatePacket() {
-        return new PacketPlayOutTileEntityData(this.position, 4, sanitizeTileEntityUUID(this.aa_())); // Paper
-    }
-
-    public NBTTagCompound aa_() {
+    @Override
+    public NBTTagCompound b() {
         return this.save(new NBTTagCompound());
     }
 
     public void setGameProfile(@Nullable GameProfile gameprofile) {
-        this.a = gameprofile;
+        this.gameProfile = gameprofile;
         this.f();
     }
 
     private void f() {
         // Spigot start
-        GameProfile profile = this.getGameProfile();
+        GameProfile profile = this.gameProfile;
         b(profile, new Predicate<GameProfile>() {
 
             @Override
             public boolean apply(GameProfile input) {
-                a = input;
+                gameProfile = input;
                 update();
                 return false;
             }
@@ -216,7 +215,7 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
                     Callable<GameProfile> callable = new Callable<GameProfile>() {
                         @Override
                         public GameProfile call() {
-                            final GameProfile profile = skinCache.get(gameprofile.getName().toLowerCase(java.util.Locale.ROOT)); // Akarin - caffeine
+                            final GameProfile profile = skinCache.getUnchecked(gameprofile.getName().toLowerCase(java.util.Locale.ROOT));
                             MinecraftServer.getServer().processQueue.add(new Runnable() {
                                 @Override
                                 public void run() {
@@ -249,25 +248,4 @@ public class TileEntitySkull extends TileEntity /*implements ITickable*/ { // Pa
         return Futures.immediateFuture(gameprofile);
     }
     // Spigot end
-
-    // CraftBukkit start
-    public static void a(IBlockAccess iblockaccess, BlockPosition blockposition) {
-        setShouldDrop(iblockaccess, blockposition, false);
-    }
-
-    public static void setShouldDrop(IBlockAccess iblockaccess, BlockPosition blockposition, boolean flag) {
-        // CraftBukkit end
-        TileEntity tileentity = iblockaccess.getTileEntity(blockposition);
-
-        if (tileentity instanceof TileEntitySkull) {
-            TileEntitySkull tileentityskull = (TileEntitySkull) tileentity;
-
-            tileentityskull.drop = flag; // CraftBukkit
-        }
-
-    }
-
-    public boolean shouldDrop() {
-        return this.drop;
-    }
 }

@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import java.util.Iterator;
-import java.util.Random;
 import javax.annotation.Nullable;
 // CraftBukkit start
 import java.util.List;
@@ -11,15 +10,16 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.InventoryHolder;
 // CraftBukkit end
 
-public abstract class EntityMinecartContainer extends EntityMinecartAbstract implements ITileInventory, ILootable {
+public abstract class EntityMinecartContainer extends EntityMinecartAbstract implements IInventory, ITileInventory {
 
     private NonNullList<ItemStack> items;
-    private boolean b;
-    private MinecraftKey c; public MinecraftKey getLootTableKey() { return c; } public void setLootTable(MinecraftKey key) { c = key; } // Paper - OBFHELPER
+    private boolean c;
+    @Nullable
+    public MinecraftKey lootTable; public MinecraftKey getLootTableKey() { return this.lootTable; } public void setLootTable(final MinecraftKey key) { this.lootTable = key; } // Paper - OBFHELPER
     public long lootTableSeed;
 
     // CraftBukkit start
-    { lootableData = new com.destroystokyo.paper.loottable.PaperLootableInventoryData(new com.destroystokyo.paper.loottable.PaperMinecartLootableInventory(this)); } // Paper
+    { this.lootableData = new com.destroystokyo.paper.loottable.PaperLootableInventoryData(new com.destroystokyo.paper.loottable.PaperMinecartLootableInventory(this)); } // Paper
     public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
     private int maxStack = MAX_STACK;
 
@@ -45,6 +45,11 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
         return null;
     }
 
+    @Override
+    public int getMaxStackSize() {
+        return maxStack;
+    }
+
     public void setMaxStackSize(int size) {
         maxStack = size;
     }
@@ -58,24 +63,26 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
     protected EntityMinecartContainer(EntityTypes<?> entitytypes, World world) {
         super(entitytypes, world);
         this.items = NonNullList.a(this.getSize(), ItemStack.a); // CraftBukkit - SPIGOT-3513
-        this.b = true;
+        this.c = true;
     }
 
     protected EntityMinecartContainer(EntityTypes<?> entitytypes, double d0, double d1, double d2, World world) {
         super(entitytypes, world, d0, d1, d2);
         this.items = NonNullList.a(this.getSize(), ItemStack.a); // CraftBukkit - SPIGOT-3513
-        this.b = true;
+        this.c = true;
     }
 
+    @Override
     public void a(DamageSource damagesource) {
         super.a(damagesource);
-        if (this.world.getGameRules().getBoolean("doEntityDrops")) {
+        if (this.world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS)) {
             InventoryUtils.dropEntity(this.world, this, this);
         }
 
     }
 
-    public boolean P_() {
+    @Override
+    public boolean isNotEmpty() {
         Iterator iterator = this.items.iterator();
 
         ItemStack itemstack;
@@ -91,18 +98,21 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
         return false;
     }
 
+    @Override
     public ItemStack getItem(int i) {
-        this.f((EntityHuman) null);
+        this.d((EntityHuman) null);
         return (ItemStack) this.items.get(i);
     }
 
+    @Override
     public ItemStack splitStack(int i, int j) {
-        this.f((EntityHuman) null);
+        this.d((EntityHuman) null);
         return ContainerUtil.a(this.items, i, j);
     }
 
+    @Override
     public ItemStack splitWithoutUpdate(int i) {
-        this.f((EntityHuman) null);
+        this.d((EntityHuman) null);
         ItemStack itemstack = (ItemStack) this.items.get(i);
 
         if (itemstack.isEmpty()) {
@@ -113,8 +123,9 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
         }
     }
 
+    @Override
     public void setItem(int i, ItemStack itemstack) {
-        this.f((EntityHuman) null);
+        this.d((EntityHuman) null);
         this.items.set(i, itemstack);
         if (!itemstack.isEmpty() && itemstack.getCount() > this.getMaxStackSize()) {
             itemstack.setCount(this.getMaxStackSize());
@@ -122,7 +133,8 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
 
     }
 
-    public boolean c(int i, ItemStack itemstack) {
+    @Override
+    public boolean a_(int i, ItemStack itemstack) {
         if (i >= 0 && i < this.getSize()) {
             this.setItem(i, itemstack);
             return true;
@@ -131,47 +143,36 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
         }
     }
 
+    @Override
     public void update() {}
 
+    @Override
     public boolean a(EntityHuman entityhuman) {
-        return this.dead ? false : entityhuman.h(this) <= 64.0D;
-    }
-
-    public void startOpen(EntityHuman entityhuman) {}
-
-    public void closeContainer(EntityHuman entityhuman) {}
-
-    public boolean b(int i, ItemStack itemstack) {
-        return true;
-    }
-
-    public int getMaxStackSize() {
-        return maxStack; // CraftBukkit
+        return this.dead ? false : entityhuman.h((Entity) this) <= 64.0D;
     }
 
     @Nullable
+    @Override
     public Entity a(DimensionManager dimensionmanager) {
-        this.b = false;
+        this.c = false;
         return super.a(dimensionmanager);
     }
 
+    @Override
     public void die() {
-        if (this.b) {
+        if (!this.world.isClientSide && this.c) {
             InventoryUtils.dropEntity(this.world, this, this);
         }
 
         super.die();
     }
 
-    public void b(boolean flag) {
-        this.b = flag;
-    }
-
+    @Override
     protected void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
-        lootableData.saveNbt(nbttagcompound); // Paper
-        if (this.c != null) {
-            nbttagcompound.setString("LootTable", this.c.toString());
+        this.lootableData.saveNbt(nbttagcompound); // Paper
+        if (this.lootTable != null) {
+            nbttagcompound.setString("LootTable", this.lootTable.toString());
             if (this.lootTableSeed != 0L) {
                 nbttagcompound.setLong("LootTableSeed", this.lootTableSeed);
             }
@@ -181,12 +182,13 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
 
     }
 
+    @Override
     protected void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
-        lootableData.loadNbt(nbttagcompound); // Paper
+        this.lootableData.loadNbt(nbttagcompound); // Paper
         this.items = NonNullList.a(this.getSize(), ItemStack.a);
         if (nbttagcompound.hasKeyOfType("LootTable", 8)) {
-            this.c = new MinecraftKey(nbttagcompound.getString("LootTable"));
+            this.lootTable = new MinecraftKey(nbttagcompound.getString("LootTable"));
             this.lootTableSeed = nbttagcompound.getLong("LootTableSeed");
         } if (true) { // Paper - always load the items, table may still remain
             ContainerUtil.b(nbttagcompound, this.items);
@@ -194,83 +196,62 @@ public abstract class EntityMinecartContainer extends EntityMinecartAbstract imp
 
     }
 
+    @Override
     public boolean b(EntityHuman entityhuman, EnumHand enumhand) {
-        if (!this.world.isClientSide) {
-            entityhuman.openContainer(this);
-        }
-
+        entityhuman.openContainer(this);
         return true;
     }
 
-    protected void r() {
+    @Override
+    protected void decelerate() {
         float f = 0.98F;
 
-        if (this.c == null) {
+        if (this.lootTable == null) {
             int i = 15 - Container.b((IInventory) this);
 
             f += (float) i * 0.001F;
         }
 
-        this.motX *= (double) f;
-        this.motY *= 0.0D;
-        this.motZ *= (double) f;
+        this.setMot(this.getMot().d((double) f, 0.0D, (double) f));
     }
 
-    public int getProperty(int i) {
-        return 0;
-    }
+    public void d(@Nullable EntityHuman entityhuman) {
+        if (this.lootableData.shouldReplenish(entityhuman) && this.world.getMinecraftServer() != null) { // Paper
+            LootTable loottable = this.world.getMinecraftServer().getLootTableRegistry().getLootTable(this.lootTable);
 
-    public void setProperty(int i, int j) {}
-
-    public int h() {
-        return 0;
-    }
-
-    public boolean isLocked() {
-        return false;
-    }
-
-    public void setLock(ChestLock chestlock) {}
-
-    public ChestLock getLock() {
-        return ChestLock.a;
-    }
-
-    public void f(@Nullable EntityHuman entityhuman) {
-        if (lootableData.shouldReplenish(entityhuman) && this.world.getMinecraftServer() != null) { // Paper
-            LootTable loottable = this.world.getMinecraftServer().getLootTableRegistry().getLootTable(this.c);
-
-            lootableData.processRefill(entityhuman); // Paper
-            Random random;
-
-            if (this.lootTableSeed == 0L) {
-                random = new Random();
-            } else {
-                random = new Random(this.lootTableSeed);
-            }
-
-            LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.world)).position(new BlockPosition(this));
+            this.lootableData.processRefill(entityhuman); // Paper
+            LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.world)).set(LootContextParameters.POSITION, new BlockPosition(this)).a(this.lootTableSeed);
 
             if (entityhuman != null) {
-                loottableinfo_builder.luck(entityhuman.dJ());
+                loottableinfo_builder.a(entityhuman.eb()).set(LootContextParameters.THIS_ENTITY, entityhuman);
             }
 
-            loottable.fillInventory(this, random, loottableinfo_builder.build());
+            loottable.fillInventory(this, loottableinfo_builder.build(LootContextParameterSets.CHEST));
         }
 
     }
 
+    @Override
     public void clear() {
-        this.f((EntityHuman) null);
+        this.d((EntityHuman) null);
         this.items.clear();
     }
 
-    public void a(MinecraftKey minecraftkey, long i) {
-        this.c = minecraftkey;
+    public void setLootTable(MinecraftKey minecraftkey, long i) {
+        this.lootTable = minecraftkey;
         this.lootTableSeed = i;
     }
 
-    public MinecraftKey getLootTable() {
-        return this.c;
+    @Nullable
+    @Override
+    public Container createMenu(int i, PlayerInventory playerinventory, EntityHuman entityhuman) {
+        if (this.lootTable != null && entityhuman.isSpectator()) {
+            return null;
+        } else {
+            this.d(playerinventory.player);
+            return this.a(i, playerinventory);
+        }
     }
+
+    protected abstract Container a(int i, PlayerInventory playerinventory);
 }

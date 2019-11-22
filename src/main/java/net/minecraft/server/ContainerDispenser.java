@@ -13,39 +13,48 @@ public class ContainerDispenser extends Container {
     private PlayerInventory player;
     // CraftBukkit end
 
-    public ContainerDispenser(IInventory iinventory, IInventory iinventory1) {
-        this.items = iinventory1;
+    public ContainerDispenser(int i, PlayerInventory playerinventory) {
+        this(i, playerinventory, new InventorySubcontainer(9));
+    }
+
+    public ContainerDispenser(int i, PlayerInventory playerinventory, IInventory iinventory) {
+        super(Containers.GENERIC_3X3, i);
         // CraftBukkit start - Save player
-        // TODO: Should we check to make sure it really is an InventoryPlayer?
-        this.player = (PlayerInventory)iinventory;
+        this.player = playerinventory;
         // CraftBukkit end
 
-        int i;
+        a(iinventory, 9);
+        this.items = iinventory;
+        iinventory.startOpen(playerinventory.player);
+
         int j;
+        int k;
 
-        for (i = 0; i < 3; ++i) {
-            for (j = 0; j < 3; ++j) {
-                this.a(new Slot(iinventory1, j + i * 3, 62 + j * 18, 17 + i * 18));
+        for (j = 0; j < 3; ++j) {
+            for (k = 0; k < 3; ++k) {
+                this.a(new Slot(iinventory, k + j * 3, 62 + k * 18, 17 + j * 18));
             }
         }
 
-        for (i = 0; i < 3; ++i) {
-            for (j = 0; j < 9; ++j) {
-                this.a(new Slot(iinventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+        for (j = 0; j < 3; ++j) {
+            for (k = 0; k < 9; ++k) {
+                this.a(new Slot(playerinventory, k + j * 9 + 9, 8 + k * 18, 84 + j * 18));
             }
         }
 
-        for (i = 0; i < 9; ++i) {
-            this.a(new Slot(iinventory, i, 8 + i * 18, 142));
+        for (j = 0; j < 9; ++j) {
+            this.a(new Slot(playerinventory, j, 8 + j * 18, 142));
         }
 
     }
 
+    @Override
     public boolean canUse(EntityHuman entityhuman) {
         if (!this.checkReachable) return true; // CraftBukkit
         return this.items.a(entityhuman);
     }
 
+    @Override
     public ItemStack shiftClick(EntityHuman entityhuman, int i) {
         ItemStack itemstack = ItemStack.a;
         Slot slot = (Slot) this.slots.get(i);
@@ -65,7 +74,7 @@ public class ContainerDispenser extends Container {
             if (itemstack1.isEmpty()) {
                 slot.set(ItemStack.a);
             } else {
-                slot.f();
+                slot.d();
             }
 
             if (itemstack1.getCount() == itemstack.getCount()) {
@@ -76,6 +85,12 @@ public class ContainerDispenser extends Container {
         }
 
         return itemstack;
+    }
+
+    @Override
+    public void b(EntityHuman entityhuman) {
+        super.b(entityhuman);
+        this.items.closeContainer(entityhuman);
     }
 
     // CraftBukkit start

@@ -4,50 +4,56 @@ import javax.annotation.Nullable;
 
 public class EntityHorseSkeleton extends EntityHorseAbstract {
 
-    private final PathfinderGoalHorseTrap bM = new PathfinderGoalHorseTrap(this);
-    private boolean bN;
-    private int bO; public int getTrapTime() { return this.bO; } // Paper - OBFHELPER
+    private final PathfinderGoalHorseTrap bI = new PathfinderGoalHorseTrap(this);
+    private boolean bJ;
+    private int bK;public int getTrapTime() { return this.bK; } // Paper - OBFHELPER
 
-    public EntityHorseSkeleton(World world) {
-        super(EntityTypes.SKELETON_HORSE, world);
+    public EntityHorseSkeleton(EntityTypes<? extends EntityHorseSkeleton> entitytypes, World world) {
+        super(entitytypes, world);
     }
 
+    @Override
     protected void initAttributes() {
         super.initAttributes();
-        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(15.0D);
+        this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(15.0D);
         this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.20000000298023224D);
-        this.getAttributeInstance(EntityHorseSkeleton.attributeJumpStrength).setValue(this.ed());
+        this.getAttributeInstance(EntityHorseSkeleton.attributeJumpStrength).setValue(this.ey());
     }
 
-    protected void dI() {}
+    @Override
+    protected void ee() {}
 
-    protected SoundEffect D() {
-        super.D();
+    @Override
+    protected SoundEffect getSoundAmbient() {
+        super.getSoundAmbient();
         return this.a(TagsFluid.WATER) ? SoundEffects.ENTITY_SKELETON_HORSE_AMBIENT_WATER : SoundEffects.ENTITY_SKELETON_HORSE_AMBIENT;
     }
 
-    protected SoundEffect cs() {
-        super.cs();
+    @Override
+    protected SoundEffect getSoundDeath() {
+        super.getSoundDeath();
         return SoundEffects.ENTITY_SKELETON_HORSE_DEATH;
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
-        super.d(damagesource);
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
+        super.getSoundHurt(damagesource);
         return SoundEffects.ENTITY_SKELETON_HORSE_HURT;
     }
 
-    protected SoundEffect ad() {
+    @Override
+    protected SoundEffect getSoundSwim() {
         if (this.onGround) {
             if (!this.isVehicle()) {
                 return SoundEffects.ENTITY_SKELETON_HORSE_STEP_WATER;
             }
 
-            ++this.bL;
-            if (this.bL > 5 && this.bL % 3 == 0) {
+            ++this.bH;
+            if (this.bH > 5 && this.bH % 3 == 0) {
                 return SoundEffects.ENTITY_SKELETON_HORSE_GALLOP_WATER;
             }
 
-            if (this.bL <= 5) {
+            if (this.bH <= 5) {
                 return SoundEffects.ENTITY_SKELETON_HORSE_STEP_WATER;
             }
         }
@@ -55,6 +61,7 @@ public class EntityHorseSkeleton extends EntityHorseAbstract {
         return SoundEffects.ENTITY_SKELETON_HORSE_SWIM;
     }
 
+    @Override
     protected void d(float f) {
         if (this.onGround) {
             super.d(0.3F);
@@ -64,79 +71,84 @@ public class EntityHorseSkeleton extends EntityHorseAbstract {
 
     }
 
-    protected void ea() {
+    @Override
+    protected void ev() {
         if (this.isInWater()) {
             this.a(SoundEffects.ENTITY_SKELETON_HORSE_JUMP_WATER, 0.4F, 1.0F);
         } else {
-            super.ea();
+            super.ev();
         }
 
     }
 
+    @Override
     public EnumMonsterType getMonsterType() {
         return EnumMonsterType.UNDEAD;
     }
 
-    public double aJ() {
-        return super.aJ() - 0.1875D;
+    @Override
+    public double aP() {
+        return super.aP() - 0.1875D;
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.R;
-    }
-
+    @Override
     public void movementTick() {
         super.movementTick();
-        if (this.dy() && this.bO++ >= 18000) {
+        if (this.dV() && this.bK++ >= 18000) {
             this.die();
         }
 
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
-        nbttagcompound.setBoolean("SkeletonTrap", this.dy());
-        nbttagcompound.setInt("SkeletonTrapTime", this.bO);
+        nbttagcompound.setBoolean("SkeletonTrap", this.dV());
+        nbttagcompound.setInt("SkeletonTrapTime", this.bK);
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
-        this.s(nbttagcompound.getBoolean("SkeletonTrap"));
-        this.bO = nbttagcompound.getInt("SkeletonTrapTime");
+        this.r(nbttagcompound.getBoolean("SkeletonTrap"));
+        this.bK = nbttagcompound.getInt("SkeletonTrapTime");
     }
 
-    public boolean aY() {
+    @Override
+    public boolean bf() {
         return true;
     }
 
-    protected float cJ() {
+    @Override
+    protected float da() {
         return 0.96F;
     }
 
-    public boolean isTrap() { return this.dy(); } // Paper - OBFHELPER
-    public boolean dy() {
-        return this.bN;
+    public boolean isTrap() { return this.dV(); } // Paper - OBFHELPER
+    public boolean dV() {
+        return this.bJ;
     }
 
-    public void setTrap(boolean trap) { this.s(trap); } // Paper - OBFHELPER
-    public void s(boolean flag) {
-        if (flag != this.bN) {
-            this.bN = flag;
+    public void setTrap(boolean trap) { this.r(trap); } // Paper - OBFHELPER
+    public void r(boolean flag) {
+        if (flag != this.bJ) {
+            this.bJ = flag;
             if (flag) {
-                this.goalSelector.a(1, this.bM);
+                this.goalSelector.a(1, this.bI);
             } else {
-                this.goalSelector.a((PathfinderGoal) this.bM);
+                this.goalSelector.a((PathfinderGoal) this.bI);
             }
 
         }
     }
 
     @Nullable
+    @Override
     public EntityAgeable createChild(EntityAgeable entityageable) {
-        return EntityTypes.SKELETON_HORSE.create(world); // Paper
+        return (EntityAgeable) EntityTypes.SKELETON_HORSE.a(this.world);
     }
 
+    @Override
     public boolean a(EntityHuman entityhuman, EnumHand enumhand) {
         ItemStack itemstack = entityhuman.b(enumhand);
 
@@ -147,14 +159,14 @@ public class EntityHorseSkeleton extends EntityHorseAbstract {
         } else if (this.isBaby()) {
             return super.a(entityhuman, enumhand);
         } else if (entityhuman.isSneaking()) {
-            this.c(entityhuman);
+            this.e(entityhuman);
             return true;
         } else if (this.isVehicle()) {
             return super.a(entityhuman, enumhand);
         } else {
             if (!itemstack.isEmpty()) {
-                if (itemstack.getItem() == Items.SADDLE && !this.dV()) {
-                    this.c(entityhuman);
+                if (itemstack.getItem() == Items.SADDLE && !this.eq()) {
+                    this.e(entityhuman);
                     return true;
                 }
 

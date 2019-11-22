@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -19,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 public class CrashReport {
 
-    private static final Logger a = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private final String b;
     private final Throwable c;
     private final CrashReportSystemDetails d = new CrashReportSystemDetails(this, "System Details");
@@ -36,7 +37,10 @@ public class CrashReport {
 
     private void h() {
         this.d.a("Minecraft Version", () -> {
-            return "1.13.2";
+            return SharedConstants.a().getName();
+        });
+        this.d.a("Minecraft Version ID", () -> {
+            return SharedConstants.a().getId();
         });
         this.d.a("Operating System", () -> {
             return System.getProperty("os.name") + " (" + System.getProperty("os.arch") + ") version " + System.getProperty("os.version");
@@ -58,8 +62,9 @@ public class CrashReport {
 
             return k + " bytes (" + j1 + " MB) / " + j + " bytes (" + i1 + " MB) up to " + i + " bytes (" + l + " MB)";
         });
+        this.d.a("CPUs", (Object) Runtime.getRuntime().availableProcessors());
         this.d.a("JVM Flags", () -> {
-            List<String> list = (List) SystemUtils.f().collect(Collectors.toList());
+            List<String> list = (List) SystemUtils.h().collect(Collectors.toList());
 
             return String.format("%d total; %s", list.size(), list.stream().collect(Collectors.joining(" ")));
         });
@@ -185,7 +190,7 @@ public class CrashReport {
 
                 return flag1;
             } catch (Throwable throwable) {
-                CrashReport.a.error("Could not save crash report to {}", file, throwable);
+                CrashReport.LOGGER.error("Could not save crash report to {}", file, throwable);
                 flag = false;
             } finally {
                 IOUtils.closeQuietly(outputstreamwriter);
@@ -242,7 +247,7 @@ public class CrashReport {
     }
 
     private static String i() {
-        String[] astring = new String[] { "Who set us up the TNT?", "Everything's going to plan. No, really, that was supposed to happen.", "Uh... Did I do that?", "Oops.", "Why did you do that?", "I feel sad now :(", "My bad.", "I'm sorry, Dave.", "I let you down. Sorry :(", "On the bright side, I bought you a teddy bear!", "Daisy, daisy...", "Oh - I know what I did wrong!", "Hey, that tickles! Hehehe!", "I blame Dinnerbone.", "You should try our sister game, Minceraft!", "Don't be sad. I'll do better next time, I promise!", "Don't be sad, have a hug! <3", "I just don't know what went wrong :(", "Shall we play a game?", "Quite honestly, I wouldn't worry myself about that.", "I bet Cylons wouldn't have this problem.", "Sorry :(", "Surprise! Haha. Well, this is awkward.", "Would you like a cupcake?", "Hi. I'm Minecraft, and I'm a crashaholic.", "Ooh. Shiny.", "This doesn't make any sense!", "Why is it breaking :(", "Don't do that.", "Ouch. That hurt :(", "You're mean.", "This is a token for 1 free hug. Redeem at your nearest Mojangsta: [~~HUG~~]", "There are four lights!", "But it works on my machine.", "Oh oh oh, Akarin feel so sad, we should ready some chocolate.", "Boom, Some bad things happened", "Oh no, It shouldn't happend!"};
+        String[] astring = new String[]{"Who set us up the TNT?", "Everything's going to plan. No, really, that was supposed to happen.", "Uh... Did I do that?", "Oops.", "Why did you do that?", "I feel sad now :(", "My bad.", "I'm sorry, Dave.", "I let you down. Sorry :(", "On the bright side, I bought you a teddy bear!", "Daisy, daisy...", "Oh - I know what I did wrong!", "Hey, that tickles! Hehehe!", "I blame Dinnerbone.", "You should try our sister game, Minceraft!", "Don't be sad. I'll do better next time, I promise!", "Don't be sad, have a hug! <3", "I just don't know what went wrong :(", "Shall we play a game?", "Quite honestly, I wouldn't worry myself about that.", "I bet Cylons wouldn't have this problem.", "Sorry :(", "Surprise! Haha. Well, this is awkward.", "Would you like a cupcake?", "Hi. I'm Minecraft, and I'm a crashaholic.", "Ooh. Shiny.", "This doesn't make any sense!", "Why is it breaking :(", "Don't do that.", "Ouch. That hurt :(", "You're mean.", "This is a token for 1 free hug. Redeem at your nearest Mojangsta: [~~HUG~~]", "There are four lights!", "But it works on my machine."};
 
         try {
             return astring[(int) (SystemUtils.getMonotonicNanos() % (long) astring.length)];
@@ -252,6 +257,10 @@ public class CrashReport {
     }
 
     public static CrashReport a(Throwable throwable, String s) {
+        while (throwable instanceof CompletionException && throwable.getCause() != null) {
+            throwable = throwable.getCause();
+        }
+
         CrashReport crashreport;
 
         if (throwable instanceof ReportedException) {

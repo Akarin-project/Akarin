@@ -35,10 +35,12 @@ public class BlockStateEnum<T extends Enum<T> & INamable> extends BlockState<T> 
 
     }
 
-    public Collection<T> d() {
+    @Override
+    public Collection<T> getValues() {
         return this.a;
     }
 
+    @Override
     public Optional<T> b(String s) {
         return Optional.ofNullable(this.b.get(s));
     }
@@ -59,6 +61,7 @@ public class BlockStateEnum<T extends Enum<T> & INamable> extends BlockState<T> 
         }
     }
 
+    @Override
     public int c() {
         int i = super.c();
 

@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import java.util.EnumSet;
 // CraftBukkit start
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -9,18 +10,19 @@ import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 
 public class PathfinderGoalTempt extends PathfinderGoal {
 
-    private final EntityCreature a;
-    private final double b;
-    private double c;
-    private double d;
+    private static final PathfinderTargetCondition c = (new PathfinderTargetCondition()).a(10.0D).a().b().d().c();
+    protected final EntityCreature a;
+    private final double d;
     private double e;
     private double f;
     private double g;
-    private EntityLiving target; // CraftBukkit
-    private int i;
-    private boolean j;
-    private final RecipeItemStack k;
-    private final boolean l;
+    private double h;
+    private double i;
+    protected EntityLiving target; // CraftBukkit
+    private int j;
+    private boolean k;
+    private final RecipeItemStack l;
+    private final boolean m;
 
     public PathfinderGoalTempt(EntityCreature entitycreature, double d0, RecipeItemStack recipeitemstack, boolean flag) {
         this(entitycreature, d0, flag, recipeitemstack);
@@ -28,21 +30,22 @@ public class PathfinderGoalTempt extends PathfinderGoal {
 
     public PathfinderGoalTempt(EntityCreature entitycreature, double d0, boolean flag, RecipeItemStack recipeitemstack) {
         this.a = entitycreature;
-        this.b = d0;
-        this.k = recipeitemstack;
-        this.l = flag;
-        this.a(3);
+        this.d = d0;
+        this.l = recipeitemstack;
+        this.m = flag;
+        this.a(EnumSet.of(PathfinderGoal.Type.MOVE, PathfinderGoal.Type.LOOK));
         if (!(entitycreature.getNavigation() instanceof Navigation)) {
             throw new IllegalArgumentException("Unsupported mob type for TemptGoal");
         }
     }
 
+    @Override
     public boolean a() {
-        if (this.i > 0) {
-            --this.i;
+        if (this.j > 0) {
+            --this.j;
             return false;
         } else {
-            this.target = this.a.world.findNearbyPlayer(this.a, 10.0D);
+            this.target = this.a.world.a(PathfinderGoalTempt.c, (EntityLiving) this.a);
             // CraftBukkit start
             boolean tempt = this.target == null ? false : this.a(this.target.getItemInMainHand()) || this.a(this.target.getItemInOffHand());
             if (tempt) {
@@ -58,57 +61,65 @@ public class PathfinderGoalTempt extends PathfinderGoal {
     }
 
     protected boolean a(ItemStack itemstack) {
-        return this.k.test(itemstack);
+        return this.l.test(itemstack);
     }
 
+    @Override
     public boolean b() {
-        if (this.l) {
-            if (this.a.h(this.target) < 36.0D) {
-                if (this.target.d(this.c, this.d, this.e) > 0.010000000000000002D) {
+        if (this.g()) {
+            if (this.a.h((Entity) this.target) < 36.0D) {
+                if (this.target.e(this.e, this.f, this.g) > 0.010000000000000002D) {
                     return false;
                 }
 
-                if (Math.abs((double) this.target.pitch - this.f) > 5.0D || Math.abs((double) this.target.yaw - this.g) > 5.0D) {
+                if (Math.abs((double) this.target.pitch - this.h) > 5.0D || Math.abs((double) this.target.yaw - this.i) > 5.0D) {
                     return false;
                 }
             } else {
-                this.c = this.target.locX;
-                this.d = this.target.locY;
-                this.e = this.target.locZ;
+                this.e = this.target.locX;
+                this.f = this.target.locY;
+                this.g = this.target.locZ;
             }
 
-            this.f = (double) this.target.pitch;
-            this.g = (double) this.target.yaw;
+            this.h = (double) this.target.pitch;
+            this.i = (double) this.target.yaw;
         }
 
         return this.a();
     }
 
-    public void c() {
-        this.c = this.target.locX;
-        this.d = this.target.locY;
-        this.e = this.target.locZ;
-        this.j = true;
+    protected boolean g() {
+        return this.m;
     }
 
+    @Override
+    public void c() {
+        this.e = this.target.locX;
+        this.f = this.target.locY;
+        this.g = this.target.locZ;
+        this.k = true;
+    }
+
+    @Override
     public void d() {
         this.target = null;
-        this.a.getNavigation().q();
-        this.i = 100;
-        this.j = false;
+        this.a.getNavigation().o();
+        this.j = 100;
+        this.k = false;
     }
 
+    @Override
     public void e() {
-        this.a.getControllerLook().a(this.target, (float) (this.a.L() + 20), (float) this.a.K());
-        if (this.a.h(this.target) < 6.25D) {
-            this.a.getNavigation().q();
+        this.a.getControllerLook().a(this.target, (float) (this.a.dA() + 20), (float) this.a.M());
+        if (this.a.h((Entity) this.target) < 6.25D) {
+            this.a.getNavigation().o();
         } else {
-            this.a.getNavigation().a((Entity) this.target, this.b);
+            this.a.getNavigation().a((Entity) this.target, this.d);
         }
 
     }
 
-    public boolean g() {
-        return this.j;
+    public boolean h() {
+        return this.k;
     }
 }

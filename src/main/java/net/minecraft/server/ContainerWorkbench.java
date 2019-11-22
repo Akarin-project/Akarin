@@ -1,84 +1,117 @@
 package net.minecraft.server;
 
+import java.util.Optional;
 // CraftBukkit start
 import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 // CraftBukkit end
 
-public class ContainerWorkbench extends ContainerRecipeBook {
+public class ContainerWorkbench extends ContainerRecipeBook<InventoryCrafting> {
 
-    public InventoryCrafting craftInventory; // CraftBukkit - move initialization into constructor
-    public InventoryCraftResult resultInventory; // CraftBukkit - move initialization into constructor
-    private final World g;
-    private final BlockPosition h;
-    private final EntityHuman i;
+    private final InventoryCrafting craftInventory;
+    private final InventoryCraftResult resultInventory;
+    public final ContainerAccess containerAccess;
+    private final EntityHuman f;
     // CraftBukkit start
     private CraftInventoryView bukkitEntity = null;
     private PlayerInventory player;
     // CraftBukkit end
 
-    public ContainerWorkbench(PlayerInventory playerinventory, World world, BlockPosition blockposition) {
+    public ContainerWorkbench(int i, PlayerInventory playerinventory) {
+        this(i, playerinventory, ContainerAccess.a);
+    }
+
+    public ContainerWorkbench(int i, PlayerInventory playerinventory, ContainerAccess containeraccess) {
+        super(Containers.CRAFTING, i);
         // CraftBukkit start - Switched order of IInventory construction and stored player
         this.resultInventory = new InventoryCraftResult();
         this.craftInventory = new InventoryCrafting(this, 3, 3, playerinventory.player); // CraftBukkit - pass player
         this.craftInventory.resultInventory = this.resultInventory;
         this.player = playerinventory;
         // CraftBukkit end
-        this.g = world;
-        this.h = blockposition;
-        this.i = playerinventory.player;
+        this.containerAccess = containeraccess;
+        this.f = playerinventory.player;
         this.a((Slot) (new SlotResult(playerinventory.player, this.craftInventory, this.resultInventory, 0, 124, 35)));
 
-        int i;
         int j;
+        int k;
 
-        for (i = 0; i < 3; ++i) {
-            for (j = 0; j < 3; ++j) {
-                this.a(new Slot(this.craftInventory, j + i * 3, 30 + j * 18, 17 + i * 18));
+        for (j = 0; j < 3; ++j) {
+            for (k = 0; k < 3; ++k) {
+                this.a(new Slot(this.craftInventory, k + j * 3, 30 + k * 18, 17 + j * 18));
             }
         }
 
-        for (i = 0; i < 3; ++i) {
-            for (j = 0; j < 9; ++j) {
-                this.a(new Slot(playerinventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+        for (j = 0; j < 3; ++j) {
+            for (k = 0; k < 9; ++k) {
+                this.a(new Slot(playerinventory, k + j * 9 + 9, 8 + k * 18, 84 + j * 18));
             }
         }
 
-        for (i = 0; i < 9; ++i) {
-            this.a(new Slot(playerinventory, i, 8 + i * 18, 142));
+        for (j = 0; j < 9; ++j) {
+            this.a(new Slot(playerinventory, j, 8 + j * 18, 142));
         }
 
     }
 
+    protected static void a(int i, World world, EntityHuman entityhuman, InventoryCrafting inventorycrafting, InventoryCraftResult inventorycraftresult, Container container) { // CraftBukkit
+        if (!world.isClientSide) {
+            EntityPlayer entityplayer = (EntityPlayer) entityhuman;
+            ItemStack itemstack = ItemStack.a;
+            Optional<RecipeCrafting> optional = world.getMinecraftServer().getCraftingManager().craft(Recipes.CRAFTING, inventorycrafting, world);
+
+            if (optional.isPresent()) {
+                RecipeCrafting recipecrafting = (RecipeCrafting) optional.get();
+
+                if (inventorycraftresult.a(world, entityplayer, recipecrafting)) {
+                    itemstack = recipecrafting.a(inventorycrafting);
+                }
+            }
+            itemstack = org.bukkit.craftbukkit.event.CraftEventFactory.callPreCraftEvent(inventorycrafting, inventorycraftresult, itemstack, container.getBukkitView(), false); // CraftBukkit
+
+            inventorycraftresult.setItem(0, itemstack);
+            entityplayer.playerConnection.sendPacket(new PacketPlayOutSetSlot(i, 0, itemstack));
+        }
+    }
+
+    @Override
     public void a(IInventory iinventory) {
-        this.a(this.g, this.i, this.craftInventory, this.resultInventory);
+        this.containerAccess.a((world, blockposition) -> {
+            a(this.windowId, world, this.f, this.craftInventory, this.resultInventory, this); // CraftBukkit
+        });
     }
 
+    @Override
     public void a(AutoRecipeStackManager autorecipestackmanager) {
         this.craftInventory.a(autorecipestackmanager);
     }
 
-    public void d() {
+    @Override
+    public void e() {
         this.craftInventory.clear();
         this.resultInventory.clear();
     }
 
-    public boolean a(IRecipe irecipe) {
-        return irecipe.a(this.craftInventory, this.i.world);
+    @Override
+    public boolean a(IRecipe<? super InventoryCrafting> irecipe) {
+        return irecipe.a(this.craftInventory, this.f.world);
     }
 
+    @Override
     public void b(EntityHuman entityhuman) {
         super.b(entityhuman);
-        if (!this.g.isClientSide) {
-            this.a(entityhuman, this.g, this.craftInventory);
-        }
+        this.containerAccess.a((world, blockposition) -> {
+            this.a(entityhuman, world, (IInventory) this.craftInventory);
+        });
     }
 
+    @Override
     public boolean canUse(EntityHuman entityhuman) {
         if (!this.checkReachable) return true; // CraftBukkit
-        return this.g.getType(this.h).getBlock() != Blocks.CRAFTING_TABLE ? false : entityhuman.d((double) this.h.getX() + 0.5D, (double) this.h.getY() + 0.5D, (double) this.h.getZ() + 0.5D) <= 64.0D;
+        return a(this.containerAccess, entityhuman, Blocks.CRAFTING_TABLE);
     }
 
+    @Override
     public ItemStack shiftClick(EntityHuman entityhuman, int i) {
         ItemStack itemstack = ItemStack.a;
         Slot slot = (Slot) this.slots.get(i);
@@ -88,7 +121,9 @@ public class ContainerWorkbench extends ContainerRecipeBook {
 
             itemstack = itemstack1.cloneItemStack();
             if (i == 0) {
-                itemstack1.getItem().b(itemstack1, this.g, entityhuman);
+                this.containerAccess.a((world, blockposition) -> {
+                    itemstack1.getItem().b(itemstack1, world, entityhuman);
+                });
                 if (!this.a(itemstack1, 10, 46, true)) {
                     return ItemStack.a;
                 }
@@ -109,7 +144,7 @@ public class ContainerWorkbench extends ContainerRecipeBook {
             if (itemstack1.isEmpty()) {
                 slot.set(ItemStack.a);
             } else {
-                slot.f();
+                slot.d();
             }
 
             if (itemstack1.getCount() == itemstack.getCount()) {
@@ -126,20 +161,24 @@ public class ContainerWorkbench extends ContainerRecipeBook {
         return itemstack;
     }
 
+    @Override
     public boolean a(ItemStack itemstack, Slot slot) {
         return slot.inventory != this.resultInventory && super.a(itemstack, slot);
     }
 
-    public int e() {
+    @Override
+    public int f() {
         return 0;
     }
 
-    public int f() {
-        return this.craftInventory.U_();
+    @Override
+    public int g() {
+        return this.craftInventory.g();
     }
 
-    public int g() {
-        return this.craftInventory.n();
+    @Override
+    public int h() {
+        return this.craftInventory.f();
     }
 
     // CraftBukkit start

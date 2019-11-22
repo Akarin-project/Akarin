@@ -30,6 +30,7 @@ public class AttributeRanged extends AttributeBase {
         return this.c;
     }
 
+    @Override
     public double a(double d0) {
         if (d0 != d0) return getDefault(); // CraftBukkit
 

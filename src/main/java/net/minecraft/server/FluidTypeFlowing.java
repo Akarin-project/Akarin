@@ -21,8 +21,8 @@ import org.bukkit.event.block.FluidLevelChangeEvent;
 
 public abstract class FluidTypeFlowing extends FluidType {
 
-    public static final BlockStateBoolean FALLING = BlockProperties.h;
-    public static final BlockStateInteger LEVEL = BlockProperties.ag;
+    public static final BlockStateBoolean FALLING = BlockProperties.i;
+    public static final BlockStateInteger LEVEL = BlockProperties.an;
     private static final ThreadLocal<Object2ByteLinkedOpenHashMap<Block.a>> e = ThreadLocal.withInitial(() -> {
         Object2ByteLinkedOpenHashMap<Block.a> object2bytelinkedopenhashmap = new Object2ByteLinkedOpenHashMap<Block.a>(200) {
             protected void rehash(int i) {}
@@ -31,14 +31,17 @@ public abstract class FluidTypeFlowing extends FluidType {
         object2bytelinkedopenhashmap.defaultReturnValue((byte) 127);
         return object2bytelinkedopenhashmap;
     });
+    private final Map<Fluid, VoxelShape> f = Maps.newIdentityHashMap();
 
     public FluidTypeFlowing() {}
 
+    @Override
     protected void a(BlockStateList.a<FluidType, Fluid> blockstatelist_a) {
         blockstatelist_a.a(FluidTypeFlowing.FALLING);
     }
 
-    public Vec3D a(IWorldReader iworldreader, BlockPosition blockposition, Fluid fluid) {
+    @Override
+    public Vec3D a(IBlockAccess iblockaccess, BlockPosition blockposition, Fluid fluid) {
         double d0 = 0.0D;
         double d1 = 0.0D;
         BlockPosition.PooledBlockPosition blockposition_pooledblockposition = BlockPosition.PooledBlockPosition.r();
@@ -53,25 +56,26 @@ public abstract class FluidTypeFlowing extends FluidType {
                 EnumDirection enumdirection = (EnumDirection) iterator.next();
 
                 blockposition_pooledblockposition.g(blockposition).c(enumdirection);
-                Fluid fluid1 = iworldreader.getFluid(blockposition_pooledblockposition);
+                Fluid fluid1 = iblockaccess.getFluid(blockposition_pooledblockposition);
 
                 if (this.g(fluid1)) {
-                    float f = fluid1.getHeight();
+                    float f = fluid1.f();
                     float f1 = 0.0F;
 
                     if (f == 0.0F) {
-                        if (!iworldreader.getType(blockposition_pooledblockposition).getMaterial().isSolid()) {
-                            Fluid fluid2 = iworldreader.getFluid(blockposition_pooledblockposition.down());
+                        if (!iblockaccess.getType(blockposition_pooledblockposition).getMaterial().isSolid()) {
+                            BlockPosition blockposition1 = blockposition_pooledblockposition.down();
+                            Fluid fluid2 = iblockaccess.getFluid(blockposition1);
 
                             if (this.g(fluid2)) {
-                                f = fluid2.getHeight();
+                                f = fluid2.f();
                                 if (f > 0.0F) {
-                                    f1 = fluid.getHeight() - (f - 0.8888889F);
+                                    f1 = fluid.f() - (f - 0.8888889F);
                                 }
                             }
                         }
                     } else if (f > 0.0F) {
-                        f1 = fluid.getHeight() - f;
+                        f1 = fluid.f() - f;
                     }
 
                     if (f1 != 0.0F) {
@@ -90,14 +94,14 @@ public abstract class FluidTypeFlowing extends FluidType {
                     EnumDirection enumdirection1 = (EnumDirection) iterator1.next();
 
                     blockposition_pooledblockposition.g(blockposition).c(enumdirection1);
-                    if (this.a((IBlockAccess) iworldreader, (BlockPosition) blockposition_pooledblockposition, enumdirection1) || this.a((IBlockAccess) iworldreader, blockposition_pooledblockposition.up(), enumdirection1)) {
-                        vec3d1 = vec3d1.a().add(0.0D, -6.0D, 0.0D);
+                    if (this.a(iblockaccess, (BlockPosition) blockposition_pooledblockposition, enumdirection1) || this.a(iblockaccess, blockposition_pooledblockposition.up(), enumdirection1)) {
+                        vec3d1 = vec3d1.d().add(0.0D, -6.0D, 0.0D);
                         break;
                     }
                 }
             }
 
-            vec3d = vec3d1.a();
+            vec3d = vec3d1.d();
         } catch (Throwable throwable1) {
             throwable = throwable1;
             throw throwable1;
@@ -120,35 +124,24 @@ public abstract class FluidTypeFlowing extends FluidType {
     }
 
     private boolean g(Fluid fluid) {
-        return fluid.e() || fluid.c().a((FluidType) this);
+        return fluid.isEmpty() || fluid.getType().a((FluidType) this);
     }
 
     protected boolean a(IBlockAccess iblockaccess, BlockPosition blockposition, EnumDirection enumdirection) {
         IBlockData iblockdata = iblockaccess.getType(blockposition);
-        Block block = iblockdata.getBlock();
         Fluid fluid = iblockaccess.getFluid(blockposition);
 
-        if (fluid.c().a((FluidType) this)) {
-            return false;
-        } else if (enumdirection == EnumDirection.UP) {
-            return true;
-        } else if (iblockdata.getMaterial() == Material.ICE) {
-            return false;
-        } else {
-            boolean flag = Block.b(block) || block instanceof BlockStairs;
-
-            return !flag && iblockdata.c(iblockaccess, blockposition, enumdirection) == EnumBlockFaceShape.SOLID;
-        }
+        return fluid.getType().a((FluidType) this) ? false : (enumdirection == EnumDirection.UP ? true : (iblockdata.getMaterial() == Material.ICE ? false : iblockdata.d(iblockaccess, blockposition, enumdirection)));
     }
 
     protected void a(GeneratorAccess generatoraccess, BlockPosition blockposition, Fluid fluid) {
-        if (!fluid.e()) {
+        if (!fluid.isEmpty()) {
             IBlockData iblockdata = generatoraccess.getType(blockposition);
             BlockPosition blockposition1 = blockposition.down();
             IBlockData iblockdata1 = generatoraccess.getType(blockposition1);
             Fluid fluid1 = this.a((IWorldReader) generatoraccess, blockposition1, iblockdata1);
 
-            if (this.a(generatoraccess, blockposition, iblockdata, EnumDirection.DOWN, blockposition1, iblockdata1, generatoraccess.getFluid(blockposition1), fluid1.c())) {
+            if (this.a(generatoraccess, blockposition, iblockdata, EnumDirection.DOWN, blockposition1, iblockdata1, generatoraccess.getFluid(blockposition1), fluid1.getType())) {
                 // CraftBukkit start
                 org.bukkit.block.Block source = CraftBlock.at(generatoraccess, blockposition);
                 BlockFromToEvent event = new BlockFromToEvent(source, BlockFace.DOWN);
@@ -162,7 +155,7 @@ public abstract class FluidTypeFlowing extends FluidType {
                 if (this.a((IWorldReader) generatoraccess, blockposition) >= 3) {
                     this.a(generatoraccess, blockposition, fluid, iblockdata);
                 }
-            } else if (fluid.d() || !this.a((IBlockAccess) generatoraccess, fluid1.c(), blockposition, iblockdata, blockposition1, iblockdata1)) {
+            } else if (fluid.isSource() || !this.a((IBlockAccess) generatoraccess, fluid1.getType(), blockposition, iblockdata, blockposition1, iblockdata1)) {
                 this.a(generatoraccess, blockposition, fluid, iblockdata);
             }
 
@@ -177,7 +170,7 @@ public abstract class FluidTypeFlowing extends FluidType {
         }
 
         if (i > 0) {
-            Map<EnumDirection, Fluid> map = this.b(generatoraccess, blockposition, iblockdata);
+            Map<EnumDirection, Fluid> map = this.b((IWorldReader) generatoraccess, blockposition, iblockdata);
             Iterator iterator = map.entrySet().iterator();
 
             while (iterator.hasNext()) {
@@ -188,7 +181,7 @@ public abstract class FluidTypeFlowing extends FluidType {
                 IBlockData iblockdata1 = generatoraccess.getTypeIfLoaded(blockposition1); // Paper
                 if (iblockdata1 == null) continue; // Paper
 
-                if (this.a(generatoraccess, blockposition, iblockdata, enumdirection, blockposition1, iblockdata1, generatoraccess.getFluid(blockposition1), fluid1.c())) {
+                if (this.a(generatoraccess, blockposition, iblockdata, enumdirection, blockposition1, iblockdata1, generatoraccess.getFluid(blockposition1), fluid1.getType())) {
                     // CraftBukkit start
                     org.bukkit.block.Block source = CraftBlock.at(generatoraccess, blockposition);
                     BlockFromToEvent event = new BlockFromToEvent(source, org.bukkit.craftbukkit.block.CraftBlock.notchToBlockFace(enumdirection));
@@ -215,10 +208,10 @@ public abstract class FluidTypeFlowing extends FluidType {
             BlockPosition blockposition1 = blockposition.shift(enumdirection);
             IBlockData iblockdata1 = iworldreader.getTypeIfLoaded(blockposition1); // Paper
             if (iblockdata1 == null) continue; // Paper
-            Fluid fluid = iblockdata1.s();
+            Fluid fluid = iblockdata1.p();
 
-            if (fluid.c().a((FluidType) this) && this.a(enumdirection, (IBlockAccess) iworldreader, blockposition, iblockdata, blockposition1, iblockdata1)) {
-                if (fluid.d()) {
+            if (fluid.getType().a((FluidType) this) && this.a(enumdirection, (IBlockAccess) iworldreader, blockposition, iblockdata, blockposition1, iblockdata1)) {
+                if (fluid.isSource()) {
                     ++j;
                 }
 
@@ -228,7 +221,7 @@ public abstract class FluidTypeFlowing extends FluidType {
 
         if (this.g() && j >= 2) {
             IBlockData iblockdata2 = iworldreader.getType(blockposition.down());
-            Fluid fluid1 = iblockdata2.s();
+            Fluid fluid1 = iblockdata2.p();
 
             if (iblockdata2.getMaterial().isBuildable() || this.h(fluid1)) {
                 return this.a(false);
@@ -237,9 +230,9 @@ public abstract class FluidTypeFlowing extends FluidType {
 
         BlockPosition blockposition2 = blockposition.up();
         IBlockData iblockdata3 = iworldreader.getType(blockposition2);
-        Fluid fluid2 = iblockdata3.s();
+        Fluid fluid2 = iblockdata3.p();
 
-        if (!fluid2.e() && fluid2.c().a((FluidType) this) && this.a(EnumDirection.UP, (IBlockAccess) iworldreader, blockposition, iblockdata, blockposition2, iblockdata3)) {
+        if (!fluid2.isEmpty() && fluid2.getType().a((FluidType) this) && this.a(EnumDirection.UP, (IBlockAccess) iworldreader, blockposition, iblockdata, blockposition2, iblockdata3)) {
             return this.a(8, true);
         } else {
             int k = i - this.c(iworldreader);
@@ -251,7 +244,7 @@ public abstract class FluidTypeFlowing extends FluidType {
     private boolean a(EnumDirection enumdirection, IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, BlockPosition blockposition1, IBlockData iblockdata1) {
         Object2ByteLinkedOpenHashMap object2bytelinkedopenhashmap;
 
-        if (!iblockdata.getBlock().s() && !iblockdata1.getBlock().s()) {
+        if (!iblockdata.getBlock().p() && !iblockdata1.getBlock().p()) {
             object2bytelinkedopenhashmap = (Object2ByteLinkedOpenHashMap) FluidTypeFlowing.e.get();
         } else {
             object2bytelinkedopenhashmap = null;
@@ -307,7 +300,7 @@ public abstract class FluidTypeFlowing extends FluidType {
                 this.a(generatoraccess, blockposition, iblockdata);
             }
 
-            generatoraccess.setTypeAndData(blockposition, fluid.i(), 3);
+            generatoraccess.setTypeAndData(blockposition, fluid.getBlockData(), 3);
         }
 
     }
@@ -339,12 +332,11 @@ public abstract class FluidTypeFlowing extends FluidType {
                         continue;
                     }
 
-                    pair = Pair.of(iblockdatax, iblockdatax.s());
+                    pair = Pair.of(iblockdatax, iblockdatax.p());
                     short2objectmap.put(short0, pair);
 
                 }
                 // Paper end
-
                 IBlockData iblockdata1 = (IBlockData) pair.getFirst();
                 Fluid fluid = (Fluid) pair.getSecond();
 
@@ -375,7 +367,7 @@ public abstract class FluidTypeFlowing extends FluidType {
     }
 
     private boolean a(IBlockAccess iblockaccess, FluidType fluidtype, BlockPosition blockposition, IBlockData iblockdata, BlockPosition blockposition1, IBlockData iblockdata1) {
-        return !this.a(EnumDirection.DOWN, iblockaccess, blockposition, iblockdata, blockposition1, iblockdata1) ? false : (iblockdata1.s().c().a((FluidType) this) ? true : this.a(iblockaccess, blockposition1, iblockdata1, fluidtype));
+        return !this.a(EnumDirection.DOWN, iblockaccess, blockposition, iblockdata, blockposition1, iblockdata1) ? false : (iblockdata1.p().getType().a((FluidType) this) ? true : this.a(iblockaccess, blockposition1, iblockdata1, fluidtype));
     }
 
     private boolean a(IBlockAccess iblockaccess, FluidType fluidtype, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection, BlockPosition blockposition1, IBlockData iblockdata1, Fluid fluid) {
@@ -383,7 +375,7 @@ public abstract class FluidTypeFlowing extends FluidType {
     }
 
     private boolean h(Fluid fluid) {
-        return fluid.c().a((FluidType) this) && fluid.d();
+        return fluid.getType().a((FluidType) this) && fluid.isSource();
     }
 
     protected abstract int b(IWorldReader iworldreader);
@@ -422,7 +414,7 @@ public abstract class FluidTypeFlowing extends FluidType {
                 IBlockData iblockdatax = iworldreader.getTypeIfLoaded(blockposition1);
                 if (iblockdatax == null) continue;
 
-                pair = Pair.of(iblockdatax, iblockdatax.s());
+                pair = Pair.of(iblockdatax, iblockdatax.p());
                 short2objectmap.put(short0, pair);
             }
             // Paper end
@@ -430,7 +422,7 @@ public abstract class FluidTypeFlowing extends FluidType {
             Fluid fluid = (Fluid) pair.getSecond();
             Fluid fluid1 = this.a(iworldreader, blockposition1, iblockdata1);
 
-            if (this.a(iworldreader, fluid1.c(), blockposition, iblockdata, enumdirection, blockposition1, iblockdata1, fluid)) {
+            if (this.a(iworldreader, fluid1.getType(), blockposition, iblockdata, enumdirection, blockposition1, iblockdata1, fluid)) {
                 BlockPosition blockposition2 = blockposition1.down();
                 boolean flag = short2booleanopenhashmap.computeIfAbsent(short0, (j) -> {
                     IBlockData iblockdata2 = iworldreader.getType(blockposition2);
@@ -464,7 +456,7 @@ public abstract class FluidTypeFlowing extends FluidType {
 
         if (block instanceof IFluidContainer) {
             return ((IFluidContainer) block).canPlace(iblockaccess, blockposition, iblockdata, fluidtype);
-        } else if (!(block instanceof BlockDoor) && block != Blocks.SIGN && block != Blocks.LADDER && block != Blocks.SUGAR_CANE && block != Blocks.BUBBLE_COLUMN) {
+        } else if (!(block instanceof BlockDoor) && !block.a(TagsBlock.SIGNS) && block != Blocks.LADDER && block != Blocks.SUGAR_CANE && block != Blocks.BUBBLE_COLUMN) {
             Material material = iblockdata.getMaterial();
 
             return material != Material.PORTAL && material != Material.STRUCTURE_VOID && material != Material.WATER_PLANT && material != Material.REPLACEABLE_WATER_PLANT ? !material.isSolid() : false;
@@ -474,21 +466,22 @@ public abstract class FluidTypeFlowing extends FluidType {
     }
 
     protected boolean a(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection, BlockPosition blockposition1, IBlockData iblockdata1, Fluid fluid, FluidType fluidtype) {
-        return fluid.a(fluidtype, enumdirection) && this.a(enumdirection, iblockaccess, blockposition, iblockdata, blockposition1, iblockdata1) && this.a(iblockaccess, blockposition1, iblockdata1, fluidtype);
+        return fluid.a(iblockaccess, blockposition1, fluidtype, enumdirection) && this.a(enumdirection, iblockaccess, blockposition, iblockdata, blockposition1, iblockdata1) && this.a(iblockaccess, blockposition1, iblockdata1, fluidtype);
     }
 
     protected abstract int c(IWorldReader iworldreader);
 
-    protected int a(World world, Fluid fluid, Fluid fluid1) {
+    protected int a(World world, BlockPosition blockposition, Fluid fluid, Fluid fluid1) {
         return this.a((IWorldReader) world);
     }
 
+    @Override
     public void a(World world, BlockPosition blockposition, Fluid fluid) {
-        if (!fluid.d()) {
+        if (!fluid.isSource()) {
             Fluid fluid1 = this.a((IWorldReader) world, blockposition, world.getType(blockposition));
-            int i = this.a(world, fluid, fluid1);
+            int i = this.a(world, blockposition, fluid, fluid1);
 
-            if (fluid1.e()) {
+            if (fluid1.isEmpty()) {
                 fluid = fluid1;
                 // CraftBukkit start
                 FluidLevelChangeEvent event = CraftEventFactory.callFluidLevelChangeEvent(world, blockposition, Blocks.AIR.getBlockData());
@@ -499,7 +492,7 @@ public abstract class FluidTypeFlowing extends FluidType {
                 // CraftBukkit end
             } else if (!fluid1.equals(fluid)) {
                 fluid = fluid1;
-                IBlockData iblockdata = fluid1.i();
+                IBlockData iblockdata = fluid1.getBlockData();
                 // CraftBukkit start
                 FluidLevelChangeEvent event = CraftEventFactory.callFluidLevelChangeEvent(world, blockposition, iblockdata);
                 if (event.isCancelled()) {
@@ -507,7 +500,7 @@ public abstract class FluidTypeFlowing extends FluidType {
                 }
                 world.setTypeAndData(blockposition, ((CraftBlockData) event.getNewData()).getState(), 2);
                 // CraftBukkit end
-                world.getFluidTickList().a(blockposition, fluid1.c(), i);
+                world.getFluidTickList().a(blockposition, fluid1.getType(), i);
                 world.applyPhysics(blockposition, iblockdata.getBlock());
             }
         }
@@ -516,10 +509,27 @@ public abstract class FluidTypeFlowing extends FluidType {
     }
 
     protected static int e(Fluid fluid) {
-        return fluid.d() ? 0 : 8 - Math.min(fluid.g(), 8) + ((Boolean) fluid.get(FluidTypeFlowing.FALLING) ? 8 : 0);
+        return fluid.isSource() ? 0 : 8 - Math.min(fluid.g(), 8) + ((Boolean) fluid.get(FluidTypeFlowing.FALLING) ? 8 : 0);
     }
 
+    private static boolean c(Fluid fluid, IBlockAccess iblockaccess, BlockPosition blockposition) {
+        return fluid.getType().a(iblockaccess.getFluid(blockposition.up()).getType());
+    }
+
+    @Override
+    public float a(Fluid fluid, IBlockAccess iblockaccess, BlockPosition blockposition) {
+        return c(fluid, iblockaccess, blockposition) ? 1.0F : fluid.f();
+    }
+
+    @Override
     public float a(Fluid fluid) {
         return (float) fluid.g() / 9.0F;
+    }
+
+    @Override
+    public VoxelShape b(Fluid fluid, IBlockAccess iblockaccess, BlockPosition blockposition) {
+        return fluid.g() == 9 && c(fluid, iblockaccess, blockposition) ? VoxelShapes.b() : (VoxelShape) this.f.computeIfAbsent(fluid, (fluid1) -> {
+            return VoxelShapes.create(0.0D, 0.0D, 0.0D, 1.0D, (double) fluid1.getHeight(iblockaccess, blockposition), 1.0D);
+        });
     }
 }

@@ -1,108 +1,118 @@
 package net.minecraft.server;
 
 import java.util.Random;
+import java.util.function.ToDoubleFunction;
 import javax.annotation.Nullable;
 
 public class RandomPositionGenerator {
 
     @Nullable
     public static Vec3D a(EntityCreature entitycreature, int i, int j) {
-        return c(entitycreature, i, j, (Vec3D) null);
+        return d(entitycreature, i, j, (Vec3D) null);
     }
 
     @Nullable
     public static Vec3D b(EntityCreature entitycreature, int i, int j) {
-        return a(entitycreature, i, j, (Vec3D) null, false, 0.0D);
+        entitycreature.getClass();
+        return a(entitycreature, i, j, entitycreature::f);
+    }
+
+    @Nullable
+    public static Vec3D a(EntityCreature entitycreature, int i, int j, ToDoubleFunction<BlockPosition> todoublefunction) {
+        return a(entitycreature, i, j, (Vec3D) null, false, 0.0D, todoublefunction);
     }
 
     @Nullable
     public static Vec3D a(EntityCreature entitycreature, int i, int j, Vec3D vec3d) {
         Vec3D vec3d1 = vec3d.a(entitycreature.locX, entitycreature.locY, entitycreature.locZ);
 
-        return c(entitycreature, i, j, vec3d1);
+        return d(entitycreature, i, j, vec3d1);
     }
 
     @Nullable
     public static Vec3D a(EntityCreature entitycreature, int i, int j, Vec3D vec3d, double d0) {
         Vec3D vec3d1 = vec3d.a(entitycreature.locX, entitycreature.locY, entitycreature.locZ);
 
-        return a(entitycreature, i, j, vec3d1, true, d0);
+        entitycreature.getClass();
+        return a(entitycreature, i, j, vec3d1, true, d0, entitycreature::f);
     }
 
     @Nullable
     public static Vec3D b(EntityCreature entitycreature, int i, int j, Vec3D vec3d) {
         Vec3D vec3d1 = (new Vec3D(entitycreature.locX, entitycreature.locY, entitycreature.locZ)).d(vec3d);
 
-        return c(entitycreature, i, j, vec3d1);
+        entitycreature.getClass();
+        return a(entitycreature, i, j, vec3d1, false, 1.5707963705062866D, entitycreature::f);
     }
 
     @Nullable
-    private static Vec3D c(EntityCreature entitycreature, int i, int j, @Nullable Vec3D vec3d) {
-        return a(entitycreature, i, j, vec3d, true, 1.5707963705062866D);
+    public static Vec3D c(EntityCreature entitycreature, int i, int j, Vec3D vec3d) {
+        Vec3D vec3d1 = (new Vec3D(entitycreature.locX, entitycreature.locY, entitycreature.locZ)).d(vec3d);
+
+        return d(entitycreature, i, j, vec3d1);
     }
 
     @Nullable
-    private static Vec3D a(EntityCreature entitycreature, int i, int j, @Nullable Vec3D vec3d, boolean flag, double d0) {
+    private static Vec3D d(EntityCreature entitycreature, int i, int j, @Nullable Vec3D vec3d) {
+        entitycreature.getClass();
+        return a(entitycreature, i, j, vec3d, true, 1.5707963705062866D, entitycreature::f);
+    }
+
+    @Nullable
+    private static Vec3D a(EntityCreature entitycreature, int i, int j, @Nullable Vec3D vec3d, boolean flag, double d0, ToDoubleFunction<BlockPosition> todoublefunction) {
         NavigationAbstract navigationabstract = entitycreature.getNavigation();
         Random random = entitycreature.getRandom();
         boolean flag1;
 
-        if (entitycreature.dw()) {
-            double d1 = entitycreature.dt().distanceSquared((double) MathHelper.floor(entitycreature.locX), (double) MathHelper.floor(entitycreature.locY), (double) MathHelper.floor(entitycreature.locZ)) + 4.0D;
-            double d2 = (double) (entitycreature.du() + (float) i);
-
-            flag1 = d1 < d2 * d2;
+        if (entitycreature.dL()) {
+            flag1 = entitycreature.dI().a((IPosition) entitycreature.getPositionVector(), (double) (entitycreature.dJ() + (float) i) + 1.0D);
         } else {
             flag1 = false;
         }
 
         boolean flag2 = false;
-        float f = -99999.0F;
-        int k = 0;
-        int l = 0;
-        int i1 = 0;
+        double d1 = Double.NEGATIVE_INFINITY;
+        BlockPosition blockposition = new BlockPosition(entitycreature);
 
-        for (int j1 = 0; j1 < 10; ++j1) {
-            BlockPosition blockposition = a(random, i, j, vec3d, d0);
+        for (int k = 0; k < 10; ++k) {
+            BlockPosition blockposition1 = a(random, i, j, vec3d, d0);
 
-            if (blockposition != null) {
-                int k1 = blockposition.getX();
-                int l1 = blockposition.getY();
-                int i2 = blockposition.getZ();
-                BlockPosition blockposition1;
+            if (blockposition1 != null) {
+                int l = blockposition1.getX();
+                int i1 = blockposition1.getY();
+                int j1 = blockposition1.getZ();
+                BlockPosition blockposition2;
 
-                if (entitycreature.dw() && i > 1) {
-                    blockposition1 = entitycreature.dt();
-                    if (entitycreature.locX > (double) blockposition1.getX()) {
-                        k1 -= random.nextInt(i / 2);
+                if (entitycreature.dL() && i > 1) {
+                    blockposition2 = entitycreature.dI();
+                    if (entitycreature.locX > (double) blockposition2.getX()) {
+                        l -= random.nextInt(i / 2);
                     } else {
-                        k1 += random.nextInt(i / 2);
+                        l += random.nextInt(i / 2);
                     }
 
-                    if (entitycreature.locZ > (double) blockposition1.getZ()) {
-                        i2 -= random.nextInt(i / 2);
+                    if (entitycreature.locZ > (double) blockposition2.getZ()) {
+                        j1 -= random.nextInt(i / 2);
                     } else {
-                        i2 += random.nextInt(i / 2);
+                        j1 += random.nextInt(i / 2);
                     }
                 }
 
-                blockposition1 = new BlockPosition((double) k1 + entitycreature.locX, (double) l1 + entitycreature.locY, (double) i2 + entitycreature.locZ);
-                if (!entitycreature.world.isLoaded(blockposition1)) continue; // Paper
-                if ((!flag1 || entitycreature.f(blockposition1)) && navigationabstract.a(blockposition1)) {
+                blockposition2 = new BlockPosition((double) l + entitycreature.locX, (double) i1 + entitycreature.locY, (double) j1 + entitycreature.locZ);
+                if (!entitycreature.world.isLoaded(blockposition2)) continue; // Paper
+                if ((!flag1 || entitycreature.a(blockposition2)) && navigationabstract.a(blockposition2)) {
                     if (!flag) {
-                        blockposition1 = a(blockposition1, entitycreature);
-                        if (b(blockposition1, entitycreature)) {
+                        blockposition2 = a(blockposition2, entitycreature);
+                        if (b(blockposition2, entitycreature)) {
                             continue;
                         }
                     }
 
-                    float f1 = entitycreature.a(blockposition1);
+                    double d2 = todoublefunction.applyAsDouble(blockposition2);
 
-                    if (f1 > f) {
-                        f = f1;
-                        k = k1;
-                        l = l1;
-                        i1 = i2;
+                    if (d2 > d1) {
+                        d1 = d2;
+                        blockposition = blockposition2;
                         flag2 = true;
                     }
                 }
@@ -110,7 +120,7 @@ public class RandomPositionGenerator {
         }
 
         if (flag2) {
-            return new Vec3D((double) k + entitycreature.locX, (double) l + entitycreature.locY, (double) i1 + entitycreature.locZ);
+            return new Vec3D(blockposition);
         } else {
             return null;
         }
@@ -119,7 +129,7 @@ public class RandomPositionGenerator {
     @Nullable
     private static BlockPosition a(Random random, int i, int j, @Nullable Vec3D vec3d, double d0) {
         if (vec3d != null && d0 < 3.141592653589793D) {
-            double d1 = MathHelper.c(vec3d.z, vec3d.x) - 1.5707963705062866D;
+            double d1 = MathHelper.d(vec3d.z, vec3d.x) - 1.5707963705062866D;
             double d2 = d1 + (double) (2.0F * random.nextFloat() - 1.0F) * d0;
             double d3 = Math.sqrt(random.nextDouble()) * (double) MathHelper.a * (double) i;
             double d4 = -d3 * Math.sin(d2);
@@ -147,7 +157,7 @@ public class RandomPositionGenerator {
         } else {
             BlockPosition blockposition1;
 
-            for (blockposition1 = blockposition.up(); blockposition1.getY() < entitycreature.world.getHeight() && entitycreature.world.getType(blockposition1).getMaterial().isBuildable(); blockposition1 = blockposition1.up()) {
+            for (blockposition1 = blockposition.up(); blockposition1.getY() < entitycreature.world.getBuildHeight() && entitycreature.world.getType(blockposition1).getMaterial().isBuildable(); blockposition1 = blockposition1.up()) {
                 ;
             }
 

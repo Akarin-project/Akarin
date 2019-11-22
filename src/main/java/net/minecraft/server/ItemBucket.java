@@ -18,16 +18,20 @@ public class ItemBucket extends Item {
         this.fluidType = fluidtype;
     }
 
+    @Override
     public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
         ItemStack itemstack = entityhuman.b(enumhand);
-        MovingObjectPosition movingobjectposition = this.a(world, entityhuman, this.fluidType == FluidTypes.EMPTY);
+        MovingObjectPosition movingobjectposition = a(world, entityhuman, this.fluidType == FluidTypes.EMPTY ? RayTrace.FluidCollisionOption.SOURCE_ONLY : RayTrace.FluidCollisionOption.NONE);
 
-        if (movingobjectposition == null) {
+        if (movingobjectposition.getType() == MovingObjectPosition.EnumMovingObjectType.MISS) {
             return new InteractionResultWrapper<>(EnumInteractionResult.PASS, itemstack);
-        } else if (movingobjectposition.type == MovingObjectPosition.EnumMovingObjectType.BLOCK) {
-            BlockPosition blockposition = movingobjectposition.getBlockPosition();
+        } else if (movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.BLOCK) {
+            return new InteractionResultWrapper<>(EnumInteractionResult.PASS, itemstack);
+        } else {
+            MovingObjectPositionBlock movingobjectpositionblock = (MovingObjectPositionBlock) movingobjectposition;
+            BlockPosition blockposition = movingobjectpositionblock.getBlockPosition();
 
-            if (world.a(entityhuman, blockposition) && entityhuman.a(blockposition, movingobjectposition.direction, itemstack)) {
+            if (world.a(entityhuman, blockposition) && entityhuman.a(blockposition, movingobjectpositionblock.getDirection(), itemstack)) {
                 IBlockData iblockdata;
 
                 if (this.fluidType == FluidTypes.EMPTY) {
@@ -35,9 +39,10 @@ public class ItemBucket extends Item {
                     if (iblockdata.getBlock() instanceof IFluidSource) {
                         // CraftBukkit start
                         FluidType dummyFluid = ((IFluidSource) iblockdata.getBlock()).removeFluid(DummyGeneratorAccess.INSTANCE, blockposition, iblockdata);
-                        PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(entityhuman, blockposition.getX(), blockposition.getY(), blockposition.getZ(), null, itemstack, dummyFluid.b(), enumhand); // Paper - add enumHand
+                        PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(world, entityhuman, blockposition, blockposition, movingobjectpositionblock.getDirection(), itemstack, dummyFluid.b(), enumhand); // Paper - add enumHand
 
                         if (event.isCancelled()) {
+                            ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutBlockChange(world, blockposition)); // SPIGOT-5163 (see PlayerInteractManager)
                             ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory(); // SPIGOT-4541
                             return new InteractionResultWrapper(EnumInteractionResult.FAIL, itemstack);
                         }
@@ -60,9 +65,9 @@ public class ItemBucket extends Item {
                     return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
                 } else {
                     iblockdata = world.getType(blockposition);
-                    BlockPosition blockposition1 = this.a(iblockdata, blockposition, movingobjectposition);
+                    BlockPosition blockposition1 = iblockdata.getBlock() instanceof IFluidContainer && this.fluidType == FluidTypes.WATER ? blockposition : movingobjectpositionblock.getBlockPosition().shift(movingobjectpositionblock.getDirection());
 
-                    if (this.a(entityhuman, world, blockposition1, movingobjectposition, movingobjectposition.direction, blockposition, itemstack, enumhand)) { // CraftBukkit // Paper - add enumHand
+                    if (this.a(entityhuman, world, blockposition1, movingobjectpositionblock, movingobjectpositionblock.getDirection(), blockposition, itemstack, enumhand)) { // CraftBukkit // Paper - add enumHand
                         this.a(world, itemstack, blockposition1);
                         if (entityhuman instanceof EntityPlayer) {
                             CriterionTriggers.y.a((EntityPlayer) entityhuman, blockposition1, itemstack);
@@ -77,13 +82,7 @@ public class ItemBucket extends Item {
             } else {
                 return new InteractionResultWrapper<>(EnumInteractionResult.FAIL, itemstack);
             }
-        } else {
-            return new InteractionResultWrapper<>(EnumInteractionResult.PASS, itemstack);
         }
-    }
-
-    private BlockPosition a(IBlockData iblockdata, BlockPosition blockposition, MovingObjectPosition movingobjectposition) {
-        return iblockdata.getBlock() instanceof IFluidContainer ? blockposition : movingobjectposition.getBlockPosition().shift(movingobjectposition.direction);
     }
 
     protected ItemStack a(ItemStack itemstack, EntityHuman entityhuman) {
@@ -113,16 +112,16 @@ public class ItemBucket extends Item {
     }
 
     // CraftBukkit start
-    public boolean a(@Nullable EntityHuman entityhuman, World world, BlockPosition blockposition, @Nullable MovingObjectPosition movingobjectposition) {
-        return a(entityhuman, world, blockposition, movingobjectposition, null, null, null);
+    public boolean a(@Nullable EntityHuman entityhuman, World world, BlockPosition blockposition, @Nullable MovingObjectPositionBlock movingobjectpositionblock) {
+        return a(entityhuman, world, blockposition, movingobjectpositionblock, null, null, null);
     }
 
-    public boolean a(EntityHuman entityhuman, World world, BlockPosition blockposition, @Nullable MovingObjectPosition movingobjectposition, EnumDirection enumdirection, BlockPosition clicked, ItemStack itemstack) {
+    public boolean a(EntityHuman entityhuman, World world, BlockPosition blockposition, @Nullable MovingObjectPositionBlock movingobjectpositionblock, EnumDirection enumdirection, BlockPosition clicked, ItemStack itemstack) {
         // Paper start - add enumHand
-        return a(entityhuman, world, blockposition, movingobjectposition, enumdirection, clicked, itemstack, null);
+        return a(entityhuman, world, blockposition, movingobjectpositionblock, enumdirection, clicked, itemstack, null);
     }
 
-    public boolean a(EntityHuman entityhuman, World world, BlockPosition blockposition, @Nullable MovingObjectPosition movingobjectposition, EnumDirection enumdirection, BlockPosition clicked, ItemStack itemstack, EnumHand enumhand) {
+    public boolean a(EntityHuman entityhuman, World world, BlockPosition blockposition, @Nullable MovingObjectPositionBlock movingobjectpositionblock, EnumDirection enumdirection, BlockPosition clicked, ItemStack itemstack, EnumHand enumhand) {
         // Paper end
         // CraftBukkit end
         if (!(this.fluidType instanceof FluidTypeFlowing)) {
@@ -134,11 +133,11 @@ public class ItemBucket extends Item {
             boolean flag1 = material.isReplaceable();
 
             if (!world.isEmpty(blockposition) && !flag && !flag1 && (!(iblockdata.getBlock() instanceof IFluidContainer) || !((IFluidContainer) iblockdata.getBlock()).canPlace(world, blockposition, iblockdata, this.fluidType))) {
-                return movingobjectposition == null ? false : this.a(entityhuman, world, movingobjectposition.getBlockPosition().shift(movingobjectposition.direction), (MovingObjectPosition) null, enumdirection, clicked, itemstack, enumhand); // CraftBukkit  // Paper - add enumhand
+                return movingobjectpositionblock == null ? false : this.a(entityhuman, world, movingobjectpositionblock.getBlockPosition().shift(movingobjectpositionblock.getDirection()), (MovingObjectPositionBlock) null, enumdirection, clicked, itemstack, enumhand); // CraftBukkit  // Paper - add enumhand
             } else {
                 // CraftBukkit start
                 if (entityhuman != null) {
-                    PlayerBucketEmptyEvent event = CraftEventFactory.callPlayerBucketEmptyEvent(entityhuman, clicked.getX(), clicked.getY(), clicked.getZ(), enumdirection, itemstack, enumhand); // Paper - add enumHand
+                    PlayerBucketEmptyEvent event = CraftEventFactory.callPlayerBucketEmptyEvent(world, entityhuman, blockposition, clicked, enumdirection, itemstack, enumhand); // Paper - add enumHand
                     if (event.isCancelled()) {
                         ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutBlockChange(world, blockposition)); // SPIGOT-4238: needed when looking through entity
                         ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory(); // SPIGOT-4541
@@ -147,34 +146,26 @@ public class ItemBucket extends Item {
                 }
                 // CraftBukkit end
                 if (world.worldProvider.isNether() && this.fluidType.a(TagsFluid.WATER)) {
-                    // Akarin start - this handle by client
-                    /*
                     int i = blockposition.getX();
                     int j = blockposition.getY();
                     int k = blockposition.getZ();
-                    */
-                    // Akarin end
 
-                    world.a(entityhuman, blockposition, SoundEffects.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.5F, 2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F);
+                    world.playSound(entityhuman, blockposition, SoundEffects.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.5F, 2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F);
 
-                    // Akarin start - this handle by client
-                    /*
                     for (int l = 0; l < 8; ++l) {
-                        world.addParticle(Particles.F, (double) i + Math.random(), (double) j + Math.random(), (double) k + Math.random(), 0.0D, 0.0D, 0.0D);
+                        world.addParticle(Particles.LARGE_SMOKE, (double) i + Math.random(), (double) j + Math.random(), (double) k + Math.random(), 0.0D, 0.0D, 0.0D);
                     }
-                    */
-                    // Akarin end
-                } else if (iblockdata.getBlock() instanceof IFluidContainer) {
+                } else if (iblockdata.getBlock() instanceof IFluidContainer && this.fluidType == FluidTypes.WATER) {
                     if (((IFluidContainer) iblockdata.getBlock()).place(world, blockposition, iblockdata, ((FluidTypeFlowing) this.fluidType).a(false))) {
                         this.a(entityhuman, (GeneratorAccess) world, blockposition);
                     }
                 } else {
                     if (!world.isClientSide && (flag || flag1) && !material.isLiquid()) {
-                        world.setAir(blockposition, true);
+                        world.b(blockposition, true);
                     }
 
                     this.a(entityhuman, (GeneratorAccess) world, blockposition);
-                    world.setTypeAndData(blockposition, this.fluidType.i().i(), 11);
+                    world.setTypeAndData(blockposition, this.fluidType.i().getBlockData(), 11);
                 }
 
                 return true;
@@ -185,6 +176,6 @@ public class ItemBucket extends Item {
     protected void a(@Nullable EntityHuman entityhuman, GeneratorAccess generatoraccess, BlockPosition blockposition) {
         SoundEffect soundeffect = this.fluidType.a(TagsFluid.LAVA) ? SoundEffects.ITEM_BUCKET_EMPTY_LAVA : SoundEffects.ITEM_BUCKET_EMPTY;
 
-        generatoraccess.a(entityhuman, blockposition, soundeffect, SoundCategory.BLOCKS, 1.0F, 1.0F);
+        generatoraccess.playSound(entityhuman, blockposition, soundeffect, SoundCategory.BLOCKS, 1.0F, 1.0F);
     }
 }

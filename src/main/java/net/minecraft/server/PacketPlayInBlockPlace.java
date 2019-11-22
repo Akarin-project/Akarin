@@ -13,11 +13,13 @@ public class PacketPlayInBlockPlace implements Packet<PacketListenerPlayIn> {
         this.a = enumhand;
     }
 
+    @Override
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
         this.timestamp = System.currentTimeMillis(); // Spigot
         this.a = (EnumHand) packetdataserializer.a(EnumHand.class);
     }
 
+    @Override
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
         packetdataserializer.a((Enum) this.a);
     }

@@ -8,26 +8,22 @@ public class EntityTNTPrimed extends Entity {
     private static final DataWatcherObject<Integer> FUSE_TICKS = DataWatcher.a(EntityTNTPrimed.class, DataWatcherRegistry.b);
     @Nullable
     private EntityLiving source;
-    private int c;
+    private int fuseTicks;
     public float yield = 4; // CraftBukkit - add field
     public boolean isIncendiary = false; // CraftBukkit - add field
 
-    public EntityTNTPrimed(World world) {
-        super(EntityTypes.TNT, world);
-        this.c = 80;
-        this.j = true;
-        this.fireProof = true;
-        this.setSize(0.98F, 0.98F);
+    public EntityTNTPrimed(EntityTypes<? extends EntityTNTPrimed> entitytypes, World world) {
+        super(entitytypes, world);
+        this.fuseTicks = 80;
+        this.i = true;
     }
 
     public EntityTNTPrimed(World world, double d0, double d1, double d2, @Nullable EntityLiving entityliving) {
-        this(world);
+        this(EntityTypes.TNT, world);
         this.setPosition(d0, d1, d2);
-        float f = (float) (Math.random() * 6.2831854820251465D);
+        double d3 = world.random.nextDouble() * 6.2831854820251465D;
 
-        this.motX = (double) (-((float) Math.sin((double) f)) * 0.02F);
-        this.motY = 0.20000000298023224D;
-        this.motZ = (double) (-((float) Math.cos((double) f)) * 0.02F);
+        this.setMot(-Math.sin(d3) * 0.02D, 0.20000000298023224D, -Math.cos(d3) * 0.02D);
         this.setFuseTicks(80);
         this.lastX = d0;
         this.lastY = d1;
@@ -35,46 +31,44 @@ public class EntityTNTPrimed extends Entity {
         this.source = entityliving;
     }
 
-    protected void x_() {
+    @Override
+    protected void initDatawatcher() {
         this.datawatcher.register(EntityTNTPrimed.FUSE_TICKS, 80);
     }
 
+    @Override
     protected boolean playStepSound() {
         return false;
     }
 
+    @Override
     public boolean isInteractable() {
         return !this.dead;
     }
 
+    @Override
     public void tick() {
         if (world.spigotConfig.currentPrimedTnt++ > world.spigotConfig.maxTntTicksPerTick) { return; } // Spigot
         this.lastX = this.locX;
         this.lastY = this.locY;
         this.lastZ = this.locZ;
         if (!this.isNoGravity()) {
-            this.motY -= 0.03999999910593033D;
+            this.setMot(this.getMot().add(0.0D, -0.04D, 0.0D));
         }
 
-        this.move(EnumMoveType.SELF, this.motX, this.motY, this.motZ);
-
+        this.move(EnumMoveType.SELF, this.getMot());
         // Paper start - Configurable TNT entity height nerf
         if (this.world.paperConfig.entityTNTHeightNerf != 0 && this.locY > this.world.paperConfig.entityTNTHeightNerf) {
             this.die();
         }
         // Paper end
-
-        this.motX *= 0.9800000190734863D;
-        this.motY *= 0.9800000190734863D;
-        this.motZ *= 0.9800000190734863D;
+        this.setMot(this.getMot().a(0.98D));
         if (this.onGround) {
-            this.motX *= 0.699999988079071D;
-            this.motZ *= 0.699999988079071D;
-            this.motY *= -0.5D;
+            this.setMot(this.getMot().d(0.7D, -0.5D, 0.7D));
         }
 
-        --this.c;
-        if (this.c <= 0) {
+        --this.fuseTicks;
+        if (this.fuseTicks <= 0) {
             // CraftBukkit start - Need to reverse the order of the explosion and the entity death so we have a location for the event
             // this.die();
             if (!this.world.isClientSide) {
@@ -83,10 +77,30 @@ public class EntityTNTPrimed extends Entity {
             this.die();
             // CraftBukkit end
         } else {
-            this.at();
-            //this.world.addParticle(Particles.M, this.locX, this.locY + 0.5D, this.locZ, 0.0D, 0.0D, 0.0D); // Akarin start - this handle by client
+            this.ay();
+            this.world.addParticle(Particles.SMOKE, this.locX, this.locY + 0.5D, this.locZ, 0.0D, 0.0D, 0.0D);
         }
+        // Paper start - Optional prevent TNT from moving in water
+        if (!this.dead && this.inWater && this.world.paperConfig.preventTntFromMovingInWater) {
+            /*
+             * Author: Jedediah Smith <jedediah@silencegreys.com>
+             */
+            // Send position and velocity updates to nearby players on every tick while the TNT is in water.
+            // This does pretty well at keeping their clients in sync with the server.
+            PlayerChunkMap.EntityTracker ete = this.tracker;
+            if (ete != null) {
+                PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(this);
+                PacketPlayOutEntityTeleport positionPacket = new PacketPlayOutEntityTeleport(this);
 
+                ete.trackedPlayers.stream()
+                    .filter(viewer -> (viewer.locX - this.locX) * (viewer.locY - this.locY) * (viewer.locZ - this.locZ) < 16 * 16)
+                    .forEach(viewer -> {
+                        viewer.playerConnection.sendPacket(velocityPacket);
+                        viewer.playerConnection.sendPacket(positionPacket);
+                    });
+            }
+        }
+        // Paper end
     }
 
     private void explode() {
@@ -97,15 +111,17 @@ public class EntityTNTPrimed extends Entity {
         this.world.getServer().getPluginManager().callEvent(event);
 
         if (!event.isCancelled()) {
-            this.world.createExplosion(this, this.locX, this.locY + (double) (this.length / 16.0F), this.locZ, event.getRadius(), event.getFire(), true);
+            this.world.createExplosion(this, this.locX, this.locY + (double) (this.getHeight() / 16.0F), this.locZ, event.getRadius(), event.getFire(), Explosion.Effect.BREAK);
         }
         // CraftBukkit end
     }
 
+    @Override
     protected void b(NBTTagCompound nbttagcompound) {
         nbttagcompound.setShort("Fuse", (short) this.getFuseTicks());
     }
 
+    @Override
     protected void a(NBTTagCompound nbttagcompound) {
         this.setFuseTicks(nbttagcompound.getShort("Fuse"));
         // Paper start - Try and load origin location from the old NBT tags for backwards compatibility
@@ -123,18 +139,20 @@ public class EntityTNTPrimed extends Entity {
         return this.source;
     }
 
-    public float getHeadHeight() {
+    @Override
+    protected float getHeadHeight(EntityPose entitypose, EntitySize entitysize) {
         return 0.0F;
     }
 
     public void setFuseTicks(int i) {
         this.datawatcher.set(EntityTNTPrimed.FUSE_TICKS, i);
-        this.c = i;
+        this.fuseTicks = i;
     }
 
+    @Override
     public void a(DataWatcherObject<?> datawatcherobject) {
         if (EntityTNTPrimed.FUSE_TICKS.equals(datawatcherobject)) {
-            this.c = this.i();
+            this.fuseTicks = this.i();
         }
 
     }
@@ -144,51 +162,18 @@ public class EntityTNTPrimed extends Entity {
     }
 
     public int getFuseTicks() {
-        return this.c;
+        return this.fuseTicks;
+    }
+
+    @Override
+    public Packet<?> N() {
+        return new PacketPlayOutSpawnEntity(this);
     }
 
     // Paper start - Optional prevent TNT from moving in water
     @Override
     public boolean pushedByWater() {
         return !world.paperConfig.preventTntFromMovingInWater && super.pushedByWater();
-    }
-
-    /**
-     * Author: Jedediah Smith <jedediah@silencegreys.com>
-     */
-    @Override
-    public boolean doWaterMovement() {
-        if (!world.paperConfig.preventTntFromMovingInWater) return super.doWaterMovement();
-
-        // Preserve velocity while calling the super method
-        double oldMotX = this.motX;
-        double oldMotY = this.motY;
-        double oldMotZ = this.motZ;
-
-        super.doWaterMovement();
-
-        this.motX = oldMotX;
-        this.motY = oldMotY;
-        this.motZ = oldMotZ;
-
-        if (this.inWater) {
-            // Send position and velocity updates to nearby players on every tick while the TNT is in water.
-            // This does pretty well at keeping their clients in sync with the server.
-            EntityTrackerEntry ete = ((WorldServer) this.getWorld()).getTracker().trackedEntities.get(this.getId());
-            if (ete != null) {
-                PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(this);
-                PacketPlayOutEntityTeleport positionPacket = new PacketPlayOutEntityTeleport(this);
-
-                ete.trackedPlayers.stream()
-                        .filter(viewer -> (viewer.locX - this.locX) * (viewer.locY - this.locY) * (viewer.locZ - this.locZ) < 16 * 16)
-                        .forEach(viewer -> {
-                    viewer.playerConnection.sendPacket(velocityPacket);
-                    viewer.playerConnection.sendPacket(positionPacket);
-                });
-            }
-        }
-
-        return this.inWater;
     }
     // Paper end
 }

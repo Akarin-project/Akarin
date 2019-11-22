@@ -7,6 +7,7 @@ public abstract class WorldGenMegaTreeProvider extends WorldGenTreeProvider {
 
     public WorldGenMegaTreeProvider() {}
 
+    @Override
     public boolean a(GeneratorAccess generatoraccess, BlockPosition blockposition, IBlockData iblockdata, Random random) {
         for (int i = 0; i >= -1; --i) {
             for (int j = 0; j >= -1; --j) {
@@ -31,17 +32,17 @@ public abstract class WorldGenMegaTreeProvider extends WorldGenTreeProvider {
             setTreeType(worldgentreeabstract); // CraftBukkit
             IBlockData iblockdata1 = Blocks.AIR.getBlockData();
 
-            generatoraccess.setTypeAndData(blockposition.a(i, 0, j), iblockdata1, 4);
-            generatoraccess.setTypeAndData(blockposition.a(i + 1, 0, j), iblockdata1, 4);
-            generatoraccess.setTypeAndData(blockposition.a(i, 0, j + 1), iblockdata1, 4);
-            generatoraccess.setTypeAndData(blockposition.a(i + 1, 0, j + 1), iblockdata1, 4);
-            if (worldgentreeabstract.generate(generatoraccess, generatoraccess.getChunkProvider().getChunkGenerator(), random, blockposition.a(i, 0, j), WorldGenFeatureConfiguration.e)) {
+            generatoraccess.setTypeAndData(blockposition.b(i, 0, j), iblockdata1, 4);
+            generatoraccess.setTypeAndData(blockposition.b(i + 1, 0, j), iblockdata1, 4);
+            generatoraccess.setTypeAndData(blockposition.b(i, 0, j + 1), iblockdata1, 4);
+            generatoraccess.setTypeAndData(blockposition.b(i + 1, 0, j + 1), iblockdata1, 4);
+            if (worldgentreeabstract.generate(generatoraccess, generatoraccess.getChunkProvider().getChunkGenerator(), random, blockposition.b(i, 0, j), WorldGenFeatureConfiguration.e)) {
                 return true;
             } else {
-                generatoraccess.setTypeAndData(blockposition.a(i, 0, j), iblockdata, 4);
-                generatoraccess.setTypeAndData(blockposition.a(i + 1, 0, j), iblockdata, 4);
-                generatoraccess.setTypeAndData(blockposition.a(i, 0, j + 1), iblockdata, 4);
-                generatoraccess.setTypeAndData(blockposition.a(i + 1, 0, j + 1), iblockdata, 4);
+                generatoraccess.setTypeAndData(blockposition.b(i, 0, j), iblockdata, 4);
+                generatoraccess.setTypeAndData(blockposition.b(i + 1, 0, j), iblockdata, 4);
+                generatoraccess.setTypeAndData(blockposition.b(i, 0, j + 1), iblockdata, 4);
+                generatoraccess.setTypeAndData(blockposition.b(i + 1, 0, j + 1), iblockdata, 4);
                 return false;
             }
         }
@@ -50,6 +51,6 @@ public abstract class WorldGenMegaTreeProvider extends WorldGenTreeProvider {
     public static boolean a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, int i, int j) {
         Block block = iblockdata.getBlock();
 
-        return block == iblockaccess.getType(blockposition.a(i, 0, j)).getBlock() && block == iblockaccess.getType(blockposition.a(i + 1, 0, j)).getBlock() && block == iblockaccess.getType(blockposition.a(i, 0, j + 1)).getBlock() && block == iblockaccess.getType(blockposition.a(i + 1, 0, j + 1)).getBlock();
+        return block == iblockaccess.getType(blockposition.b(i, 0, j)).getBlock() && block == iblockaccess.getType(blockposition.b(i + 1, 0, j)).getBlock() && block == iblockaccess.getType(blockposition.b(i, 0, j + 1)).getBlock() && block == iblockaccess.getType(blockposition.b(i + 1, 0, j + 1)).getBlock();
     }
 }

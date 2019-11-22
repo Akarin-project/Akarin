@@ -22,7 +22,7 @@ public class CombatTracker {
 
     public void a() {
         this.k();
-        if (this.b.z_()) {
+        if (this.b.isClimbing()) {
             Block block = this.b.world.getType(new BlockPosition(this.b.locX, this.b.getBoundingBox().minY, this.b.locZ)).getBlock();
 
             if (block == Blocks.LADDER) {
@@ -55,7 +55,7 @@ public class CombatTracker {
 
     public IChatBaseComponent getDeathMessage() {
         if (this.a.isEmpty()) {
-            return new ChatMessage("death.attack.generic", new Object[] { this.b.getScoreboardDisplayName()});
+            return new ChatMessage("death.attack.generic", new Object[]{this.b.getScoreboardDisplayName()});
         } else {
             CombatEntry combatentry = this.j();
             CombatEntry combatentry1 = (CombatEntry) this.a.get(this.a.size() - 1);
@@ -72,23 +72,23 @@ public class CombatTracker {
                         ItemStack itemstack = entity1 instanceof EntityLiving ? ((EntityLiving) entity1).getItemInMainHand() : ItemStack.a;
 
                         if (!itemstack.isEmpty() && itemstack.hasName()) {
-                            object = new ChatMessage("death.fell.assist.item", new Object[] { this.b.getScoreboardDisplayName(), ichatbasecomponent1, itemstack.A()});
+                            object = new ChatMessage("death.fell.assist.item", new Object[]{this.b.getScoreboardDisplayName(), ichatbasecomponent1, itemstack.B()});
                         } else {
-                            object = new ChatMessage("death.fell.assist", new Object[] { this.b.getScoreboardDisplayName(), ichatbasecomponent1});
+                            object = new ChatMessage("death.fell.assist", new Object[]{this.b.getScoreboardDisplayName(), ichatbasecomponent1});
                         }
                     } else if (ichatbasecomponent != null) {
                         ItemStack itemstack1 = entity instanceof EntityLiving ? ((EntityLiving) entity).getItemInMainHand() : ItemStack.a;
 
                         if (!itemstack1.isEmpty() && itemstack1.hasName()) {
-                            object = new ChatMessage("death.fell.finish.item", new Object[] { this.b.getScoreboardDisplayName(), ichatbasecomponent, itemstack1.A()});
+                            object = new ChatMessage("death.fell.finish.item", new Object[]{this.b.getScoreboardDisplayName(), ichatbasecomponent, itemstack1.B()});
                         } else {
-                            object = new ChatMessage("death.fell.finish", new Object[] { this.b.getScoreboardDisplayName(), ichatbasecomponent});
+                            object = new ChatMessage("death.fell.finish", new Object[]{this.b.getScoreboardDisplayName(), ichatbasecomponent});
                         }
                     } else {
-                        object = new ChatMessage("death.fell.killer", new Object[] { this.b.getScoreboardDisplayName()});
+                        object = new ChatMessage("death.fell.killer", new Object[]{this.b.getScoreboardDisplayName()});
                     }
                 } else {
-                    object = new ChatMessage("death.fell.accident." + this.a(combatentry), new Object[] { this.b.getScoreboardDisplayName()});
+                    object = new ChatMessage("death.fell.accident." + this.a(combatentry), new Object[]{this.b.getScoreboardDisplayName()});
                 }
             } else {
                 object = combatentry1.a().getLocalizedDeathMessage(this.b);

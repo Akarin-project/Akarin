@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.scheduler;
 
+import co.aikar.timings.MinecraftTimings; // Paper
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,8 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Level;
-
-import co.aikar.timings.MinecraftTimings; // Paper
+import com.destroystokyo.paper.ServerSchedulerReportingWrapper;
 import com.destroystokyo.paper.event.server.ServerExceptionEvent;
 import com.destroystokyo.paper.exception.ServerSchedulerException;
 import org.apache.commons.lang.Validate;
@@ -64,6 +64,7 @@ public class CraftScheduler implements BukkitScheduler {
      */
     final PriorityQueue<CraftTask> pending = new PriorityQueue<CraftTask>(10, // Paper
             new Comparator<CraftTask>() {
+                @Override
                 public int compare(final CraftTask o1, final CraftTask o2) {
                     int value = Long.compare(o1.getNextRun(), o2.getNextRun());
 
@@ -253,6 +254,7 @@ public class CraftScheduler implements BukkitScheduler {
         }
         task = new CraftTask(
                 new Runnable() {
+                    @Override
                     public void run() {
                         if (!check(CraftScheduler.this.temp)) {
                             check(CraftScheduler.this.pending);
@@ -294,6 +296,7 @@ public class CraftScheduler implements BukkitScheduler {
         // Paper end
         final CraftTask task = new CraftTask(
                 new Runnable() {
+                    @Override
                     public void run() {
                         check(CraftScheduler.this.pending);
                         check(CraftScheduler.this.temp);
@@ -342,7 +345,7 @@ public class CraftScheduler implements BukkitScheduler {
             return false;
         }
         if (task.isSync()) {
-            return (task == currentTask); 
+            return (task == currentTask);
         }
         final CraftAsyncTask asyncTask = (CraftAsyncTask) task;
         synchronized (asyncTask.getWorkers()) {
@@ -479,10 +482,10 @@ public class CraftScheduler implements BukkitScheduler {
                 runners.remove(task.getTaskId());
             }
         }
-        MinecraftTimings.bukkitSchedulerFinishTimer.startTimingUnsafe();
+        MinecraftTimings.bukkitSchedulerFinishTimer.startTiming();
         pending.addAll(temp);
         temp.clear();
-        MinecraftTimings.bukkitSchedulerFinishTimer.stopTimingUnsafe();
+        MinecraftTimings.bukkitSchedulerFinishTimer.stopTiming();
         //debugHead = debugHead.getNextHead(currentTick); // Paper
     }
 
@@ -521,7 +524,7 @@ public class CraftScheduler implements BukkitScheduler {
     }
 
     void parsePending() { // Paper
-        if (!this.isAsyncScheduler) MinecraftTimings.bukkitSchedulerPendingTimer.startTimingUnsafe(); // Paper
+        if (!this.isAsyncScheduler) MinecraftTimings.bukkitSchedulerPendingTimer.startTiming(); // Paper
         CraftTask head = this.head;
         CraftTask task = head.getNext();
         CraftTask lastTask = head;
@@ -540,7 +543,7 @@ public class CraftScheduler implements BukkitScheduler {
            task.setNext(null);
         }
         this.head = lastTask;
-        if (!this.isAsyncScheduler) MinecraftTimings.bukkitSchedulerPendingTimer.stopTimingUnsafe(); // Paper
+        if (!this.isAsyncScheduler) MinecraftTimings.bukkitSchedulerPendingTimer.stopTiming(); // Paper
     }
 
     private boolean isReady(final int currentTick) {
@@ -563,54 +566,54 @@ public class CraftScheduler implements BukkitScheduler {
     @Deprecated
     @Override
     public int scheduleSyncDelayedTask(Plugin plugin, BukkitRunnable task, long delay) {
-        return scheduleSyncDelayedTask(plugin, (Runnable) task, delay);
+        throw new UnsupportedOperationException("Use BukkitRunnable#runTaskLater(Plugin, long)");
     }
 
     @Deprecated
     @Override
     public int scheduleSyncDelayedTask(Plugin plugin, BukkitRunnable task) {
-        return scheduleSyncDelayedTask(plugin, (Runnable) task);
+        throw new UnsupportedOperationException("Use BukkitRunnable#runTask(Plugin)");
     }
 
     @Deprecated
     @Override
     public int scheduleSyncRepeatingTask(Plugin plugin, BukkitRunnable task, long delay, long period) {
-        return scheduleSyncRepeatingTask(plugin, (Runnable) task, delay, period);
+        throw new UnsupportedOperationException("Use BukkitRunnable#runTaskTimer(Plugin, long, long)");
     }
 
     @Deprecated
     @Override
     public BukkitTask runTask(Plugin plugin, BukkitRunnable task) throws IllegalArgumentException {
-        return runTask(plugin, (Runnable) task);
+        throw new UnsupportedOperationException("Use BukkitRunnable#runTask(Plugin)");
     }
 
     @Deprecated
     @Override
     public BukkitTask runTaskAsynchronously(Plugin plugin, BukkitRunnable task) throws IllegalArgumentException {
-        return runTaskAsynchronously(plugin, (Runnable) task);
+        throw new UnsupportedOperationException("Use BukkitRunnable#runTaskAsynchronously(Plugin)");
     }
 
     @Deprecated
     @Override
     public BukkitTask runTaskLater(Plugin plugin, BukkitRunnable task, long delay) throws IllegalArgumentException {
-        return runTaskLater(plugin, (Runnable) task, delay);
+        throw new UnsupportedOperationException("Use BukkitRunnable#runTaskLater(Plugin, long)");
     }
 
     @Deprecated
     @Override
     public BukkitTask runTaskLaterAsynchronously(Plugin plugin, BukkitRunnable task, long delay) throws IllegalArgumentException {
-        return runTaskLaterAsynchronously(plugin, (Runnable) task, delay);
+        throw new UnsupportedOperationException("Use BukkitRunnable#runTaskLaterAsynchronously(Plugin, long)");
     }
 
     @Deprecated
     @Override
     public BukkitTask runTaskTimer(Plugin plugin, BukkitRunnable task, long delay, long period) throws IllegalArgumentException {
-        return runTaskTimer(plugin, (Runnable) task, delay, period);
+        throw new UnsupportedOperationException("Use BukkitRunnable#runTaskTimer(Plugin, long, long)");
     }
 
     @Deprecated
     @Override
     public BukkitTask runTaskTimerAsynchronously(Plugin plugin, BukkitRunnable task, long delay, long period) throws IllegalArgumentException {
-        return runTaskTimerAsynchronously(plugin, (Runnable) task, delay, period);
+        throw new UnsupportedOperationException("Use BukkitRunnable#runTaskTimerAsynchronously(Plugin, long, long)");
     }
 }

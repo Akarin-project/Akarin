@@ -43,15 +43,15 @@ public class UserCache {
 
     public static final SimpleDateFormat a = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
     private static boolean c;
-    private final Map<String, UserCache.UserCacheEntry> d = Maps.newHashMap();private final Map<String, UserCache.UserCacheEntry> nameCache = d; // Paper - OBFHELPER
-    private final Map<UUID, UserCache.UserCacheEntry> e = Maps.newHashMap();
+    private final Map<String, UserCache.UserCacheEntry> d = new java.util.concurrent.ConcurrentHashMap<>();private final Map<String, UserCache.UserCacheEntry> nameCache = d; // Paper - OBFHELPER // Paper
+    private final Map<UUID, UserCache.UserCacheEntry> e = new java.util.concurrent.ConcurrentHashMap<>(); // Paper
     private final Deque<GameProfile> f = new java.util.concurrent.LinkedBlockingDeque<GameProfile>(); // CraftBukkit
-    private GameProfileRepository g; public GameProfileRepository gameProfileRepository() { return this.g; } // Akarin - removed final
-    protected final Gson b; protected Gson gson() { return this.b; } // Akarin - OBFHELPER
-    private final File h; File file() { return this.h; } // Akarin - OBFHELPER
+    private final GameProfileRepository g;
+    protected final Gson b;
+    private final File h;
     private static final ParameterizedType i = new ParameterizedType() {
         public Type[] getActualTypeArguments() {
-            return new Type[] { UserCache.UserCacheEntry.class};
+            return new Type[]{UserCache.UserCacheEntry.class};
         }
 
         public Type getRawType() {
@@ -62,16 +62,15 @@ public class UserCache {
             return null;
         }
     };
-    static final ParameterizedType PARAMETERIZED_TYPE = i; // Akarin - OBFHELPER
 
     public UserCache(GameProfileRepository gameprofilerepository, File file) {
-        //this.g = gameprofilerepository; // Akarin
+        this.g = gameprofilerepository;
         this.h = file;
         GsonBuilder gsonbuilder = new GsonBuilder();
 
         gsonbuilder.registerTypeHierarchyAdapter(UserCache.UserCacheEntry.class, new UserCache.BanEntrySerializer());
         this.b = gsonbuilder.create();
-        //this.b(); // Akarin
+        this.b();
     }
 
     private static GameProfile a(GameProfileRepository gameprofilerepository, String s) {
@@ -86,7 +85,7 @@ public class UserCache {
             }
         };
 
-        gameprofilerepository.findProfilesByNames(new String[] { s}, Agent.MINECRAFT, profilelookupcallback);
+        gameprofilerepository.findProfilesByNames(new String[]{s}, Agent.MINECRAFT, profilelookupcallback);
         if (!d() && agameprofile[0] == null && !org.apache.commons.lang3.StringUtils.isBlank(s)) { // Paper - Don't lookup a profile with a blank name
             UUID uuid = EntityHuman.a(new GameProfile((UUID) null, s));
             GameProfile gameprofile = new GameProfile(uuid, s);
@@ -101,7 +100,6 @@ public class UserCache {
         UserCache.c = flag;
     }
 
-    static boolean isOnlineMode() { return d(); } // Akarin - OBFHELPER
     private static boolean d() {
         return UserCache.c;
     }
@@ -176,7 +174,7 @@ public class UserCache {
 
     @Nullable public GameProfile getProfile(UUID uuid) { return a(uuid);  } // Paper - OBFHELPER
     @Nullable
-    public synchronized GameProfile a(UUID uuid) { // Paper - synchronize
+    public GameProfile a(UUID uuid) {
         UserCache.UserCacheEntry usercache_usercacheentry = (UserCache.UserCacheEntry) this.e.get(uuid);
 
         return usercache_usercacheentry == null ? null : usercache_usercacheentry.a();
@@ -220,7 +218,7 @@ public class UserCache {
             ;
         // Spigot Start
         } catch (com.google.gson.JsonSyntaxException ex) {
-            JsonList.a.warn( "Usercache.json is corrupted or has bad formatting. Deleting it to prevent further issues." );
+            JsonList.LOGGER.warn( "Usercache.json is corrupted or has bad formatting. Deleting it to prevent further issues." );
             this.h.delete();
         // Spigot End
         } catch (JsonParseException jsonparseexception) {
@@ -281,12 +279,12 @@ public class UserCache {
         return list;
     }
 
-    static class UserCacheEntry { // Akarin - static
+    class UserCacheEntry {
 
         private final GameProfile b;public GameProfile getProfile() { return b; } // Paper - OBFHELPER
-        private final Date c; public Date getExpireDate() { return c; } // Akarin - OBFHELPER
+        private final Date c;
 
-        UserCacheEntry(GameProfile gameprofile, Date date) { // Akarin - package
+        private UserCacheEntry(GameProfile gameprofile, Date date) {
             this.b = gameprofile;
             this.c = date;
         }
@@ -300,7 +298,7 @@ public class UserCache {
         }
     }
 
-    static class BanEntrySerializer implements JsonDeserializer<UserCache.UserCacheEntry>, JsonSerializer<UserCache.UserCacheEntry> { // Akarin - static
+    class BanEntrySerializer implements JsonDeserializer<UserCache.UserCacheEntry>, JsonSerializer<UserCache.UserCacheEntry> {
 
         private BanEntrySerializer() {}
 
@@ -344,7 +342,7 @@ public class UserCache {
                             return null;
                         }
 
-                        return new UserCacheEntry(new GameProfile(uuid, s1), date); // Akarin - static
+                        return UserCache.this.new UserCacheEntry(new GameProfile(uuid, s1), date);
                     } else {
                         return null;
                     }

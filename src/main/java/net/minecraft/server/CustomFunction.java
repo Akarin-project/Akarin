@@ -6,6 +6,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
 
 public class CustomFunction {
@@ -57,7 +58,7 @@ public class CustomFunction {
                 }
 
                 try {
-                    ParseResults<CommandListenerWrapper> parseresults = customfunctiondata.d().parse(stringreader, customfunctiondata.f()); // CraftBukkit
+                    ParseResults<CommandListenerWrapper> parseresults = customfunctiondata.d().parse(stringreader, customfunctiondata.g()); // CraftBukkit
 
                     if (parseresults.getReader().canRead()) {
                         if (parseresults.getExceptions().size() == 1) {
@@ -87,19 +88,19 @@ public class CustomFunction {
         @Nullable
         private final MinecraftKey b;
         private boolean c;
-        private CustomFunction d;
+        private Optional<CustomFunction> d = Optional.empty();
 
         public a(@Nullable MinecraftKey minecraftkey) {
             this.b = minecraftkey;
         }
 
         public a(CustomFunction customfunction) {
+            this.c = true;
             this.b = null;
-            this.d = customfunction;
+            this.d = Optional.of(customfunction);
         }
 
-        @Nullable
-        public CustomFunction a(CustomFunctionData customfunctiondata) {
+        public Optional<CustomFunction> a(CustomFunctionData customfunctiondata) {
             if (!this.c) {
                 if (this.b != null) {
                     this.d = customfunctiondata.a(this.b);
@@ -113,7 +114,9 @@ public class CustomFunction {
 
         @Nullable
         public MinecraftKey a() {
-            return this.d != null ? this.d.b : this.b;
+            return (MinecraftKey) this.d.map((customfunction) -> {
+                return customfunction.b;
+            }).orElse(this.b);
         }
     }
 
@@ -125,10 +128,9 @@ public class CustomFunction {
             this.a = new CustomFunction.a(customfunction);
         }
 
+        @Override
         public void a(CustomFunctionData customfunctiondata, CommandListenerWrapper commandlistenerwrapper, ArrayDeque<CustomFunctionData.a> arraydeque, int i) {
-            CustomFunction customfunction = this.a.a(customfunctiondata);
-
-            if (customfunction != null) {
+            this.a.a(customfunctiondata).ifPresent((customfunction) -> {
                 CustomFunction.c[] acustomfunction_c = customfunction.b();
                 int j = i - arraydeque.size();
                 int k = Math.min(acustomfunction_c.length, j);
@@ -136,8 +138,8 @@ public class CustomFunction {
                 for (int l = k - 1; l >= 0; --l) {
                     arraydeque.addFirst(new CustomFunctionData.a(customfunctiondata, commandlistenerwrapper, acustomfunction_c[l]));
                 }
-            }
 
+            });
         }
 
         public String toString() {
@@ -153,8 +155,9 @@ public class CustomFunction {
             this.a = parseresults;
         }
 
+        @Override
         public void a(CustomFunctionData customfunctiondata, CommandListenerWrapper commandlistenerwrapper, ArrayDeque<CustomFunctionData.a> arraydeque, int i) throws CommandSyntaxException {
-            customfunctiondata.d().execute(new ParseResults(this.a.getContext().withSource(commandlistenerwrapper), this.a.getStartIndex(), this.a.getReader(), this.a.getExceptions()));
+            customfunctiondata.d().execute(new ParseResults(this.a.getContext().withSource(commandlistenerwrapper), this.a.getReader(), this.a.getExceptions()));
         }
 
         public String toString() {

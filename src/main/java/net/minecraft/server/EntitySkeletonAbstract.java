@@ -6,61 +6,61 @@ import javax.annotation.Nullable;
 
 public abstract class EntitySkeletonAbstract extends EntityMonster implements IRangedEntity {
 
-    private static final DataWatcherObject<Boolean> a = DataWatcher.a(EntitySkeletonAbstract.class, DataWatcherRegistry.i);
     private final PathfinderGoalBowShoot<EntitySkeletonAbstract> b = new PathfinderGoalBowShoot<>(this, 1.0D, 20, 15.0F);
     private final PathfinderGoalMeleeAttack c = new PathfinderGoalMeleeAttack(this, 1.2D, false) {
+        @Override
         public void d() {
             super.d();
-            EntitySkeletonAbstract.this.s(false);
+            EntitySkeletonAbstract.this.q(false);
         }
 
+        @Override
         public void c() {
             super.c();
-            EntitySkeletonAbstract.this.s(true);
+            EntitySkeletonAbstract.this.q(true);
         }
     };
 
-    protected EntitySkeletonAbstract(EntityTypes<?> entitytypes, World world) {
+    protected EntitySkeletonAbstract(EntityTypes<? extends EntitySkeletonAbstract> entitytypes, World world) {
         super(entitytypes, world);
-        this.setSize(0.6F, 1.99F);
-        this.dz();
+        this.dV();
     }
 
-    protected void n() {
+    @Override
+    protected void initPathfinder() {
         this.goalSelector.a(2, new PathfinderGoalRestrictSun(this));
         this.goalSelector.a(3, new PathfinderGoalFleeSun(this, 1.0D));
         this.goalSelector.a(3, new PathfinderGoalAvoidTarget<>(this, EntityWolf.class, 6.0F, 1.0D, 1.2D));
         this.goalSelector.a(5, new PathfinderGoalRandomStrollLand(this, 1.0D));
         this.goalSelector.a(6, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 8.0F));
         this.goalSelector.a(6, new PathfinderGoalRandomLookaround(this));
-        this.targetSelector.a(1, new PathfinderGoalHurtByTarget(this, false, new Class[0]));
+        this.targetSelector.a(1, new PathfinderGoalHurtByTarget(this, new Class[0]));
         this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, true));
         this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityIronGolem.class, true));
-        this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityTurtle.class, 10, true, false, EntityTurtle.bC));
+        this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityTurtle.class, 10, true, false, EntityTurtle.bz));
     }
 
+    @Override
     protected void initAttributes() {
         super.initAttributes();
         this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.25D);
     }
 
-    protected void x_() {
-        super.x_();
-        this.datawatcher.register(EntitySkeletonAbstract.a, false);
-    }
-
+    @Override
     protected void a(BlockPosition blockposition, IBlockData iblockdata) {
         this.a(this.l(), 0.15F, 1.0F);
     }
 
     abstract SoundEffect l();
 
+    @Override
     public EnumMonsterType getMonsterType() {
         return EnumMonsterType.UNDEAD;
     }
 
+    @Override
     public void movementTick() {
-        boolean flag = this.dq();
+        boolean flag = this.dS();
 
         if (flag) {
             ItemStack itemstack = this.getEquipment(EnumItemSlot.HEAD);
@@ -69,7 +69,7 @@ public abstract class EntitySkeletonAbstract extends EntityMonster implements IR
                 if (itemstack.e()) {
                     itemstack.setDamage(itemstack.getDamage() + this.random.nextInt(2));
                     if (itemstack.getDamage() >= itemstack.h()) {
-                        this.c(itemstack);
+                        this.c(EnumItemSlot.HEAD);
                         this.setSlot(EnumItemSlot.HEAD, ItemStack.a);
                     }
                 }
@@ -85,28 +85,31 @@ public abstract class EntitySkeletonAbstract extends EntityMonster implements IR
         super.movementTick();
     }
 
-    public void aH() {
-        super.aH();
+    @Override
+    public void passengerTick() {
+        super.passengerTick();
         if (this.getVehicle() instanceof EntityCreature) {
             EntityCreature entitycreature = (EntityCreature) this.getVehicle();
 
-            this.aQ = entitycreature.aQ;
+            this.aK = entitycreature.aK;
         }
 
     }
 
+    @Override
     protected void a(DifficultyDamageScaler difficultydamagescaler) {
         super.a(difficultydamagescaler);
         this.setSlot(EnumItemSlot.MAINHAND, new ItemStack(Items.BOW));
     }
 
     @Nullable
-    public GroupDataEntity prepare(DifficultyDamageScaler difficultydamagescaler, @Nullable GroupDataEntity groupdataentity, @Nullable NBTTagCompound nbttagcompound) {
-        groupdataentity = super.prepare(difficultydamagescaler, groupdataentity, nbttagcompound);
+    @Override
+    public GroupDataEntity prepare(GeneratorAccess generatoraccess, DifficultyDamageScaler difficultydamagescaler, EnumMobSpawn enummobspawn, @Nullable GroupDataEntity groupdataentity, @Nullable NBTTagCompound nbttagcompound) {
+        groupdataentity = super.prepare(generatoraccess, difficultydamagescaler, enummobspawn, groupdataentity, nbttagcompound);
         this.a(difficultydamagescaler);
         this.b(difficultydamagescaler);
-        this.dz();
-        this.p(this.random.nextFloat() < 0.55F * difficultydamagescaler.d());
+        this.dV();
+        this.setCanPickupLoot(this.random.nextFloat() < 0.55F * difficultydamagescaler.d());
         if (this.getEquipment(EnumItemSlot.HEAD).isEmpty()) {
             LocalDate localdate = LocalDate.now();
             int i = localdate.get(ChronoField.DAY_OF_MONTH);
@@ -121,11 +124,11 @@ public abstract class EntitySkeletonAbstract extends EntityMonster implements IR
         return groupdataentity;
     }
 
-    public void dz() {
+    public void dV() {
         if (this.world != null && !this.world.isClientSide) {
             this.goalSelector.a((PathfinderGoal) this.c);
             this.goalSelector.a((PathfinderGoal) this.b);
-            ItemStack itemstack = this.getItemInMainHand();
+            ItemStack itemstack = this.b(ProjectileHelper.a(this, Items.BOW));
 
             if (itemstack.getItem() == Items.BOW) {
                 byte b0 = 20;
@@ -134,7 +137,7 @@ public abstract class EntitySkeletonAbstract extends EntityMonster implements IR
                     b0 = 40;
                 }
 
-                this.b.b(b0);
+                this.b.a(b0);
                 this.goalSelector.a(4, this.b);
             } else {
                 this.goalSelector.a(4, this.c);
@@ -143,10 +146,12 @@ public abstract class EntitySkeletonAbstract extends EntityMonster implements IR
         }
     }
 
+    @Override
     public void a(EntityLiving entityliving, float f) {
-        EntityArrow entityarrow = this.a(f);
+        ItemStack itemstack = this.f(this.b(ProjectileHelper.a(this, Items.BOW)));
+        EntityArrow entityarrow = this.b(itemstack, f);
         double d0 = entityliving.locX - this.locX;
-        double d1 = entityliving.getBoundingBox().minY + (double) (entityliving.length / 3.0F) - entityarrow.locY;
+        double d1 = entityliving.getBoundingBox().minY + (double) (entityliving.getHeight() / 3.0F) - entityarrow.locY;
         double d2 = entityliving.locZ - this.locZ;
         double d3 = (double) MathHelper.sqrt(d0 * d0 + d2 * d2);
 
@@ -166,35 +171,32 @@ public abstract class EntitySkeletonAbstract extends EntityMonster implements IR
         // this.world.addEntity(entityarrow); // CraftBukkit - moved up
     }
 
-    protected EntityArrow a(float f) {
-        EntityTippedArrow entitytippedarrow = new EntityTippedArrow(this.world, this);
-
-        entitytippedarrow.a((EntityLiving) this, f);
-        return entitytippedarrow;
+    protected EntityArrow b(ItemStack itemstack, float f) {
+        return ProjectileHelper.a(this, itemstack, f);
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
-        this.dz();
+        this.dV();
     }
 
+    @Override
     public void setSlot(EnumItemSlot enumitemslot, ItemStack itemstack) {
         super.setSlot(enumitemslot, itemstack);
-        if (!this.world.isClientSide && enumitemslot == EnumItemSlot.MAINHAND) {
-            this.dz();
+        if (!this.world.isClientSide) {
+            this.dV();
         }
 
     }
 
-    public float getHeadHeight() {
+    @Override
+    protected float b(EntityPose entitypose, EntitySize entitysize) {
         return 1.74F;
     }
 
-    public double aI() {
+    @Override
+    public double aO() {
         return -0.6D;
-    }
-
-    public void s(boolean flag) {
-        this.datawatcher.set(EntitySkeletonAbstract.a, flag);
     }
 }

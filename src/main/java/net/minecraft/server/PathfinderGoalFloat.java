@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import java.util.EnumSet;
+
 public class PathfinderGoalFloat extends PathfinderGoal {
 
     private final EntityInsentient a;
@@ -7,19 +9,23 @@ public class PathfinderGoalFloat extends PathfinderGoal {
     public PathfinderGoalFloat(EntityInsentient entityinsentient) {
         this.a = entityinsentient;
         if (entityinsentient.getWorld().paperConfig.nerfedMobsShouldJump) entityinsentient.goalFloat = this; // Paper
-        this.a(4);
+        this.a(EnumSet.of(PathfinderGoal.Type.JUMP));
         entityinsentient.getNavigation().d(true);
     }
 
-    public boolean validConditions() { return this.a(); } // Paper - OBFHELPER
+    public final boolean validConditions() { return this.a(); } // Paper - OBFHELPER
+    @Override
     public boolean a() {
-        return this.a.isInWater() && this.a.bY() > 0.4D || this.a.ax();
+        double d0 = (double) this.a.getHeadHeight() < 0.4D ? 0.2D : 0.4D;
+
+        return this.a.isInWater() && this.a.cf() > d0 || this.a.aD();
     }
 
     public void update() { this.e(); } // Paper - OBFHELPER
+    @Override
     public void e() {
         if (this.a.getRandom().nextFloat() < 0.8F) {
-            this.a.getControllerJump().a();
+            this.a.getControllerJump().jump();
         }
 
     }

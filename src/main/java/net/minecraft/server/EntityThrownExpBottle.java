@@ -1,9 +1,9 @@
 package net.minecraft.server;
 
-public class EntityThrownExpBottle extends EntityProjectile {
+public class EntityThrownExpBottle extends EntityProjectileThrowable {
 
-    public EntityThrownExpBottle(World world) {
-        super(EntityTypes.EXPERIENCE_BOTTLE, world);
+    public EntityThrownExpBottle(EntityTypes<? extends EntityThrownExpBottle> entitytypes, World world) {
+        super(entitytypes, world);
     }
 
     public EntityThrownExpBottle(World world, EntityLiving entityliving) {
@@ -14,21 +14,28 @@ public class EntityThrownExpBottle extends EntityProjectile {
         super(EntityTypes.EXPERIENCE_BOTTLE, d0, d1, d2, world);
     }
 
-    protected float f() {
+    @Override
+    protected Item i() {
+        return Items.EXPERIENCE_BOTTLE;
+    }
+
+    @Override
+    protected float l() {
         return 0.07F;
     }
 
+    @Override
     protected void a(MovingObjectPosition movingobjectposition) {
         if (!this.world.isClientSide) {
             // CraftBukkit - moved to after event
-            // this.world.triggerEffect(2002, new BlockPosition(this), PotionUtil.a(Potions.b));
+            // this.world.triggerEffect(2002, new BlockPosition(this), PotionUtil.a(Potions.WATER));
             int i = 3 + this.world.random.nextInt(5) + this.world.random.nextInt(5);
 
             // CraftBukkit start
             org.bukkit.event.entity.ExpBottleEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callExpBottleEvent(this, i);
             i = event.getExperience();
             if (event.getShowEffect()) {
-                this.world.triggerEffect(2002, new BlockPosition(this), PotionUtil.a(Potions.b));
+                this.world.triggerEffect(2002, new BlockPosition(this), PotionUtil.a(Potions.WATER));
             }
             // CraftBukkit end
 

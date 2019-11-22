@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import java.util.EnumSet;
+
 public class PathfinderGoalOwnerHurtByTarget extends PathfinderGoalTarget {
 
     private final EntityTameableAnimal a;
@@ -9,32 +11,34 @@ public class PathfinderGoalOwnerHurtByTarget extends PathfinderGoalTarget {
     public PathfinderGoalOwnerHurtByTarget(EntityTameableAnimal entitytameableanimal) {
         super(entitytameableanimal, false);
         this.a = entitytameableanimal;
-        this.a(1);
+        this.a(EnumSet.of(PathfinderGoal.Type.TARGET));
     }
 
+    @Override
     public boolean a() {
-        if (!this.a.isTamed()) {
-            return false;
-        } else {
+        if (this.a.isTamed() && !this.a.isSitting()) {
             EntityLiving entityliving = this.a.getOwner();
 
             if (entityliving == null) {
                 return false;
             } else {
                 this.b = entityliving.getLastDamager();
-                int i = entityliving.cg();
+                int i = entityliving.ct();
 
-                return i != this.c && this.a(this.b, false) && this.a.a(this.b, entityliving);
+                return i != this.c && this.a(this.b, PathfinderTargetCondition.a) && this.a.a(this.b, entityliving);
             }
+        } else {
+            return false;
         }
     }
 
+    @Override
     public void c() {
         this.e.setGoalTarget(this.b, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_OWNER, true); // CraftBukkit - reason
         EntityLiving entityliving = this.a.getOwner();
 
         if (entityliving != null) {
-            this.c = entityliving.cg();
+            this.c = entityliving.ct();
         }
 
         super.c();

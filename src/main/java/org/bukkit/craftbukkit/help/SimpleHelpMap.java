@@ -3,14 +3,28 @@ package org.bukkit.craftbukkit.help;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
-
-import org.bukkit.command.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.MultipleCommandAlias;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.command.VanillaCommandWrapper;
-import org.bukkit.help.*;
-
-import java.util.*;
+import org.bukkit.help.GenericCommandHelpTopic;
+import org.bukkit.help.HelpMap;
+import org.bukkit.help.HelpTopic;
+import org.bukkit.help.HelpTopicComparator;
+import org.bukkit.help.HelpTopicFactory;
+import org.bukkit.help.IndexHelpTopic;
 
 /**
  * Standard implementation of {@link HelpMap} for CraftBukkit servers.
@@ -40,6 +54,7 @@ public class SimpleHelpMap implements HelpMap {
         registerHelpTopicFactory(MultipleCommandAlias.class, new MultipleCommandAliasHelpTopicFactory());
     }
 
+    @Override
     public synchronized HelpTopic getHelpTopic(String topicName) {
         if (topicName.equals("")) {
             return defaultTopic;
@@ -52,10 +67,12 @@ public class SimpleHelpMap implements HelpMap {
         return null;
     }
 
+    @Override
     public Collection<HelpTopic> getHelpTopics() {
         return helpTopics.values();
     }
 
+    @Override
     public synchronized void addTopic(HelpTopic topic) {
         // Existing topics take priority
         if (!helpTopics.containsKey(topic.getName())) {
@@ -63,10 +80,12 @@ public class SimpleHelpMap implements HelpMap {
         }
     }
 
+    @Override
     public synchronized void clear() {
         helpTopics.clear();
     }
 
+    @Override
     public List<String> getIgnoredPlugins() {
         return yaml.getIgnoredPlugins();
     }
@@ -202,6 +221,7 @@ public class SimpleHelpMap implements HelpMap {
         return false;
     }
 
+    @Override
     public void registerHelpTopicFactory(Class commandClass, HelpTopicFactory factory) {
         if (!Command.class.isAssignableFrom(commandClass) && !CommandExecutor.class.isAssignableFrom(commandClass)) {
             throw new IllegalArgumentException("commandClass must implement either Command or CommandExecutor!");
@@ -211,6 +231,7 @@ public class SimpleHelpMap implements HelpMap {
 
     private class IsCommandTopicPredicate implements Predicate<HelpTopic> {
 
+        @Override
         public boolean apply(HelpTopic topic) {
             return topic.getName().charAt(0) == '/';
         }

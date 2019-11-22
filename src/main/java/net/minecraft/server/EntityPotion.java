@@ -3,6 +3,7 @@ package net.minecraft.server;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 // CraftBukkit start
@@ -15,27 +16,23 @@ import org.bukkit.entity.LivingEntity;
 public class EntityPotion extends EntityProjectile {
 
     private static final DataWatcherObject<ItemStack> f = DataWatcher.a(EntityPotion.class, DataWatcherRegistry.g);
-    private static final Logger g = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     public static final Predicate<EntityLiving> e = EntityPotion::a;
 
-    public EntityPotion(World world) {
-        super(EntityTypes.POTION, world);
+    public EntityPotion(EntityTypes<? extends EntityPotion> entitytypes, World world) {
+        super(entitytypes, world);
     }
 
-    public EntityPotion(World world, EntityLiving entityliving, ItemStack itemstack) {
+    public EntityPotion(World world, EntityLiving entityliving) {
         super(EntityTypes.POTION, entityliving, world);
-        this.setItem(itemstack);
     }
 
-    public EntityPotion(World world, double d0, double d1, double d2, ItemStack itemstack) {
+    public EntityPotion(World world, double d0, double d1, double d2) {
         super(EntityTypes.POTION, d0, d1, d2, world);
-        if (!itemstack.isEmpty()) {
-            this.setItem(itemstack);
-        }
-
     }
 
-    protected void x_() {
+    @Override
+    protected void initDatawatcher() {
         this.getDataWatcher().register(EntityPotion.f, ItemStack.a);
     }
 
@@ -44,7 +41,7 @@ public class EntityPotion extends EntityProjectile {
 
         if (itemstack.getItem() != Items.SPLASH_POTION && itemstack.getItem() != Items.LINGERING_POTION) {
             if (this.world != null) {
-                EntityPotion.g.error("ThrownPotion entity {} has no item?!", this.getId());
+                EntityPotion.LOGGER.error("ThrownPotion entity {} has no item?!", this.getId());
             }
 
             return new ItemStack(Items.SPLASH_POTION);
@@ -54,51 +51,56 @@ public class EntityPotion extends EntityProjectile {
     }
 
     public void setItem(ItemStack itemstack) {
-        this.getDataWatcher().set(EntityPotion.f, itemstack);
+        this.getDataWatcher().set(EntityPotion.f, itemstack.cloneItemStack());
     }
 
-    protected float f() {
+    @Override
+    protected float l() {
         return 0.05F;
     }
 
+    @Override
     protected void a(MovingObjectPosition movingobjectposition) {
         if (!this.world.isClientSide) {
             ItemStack itemstack = this.getItem();
             PotionRegistry potionregistry = PotionUtil.d(itemstack);
             List<MobEffect> list = PotionUtil.getEffects(itemstack);
-            boolean flag = potionregistry == Potions.b && list.isEmpty();
+            boolean flag = potionregistry == Potions.WATER && list.isEmpty();
 
-            if (movingobjectposition.type == MovingObjectPosition.EnumMovingObjectType.BLOCK && flag) {
-                BlockPosition blockposition = movingobjectposition.getBlockPosition().shift(movingobjectposition.direction);
+            if (movingobjectposition.getType() == MovingObjectPosition.EnumMovingObjectType.BLOCK && flag) {
+                MovingObjectPositionBlock movingobjectpositionblock = (MovingObjectPositionBlock) movingobjectposition;
+                EnumDirection enumdirection = movingobjectpositionblock.getDirection();
+                BlockPosition blockposition = movingobjectpositionblock.getBlockPosition().shift(enumdirection);
 
-                this.a(blockposition, movingobjectposition.direction);
+                this.a(blockposition, enumdirection);
+                this.a(blockposition.shift(enumdirection.opposite()), enumdirection);
                 Iterator iterator = EnumDirection.EnumDirectionLimit.HORIZONTAL.iterator();
 
                 while (iterator.hasNext()) {
-                    EnumDirection enumdirection = (EnumDirection) iterator.next();
+                    EnumDirection enumdirection1 = (EnumDirection) iterator.next();
 
-                    this.a(blockposition.shift(enumdirection), enumdirection);
+                    this.a(blockposition.shift(enumdirection1), enumdirection1);
                 }
             }
 
             if (flag) {
-                this.l();
+                this.splash();
             } else if (true || !list.isEmpty()) { // CraftBukkit - Call event even if no effects to apply
                 if (this.isLingering()) {
                     this.a(itemstack, potionregistry);
                 } else {
-                    this.a(movingobjectposition, list);
+                    this.a(list, movingobjectposition.getType() == MovingObjectPosition.EnumMovingObjectType.ENTITY ? ((MovingObjectPositionEntity) movingobjectposition).getEntity() : null);
                 }
             }
 
-            int i = potionregistry.c() ? 2007 : 2002;
+            int i = potionregistry.b() ? 2007 : 2002;
 
             this.world.triggerEffect(i, new BlockPosition(this), PotionUtil.c(itemstack));
             this.die();
         }
     }
 
-    private void l() {
+    private void splash() {
         AxisAlignedBB axisalignedbb = this.getBoundingBox().grow(4.0D, 2.0D, 4.0D);
         List<EntityLiving> list = this.world.a(EntityLiving.class, axisalignedbb, EntityPotion.e);
 
@@ -110,14 +112,14 @@ public class EntityPotion extends EntityProjectile {
                 double d0 = this.h(entityliving);
 
                 if (d0 < 16.0D && a(entityliving)) {
-                    entityliving.damageEntity(DamageSource.DROWN, 1.0F);
+                    entityliving.damageEntity(DamageSource.c(entityliving, this.getShooter()), 1.0F);
                 }
             }
         }
 
     }
 
-    private void a(MovingObjectPosition movingobjectposition, List<MobEffect> list) {
+    private void a(List<MobEffect> list, @Nullable Entity entity) {
         AxisAlignedBB axisalignedbb = this.getBoundingBox().grow(4.0D, 2.0D, 4.0D);
         List<EntityLiving> list1 = this.world.a(EntityLiving.class, axisalignedbb);
         Map<LivingEntity, Double> affected = new HashMap<LivingEntity, Double>(); // CraftBukkit
@@ -128,13 +130,13 @@ public class EntityPotion extends EntityProjectile {
             while (iterator.hasNext()) {
                 EntityLiving entityliving = (EntityLiving) iterator.next();
 
-                if (entityliving.de()) {
+                if (entityliving.dt()) {
                     double d0 = this.h(entityliving);
 
                     if (d0 < 16.0D) {
                         double d1 = 1.0D - Math.sqrt(d0) / 4.0D;
 
-                        if (entityliving == movingobjectposition.entity) {
+                        if (entityliving == entity) {
                             d1 = 1.0D;
                         }
 
@@ -200,7 +202,7 @@ public class EntityPotion extends EntityProjectile {
         while (iterator.hasNext()) {
             MobEffect mobeffect = (MobEffect) iterator.next();
 
-            entityareaeffectcloud.a(new MobEffect(mobeffect));
+            entityareaeffectcloud.addEffect(new MobEffect(mobeffect));
         }
 
         NBTTagCompound nbttagcompound = itemstack.getTag();
@@ -224,12 +226,19 @@ public class EntityPotion extends EntityProjectile {
     }
 
     private void a(BlockPosition blockposition, EnumDirection enumdirection) {
-        if (this.world.getType(blockposition).getBlock() == Blocks.FIRE) {
+        IBlockData iblockdata = this.world.getType(blockposition);
+        Block block = iblockdata.getBlock();
+
+        if (block == Blocks.FIRE) {
             this.world.douseFire((EntityHuman) null, blockposition.shift(enumdirection), enumdirection.opposite());
+        } else if (block == Blocks.CAMPFIRE && (Boolean) iblockdata.get(BlockCampfire.b)) {
+            this.world.a((EntityHuman) null, 1009, blockposition, 0);
+            this.world.setTypeUpdate(blockposition, (IBlockData) iblockdata.set(BlockCampfire.b, false));
         }
 
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         ItemStack itemstack = ItemStack.a(nbttagcompound.getCompound("Potion"));
@@ -242,6 +251,7 @@ public class EntityPotion extends EntityProjectile {
 
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
         ItemStack itemstack = this.getItem();

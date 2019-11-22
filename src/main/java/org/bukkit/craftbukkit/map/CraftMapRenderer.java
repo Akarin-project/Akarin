@@ -1,8 +1,7 @@
 package org.bukkit.craftbukkit.map;
 
-import net.minecraft.server.WorldMap;
 import net.minecraft.server.MapIcon;
-
+import net.minecraft.server.WorldMap;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.Player;
@@ -43,7 +42,7 @@ public class CraftMapRenderer extends MapRenderer {
             }
 
             MapIcon decoration = (MapIcon) worldMap.decorations.get(key);
-            cursors.addCursor(decoration.getX(), decoration.getY(), (byte) (decoration.getRotation() & 15), decoration.b().a(), true, CraftChatMessage.fromComponent(decoration.g()));
+            cursors.addCursor(decoration.getX(), decoration.getY(), (byte) (decoration.getRotation() & 15), decoration.getType().a(), true, CraftChatMessage.fromComponent(decoration.getName()));
         }
     }
 

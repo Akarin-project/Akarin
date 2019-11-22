@@ -1,7 +1,16 @@
 package net.minecraft.server;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 public class Pathfinder {
@@ -9,115 +18,130 @@ public class Pathfinder {
     private final Path a = new Path();
     private final Set<PathPoint> b = Sets.newHashSet();
     private final PathPoint[] c = new PathPoint[32];
-    private PathfinderAbstract d; public PathfinderAbstract getPathfinder() { return d; }  // Paper - OBFHELPER
+    private final int d;
+    private PathfinderAbstract e; public PathfinderAbstract getPathfinder() { return this.e; }  // Paper - OBFHELPER
 
-    public Pathfinder(PathfinderAbstract pathfinderabstract) {
-        this.d = pathfinderabstract;
+    public Pathfinder(PathfinderAbstract pathfinderabstract, int i) {
+        this.e = pathfinderabstract;
+        this.d = i;
     }
 
     @Nullable
-    public PathEntity a(IBlockAccess iblockaccess, EntityInsentient entityinsentient, Entity entity, float f) {
-        return this.a(iblockaccess, entityinsentient, entity.locX, entity.getBoundingBox().minY, entity.locZ, f);
-    }
-
-    @Nullable
-    public PathEntity a(IBlockAccess iblockaccess, EntityInsentient entityinsentient, BlockPosition blockposition, float f) {
-        return this.a(iblockaccess, entityinsentient, (double) ((float) blockposition.getX() + 0.5F), (double) ((float) blockposition.getY() + 0.5F), (double) ((float) blockposition.getZ() + 0.5F), f);
-    }
-
-    @Nullable
-    private PathEntity a(IBlockAccess iblockaccess, EntityInsentient entityinsentient, double d0, double d1, double d2, float f) {
+    public PathEntity a(IWorldReader iworldreader, EntityInsentient entityinsentient, Set<BlockPosition> set, float f, int i) {
         this.a.a();
-        this.d.a(iblockaccess, entityinsentient);
-        PathPoint pathpoint = this.d.b();
-        PathPoint pathpoint1 = this.d.a(d0, d1, d2);
-        PathEntity pathentity = this.a(pathpoint, pathpoint1, f);
+        this.e.a(iworldreader, entityinsentient);
+        PathPoint pathpoint = this.e.b();
+        Map<PathDestination, BlockPosition> map = (Map) set.stream().collect(Collectors.toMap((blockposition) -> {
+            return this.e.a((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ());
+        }, Function.identity()));
+        PathEntity pathentity = this.a(pathpoint, map, f, i);
 
-        this.d.a();
+        this.e.a();
         return pathentity;
     }
 
     @Nullable
-    private PathEntity a(PathPoint pathpoint, PathPoint pathpoint1, float f) {
+    private PathEntity a(PathPoint pathpoint, Map<PathDestination, BlockPosition> map, float f, int i) {
+        Set<PathDestination> set = map.keySet();
+
         pathpoint.e = 0.0F;
-        pathpoint.f = pathpoint.c(pathpoint1);
+        pathpoint.f = this.a(pathpoint, set);
         pathpoint.g = pathpoint.f;
         this.a.a();
         this.b.clear();
         this.a.a(pathpoint);
-        PathPoint pathpoint2 = pathpoint;
-        int i = 0;
+        int j = 0;
 
         while (!this.a.e()) {
-            ++i;
-            if (i >= 200) {
+            ++j;
+            if (j >= this.d) {
                 break;
             }
 
-            PathPoint pathpoint3 = this.a.c();
+            PathPoint pathpoint1 = this.a.c();
 
-            if (pathpoint3.equals(pathpoint1)) {
-                pathpoint2 = pathpoint1;
+            pathpoint1.i = true;
+            set.stream().filter((pathdestination) -> {
+                return pathpoint1.c((PathPoint) pathdestination) <= (float) i;
+            }).forEach(PathDestination::e);
+            if (set.stream().anyMatch(PathDestination::f)) {
                 break;
             }
 
-            if (pathpoint3.c(pathpoint1) < pathpoint2.c(pathpoint1)) {
-                pathpoint2 = pathpoint3;
-            }
+            if (pathpoint1.a(pathpoint) < f) {
+                int k = this.e.a(this.c, pathpoint1);
 
-            pathpoint3.i = true;
-            int j = this.d.a(this.c, pathpoint3, pathpoint1, f);
+                for (int l = 0; l < k; ++l) {
+                    PathPoint pathpoint2 = this.c[l];
+                    float f1 = pathpoint1.a(pathpoint2);
 
-            for (int k = 0; k < j; ++k) {
-                PathPoint pathpoint4 = this.c[k];
-                float f1 = pathpoint3.c(pathpoint4);
+                    pathpoint2.j = pathpoint1.j + f1;
+                    float f2 = pathpoint1.e + f1 + pathpoint2.k;
 
-                pathpoint4.j = pathpoint3.j + f1;
-                pathpoint4.k = f1 + pathpoint4.l;
-                float f2 = pathpoint3.e + pathpoint4.k;
-
-                if (pathpoint4.j < f && (!pathpoint4.a() || f2 < pathpoint4.e)) {
-                    pathpoint4.h = pathpoint3;
-                    pathpoint4.e = f2;
-                    pathpoint4.f = pathpoint4.c(pathpoint1) + pathpoint4.l;
-                    if (pathpoint4.a()) {
-                        this.a.a(pathpoint4, pathpoint4.e + pathpoint4.f);
-                    } else {
-                        pathpoint4.g = pathpoint4.e + pathpoint4.f;
-                        this.a.a(pathpoint4);
+                    if (pathpoint2.j < f && (!pathpoint2.c() || f2 < pathpoint2.e)) {
+                        pathpoint2.h = pathpoint1;
+                        pathpoint2.e = f2;
+                        pathpoint2.f = this.a(pathpoint2, set) * 1.5F;
+                        if (pathpoint2.c()) {
+                            this.a.a(pathpoint2, pathpoint2.e + pathpoint2.f);
+                        } else {
+                            pathpoint2.g = pathpoint2.e + pathpoint2.f;
+                            this.a.a(pathpoint2);
+                        }
                     }
                 }
             }
         }
 
-        if (pathpoint2 == pathpoint) {
+        Stream stream;
+
+        if (set.stream().anyMatch(PathDestination::f)) {
+            stream = set.stream().filter(PathDestination::f).map((pathdestination) -> {
+                return this.a(pathdestination.d(), (BlockPosition) map.get(pathdestination), true);
+            }).sorted(Comparator.comparingInt(PathEntity::e));
+        } else {
+            stream = set.stream().map((pathdestination) -> {
+                return this.a(pathdestination.d(), (BlockPosition) map.get(pathdestination), false);
+            }).sorted(Comparator.comparingDouble(PathEntity::l).thenComparingInt(PathEntity::e));
+        }
+
+        Optional<PathEntity> optional = stream.findFirst();
+
+        if (!optional.isPresent()) {
             return null;
         } else {
-            PathEntity pathentity = this.a(pathpoint, pathpoint2);
+            PathEntity pathentity = (PathEntity) optional.get();
 
             return pathentity;
         }
     }
 
-    private PathEntity a(PathPoint pathpoint, PathPoint pathpoint1) {
-        int i = 1;
+    private float a(PathPoint pathpoint, Set<PathDestination> set) {
+        float f = Float.MAX_VALUE;
 
-        PathPoint pathpoint2;
+        float f1;
 
-        for (pathpoint2 = pathpoint1; pathpoint2.h != null; pathpoint2 = pathpoint2.h) {
-            ++i;
+        for (Iterator iterator = set.iterator(); iterator.hasNext(); f = Math.min(f1, f)) {
+            PathDestination pathdestination = (PathDestination) iterator.next();
+
+            f1 = pathpoint.a(pathdestination);
+            pathdestination.a(f1, pathpoint);
         }
 
-        PathPoint[] apathpoint = new PathPoint[i];
+        return f;
+    }
 
-        pathpoint2 = pathpoint1;
-        --i;
+    private PathEntity a(PathPoint pathpoint, BlockPosition blockposition, boolean flag) {
+        List<PathPoint> list = Lists.newArrayList();
+        PathPoint pathpoint1 = pathpoint;
 
-        for (apathpoint[i] = pathpoint1; pathpoint2.h != null; apathpoint[i] = pathpoint2) {
-            pathpoint2 = pathpoint2.h;
-            --i;
+        list.add(0, pathpoint);
+
+        while (pathpoint1.h != null) {
+            pathpoint1 = pathpoint1.h;
+            list.add(0, pathpoint1);
         }
 
-        return new PathEntity(apathpoint);
+        return new PathEntity(list, blockposition, flag);
     }
 }

@@ -3,7 +3,6 @@ package net.minecraft.server;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -12,7 +11,7 @@ import javax.annotation.Nullable;
 public class RegistryBlockID<T> implements Registry<T> {
 
     private int a;
-    private com.koloboke.collect.map.hash.HashObjIntMap<T> b; // Akarin - IdentityHashMap ->  HashObjIntMap
+    private final IdentityHashMap<T, Integer> b;
     private final List<T> c;
 
     public RegistryBlockID() {
@@ -21,17 +20,11 @@ public class RegistryBlockID<T> implements Registry<T> {
 
     public RegistryBlockID(int i) {
         this.c = Lists.newArrayListWithExpectedSize(i);
-        this.b = com.koloboke.collect.map.hash.HashObjIntMaps.getDefaultFactory().withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newMutableMap(i); // Akarin - koloboke
+        this.b = new IdentityHashMap(i);
     }
 
     public void a(T t0, int i) {
-        // Akarin start
-        if (t0 == null) return;
-        com.koloboke.collect.map.hash.HashObjIntMap<T> toImmutable = com.koloboke.collect.map.hash.HashObjIntMaps.newMutableMap(this.b);
-        toImmutable.put(t0, i);
-        this.b = com.koloboke.collect.map.hash.HashObjIntMaps.getDefaultFactory().withKeyEquivalence(com.koloboke.collect.Equivalence.identity()).newImmutableMap(toImmutable);
-        //this.b.put(t0, i);
-        // Akarin end
+        this.b.put(t0, i);
 
         while (this.c.size() <= i) {
             this.c.add(null); // Paper - decompile fix
@@ -49,12 +42,13 @@ public class RegistryBlockID<T> implements Registry<T> {
     }
 
     public int getId(T t0) {
-        //Integer integer = this.b.get(t0); // Akarin
+        Integer integer = (Integer) this.b.get(t0);
 
-        return this.b.getOrDefault(t0, -1); // Akarin
+        return integer == null ? -1 : integer;
     }
 
     @Nullable
+    @Override
     public final T fromId(int i) {
         return i >= 0 && i < this.c.size() ? this.c.get(i) : null;
     }

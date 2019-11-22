@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.util.Waitable;
 
@@ -25,6 +24,7 @@ public class ConsoleCommandCompleter implements Completer {
     }
 
     // Paper start - Change method signature for JLine update
+    @Override
     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
         final CraftServer server = this.server.server;
         final String buffer = line.line();

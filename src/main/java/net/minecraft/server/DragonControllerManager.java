@@ -9,7 +9,7 @@ import org.bukkit.event.entity.EnderDragonChangePhaseEvent;
 
 public class DragonControllerManager {
 
-    private static final Logger a = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private final EntityEnderDragon enderDragon;
     private final IDragonController[] dragonControllers = new IDragonController[DragonControllerPhase.c()];
     private IDragonController currentDragonController;
@@ -43,7 +43,7 @@ public class DragonControllerManager {
                 this.enderDragon.getDataWatcher().set(EntityEnderDragon.PHASE, dragoncontrollerphase.b());
             }
 
-            DragonControllerManager.a.debug("Dragon is now in phase {} on the {}", dragoncontrollerphase, this.enderDragon.world.isClientSide ? "client" : "server");
+            DragonControllerManager.LOGGER.debug("Dragon is now in phase {} on the {}", dragoncontrollerphase, this.enderDragon.world.isClientSide ? "client" : "server");
             this.currentDragonController.d();
         }
     }

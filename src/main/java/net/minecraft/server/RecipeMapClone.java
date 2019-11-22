@@ -1,50 +1,46 @@
 package net.minecraft.server;
 
-public class RecipeMapClone extends ShapelessRecipes implements IRecipe { // CraftBukkit - added extends
+public class RecipeMapClone extends ShapelessRecipes { // CraftBukkit - added extends
 
     // CraftBukkit start - Delegate to new parent class
     public RecipeMapClone(MinecraftKey minecraftkey) {
-        super(minecraftkey, "", new ItemStack(Items.MAP, 0), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.MAP)));
+        super(minecraftkey, "", new ItemStack(Items.MAP), NonNullList.a(RecipeItemStack.a, RecipeItemStack.a(Items.MAP)));
     }
     // CraftBukkit end
 
-    public boolean a(IInventory iinventory, World world) {
-        if (!(iinventory instanceof InventoryCrafting)) {
-            return false;
-        } else {
-            int i = 0;
-            ItemStack itemstack = ItemStack.a;
-
-            for (int j = 0; j < iinventory.getSize(); ++j) {
-                ItemStack itemstack1 = iinventory.getItem(j);
-
-                if (!itemstack1.isEmpty()) {
-                    if (itemstack1.getItem() == Items.FILLED_MAP) {
-                        if (!itemstack.isEmpty()) {
-                            return false;
-                        }
-
-                        itemstack = itemstack1;
-                    } else {
-                        if (itemstack1.getItem() != Items.MAP) {
-                            return false;
-                        }
-
-                        ++i;
-                    }
-                }
-            }
-
-            return !itemstack.isEmpty() && i > 0;
-        }
-    }
-
-    public ItemStack craftItem(IInventory iinventory) {
+    public boolean a(InventoryCrafting inventorycrafting, World world) {
         int i = 0;
         ItemStack itemstack = ItemStack.a;
 
-        for (int j = 0; j < iinventory.getSize(); ++j) {
-            ItemStack itemstack1 = iinventory.getItem(j);
+        for (int j = 0; j < inventorycrafting.getSize(); ++j) {
+            ItemStack itemstack1 = inventorycrafting.getItem(j);
+
+            if (!itemstack1.isEmpty()) {
+                if (itemstack1.getItem() == Items.FILLED_MAP) {
+                    if (!itemstack.isEmpty()) {
+                        return false;
+                    }
+
+                    itemstack = itemstack1;
+                } else {
+                    if (itemstack1.getItem() != Items.MAP) {
+                        return false;
+                    }
+
+                    ++i;
+                }
+            }
+        }
+
+        return !itemstack.isEmpty() && i > 0;
+    }
+
+    public ItemStack a(InventoryCrafting inventorycrafting) {
+        int i = 0;
+        ItemStack itemstack = ItemStack.a;
+
+        for (int j = 0; j < inventorycrafting.getSize(); ++j) {
+            ItemStack itemstack1 = inventorycrafting.getItem(j);
 
             if (!itemstack1.isEmpty()) {
                 if (itemstack1.getItem() == Items.FILLED_MAP) {
@@ -73,7 +69,8 @@ public class RecipeMapClone extends ShapelessRecipes implements IRecipe { // Cra
         }
     }
 
-    public RecipeSerializer<?> a() {
-        return RecipeSerializers.e;
+    @Override
+    public RecipeSerializer<?> getRecipeSerializer() {
+        return RecipeSerializer.e;
     }
 }

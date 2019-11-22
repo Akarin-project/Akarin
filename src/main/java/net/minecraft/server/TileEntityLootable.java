@@ -3,11 +3,11 @@ package net.minecraft.server;
 import java.util.Random;
 import javax.annotation.Nullable;
 
-public abstract class TileEntityLootable extends TileEntityContainer implements ILootable {
+public abstract class TileEntityLootable extends TileEntityContainer {
 
-    protected MinecraftKey g; public MinecraftKey getLootTableKey() { return g; } public void setLootTable(MinecraftKey key) { g = key; } // Paper - OBFHELPER
-    protected long h; public long getSeed() { return h; } public void setSeed(long seed) { h = seed; } // Paper - OBFHELPER
-    protected IChatBaseComponent i;
+    @Nullable
+    public MinecraftKey lootTable; public MinecraftKey getLootTableKey() { return this.lootTable; } public void setLootTable(final MinecraftKey key) { this.lootTable = key; } // Paper - OBFHELPER
+    public long lootTableSeed; public long getSeed() { return this.lootTableSeed; } public void setSeed(final long seed) { this.lootTableSeed = seed; } // Paper - OBFHELPER
     public final com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData = new com.destroystokyo.paper.loottable.PaperLootableInventoryData(new com.destroystokyo.paper.loottable.PaperTileEntityLootableInventory(this)); // Paper
 
     protected TileEntityLootable(TileEntityTypes<?> tileentitytypes) {
@@ -24,10 +24,10 @@ public abstract class TileEntityLootable extends TileEntityContainer implements 
     }
 
     protected boolean d(NBTTagCompound nbttagcompound) {
-        lootableData.loadNbt(nbttagcompound); // Paper
+        this.lootableData.loadNbt(nbttagcompound); // Paper
         if (nbttagcompound.hasKeyOfType("LootTable", 8)) {
-            this.g = new MinecraftKey(nbttagcompound.getString("LootTable"));
-            this.h = nbttagcompound.getLong("LootTableSeed");
+            this.lootTable = new MinecraftKey(nbttagcompound.getString("LootTable"));
+            this.lootTableSeed = nbttagcompound.getLong("LootTableSeed");
             return false; // Paper - always load the items, table may still remain
         } else {
             return false;
@@ -35,13 +35,13 @@ public abstract class TileEntityLootable extends TileEntityContainer implements 
     }
 
     protected boolean e(NBTTagCompound nbttagcompound) {
-        lootableData.saveNbt(nbttagcompound); // Paper
-        if (this.g == null) {
+        this.lootableData.saveNbt(nbttagcompound); // Paper
+        if (this.lootTable == null) {
             return false;
         } else {
-            nbttagcompound.setString("LootTable", this.g.toString());
-            if (this.h != 0L) {
-                nbttagcompound.setLong("LootTableSeed", this.h);
+            nbttagcompound.setString("LootTable", this.lootTable.toString());
+            if (this.lootTableSeed != 0L) {
+                nbttagcompound.setLong("LootTableSeed", this.lootTableSeed);
             }
 
             return false; // Paper - always save the items, table may still remain
@@ -49,60 +49,36 @@ public abstract class TileEntityLootable extends TileEntityContainer implements 
     }
 
     public void d(@Nullable EntityHuman entityhuman) {
-        if (lootableData.shouldReplenish(entityhuman) && this.world.getMinecraftServer() != null) { // Paper
-            LootTable loottable = this.world.getMinecraftServer().getLootTableRegistry().getLootTable(this.g);
+        if (this.lootableData.shouldReplenish(entityhuman) && this.world.getMinecraftServer() != null) { // Paper
+            LootTable loottable = this.world.getMinecraftServer().getLootTableRegistry().getLootTable(this.lootTable);
 
-            lootableData.processRefill(entityhuman); // Paper
-            Random random;
+            this.lootableData.processRefill(entityhuman); // Paper
+            LootTableInfo.Builder loottableinfo_builder = (new LootTableInfo.Builder((WorldServer) this.world)).set(LootContextParameters.POSITION, new BlockPosition(this.position)).a(this.lootTableSeed);
 
-            if (this.h == 0L) {
-                random = new Random();
-            } else {
-                random = new Random(this.h);
-            }
-
-            LootTableInfo.Builder loottableinfo_builder = new LootTableInfo.Builder((WorldServer) this.world);
-
-            loottableinfo_builder.position(this.position);
             if (entityhuman != null) {
-                loottableinfo_builder.luck(entityhuman.dJ());
+                loottableinfo_builder.a(entityhuman.eb()).set(LootContextParameters.THIS_ENTITY, entityhuman);
             }
 
-            loottable.fillInventory(this, random, loottableinfo_builder.build());
+            loottable.fillInventory(this, loottableinfo_builder.build(LootContextParameterSets.CHEST));
         }
 
     }
 
-    public MinecraftKey getLootTable() {
-        return this.g;
-    }
-
     public void setLootTable(MinecraftKey minecraftkey, long i) {
-        this.g = minecraftkey;
-        this.h = i;
+        this.lootTable = minecraftkey;
+        this.lootTableSeed = i;
     }
 
-    public boolean hasCustomName() {
-        return this.i != null;
-    }
-
-    public void setCustomName(@Nullable IChatBaseComponent ichatbasecomponent) {
-        this.i = ichatbasecomponent;
-    }
-
-    @Nullable
-    public IChatBaseComponent getCustomName() {
-        return this.i;
-    }
-
+    @Override
     public ItemStack getItem(int i) {
         this.d((EntityHuman) null);
-        return (ItemStack) this.q().get(i);
+        return (ItemStack) this.f().get(i);
     }
 
+    @Override
     public ItemStack splitStack(int i, int j) {
         this.d((EntityHuman) null);
-        ItemStack itemstack = ContainerUtil.a(this.q(), i, j);
+        ItemStack itemstack = ContainerUtil.a(this.f(), i, j);
 
         if (!itemstack.isEmpty()) {
             this.update();
@@ -111,14 +87,16 @@ public abstract class TileEntityLootable extends TileEntityContainer implements 
         return itemstack;
     }
 
+    @Override
     public ItemStack splitWithoutUpdate(int i) {
         this.d((EntityHuman) null);
-        return ContainerUtil.a(this.q(), i);
+        return ContainerUtil.a(this.f(), i);
     }
 
-    public void setItem(int i, @Nullable ItemStack itemstack) {
+    @Override
+    public void setItem(int i, ItemStack itemstack) {
         this.d((EntityHuman) null);
-        this.q().set(i, itemstack);
+        this.f().set(i, itemstack);
         if (itemstack.getCount() > this.getMaxStackSize()) {
             itemstack.setCount(this.getMaxStackSize());
         }
@@ -126,33 +104,33 @@ public abstract class TileEntityLootable extends TileEntityContainer implements 
         this.update();
     }
 
+    @Override
     public boolean a(EntityHuman entityhuman) {
-        return this.world.getTileEntity(this.position) != this ? false : entityhuman.d((double) this.position.getX() + 0.5D, (double) this.position.getY() + 0.5D, (double) this.position.getZ() + 0.5D) <= 64.0D;
+        return this.world.getTileEntity(this.position) != this ? false : entityhuman.e((double) this.position.getX() + 0.5D, (double) this.position.getY() + 0.5D, (double) this.position.getZ() + 0.5D) <= 64.0D;
     }
 
-    public void startOpen(EntityHuman entityhuman) {}
-
-    public void closeContainer(EntityHuman entityhuman) {}
-
-    public boolean b(int i, ItemStack itemstack) {
-        return true;
-    }
-
-    public int getProperty(int i) {
-        return 0;
-    }
-
-    public void setProperty(int i, int j) {}
-
-    public int h() {
-        return 0;
-    }
-
+    @Override
     public void clear() {
-        this.q().clear();
+        this.f().clear();
     }
 
-    protected abstract NonNullList<ItemStack> q();
+    protected abstract NonNullList<ItemStack> f();
 
     protected abstract void a(NonNullList<ItemStack> nonnulllist);
+
+    @Override
+    public boolean e(EntityHuman entityhuman) {
+        return super.e(entityhuman) && (this.lootTable == null || !entityhuman.isSpectator());
+    }
+
+    @Nullable
+    @Override
+    public Container createMenu(int i, PlayerInventory playerinventory, EntityHuman entityhuman) {
+        if (this.e(entityhuman)) {
+            this.d(playerinventory.player);
+            return this.createContainer(i, playerinventory);
+        } else {
+            return null;
+        }
+    }
 }

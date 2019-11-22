@@ -6,6 +6,7 @@ import net.minecraft.server.WorldServer;
 /**
  * Set of timers per world, to track world specific timings.
  */
+// TODO: Re-implement missing timers
 public class WorldTimingsHandler {
     public final Timing mobSpawn;
     public final Timing doChunkUnload;
@@ -35,12 +36,19 @@ public class WorldTimingsHandler {
     public final Timing tracker2;
     public final Timing doTick;
     public final Timing tickEntities;
+    public final Timing chunks;
+    public final Timing newEntities;
+    public final Timing raids;
+    public final Timing chunkProviderTick;
+    public final Timing broadcastChunkUpdates;
+    public final Timing countNaturalMobs;
 
     public final Timing syncChunkLoadTimer;
     public final Timing syncChunkLoadDataTimer;
     public final Timing syncChunkLoadStructuresTimer;
     public final Timing syncChunkLoadPostTimer;
     public final Timing syncChunkLoadPopulateTimer;
+    public final Timing chunkAwait;
     public final Timing chunkLoadLevelTimer;
     public final Timing chunkGeneration;
     public final Timing chunkIOStage1;
@@ -50,7 +58,23 @@ public class WorldTimingsHandler {
     public final Timing worldSaveLevel;
     public final Timing chunkSaveData;
 
-    public final Timing lightingQueueTimer;
+
+    public final Timing miscMobSpawning;
+    public final Timing chunkRangeCheckBig;
+    public final Timing chunkRangeCheckSmall;
+
+    public final Timing poiUnload;
+    public final Timing chunkUnload;
+    public final Timing poiSaveDataSerialization;
+    public final Timing chunkSave;
+    public final Timing chunkSaveOverwriteCheck;
+    public final Timing chunkSaveDataSerialization;
+    public final Timing chunkSaveIOWait;
+    public final Timing chunkUnloadPrepareSave;
+    public final Timing chunkUnloadPOISerialization;
+    public final Timing chunkUnloadDataSave;
+
+    public final Timing playerMobDistanceMapUpdate;
 
     public WorldTimingsHandler(World server) {
         String name = server.worldData.getName() +" - ";
@@ -85,6 +109,7 @@ public class WorldTimingsHandler {
         syncChunkLoadStructuresTimer = Timings.ofSafe(name + "chunkLoad - recreateStructures");
         syncChunkLoadPostTimer = Timings.ofSafe(name + "chunkLoad - Post");
         syncChunkLoadPopulateTimer = Timings.ofSafe(name + "chunkLoad - Populate");
+        chunkAwait = Timings.ofSafe(name + "chunkAwait");
         chunkLoadLevelTimer = Timings.ofSafe(name + "chunkLoad - Load Level");
         chunkGeneration = Timings.ofSafe(name + "chunkGeneration");
         chunkIOStage1 = Timings.ofSafe(name + "ChunkIO Stage 1 - DiskIO");
@@ -99,7 +124,30 @@ public class WorldTimingsHandler {
         doTick = Timings.ofSafe(name + "doTick");
         tickEntities = Timings.ofSafe(name + "tickEntities");
 
-        lightingQueueTimer = Timings.ofSafe(name + "Lighting Queue");
+        chunks = Timings.ofSafe(name + "Chunks");
+        newEntities = Timings.ofSafe(name + "New entity registration");
+        raids = Timings.ofSafe(name + "Raids");
+        chunkProviderTick = Timings.ofSafe(name + "Chunk provider tick");
+        broadcastChunkUpdates = Timings.ofSafe(name + "Broadcast chunk updates");
+        countNaturalMobs = Timings.ofSafe(name + "Count natural mobs");
+
+
+        miscMobSpawning = Timings.ofSafe(name + "Mob spawning - Misc");
+        chunkRangeCheckBig = Timings.ofSafe(name + "Chunk Tick Range - Big");
+        chunkRangeCheckSmall = Timings.ofSafe(name + "Chunk Tick Range - Small");
+
+        poiUnload = Timings.ofSafe(name + "Chunk unload - POI");
+        chunkUnload = Timings.ofSafe(name + "Chunk unload - Chunk");
+        poiSaveDataSerialization = Timings.ofSafe(name + "Chunk save - POI Data serialization");
+        chunkSave = Timings.ofSafe(name + "Chunk save - Chunk");
+        chunkSaveOverwriteCheck = Timings.ofSafe(name + "Chunk save - Chunk Overwrite Check");
+        chunkSaveDataSerialization = Timings.ofSafe(name + "Chunk save - Chunk Data serialization");
+        chunkSaveIOWait = Timings.ofSafe(name + "Chunk save - Chunk IO Wait");
+        chunkUnloadPrepareSave = Timings.ofSafe(name + "Chunk unload - Async Save Prepare");
+        chunkUnloadPOISerialization = Timings.ofSafe(name + "Chunk unload - POI Data Serialization");
+        chunkUnloadDataSave = Timings.ofSafe(name + "Chunk unload - Data Serialization");
+
+        playerMobDistanceMapUpdate = Timings.ofSafe(name + "Per Player Mob Spawning - Distance Map Update");
     }
 
     public static Timing getTickList(WorldServer worldserver, String timingsType) {

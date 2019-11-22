@@ -1,10 +1,10 @@
 package org.bukkit.craftbukkit.entity;
 
+import java.util.Random;
 import net.minecraft.server.EntityFireworks;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.ItemStack;
 import net.minecraft.server.Items;
-
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -13,7 +13,6 @@ import org.bukkit.entity.Firework;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.meta.FireworkMeta;
 
-import java.util.Random;
 import java.util.UUID;
 
 public class CraftFirework extends CraftEntity implements Firework {
@@ -74,8 +73,17 @@ public class CraftFirework extends CraftEntity implements Firework {
         getHandle().expectedLifespan = 0;
     }
 
-    // Paper start
+    @Override
+    public boolean isShotAtAngle() {
+        return getHandle().i();
+    }
 
+    @Override
+    public void setShotAtAngle(boolean shotAtAngle) {
+        getHandle().getDataWatcher().set(EntityFireworks.d, shotAtAngle);
+    }
+
+    // Paper start
     @Override
     public UUID getSpawningEntity() {
         return getHandle().spawningEntity;

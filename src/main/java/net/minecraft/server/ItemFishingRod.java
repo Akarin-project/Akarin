@@ -26,32 +26,29 @@ public class ItemFishingRod extends Item {
         // CraftBukkit end
     }
 
+    @Override
     public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
         ItemStack itemstack = entityhuman.b(enumhand);
+        int i;
 
         if (entityhuman.hookedFish != null) {
-            int i = entityhuman.hookedFish.b(itemstack);
-
-            itemstack.damage(i, entityhuman);
-            entityhuman.a(enumhand);
-            world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.NEUTRAL, 1.0F, 0.4F / (ItemFishingRod.i.nextFloat() * 0.4F + 0.8F));
-        } else {
-            // world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_FISHING_BOBBER_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemFishingRod.i.nextFloat() * 0.4F + 0.8F));
             if (!world.isClientSide) {
-                EntityFishingHook entityfishinghook = new EntityFishingHook(world, entityhuman);
-                int j = EnchantmentManager.c(itemstack);
+                i = entityhuman.hookedFish.b(itemstack);
+                itemstack.damage(i, entityhuman, (entityhuman1) -> {
+                    entityhuman1.d(enumhand);
+                });
+            }
 
-                if (j > 0) {
-                    entityfishinghook.a(j);
-                }
-
-                int k = EnchantmentManager.b(itemstack);
-
-                if (k > 0) {
-                    entityfishinghook.b(k);
-                }
+            entityhuman.a(enumhand);
+            world.playSound((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.NEUTRAL, 1.0F, 0.4F / (ItemFishingRod.i.nextFloat() * 0.4F + 0.8F));
+        } else {
+            // world.playSound((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_FISHING_BOBBER_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemFishingRod.i.nextFloat() * 0.4F + 0.8F));
+            if (!world.isClientSide) {
+                i = EnchantmentManager.c(itemstack);
+                int j = EnchantmentManager.b(itemstack);
 
                 // CraftBukkit start
+                EntityFishingHook entityfishinghook = new EntityFishingHook(entityhuman, world, j, i);
                 PlayerFishEvent playerFishEvent = new PlayerFishEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), null, (org.bukkit.entity.FishHook) entityfishinghook.getBukkitEntity(), PlayerFishEvent.State.FISHING);
                 world.getServer().getPluginManager().callEvent(playerFishEvent);
 
@@ -59,10 +56,9 @@ public class ItemFishingRod extends Item {
                     entityhuman.hookedFish = null;
                     return new InteractionResultWrapper(EnumInteractionResult.PASS, itemstack);
                 }
-                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_FISHING_BOBBER_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemFishingRod.i.nextFloat() * 0.4F + 0.8F));
-                // CraftBukkit end
-
+                world.playSound((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_FISHING_BOBBER_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemFishingRod.i.nextFloat() * 0.4F + 0.8F));
                 world.addEntity(entityfishinghook);
+                // CraftBukkit end
             }
 
             entityhuman.a(enumhand);
@@ -72,6 +68,7 @@ public class ItemFishingRod extends Item {
         return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, itemstack);
     }
 
+    @Override
     public int c() {
         return 1;
     }

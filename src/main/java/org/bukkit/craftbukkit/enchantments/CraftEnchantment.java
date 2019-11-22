@@ -57,6 +57,8 @@ public class CraftEnchantment extends Enchantment {
             return EnchantmentTarget.WEARABLE;
         case TRIDENT:
             return EnchantmentTarget.TRIDENT;
+        case CROSSBOW:
+            return EnchantmentTarget.CROSSBOW;
         default:
             return null;
         }
@@ -146,11 +148,17 @@ public class CraftEnchantment extends Enchantment {
         case 31:
             return "CHANNELING";
         case 32:
-            return "MENDING";
+            return "MULTISHOT";
         case 33:
+            return "QUICK_CHARGE";
+        case 34:
+            return "PIERCING";
+        case 35:
+            return "MENDING";
+        case 36:
             return "VANISHING_CURSE";
         default:
-            return "UNKNOWN_ENCHANT_" + getName();
+            return "UNKNOWN_ENCHANT_" + IRegistry.ENCHANTMENT.a(target);
         }
     }
 
@@ -175,7 +183,7 @@ public class CraftEnchantment extends Enchantment {
             return false;
         }
         CraftEnchantment ench = (CraftEnchantment) other;
-        return !target.b(ench.target);
+        return !target.isCompatible(ench.target);
     }
 
     public net.minecraft.server.Enchantment getHandle() {

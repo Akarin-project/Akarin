@@ -27,10 +27,11 @@ public class EntitySelector {
     private final String j;
     @Nullable
     private final UUID k;
-    private final Class<? extends Entity> l;
-    private final boolean m;
+    @Nullable
+    private final EntityTypes<?> l;
+    private final boolean checkPermissions;
 
-    public EntitySelector(int i, boolean flag, boolean flag1, Predicate<Entity> predicate, CriterionConditionValue.FloatRange criterionconditionvalue_floatrange, Function<Vec3D, Vec3D> function, @Nullable AxisAlignedBB axisalignedbb, BiConsumer<Vec3D, List<? extends Entity>> biconsumer, boolean flag2, @Nullable String s, @Nullable UUID uuid, Class<? extends Entity> oclass, boolean flag3) {
+    public EntitySelector(int i, boolean flag, boolean flag1, Predicate<Entity> predicate, CriterionConditionValue.FloatRange criterionconditionvalue_floatrange, Function<Vec3D, Vec3D> function, @Nullable AxisAlignedBB axisalignedbb, BiConsumer<Vec3D, List<? extends Entity>> biconsumer, boolean flag2, @Nullable String s, @Nullable UUID uuid, @Nullable EntityTypes<?> entitytypes, boolean flag3) {
         this.a = i;
         this.b = flag;
         this.c = flag1;
@@ -42,8 +43,8 @@ public class EntitySelector {
         this.i = flag2;
         this.j = s;
         this.k = uuid;
-        this.l = oclass;
-        this.m = flag3;
+        this.l = entitytypes;
+        this.checkPermissions = flag3;
     }
 
     public int a() {
@@ -63,14 +64,14 @@ public class EntitySelector {
     }
 
     private void e(CommandListenerWrapper commandlistenerwrapper) throws CommandSyntaxException {
-        if (this.m && !commandlistenerwrapper.hasPermission(2, "minecraft.command.selector")) { // CraftBukkit
+        if (this.checkPermissions && !commandlistenerwrapper.hasPermission(2, "minecraft.command.selector")) { // CraftBukkit
             throw ArgumentEntity.f.create();
         }
     }
 
     public Entity a(CommandListenerWrapper commandlistenerwrapper) throws CommandSyntaxException {
         this.e(commandlistenerwrapper);
-        List<? extends Entity> list = this.b(commandlistenerwrapper);
+        List<? extends Entity> list = this.getEntities(commandlistenerwrapper);
 
         if (list.isEmpty()) {
             throw ArgumentEntity.d.create();
@@ -81,14 +82,14 @@ public class EntitySelector {
         }
     }
 
-    public List<? extends Entity> b(CommandListenerWrapper commandlistenerwrapper) throws CommandSyntaxException {
+    public List<? extends Entity> getEntities(CommandListenerWrapper commandlistenerwrapper) throws CommandSyntaxException {
         this.e(commandlistenerwrapper);
         if (!this.b) {
             return this.d(commandlistenerwrapper);
         } else if (this.j != null) {
             EntityPlayer entityplayer = commandlistenerwrapper.getServer().getPlayerList().getPlayer(this.j);
 
-            return (List) (entityplayer == null ? Collections.emptyList() : Lists.newArrayList(new EntityPlayer[] { entityplayer}));
+            return (List) (entityplayer == null ? Collections.emptyList() : Lists.newArrayList(new EntityPlayer[]{entityplayer}));
         } else if (this.k != null) {
             Iterator iterator = commandlistenerwrapper.getServer().getWorlds().iterator();
 
@@ -104,13 +105,13 @@ public class EntitySelector {
                 entity = worldserver.getEntity(this.k);
             } while (entity == null);
 
-            return Lists.newArrayList(new Entity[] { entity});
+            return Lists.newArrayList(new Entity[]{entity});
         } else {
             Vec3D vec3d = (Vec3D) this.f.apply(commandlistenerwrapper.getPosition());
             Predicate<Entity> predicate = this.a(vec3d);
 
             if (this.i) {
-                return (List) (commandlistenerwrapper.getEntity() != null && predicate.test(commandlistenerwrapper.getEntity()) ? Lists.newArrayList(new Entity[] { commandlistenerwrapper.getEntity()}) : Collections.emptyList());
+                return (List) (commandlistenerwrapper.getEntity() != null && predicate.test(commandlistenerwrapper.getEntity()) ? Lists.newArrayList(new Entity[]{commandlistenerwrapper.getEntity()}) : Collections.emptyList());
             } else {
                 List<Entity> list = Lists.newArrayList();
 
@@ -132,18 +133,10 @@ public class EntitySelector {
     }
 
     private void a(List<Entity> list, WorldServer worldserver, Vec3D vec3d, Predicate<Entity> predicate) {
-        Class oclass;
-
         if (this.g != null) {
-            oclass = this.l;
-            AxisAlignedBB axisalignedbb = this.g.a(vec3d);
-
-            predicate.getClass();
-            list.addAll(worldserver.a(oclass, axisalignedbb, (java.util.function.Predicate<Entity>) predicate::test)); // CraftBukkit - decompile error
+            list.addAll(worldserver.a(this.l, this.g.b(vec3d), predicate));
         } else {
-            oclass = this.l;
-            predicate.getClass();
-            list.addAll(worldserver.a(oclass, predicate::test));
+            list.addAll(worldserver.a(this.l, predicate));
         }
 
     }
@@ -165,10 +158,10 @@ public class EntitySelector {
 
         if (this.j != null) {
             entityplayer = commandlistenerwrapper.getServer().getPlayerList().getPlayer(this.j);
-            return (List) (entityplayer == null ? Collections.emptyList() : Lists.newArrayList(new EntityPlayer[] { entityplayer}));
+            return (List) (entityplayer == null ? Collections.emptyList() : Lists.newArrayList(new EntityPlayer[]{entityplayer}));
         } else if (this.k != null) {
             entityplayer = commandlistenerwrapper.getServer().getPlayerList().a(this.k);
-            return (List) (entityplayer == null ? Collections.emptyList() : Lists.newArrayList(new EntityPlayer[] { entityplayer}));
+            return (List) (entityplayer == null ? Collections.emptyList() : Lists.newArrayList(new EntityPlayer[]{entityplayer}));
         } else {
             Vec3D vec3d = (Vec3D) this.f.apply(commandlistenerwrapper.getPosition());
             Predicate<Entity> predicate = this.a(vec3d);
@@ -178,7 +171,7 @@ public class EntitySelector {
                     EntityPlayer entityplayer1 = (EntityPlayer) commandlistenerwrapper.getEntity();
 
                     if (predicate.test(entityplayer1)) {
-                        return Lists.newArrayList(new EntityPlayer[] { entityplayer1});
+                        return Lists.newArrayList(new EntityPlayer[]{entityplayer1});
                     }
                 }
 
@@ -190,10 +183,10 @@ public class EntitySelector {
                     WorldServer worldserver = commandlistenerwrapper.getWorld();
 
                     predicate.getClass();
-                    object = worldserver.b(EntityPlayer.class, predicate::test);
+                    object = worldserver.a(predicate::test);
                 } else {
                     object = Lists.newArrayList();
-                    Iterator iterator = commandlistenerwrapper.getServer().getPlayerList().v().iterator();
+                    Iterator iterator = commandlistenerwrapper.getServer().getPlayerList().getPlayers().iterator();
 
                     while (iterator.hasNext()) {
                         EntityPlayer entityplayer2 = (EntityPlayer) iterator.next();
@@ -213,7 +206,7 @@ public class EntitySelector {
         Predicate<Entity> predicate = this.d;
 
         if (this.g != null) {
-            AxisAlignedBB axisalignedbb = this.g.a(vec3d);
+            AxisAlignedBB axisalignedbb = this.g.b(vec3d);
 
             predicate = predicate.and((entity) -> {
                 return axisalignedbb.c(entity.getBoundingBox());
@@ -222,7 +215,7 @@ public class EntitySelector {
 
         if (!this.e.c()) {
             predicate = predicate.and((entity) -> {
-                return this.e.a(entity.a(vec3d));
+                return this.e.a(entity.c(vec3d));
             });
         }
 

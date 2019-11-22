@@ -2,13 +2,10 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
-
 import java.util.Set;
-
 import net.minecraft.server.DragonControllerPhase;
 import net.minecraft.server.EntityComplexPart;
 import net.minecraft.server.EntityEnderDragon;
-
 import org.bukkit.boss.BossBar;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.boss.CraftBossBar;
@@ -28,6 +25,7 @@ public class CraftEnderDragon extends CraftComplexLivingEntity implements EnderD
         }
     }
 
+    @Override
     public Set<ComplexEntityPart> getParts() {
         Builder<ComplexEntityPart> builder = ImmutableSet.builder();
 
@@ -48,6 +46,7 @@ public class CraftEnderDragon extends CraftComplexLivingEntity implements EnderD
         return "CraftEnderDragon";
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.ENDER_DRAGON;
     }
@@ -61,11 +60,11 @@ public class CraftEnderDragon extends CraftComplexLivingEntity implements EnderD
     public void setPhase(Phase phase) {
         getHandle().getDragonControllerManager().setControllerPhase(getMinecraftPhase(phase));
     }
-    
+
     public static Phase getBukkitPhase(DragonControllerPhase phase) {
         return Phase.values()[phase.b()];
     }
-    
+
     public static DragonControllerPhase getMinecraftPhase(Phase phase) {
         return DragonControllerPhase.getById(phase.ordinal());
     }

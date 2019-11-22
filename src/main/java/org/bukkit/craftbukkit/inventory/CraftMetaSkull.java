@@ -1,15 +1,14 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.collect.ImmutableMap.Builder;
+import com.mojang.authlib.GameProfile;
 import java.util.Map;
-
 import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import net.minecraft.server.GameProfileSerializer;
 import net.minecraft.server.NBTBase;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.TileEntitySkull;
-import net.minecraft.server.*;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -19,11 +18,7 @@ import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import com.google.common.collect.ImmutableMap.Builder;
-import com.mojang.authlib.GameProfile;
-
 import javax.annotation.Nullable;
-
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
 
@@ -129,10 +124,12 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         return (CraftMetaSkull) super.clone();
     }
 
+    @Override
     public boolean hasOwner() {
         return profile != null && profile.getName() != null;
     }
 
+    @Override
     public String getOwner() {
         return hasOwner() ? profile.getName() : null;
     }
@@ -165,6 +162,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         return null;
     }
 
+    @Override
     public boolean setOwner(String name) {
         if (name != null && name.length() > MAX_OWNER_LENGTH) {
             return false;
@@ -175,7 +173,7 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
         } else {
             // Paper start - Use Online Players Skull
             GameProfile newProfile = null;
-            EntityPlayer player = MinecraftServer.getServer().getPlayerList().getPlayer(name);
+            net.minecraft.server.EntityPlayer player = net.minecraft.server.MinecraftServer.getServer().getPlayerList().getPlayer(name);
             if (player != null) newProfile = player.getProfile();
             if (newProfile == null) newProfile = new GameProfile(null, name);
             profile = newProfile;

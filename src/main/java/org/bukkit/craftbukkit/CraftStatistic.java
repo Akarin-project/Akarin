@@ -1,11 +1,5 @@
 package org.bukkit.craftbukkit;
 
-import net.minecraft.server.StatisticList;
-
-import org.bukkit.Statistic;
-import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -14,7 +8,11 @@ import net.minecraft.server.EntityTypes;
 import net.minecraft.server.IRegistry;
 import net.minecraft.server.Item;
 import net.minecraft.server.MinecraftKey;
+import net.minecraft.server.StatisticList;
+import org.bukkit.Material;
+import org.bukkit.Statistic;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.entity.EntityType;
 
 public enum CraftStatistic {
     DAMAGE_DEALT(StatisticList.DAMAGE_DEALT),
@@ -82,7 +80,18 @@ public enum CraftStatistic {
     DAMAGE_BLOCKED_BY_SHIELD(StatisticList.DAMAGE_BLOCKED_BY_SHIELD),
     DAMAGE_ABSORBED(StatisticList.DAMAGE_ABSORBED),
     DAMAGE_RESISTED(StatisticList.DAMAGE_RESISTED),
-    CLEAN_SHULKER_BOX(StatisticList.CLEAN_SHULKER_BOX);
+    CLEAN_SHULKER_BOX(StatisticList.CLEAN_SHULKER_BOX),
+    OPEN_BARREL(StatisticList.OPEN_BARREL),
+    INTERACT_WITH_BLAST_FURNACE(StatisticList.INTERACT_WITH_BLAST_FURNACE),
+    INTERACT_WITH_SMOKER(StatisticList.INTERACT_WITH_SMOKER),
+    INTERACT_WITH_LECTERN(StatisticList.INTERACT_WITH_LECTERN),
+    INTERACT_WITH_CAMPFIRE(StatisticList.INTERACT_WITH_CAMPFIRE),
+    INTERACT_WITH_CARTOGRAPHY_TABLE(StatisticList.INTERACT_WITH_CARTOGRAPHY_TABLE),
+    INTERACT_WITH_LOOM(StatisticList.INTERACT_WITH_LOOM),
+    INTERACT_WITH_STONECUTTER(StatisticList.INTERACT_WITH_STONECUTTER),
+    BELL_RING(StatisticList.BELL_RING),
+    RAID_TRIGGER(StatisticList.RAID_TRIGGER),
+    RAID_WIN(StatisticList.RAID_WIN);
     private final MinecraftKey minecraftKey;
     private final org.bukkit.Statistic bukkit;
     private static final BiMap<MinecraftKey, org.bukkit.Statistic> statistics;
@@ -104,8 +113,8 @@ public enum CraftStatistic {
     }
 
     public static org.bukkit.Statistic getBukkitStatistic(net.minecraft.server.Statistic<?> statistic) {
-        IRegistry statRegistry = statistic.a().a();
-        MinecraftKey nmsKey = IRegistry.STATS.getKey(statistic.a());
+        IRegistry statRegistry = statistic.getWrapper().getRegistry();
+        MinecraftKey nmsKey = IRegistry.STATS.getKey(statistic.getWrapper());
 
         if (statRegistry == IRegistry.CUSTOM_STAT) {
             nmsKey = (MinecraftKey) statistic.b();

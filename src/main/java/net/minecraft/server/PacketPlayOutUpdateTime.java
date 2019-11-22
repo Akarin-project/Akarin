@@ -30,11 +30,13 @@ public class PacketPlayOutUpdateTime implements Packet<PacketListenerPlayOut> {
         // Paper end
     }
 
+    @Override
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
         this.a = packetdataserializer.readLong();
         this.b = packetdataserializer.readLong();
     }
 
+    @Override
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
         packetdataserializer.writeLong(this.a);
         packetdataserializer.writeLong(this.b);

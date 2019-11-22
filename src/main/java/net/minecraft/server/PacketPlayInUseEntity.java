@@ -17,8 +17,9 @@ public class PacketPlayInUseEntity implements Packet<PacketListenerPlayIn> {
         this.action = PacketPlayInUseEntity.EnumEntityUseAction.ATTACK;
     }
 
+    @Override
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
-        this.a = packetdataserializer.g();
+        this.a = packetdataserializer.i();
         this.action = (PacketPlayInUseEntity.EnumEntityUseAction) packetdataserializer.a(PacketPlayInUseEntity.EnumEntityUseAction.class);
         if (this.action == PacketPlayInUseEntity.EnumEntityUseAction.INTERACT_AT) {
             this.c = new Vec3D((double) packetdataserializer.readFloat(), (double) packetdataserializer.readFloat(), (double) packetdataserializer.readFloat());
@@ -30,6 +31,7 @@ public class PacketPlayInUseEntity implements Packet<PacketListenerPlayIn> {
 
     }
 
+    @Override
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
         packetdataserializer.d(this.a);
         packetdataserializer.a((Enum) this.action);

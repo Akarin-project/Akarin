@@ -4,68 +4,73 @@ import javax.annotation.Nullable;
 
 public class EntitySkeletonWither extends EntitySkeletonAbstract {
 
-    public EntitySkeletonWither(World world) {
-        super(EntityTypes.WITHER_SKELETON, world);
-        this.setSize(0.7F, 2.4F);
-        this.fireProof = true;
+    public EntitySkeletonWither(EntityTypes<? extends EntitySkeletonWither> entitytypes, World world) {
+        super(entitytypes, world);
+        this.a(PathType.LAVA, 8.0F);
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.aw;
-    }
-
-    protected SoundEffect D() {
+    @Override
+    protected SoundEffect getSoundAmbient() {
         return SoundEffects.ENTITY_WITHER_SKELETON_AMBIENT;
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return SoundEffects.ENTITY_WITHER_SKELETON_HURT;
     }
 
-    protected SoundEffect cs() {
+    @Override
+    protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_WITHER_SKELETON_DEATH;
     }
 
+    @Override
     SoundEffect l() {
         return SoundEffects.ENTITY_WITHER_SKELETON_STEP;
     }
 
-    public void die(DamageSource damagesource) {
-        // super.die(damagesource); // CraftBukkit
-        if (damagesource.getEntity() instanceof EntityCreeper) {
-            EntityCreeper entitycreeper = (EntityCreeper) damagesource.getEntity();
+    @Override
+    protected void dropDeathLoot(DamageSource damagesource, int i, boolean flag) {
+        super.dropDeathLoot(damagesource, i, flag);
+        Entity entity = damagesource.getEntity();
 
-            if (entitycreeper.isPowered() && entitycreeper.canCauseHeadDrop()) {
+        if (entity instanceof EntityCreeper) {
+            EntityCreeper entitycreeper = (EntityCreeper) entity;
+
+            if (entitycreeper.canCauseHeadDrop()) {
                 entitycreeper.setCausedHeadDrop();
                 this.a((IMaterial) Items.WITHER_SKELETON_SKULL);
             }
         }
-        super.die(damagesource); // CraftBukkit - moved from above
 
     }
 
+    @Override
     protected void a(DifficultyDamageScaler difficultydamagescaler) {
         this.setSlot(EnumItemSlot.MAINHAND, new ItemStack(Items.STONE_SWORD));
     }
 
+    @Override
     protected void b(DifficultyDamageScaler difficultydamagescaler) {}
 
     @Nullable
-    public GroupDataEntity prepare(DifficultyDamageScaler difficultydamagescaler, @Nullable GroupDataEntity groupdataentity, @Nullable NBTTagCompound nbttagcompound) {
-        GroupDataEntity groupdataentity1 = super.prepare(difficultydamagescaler, groupdataentity, nbttagcompound);
+    @Override
+    public GroupDataEntity prepare(GeneratorAccess generatoraccess, DifficultyDamageScaler difficultydamagescaler, EnumMobSpawn enummobspawn, @Nullable GroupDataEntity groupdataentity, @Nullable NBTTagCompound nbttagcompound) {
+        GroupDataEntity groupdataentity1 = super.prepare(generatoraccess, difficultydamagescaler, enummobspawn, groupdataentity, nbttagcompound);
 
         this.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).setValue(4.0D);
-        this.dz();
+        this.dV();
         return groupdataentity1;
     }
 
-    public float getHeadHeight() {
+    @Override
+    protected float b(EntityPose entitypose, EntitySize entitysize) {
         return 2.1F;
     }
 
-    public boolean B(Entity entity) {
-        if (!super.B(entity)) {
+    @Override
+    public boolean C(Entity entity) {
+        if (!super.C(entity)) {
             return false;
         } else {
             if (entity instanceof EntityLiving) {
@@ -76,10 +81,16 @@ public class EntitySkeletonWither extends EntitySkeletonAbstract {
         }
     }
 
-    protected EntityArrow a(float f) {
-        EntityArrow entityarrow = super.a(f);
+    @Override
+    protected EntityArrow b(ItemStack itemstack, float f) {
+        EntityArrow entityarrow = super.b(itemstack, f);
 
         entityarrow.setOnFire(100);
         return entityarrow;
+    }
+
+    @Override
+    public boolean d(MobEffect mobeffect) {
+        return mobeffect.getMobEffect() == MobEffects.WITHER ? false : super.d(mobeffect);
     }
 }

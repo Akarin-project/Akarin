@@ -23,24 +23,24 @@ public class ArgumentParserSelector {
 
     public static final SimpleCommandExceptionType a = new SimpleCommandExceptionType(new ChatMessage("argument.entity.invalid", new Object[0]));
     public static final DynamicCommandExceptionType b = new DynamicCommandExceptionType((object) -> {
-        return new ChatMessage("argument.entity.selector.unknown", new Object[] { object});
+        return new ChatMessage("argument.entity.selector.unknown", new Object[]{object});
     });
     public static final SimpleCommandExceptionType c = new SimpleCommandExceptionType(new ChatMessage("argument.entity.selector.not_allowed", new Object[0]));
     public static final SimpleCommandExceptionType d = new SimpleCommandExceptionType(new ChatMessage("argument.entity.selector.missing", new Object[0]));
     public static final SimpleCommandExceptionType e = new SimpleCommandExceptionType(new ChatMessage("argument.entity.options.unterminated", new Object[0]));
     public static final DynamicCommandExceptionType f = new DynamicCommandExceptionType((object) -> {
-        return new ChatMessage("argument.entity.options.valueless", new Object[] { object});
+        return new ChatMessage("argument.entity.options.valueless", new Object[]{object});
     });
     public static final BiConsumer<Vec3D, List<? extends Entity>> g = (vec3d, list) -> {
     };
     public static final BiConsumer<Vec3D, List<? extends Entity>> h = (vec3d, list) -> {
         list.sort((entity, entity1) -> {
-            return Doubles.compare(entity.a(vec3d), entity1.a(vec3d));
+            return Doubles.compare(entity.c(vec3d), entity1.c(vec3d));
         });
     };
     public static final BiConsumer<Vec3D, List<? extends Entity>> i = (vec3d, list) -> {
         list.sort((entity, entity1) -> {
-            return Doubles.compare(entity1.a(vec3d), entity.a(vec3d));
+            return Doubles.compare(entity1.c(vec3d), entity.c(vec3d));
         });
     };
     public static final BiConsumer<Vec3D, List<? extends Entity>> j = (vec3d, list) -> {
@@ -87,11 +87,12 @@ public class ArgumentParserSelector {
     private boolean M;
     private boolean N;
     private boolean O;
-    private Class<? extends Entity> P;
+    @Nullable
+    private EntityTypes<?> P;
     private boolean Q;
     private boolean R;
     private boolean S;
-    private boolean T;
+    private boolean checkPermissions;
 
     public ArgumentParserSelector(StringReader stringreader) {
         this(stringreader, true);
@@ -138,7 +139,7 @@ public class ArgumentParserSelector {
             };
         }
 
-        return new EntitySelector(this.n, this.o, this.p, this.A, this.q, function, axisalignedbb, this.B, this.C, this.D, this.F, this.P == null ? Entity.class : this.P, this.T);
+        return new EntitySelector(this.n, this.o, this.p, this.A, this.q, function, axisalignedbb, this.B, this.C, this.D, this.F, this.P, this.checkPermissions);
     }
 
     private AxisAlignedBB a(double d0, double d1, double d2) {
@@ -188,8 +189,8 @@ public class ArgumentParserSelector {
     }
 
     // CraftBukkit start
-    protected void b(boolean overridePermissions) throws CommandSyntaxException {
-        this.T = !overridePermissions;
+    protected void parseSelector(boolean overridePermissions) throws CommandSyntaxException {
+        this.checkPermissions = !overridePermissions;
         // CraftBukkit end
         this.G = this::d;
         if (!this.l.canRead()) {
@@ -202,17 +203,17 @@ public class ArgumentParserSelector {
                 this.n = 1;
                 this.o = false;
                 this.B = ArgumentParserSelector.h;
-                this.a(EntityPlayer.class);
+                this.a(EntityTypes.PLAYER);
             } else if (c0 == 'a') {
                 this.n = Integer.MAX_VALUE;
                 this.o = false;
                 this.B = ArgumentParserSelector.g;
-                this.a(EntityPlayer.class);
+                this.a(EntityTypes.PLAYER);
             } else if (c0 == 'r') {
                 this.n = 1;
                 this.o = false;
                 this.B = ArgumentParserSelector.j;
-                this.a(EntityPlayer.class);
+                this.a(EntityTypes.PLAYER);
             } else if (c0 == 's') {
                 this.n = 1;
                 this.o = true;
@@ -322,7 +323,18 @@ public class ArgumentParserSelector {
         }
     }
 
-    public StringReader f() {
+    public boolean f() {
+        this.l.skipWhitespace();
+        if (this.l.canRead() && this.l.peek() == '#') {
+            this.l.skip();
+            this.l.skipWhitespace();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public StringReader g() {
         return this.l;
     }
 
@@ -330,11 +342,11 @@ public class ArgumentParserSelector {
         this.A = this.A.and(predicate);
     }
 
-    public void g() {
+    public void h() {
         this.p = true;
     }
 
-    public CriterionConditionValue.FloatRange h() {
+    public CriterionConditionValue.FloatRange i() {
         return this.q;
     }
 
@@ -342,7 +354,7 @@ public class ArgumentParserSelector {
         this.q = criterionconditionvalue_floatrange;
     }
 
-    public CriterionConditionValue.IntegerRange i() {
+    public CriterionConditionValue.IntegerRange j() {
         return this.r;
     }
 
@@ -350,7 +362,7 @@ public class ArgumentParserSelector {
         this.r = criterionconditionvalue_integerrange;
     }
 
-    public CriterionConditionRange j() {
+    public CriterionConditionRange k() {
         return this.y;
     }
 
@@ -358,7 +370,7 @@ public class ArgumentParserSelector {
         this.y = criterionconditionrange;
     }
 
-    public CriterionConditionRange k() {
+    public CriterionConditionRange l() {
         return this.z;
     }
 
@@ -367,17 +379,17 @@ public class ArgumentParserSelector {
     }
 
     @Nullable
-    public Double l() {
+    public Double m() {
         return this.s;
     }
 
     @Nullable
-    public Double m() {
+    public Double n() {
         return this.t;
     }
 
     @Nullable
-    public Double n() {
+    public Double o() {
         return this.u;
     }
 
@@ -406,17 +418,17 @@ public class ArgumentParserSelector {
     }
 
     @Nullable
-    public Double o() {
+    public Double p() {
         return this.v;
     }
 
     @Nullable
-    public Double p() {
+    public Double q() {
         return this.w;
     }
 
     @Nullable
-    public Double q() {
+    public Double r() {
         return this.x;
     }
 
@@ -432,12 +444,12 @@ public class ArgumentParserSelector {
         this.B = biconsumer;
     }
 
-    public EntitySelector s() throws CommandSyntaxException {
+    public EntitySelector parse() throws CommandSyntaxException {
         // CraftBukkit start
-        return s(false);
+        return parse(false);
     }
 
-    public EntitySelector s(boolean overridePermissions) throws CommandSyntaxException {
+    public EntitySelector parse(boolean overridePermissions) throws CommandSyntaxException {
         // CraftBukkit end
         this.E = this.l.getCursor();
         this.G = this::b;
@@ -447,7 +459,7 @@ public class ArgumentParserSelector {
             }
 
             this.l.skip();
-            this.b(overridePermissions); // CraftBukkit
+            this.parseSelector(overridePermissions); // CraftBukkit
         } else {
             this.c();
         }
@@ -510,7 +522,7 @@ public class ArgumentParserSelector {
         return suggestionsbuilder.buildFuture();
     }
 
-    public boolean t() {
+    public boolean u() {
         return this.C;
     }
 
@@ -522,7 +534,7 @@ public class ArgumentParserSelector {
         return (CompletableFuture) this.G.apply(suggestionsbuilder.createOffset(this.l.getCursor()), consumer);
     }
 
-    public boolean u() {
+    public boolean v() {
         return this.H;
     }
 
@@ -530,7 +542,7 @@ public class ArgumentParserSelector {
         this.H = flag;
     }
 
-    public boolean v() {
+    public boolean w() {
         return this.I;
     }
 
@@ -538,7 +550,7 @@ public class ArgumentParserSelector {
         this.I = flag;
     }
 
-    public boolean w() {
+    public boolean x() {
         return this.J;
     }
 
@@ -546,7 +558,7 @@ public class ArgumentParserSelector {
         this.J = flag;
     }
 
-    public boolean x() {
+    public boolean y() {
         return this.K;
     }
 
@@ -554,7 +566,7 @@ public class ArgumentParserSelector {
         this.K = flag;
     }
 
-    public boolean y() {
+    public boolean z() {
         return this.L;
     }
 
@@ -562,7 +574,7 @@ public class ArgumentParserSelector {
         this.L = flag;
     }
 
-    public boolean z() {
+    public boolean A() {
         return this.M;
     }
 
@@ -570,7 +582,7 @@ public class ArgumentParserSelector {
         this.M = flag;
     }
 
-    public boolean A() {
+    public boolean B() {
         return this.N;
     }
 
@@ -582,11 +594,11 @@ public class ArgumentParserSelector {
         this.O = flag;
     }
 
-    public void a(Class<? extends Entity> oclass) {
-        this.P = oclass;
+    public void a(EntityTypes<?> entitytypes) {
+        this.P = entitytypes;
     }
 
-    public void C() {
+    public void D() {
         this.Q = true;
     }
 

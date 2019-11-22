@@ -13,13 +13,15 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
 
 public class TileEntityConduit extends TileEntity implements ITickable {
 
-    private static final Block[] e = new Block[] { Blocks.PRISMARINE, Blocks.PRISMARINE_BRICKS, Blocks.SEA_LANTERN, Blocks.DARK_PRISMARINE};
+    private static final Block[] b = new Block[]{Blocks.PRISMARINE, Blocks.PRISMARINE_BRICKS, Blocks.SEA_LANTERN, Blocks.DARK_PRISMARINE};
     public int a;
-    private float f;
+    private float c;
     private boolean g;
     private boolean h;
     private final List<BlockPosition> i;
+    @Nullable
     private EntityLiving target;
+    @Nullable
     private UUID k;
     private long l;
 
@@ -32,6 +34,7 @@ public class TileEntityConduit extends TileEntity implements ITickable {
         this.i = Lists.newArrayList();
     }
 
+    @Override
     public void load(NBTTagCompound nbttagcompound) {
         super.load(nbttagcompound);
         if (nbttagcompound.hasKey("target_uuid")) {
@@ -42,6 +45,7 @@ public class TileEntityConduit extends TileEntity implements ITickable {
 
     }
 
+    @Override
     public NBTTagCompound save(NBTTagCompound nbttagcompound) {
         super.save(nbttagcompound);
         if (this.target != null) {
@@ -52,46 +56,49 @@ public class TileEntityConduit extends TileEntity implements ITickable {
     }
 
     @Nullable
+    @Override
     public PacketPlayOutTileEntityData getUpdatePacket() {
-        return new PacketPlayOutTileEntityData(this.position, 5, this.aa_());
+        return new PacketPlayOutTileEntityData(this.position, 5, this.b());
     }
 
-    public NBTTagCompound aa_() {
+    @Override
+    public NBTTagCompound b() {
         return this.save(new NBTTagCompound());
     }
 
+    @Override
     public void tick() {
         ++this.a;
         long i = this.world.getTime();
 
         if (i % 40L == 0L) {
-            this.a(this.f());
-            if (!this.world.isClientSide && this.c()) {
-                this.h();
-                this.i();
+            this.a(this.h());
+            if (!this.world.isClientSide && this.d()) {
+                this.s();
+                this.t();
             }
         }
 
-        if (i % 80L == 0L && this.c()) {
+        if (i % 80L == 0L && this.d()) {
             this.a(SoundEffects.BLOCK_CONDUIT_AMBIENT);
         }
 
-        if (i > this.l && this.c()) {
-            this.l = i + 60L + (long) this.world.m().nextInt(40);
+        if (i > this.l && this.d()) {
+            this.l = i + 60L + (long) this.world.getRandom().nextInt(40);
             this.a(SoundEffects.BLOCK_CONDUIT_AMBIENT_SHORT);
         }
 
         if (this.world.isClientSide) {
-            this.j();
-            this.m();
-            if (this.c()) {
-                ++this.f;
+            this.u();
+            this.y();
+            if (this.d()) {
+                ++this.c;
             }
         }
 
     }
 
-    private boolean f() {
+    private boolean h() {
         this.i.clear();
 
         int i;
@@ -101,9 +108,9 @@ public class TileEntityConduit extends TileEntity implements ITickable {
         for (i = -1; i <= 1; ++i) {
             for (j = -1; j <= 1; ++j) {
                 for (k = -1; k <= 1; ++k) {
-                    BlockPosition blockposition = this.position.a(i, j, k);
+                    BlockPosition blockposition = this.position.b(i, j, k);
 
-                    if (!this.world.B(blockposition)) {
+                    if (!this.world.x(blockposition)) {
                         return false;
                     }
                 }
@@ -118,9 +125,9 @@ public class TileEntityConduit extends TileEntity implements ITickable {
                     int j1 = Math.abs(k);
 
                     if ((l > 1 || i1 > 1 || j1 > 1) && (i == 0 && (i1 == 2 || j1 == 2) || j == 0 && (l == 2 || j1 == 2) || k == 0 && (l == 2 || i1 == 2))) {
-                        BlockPosition blockposition1 = this.position.a(i, j, k);
+                        BlockPosition blockposition1 = this.position.b(i, j, k);
                         IBlockData iblockdata = this.world.getType(blockposition1);
-                        Block[] ablock = TileEntityConduit.e;
+                        Block[] ablock = TileEntityConduit.b;
                         int k1 = ablock.length;
 
                         for (int l1 = 0; l1 < k1; ++l1) {
@@ -139,13 +146,13 @@ public class TileEntityConduit extends TileEntity implements ITickable {
         return this.i.size() >= 16;
     }
 
-    private void h() {
+    private void s() {
         int i = this.i.size();
         int j = i / 7 * 16;
         int k = this.position.getX();
         int l = this.position.getY();
         int i1 = this.position.getZ();
-        AxisAlignedBB axisalignedbb = (new AxisAlignedBB((double) k, (double) l, (double) i1, (double) (k + 1), (double) (l + 1), (double) (i1 + 1))).g((double) j).b(0.0D, (double) this.world.getHeight(), 0.0D);
+        AxisAlignedBB axisalignedbb = (new AxisAlignedBB((double) k, (double) l, (double) i1, (double) (k + 1), (double) (l + 1), (double) (i1 + 1))).g((double) j).b(0.0D, (double) this.world.getBuildHeight(), 0.0D);
         List<EntityHuman> list = this.world.a(EntityHuman.class, axisalignedbb);
 
         if (!list.isEmpty()) {
@@ -154,7 +161,7 @@ public class TileEntityConduit extends TileEntity implements ITickable {
             while (iterator.hasNext()) {
                 EntityHuman entityhuman = (EntityHuman) iterator.next();
 
-                if (this.position.m(new BlockPosition(entityhuman)) <= (double) j && entityhuman.ao()) {
+                if (this.position.a((BaseBlockPosition) (new BlockPosition(entityhuman)), (double) j) && entityhuman.isInWaterOrRain()) {
                     entityhuman.addEffect(new MobEffect(MobEffects.CONDUIT_POWER, 260, 0, true, true), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.CONDUIT); // CraftBukkit
                 }
             }
@@ -162,24 +169,24 @@ public class TileEntityConduit extends TileEntity implements ITickable {
         }
     }
 
-    private void i() {
+    private void t() {
         EntityLiving entityliving = this.target;
         int i = this.i.size();
 
         if (i < 42) {
             this.target = null;
         } else if (this.target == null && this.k != null) {
-            this.target = this.l();
+            this.target = this.x();
             this.k = null;
         } else if (this.target == null) {
-            List<EntityLiving> list = this.world.a(EntityLiving.class, this.k(), (java.util.function.Predicate<EntityLiving>) (entityliving1) -> { // CraftBukkit - decompile error
-                return entityliving1 instanceof IMonster && entityliving1.ao();
+            List<EntityLiving> list = this.world.a(EntityLiving.class, this.v(), (java.util.function.Predicate<EntityLiving>) (entityliving1) -> { // CraftBukkit - decompile error
+                return entityliving1 instanceof IMonster && entityliving1.isInWaterOrRain();
             });
 
             if (!list.isEmpty()) {
                 this.target = (EntityLiving) list.get(this.world.random.nextInt(list.size()));
             }
-        } else if (!this.target.isAlive() || this.position.m(new BlockPosition(this.target)) > 8.0D) {
+        } else if (!this.target.isAlive() || !this.position.a((BaseBlockPosition) (new BlockPosition(this.target)), 8.0D)) {
             this.target = null;
         }
 
@@ -187,7 +194,7 @@ public class TileEntityConduit extends TileEntity implements ITickable {
             // CraftBukkit start
             CraftEventFactory.blockDamage = CraftBlock.at(this.world, this.position);
             if (this.target.damageEntity(DamageSource.MAGIC, 4.0F)) {
-                this.world.a((EntityHuman) null, this.target.locX, this.target.locY, this.target.locZ, SoundEffects.BLOCK_CONDUIT_ATTACK_TARGET, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                this.world.playSound((EntityHuman) null, this.target.locX, this.target.locY, this.target.locZ, SoundEffects.BLOCK_CONDUIT_ATTACK_TARGET, SoundCategory.BLOCKS, 1.0F, 1.0F);
             }
             CraftEventFactory.blockDamage = null;
             // CraftBukkit end
@@ -201,11 +208,11 @@ public class TileEntityConduit extends TileEntity implements ITickable {
 
     }
 
-    private void j() {
+    private void u() {
         if (this.k == null) {
             this.target = null;
         } else if (this.target == null || !this.target.getUniqueID().equals(this.k)) {
-            this.target = this.l();
+            this.target = this.x();
             if (this.target == null) {
                 this.k = null;
             }
@@ -213,7 +220,7 @@ public class TileEntityConduit extends TileEntity implements ITickable {
 
     }
 
-    private AxisAlignedBB k() {
+    private AxisAlignedBB v() {
         int i = this.position.getX();
         int j = this.position.getY();
         int k = this.position.getZ();
@@ -222,15 +229,15 @@ public class TileEntityConduit extends TileEntity implements ITickable {
     }
 
     @Nullable
-    private EntityLiving l() {
-        List<EntityLiving> list = this.world.a(EntityLiving.class, this.k(), (java.util.function.Predicate<EntityLiving>) (entityliving) -> { // CraftBukkit - decompile error
+    private EntityLiving x() {
+        List<EntityLiving> list = this.world.a(EntityLiving.class, this.v(), (java.util.function.Predicate<EntityLiving>) (entityliving) -> { // CraftBukkit - decompile error
             return entityliving.getUniqueID().equals(this.k);
         });
 
         return list.size() == 1 ? (EntityLiving) list.get(0) : null;
     }
 
-    private void m() {
+    private void y() {
         Random random = this.world.random;
         float f = MathHelper.sin((float) (this.a + 35) * 0.1F) / 2.0F + 0.5F;
 
@@ -251,24 +258,24 @@ public class TileEntityConduit extends TileEntity implements ITickable {
                 BlockPosition blockposition1 = blockposition.b(this.position);
                 Vec3D vec3d1 = (new Vec3D((double) f1, (double) f2, (double) f3)).add((double) blockposition1.getX(), (double) blockposition1.getY(), (double) blockposition1.getZ());
 
-                this.world.addParticle(Particles.W, vec3d.x, vec3d.y, vec3d.z, vec3d1.x, vec3d1.y, vec3d1.z);
+                this.world.addParticle(Particles.NAUTILUS, vec3d.x, vec3d.y, vec3d.z, vec3d1.x, vec3d1.y, vec3d1.z);
             }
         }
 
         if (this.target != null) {
             Vec3D vec3d2 = new Vec3D(this.target.locX, this.target.locY + (double) this.target.getHeadHeight(), this.target.locZ);
-            float f4 = (-0.5F + random.nextFloat()) * (3.0F + this.target.width);
+            float f4 = (-0.5F + random.nextFloat()) * (3.0F + this.target.getWidth());
 
-            f1 = -1.0F + random.nextFloat() * this.target.length;
-            f2 = (-0.5F + random.nextFloat()) * (3.0F + this.target.width);
+            f1 = -1.0F + random.nextFloat() * this.target.getHeight();
+            f2 = (-0.5F + random.nextFloat()) * (3.0F + this.target.getWidth());
             Vec3D vec3d3 = new Vec3D((double) f4, (double) f1, (double) f2);
 
-            this.world.addParticle(Particles.W, vec3d2.x, vec3d2.y, vec3d2.z, vec3d3.x, vec3d3.y, vec3d3.z);
+            this.world.addParticle(Particles.NAUTILUS, vec3d2.x, vec3d2.y, vec3d2.z, vec3d3.x, vec3d3.y, vec3d3.z);
         }
 
     }
 
-    public boolean c() {
+    public boolean d() {
         return this.g;
     }
 
@@ -285,6 +292,6 @@ public class TileEntityConduit extends TileEntity implements ITickable {
     }
 
     public void a(SoundEffect soundeffect) {
-        this.world.a((EntityHuman) null, this.position, soundeffect, SoundCategory.BLOCKS, 1.0F, 1.0F);
+        this.world.playSound((EntityHuman) null, this.position, soundeffect, SoundCategory.BLOCKS, 1.0F, 1.0F);
     }
 }

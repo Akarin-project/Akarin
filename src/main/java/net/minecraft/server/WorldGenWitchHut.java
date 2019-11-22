@@ -5,27 +5,26 @@ import java.util.Random;
 public class WorldGenWitchHut extends WorldGenScatteredPiece {
 
     private boolean e;
-
-    public static void b() {
-        WorldGenFactory.a(WorldGenWitchHut.class, "TeSH");
-    }
-
-    public WorldGenWitchHut() {}
+    private boolean f;
 
     public WorldGenWitchHut(Random random, int i, int j) {
-        super(random, i, 64, j, 7, 7, 9);
+        super(WorldGenFeatureStructurePieceType.L, random, i, 64, j, 7, 7, 9);
     }
 
+    public WorldGenWitchHut(DefinedStructureManager definedstructuremanager, NBTTagCompound nbttagcompound) {
+        super(WorldGenFeatureStructurePieceType.L, nbttagcompound);
+        this.e = nbttagcompound.getBoolean("Witch");
+        this.f = nbttagcompound.getBoolean("Cat");
+    }
+
+    @Override
     protected void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         nbttagcompound.setBoolean("Witch", this.e);
+        nbttagcompound.setBoolean("Cat", this.f);
     }
 
-    protected void a(NBTTagCompound nbttagcompound, DefinedStructureManager definedstructuremanager) {
-        super.a(nbttagcompound, definedstructuremanager);
-        this.e = nbttagcompound.getBoolean("Witch");
-    }
-
+    @Override
     public boolean a(GeneratorAccess generatoraccess, Random random, StructureBoundingBox structureboundingbox, ChunkCoordIntPair chunkcoordintpair) {
         if (!this.a(generatoraccess, structureboundingbox, 0)) {
             return false;
@@ -81,16 +80,36 @@ public class WorldGenWitchHut extends WorldGenScatteredPiece {
 
                 if (structureboundingbox.b((BaseBlockPosition) (new BlockPosition(j, i, k)))) {
                     this.e = true;
-                    EntityWitch entitywitch = EntityTypes.WITCH.create(generatoraccess.getMinecraftWorld()); // Paper
+                    EntityWitch entitywitch = (EntityWitch) EntityTypes.WITCH.a(generatoraccess.getMinecraftWorld());
 
-                    entitywitch.di();
+                    entitywitch.setPersistent();
                     entitywitch.setPositionRotation((double) j + 0.5D, (double) i, (double) k + 0.5D, 0.0F, 0.0F);
-                    entitywitch.prepare(generatoraccess.getDamageScaler(new BlockPosition(j, i, k)), (GroupDataEntity) null, (NBTTagCompound) null);
+                    entitywitch.prepare(generatoraccess, generatoraccess.getDamageScaler(new BlockPosition(j, i, k)), EnumMobSpawn.STRUCTURE, (GroupDataEntity) null, (NBTTagCompound) null);
                     generatoraccess.addEntity(entitywitch, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CHUNK_GEN); // CraftBukkit - add SpawnReason
                 }
             }
 
+            this.a(generatoraccess, structureboundingbox);
             return true;
         }
+    }
+
+    private void a(GeneratorAccess generatoraccess, StructureBoundingBox structureboundingbox) {
+        if (!this.f) {
+            int i = this.a(2, 5);
+            int j = this.d(2);
+            int k = this.b(2, 5);
+
+            if (structureboundingbox.b((BaseBlockPosition) (new BlockPosition(i, j, k)))) {
+                this.f = true;
+                EntityCat entitycat = (EntityCat) EntityTypes.CAT.a(generatoraccess.getMinecraftWorld());
+
+                entitycat.setPersistent();
+                entitycat.setPositionRotation((double) i + 0.5D, (double) j, (double) k + 0.5D, 0.0F, 0.0F);
+                entitycat.prepare(generatoraccess, generatoraccess.getDamageScaler(new BlockPosition(i, j, k)), EnumMobSpawn.STRUCTURE, (GroupDataEntity) null, (NBTTagCompound) null);
+                generatoraccess.addEntity(entitycat);
+            }
+        }
+
     }
 }

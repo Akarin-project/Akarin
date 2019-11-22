@@ -7,54 +7,59 @@ import org.bukkit.event.entity.EntityInteractEvent; // CraftBukkit
 
 public class BlockPressurePlateBinary extends BlockPressurePlateAbstract {
 
-    public static final BlockStateBoolean POWERED = BlockProperties.t;
-    private final BlockPressurePlateBinary.EnumMobType p;
+    public static final BlockStateBoolean POWERED = BlockProperties.w;
+    private final BlockPressurePlateBinary.EnumMobType e;
 
     protected BlockPressurePlateBinary(BlockPressurePlateBinary.EnumMobType blockpressureplatebinary_enummobtype, Block.Info block_info) {
         super(block_info);
-        this.v((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockPressurePlateBinary.POWERED, false));
-        this.p = blockpressureplatebinary_enummobtype;
+        this.o((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockPressurePlateBinary.POWERED, false));
+        this.e = blockpressureplatebinary_enummobtype;
     }
 
+    @Override
     protected int getPower(IBlockData iblockdata) {
         return (Boolean) iblockdata.get(BlockPressurePlateBinary.POWERED) ? 15 : 0;
     }
 
+    @Override
     protected IBlockData a(IBlockData iblockdata, int i) {
         return (IBlockData) iblockdata.set(BlockPressurePlateBinary.POWERED, i > 0);
     }
 
+    @Override
     protected void a(GeneratorAccess generatoraccess, BlockPosition blockposition) {
         if (this.material == Material.WOOD) {
-            generatoraccess.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_WOODEN_PRESSURE_PLATE_CLICK_ON, SoundCategory.BLOCKS, 0.3F, 0.8F);
+            generatoraccess.playSound((EntityHuman) null, blockposition, SoundEffects.BLOCK_WOODEN_PRESSURE_PLATE_CLICK_ON, SoundCategory.BLOCKS, 0.3F, 0.8F);
         } else {
-            generatoraccess.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_STONE_PRESSURE_PLATE_CLICK_ON, SoundCategory.BLOCKS, 0.3F, 0.6F);
+            generatoraccess.playSound((EntityHuman) null, blockposition, SoundEffects.BLOCK_STONE_PRESSURE_PLATE_CLICK_ON, SoundCategory.BLOCKS, 0.3F, 0.6F);
         }
 
     }
 
+    @Override
     protected void b(GeneratorAccess generatoraccess, BlockPosition blockposition) {
         if (this.material == Material.WOOD) {
-            generatoraccess.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_WOODEN_PRESSURE_PLATE_CLICK_OFF, SoundCategory.BLOCKS, 0.3F, 0.7F);
+            generatoraccess.playSound((EntityHuman) null, blockposition, SoundEffects.BLOCK_WOODEN_PRESSURE_PLATE_CLICK_OFF, SoundCategory.BLOCKS, 0.3F, 0.7F);
         } else {
-            generatoraccess.a((EntityHuman) null, blockposition, SoundEffects.BLOCK_STONE_PRESSURE_PLATE_CLICK_OFF, SoundCategory.BLOCKS, 0.3F, 0.5F);
+            generatoraccess.playSound((EntityHuman) null, blockposition, SoundEffects.BLOCK_STONE_PRESSURE_PLATE_CLICK_OFF, SoundCategory.BLOCKS, 0.3F, 0.5F);
         }
 
     }
 
+    @Override
     protected int b(World world, BlockPosition blockposition) {
         AxisAlignedBB axisalignedbb = BlockPressurePlateBinary.c.a(blockposition);
         List list;
 
-        switch (this.p) {
-        case EVERYTHING:
-            list = world.getEntities((Entity) null, axisalignedbb);
-            break;
-        case MOBS:
-            list = world.a(EntityLiving.class, axisalignedbb);
-            break;
-        default:
-            return 0;
+        switch (this.e) {
+            case EVERYTHING:
+                list = world.getEntities((Entity) null, axisalignedbb);
+                break;
+            case MOBS:
+                list = world.a(EntityLiving.class, axisalignedbb);
+                break;
+            default:
+                return 0;
         }
 
         if (!list.isEmpty()) {
@@ -65,14 +70,14 @@ public class BlockPressurePlateBinary extends BlockPressurePlateAbstract {
 
                 // CraftBukkit start - Call interact event when turning on a pressure plate
                 if (this.getPower(world.getType(blockposition)) == 0) {
-                    org.bukkit.craftbukkit.CraftWorld bworld = world.getWorld(); // Akarin - CraftWorld
+                    org.bukkit.World bworld = world.getWorld();
                     org.bukkit.plugin.PluginManager manager = world.getServer().getPluginManager();
                     org.bukkit.event.Cancellable cancellable;
 
                     if (entity instanceof EntityHuman) {
                         cancellable = org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerInteractEvent((EntityHuman) entity, org.bukkit.event.block.Action.PHYSICAL, blockposition, null, null, null);
                     } else {
-                        cancellable = new EntityInteractEvent(entity.getBukkitEntity(), bworld.getBlockAt(blockposition)); // Akarin
+                        cancellable = new EntityInteractEvent(entity.getBukkitEntity(), bworld.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()));
                         manager.callEvent((EntityInteractEvent) cancellable);
                     }
 
@@ -92,6 +97,7 @@ public class BlockPressurePlateBinary extends BlockPressurePlateAbstract {
         return 0;
     }
 
+    @Override
     protected void a(BlockStateList.a<Block, IBlockData> blockstatelist_a) {
         blockstatelist_a.a(BlockPressurePlateBinary.POWERED);
     }

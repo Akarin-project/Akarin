@@ -11,7 +11,7 @@ import org.apache.logging.log4j.MarkerManager;
 
 public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
 
-    private static final Logger a = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final Marker b = MarkerManager.getMarker("PACKET_SENT", NetworkManager.b);
     private final EnumProtocolDirection c;
 
@@ -27,8 +27,8 @@ public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
         } else {
             Integer integer = enumprotocol.a(this.c, packet);
 
-            if (PacketEncoder.a.isDebugEnabled()) {
-                PacketEncoder.a.debug(PacketEncoder.b, "OUT: [{}:{}] {}", channelhandlercontext.channel().attr(NetworkManager.c).get(), integer, packet.getClass().getName());
+            if (PacketEncoder.LOGGER.isDebugEnabled()) {
+                PacketEncoder.LOGGER.debug(PacketEncoder.b, "OUT: [{}:{}] {}", channelhandlercontext.channel().attr(NetworkManager.c).get(), integer, packet.getClass().getName());
             }
 
             if (integer == null) {
@@ -41,7 +41,7 @@ public class PacketEncoder extends MessageToByteEncoder<Packet<?>> {
                 try {
                     packet.b(packetdataserializer);
                 } catch (Throwable throwable) {
-                    PacketEncoder.a.error(throwable);
+                    PacketEncoder.LOGGER.error(throwable);
                     throwable.printStackTrace(); // Paper - WHAT WAS IT? WHO DID THIS TO YOU? WHAT DID YOU SEE?
                     if (packet.a()) {
                         throw new SkipEncodeException(throwable);

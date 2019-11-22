@@ -1,59 +1,85 @@
 package net.minecraft.server;
 
+import java.util.function.Predicate;
+
 public class PathfinderGoalBreakDoor extends PathfinderGoalDoorInteract {
 
-    private int d;
-    private int e = -1;
+    private final Predicate<EnumDifficulty> g;
+    protected int a;
+    protected int b;
+    protected int c;
 
-    public PathfinderGoalBreakDoor(EntityInsentient entityinsentient) {
+    public PathfinderGoalBreakDoor(EntityInsentient entityinsentient, Predicate<EnumDifficulty> predicate) {
         super(entityinsentient);
+        this.b = -1;
+        this.c = -1;
+        this.g = predicate;
     }
 
+    public PathfinderGoalBreakDoor(EntityInsentient entityinsentient, int i, Predicate<EnumDifficulty> predicate) {
+        this(entityinsentient, predicate);
+        this.c = i;
+    }
+
+    protected int f() {
+        return Math.max(240, this.c);
+    }
+
+    @Override
     public boolean a() {
-        return !super.a() ? false : (!this.a.world.getGameRules().getBoolean("mobGriefing") ? false : !this.g());
+        return !super.a() ? false : (!this.entity.world.getGameRules().getBoolean(GameRules.MOB_GRIEFING) ? false : this.a(this.entity.world.getDifficulty()) && !this.g());
     }
 
+    @Override
     public void c() {
         super.c();
-        this.d = 0;
+        this.a = 0;
     }
 
+    @Override
     public boolean b() {
-        double d0 = this.a.c(this.b);
-
-        return this.d <= 240 && !this.g() && d0 < 4.0D;
+        return this.a <= this.f() && !this.g() && this.door.a((IPosition) this.entity.getPositionVector(), 2.0D) && this.a(this.entity.world.getDifficulty());
     }
 
+    @Override
     public void d() {
         super.d();
-        this.a.world.c(this.a.getId(), this.b, -1);
+        this.entity.world.a(this.entity.getId(), this.door, -1);
     }
 
+    @Override
     public void e() {
         super.e();
-        if (this.a.getRandom().nextInt(20) == 0) {
-            this.a.world.triggerEffect(1019, this.b, 0);
+        if (this.entity.getRandom().nextInt(20) == 0) {
+            this.entity.world.triggerEffect(1019, this.door, 0);
+            if (!this.entity.at) {
+                this.entity.a(this.entity.getRaisedHand());
+            }
         }
 
-        ++this.d;
-        int i = (int) ((float) this.d / 240.0F * 10.0F);
+        ++this.a;
+        int i = (int) ((float) this.a / (float) this.f() * 10.0F);
 
-        if (i != this.e) {
-            this.a.world.c(this.a.getId(), this.b, i);
-            this.e = i;
+        if (i != this.b) {
+            this.entity.world.a(this.entity.getId(), this.door, i);
+            this.b = i;
         }
 
-        if (this.d == 240 && this.a.world.getDifficulty() == EnumDifficulty.HARD) {
+        if (this.a == this.f() && this.a(this.entity.world.getDifficulty())) {
             // CraftBukkit start
-            if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityBreakDoorEvent(this.a, this.b.getX(), this.b.getY(), this.b.getZ()).isCancelled()) {
+            if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityBreakDoorEvent(this.entity, this.door).isCancelled()) {
                 this.c();
                 return;
             }
             // CraftBukkit end
-            this.a.world.setAir(this.b);
-            this.a.world.triggerEffect(1021, this.b, 0);
-            this.a.world.triggerEffect(2001, this.b, Block.getCombinedId(this.a.world.getType(this.b)));
+            this.entity.world.a(this.door, false);
+            this.entity.world.triggerEffect(1021, this.door, 0);
+            this.entity.world.triggerEffect(2001, this.door, Block.getCombinedId(this.entity.world.getType(this.door)));
         }
 
+    }
+
+    private boolean a(EnumDifficulty enumdifficulty) {
+        return this.g.test(enumdifficulty);
     }
 }

@@ -1,44 +1,42 @@
 package net.minecraft.server;
 
+import java.util.EnumSet;
 import java.util.Random;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 public class EntityDrowned extends EntityZombie implements IRangedEntity {
 
-    private boolean bC;
-    protected final NavigationGuardian a;
-    protected final Navigation b;
+    private boolean bz;
+    protected final NavigationGuardian b;
+    protected final Navigation c;
 
-    public EntityDrowned(World world) {
-        super(EntityTypes.DROWNED, world);
-        this.Q = 1.0F;
-        this.moveController = new EntityDrowned.e(this);
+    public EntityDrowned(EntityTypes<? extends EntityDrowned> entitytypes, World world) {
+        super(entitytypes, world);
+        this.K = 1.0F;
+        this.moveController = new EntityDrowned.d(this);
         this.a(PathType.WATER, 0.0F);
-        this.a = new NavigationGuardian(this, world);
-        this.b = new Navigation(this, world);
+        this.b = new NavigationGuardian(this, world);
+        this.c = new Navigation(this, world);
     }
 
+    @Override
     protected void l() {
-        this.goalSelector.a(1, new EntityDrowned.d(this, 1.0D));
-        this.goalSelector.a(2, new EntityDrowned.g(this, 1.0D, 40, 10.0F));
+        this.goalSelector.a(1, new EntityDrowned.c(this, 1.0D));
+        this.goalSelector.a(2, new EntityDrowned.f(this, 1.0D, 40, 10.0F));
         this.goalSelector.a(2, new EntityDrowned.a(this, 1.0D, false));
-        this.goalSelector.a(5, new EntityDrowned.c(this, 1.0D));
-        this.goalSelector.a(6, new EntityDrowned.f(this, 1.0D, this.world.getSeaLevel()));
+        this.goalSelector.a(5, new EntityDrowned.b(this, 1.0D));
+        this.goalSelector.a(6, new EntityDrowned.e(this, 1.0D, this.world.getSeaLevel()));
         this.goalSelector.a(7, new PathfinderGoalRandomStroll(this, 1.0D));
-        this.targetSelector.a(1, new PathfinderGoalHurtByTarget(this, true, new Class[] { EntityDrowned.class}));
-        this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, 10, true, false, new EntityDrowned.b(this)));
-        if ( world.spigotConfig.zombieAggressiveTowardsVillager ) this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityVillager.class, false));
+        this.targetSelector.a(1, (new PathfinderGoalHurtByTarget(this, new Class[]{EntityDrowned.class})).a(EntityPigZombie.class));
+        this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, 10, true, false, this::h));
+        if ( world.spigotConfig.zombieAggressiveTowardsVillager ) this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityVillagerAbstract.class, false)); // Paper
         this.targetSelector.a(3, new PathfinderGoalNearestAttackableTarget<>(this, EntityIronGolem.class, true));
-        this.targetSelector.a(5, new PathfinderGoalNearestAttackableTarget<>(this, EntityTurtle.class, 10, true, false, EntityTurtle.bC));
+        this.targetSelector.a(5, new PathfinderGoalNearestAttackableTarget<>(this, EntityTurtle.class, 10, true, false, EntityTurtle.bz));
     }
 
-    protected NavigationAbstract b(World world) {
-        return super.b(world);
-    }
-
-    public GroupDataEntity prepare(DifficultyDamageScaler difficultydamagescaler, @Nullable GroupDataEntity groupdataentity, @Nullable NBTTagCompound nbttagcompound) {
-        groupdataentity = super.prepare(difficultydamagescaler, groupdataentity, nbttagcompound);
+    @Override
+    public GroupDataEntity prepare(GeneratorAccess generatoraccess, DifficultyDamageScaler difficultydamagescaler, EnumMobSpawn enummobspawn, @Nullable GroupDataEntity groupdataentity, @Nullable NBTTagCompound nbttagcompound) {
+        groupdataentity = super.prepare(generatoraccess, difficultydamagescaler, enummobspawn, groupdataentity, nbttagcompound);
         if (this.getEquipment(EnumItemSlot.OFFHAND).isEmpty() && this.random.nextFloat() < 0.03F) {
             this.setSlot(EnumItemSlot.OFFHAND, new ItemStack(Items.NAUTILUS_SHELL));
             this.dropChanceHand[EnumItemSlot.OFFHAND.b()] = 2.0F;
@@ -47,49 +45,53 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
         return groupdataentity;
     }
 
-    public boolean a(GeneratorAccess generatoraccess, boolean flag) {
-        BiomeBase biomebase = generatoraccess.getBiome(new BlockPosition(this.locX, this.locY, this.locZ));
+    public static boolean b(EntityTypes<EntityDrowned> entitytypes, GeneratorAccess generatoraccess, EnumMobSpawn enummobspawn, BlockPosition blockposition, Random random) {
+        BiomeBase biomebase = generatoraccess.getBiome(blockposition);
+        boolean flag = generatoraccess.getDifficulty() != EnumDifficulty.PEACEFUL && a(generatoraccess, blockposition, random) && (enummobspawn == EnumMobSpawn.SPAWNER || generatoraccess.getFluid(blockposition).a(TagsFluid.WATER));
 
-        return biomebase != Biomes.RIVER && biomebase != Biomes.FROZEN_RIVER ? this.random.nextInt(40) == 0 && this.dF() && super.a(generatoraccess, flag) : this.random.nextInt(15) == 0 && super.a(generatoraccess, flag);
+        return biomebase != Biomes.RIVER && biomebase != Biomes.FROZEN_RIVER ? random.nextInt(40) == 0 && a(generatoraccess, blockposition) && flag : random.nextInt(15) == 0 && flag;
     }
 
-    private boolean dF() {
-        return this.getBoundingBox().minY < (double) (this.world.getSeaLevel() - 5);
+    private static boolean a(GeneratorAccess generatoraccess, BlockPosition blockposition) {
+        return blockposition.getY() < generatoraccess.getSeaLevel() - 5;
     }
 
-    protected boolean dz() {
+    @Override
+    protected boolean dV() {
         return false;
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.aM;
-    }
-
-    protected SoundEffect D() {
+    @Override
+    protected SoundEffect getSoundAmbient() {
         return this.isInWater() ? SoundEffects.ENTITY_DROWNED_AMBIENT_WATER : SoundEffects.ENTITY_DROWNED_AMBIENT;
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return this.isInWater() ? SoundEffects.ENTITY_DROWNED_HURT_WATER : SoundEffects.ENTITY_DROWNED_HURT;
     }
 
-    protected SoundEffect cs() {
+    @Override
+    protected SoundEffect getSoundDeath() {
         return this.isInWater() ? SoundEffects.ENTITY_DROWNED_DEATH_WATER : SoundEffects.ENTITY_DROWNED_DEATH;
     }
 
-    protected SoundEffect dA() {
+    @Override
+    protected SoundEffect getSoundStep() {
         return SoundEffects.ENTITY_DROWNED_STEP;
     }
 
-    protected SoundEffect ad() {
+    @Override
+    protected SoundEffect getSoundSwim() {
         return SoundEffects.ENTITY_DROWNED_SWIM;
     }
 
-    protected ItemStack dB() {
+    @Override
+    protected ItemStack dX() {
         return ItemStack.a;
     }
 
+    @Override
     protected void a(DifficultyDamageScaler difficultydamagescaler) {
         if ((double) this.random.nextFloat() > 0.9D) {
             int i = this.random.nextInt(16);
@@ -103,28 +105,32 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
 
     }
 
+    @Override
     protected boolean a(ItemStack itemstack, ItemStack itemstack1, EnumItemSlot enumitemslot) {
         return itemstack1.getItem() == Items.NAUTILUS_SHELL ? false : (itemstack1.getItem() == Items.TRIDENT ? (itemstack.getItem() == Items.TRIDENT ? itemstack.getDamage() < itemstack1.getDamage() : false) : (itemstack.getItem() == Items.TRIDENT ? true : super.a(itemstack, itemstack1, enumitemslot)));
     }
 
-    protected boolean dC() {
+    @Override
+    protected boolean dY() {
         return false;
     }
 
+    @Override
     public boolean a(IWorldReader iworldreader) {
-        return iworldreader.a_(this, this.getBoundingBox()) && iworldreader.getCubes(this, this.getBoundingBox());
+        return iworldreader.i(this);
     }
 
-    public boolean f(@Nullable EntityLiving entityliving) {
-        return entityliving != null ? !this.world.L() || entityliving.isInWater() : false;
+    public boolean h(@Nullable EntityLiving entityliving) {
+        return entityliving != null ? !this.world.J() || entityliving.isInWater() : false;
     }
 
-    public boolean bw() {
+    @Override
+    public boolean bE() {
         return !this.isSwimming();
     }
 
-    private boolean dI() {
-        if (this.bC) {
+    private boolean ee() {
+        if (this.bz) {
             return true;
         } else {
             EntityLiving entityliving = this.getGoalTarget();
@@ -133,40 +139,40 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
         }
     }
 
-    public void a(float f, float f1, float f2) {
-        if (this.cP() && this.isInWater() && this.dI()) {
-            this.a(f, f1, f2, 0.01F);
-            this.move(EnumMoveType.SELF, this.motX, this.motY, this.motZ);
-            this.motX *= 0.8999999761581421D;
-            this.motY *= 0.8999999761581421D;
-            this.motZ *= 0.8999999761581421D;
+    @Override
+    public void e(Vec3D vec3d) {
+        if (this.df() && this.isInWater() && this.ee()) {
+            this.a(0.01F, vec3d);
+            this.move(EnumMoveType.SELF, this.getMot());
+            this.setMot(this.getMot().a(0.9D));
         } else {
-            super.a(f, f1, f2);
+            super.e(vec3d);
         }
 
     }
 
-    public void as() {
+    @Override
+    public void ax() {
         if (!this.world.isClientSide) {
-            if (this.cP() && this.isInWater() && this.dI()) {
-                this.navigation = this.a;
+            if (this.df() && this.isInWater() && this.ee()) {
+                this.navigation = this.b;
                 this.setSwimming(true);
             } else {
-                this.navigation = this.b;
+                this.navigation = this.c;
                 this.setSwimming(false);
             }
         }
 
     }
 
-    protected boolean dD() {
-        PathEntity pathentity = this.getNavigation().m();
+    protected boolean dZ() {
+        PathEntity pathentity = this.getNavigation().l();
 
         if (pathentity != null) {
-            PathPoint pathpoint = pathentity.i();
+            BlockPosition blockposition = pathentity.k();
 
-            if (pathpoint != null) {
-                double d0 = this.d((double) pathpoint.a, (double) pathpoint.b, (double) pathpoint.c);
+            if (blockposition != null) {
+                double d0 = this.e((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ());
 
                 if (d0 < 4.0D) {
                     return true;
@@ -177,10 +183,11 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
         return false;
     }
 
+    @Override
     public void a(EntityLiving entityliving, float f) {
         EntityThrownTrident entitythrowntrident = new EntityThrownTrident(this.world, this, new ItemStack(Items.TRIDENT));
         double d0 = entityliving.locX - this.locX;
-        double d1 = entityliving.getBoundingBox().minY + (double) (entityliving.length / 3.0F) - entitythrowntrident.locY;
+        double d1 = entityliving.getBoundingBox().minY + (double) (entityliving.getHeight() / 3.0F) - entitythrowntrident.locY;
         double d2 = entityliving.locZ - this.locZ;
         double d3 = (double) MathHelper.sqrt(d0 * d0 + d2 * d2);
 
@@ -189,41 +196,29 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
         this.world.addEntity(entitythrowntrident);
     }
 
-    public void a(boolean flag) {
-        this.bC = flag;
+    public void r(boolean flag) {
+        this.bz = flag;
     }
 
-    static class b implements Predicate<EntityHuman> {
-
-        private final EntityDrowned a;
-
-        public b(EntityDrowned entitydrowned) {
-            this.a = entitydrowned;
-        }
-
-        public boolean test(@Nullable EntityHuman entityhuman) {
-            return this.a.f((EntityLiving) entityhuman);
-        }
-    }
-
-    static class e extends ControllerMove {
+    static class d extends ControllerMove {
 
         private final EntityDrowned i;
 
-        public e(EntityDrowned entitydrowned) {
+        public d(EntityDrowned entitydrowned) {
             super(entitydrowned);
             this.i = entitydrowned;
         }
 
+        @Override
         public void a() {
             EntityLiving entityliving = this.i.getGoalTarget();
 
-            if (this.i.dI() && this.i.isInWater()) {
-                if (entityliving != null && entityliving.locY > this.i.locY || this.i.bC) {
-                    this.i.motY += 0.002D;
+            if (this.i.ee() && this.i.isInWater()) {
+                if (entityliving != null && entityliving.locY > this.i.locY || this.i.bz) {
+                    this.i.setMot(this.i.getMot().add(0.0D, 0.002D, 0.0D));
                 }
 
-                if (this.h != ControllerMove.Operation.MOVE_TO || this.i.getNavigation().p()) {
+                if (this.h != ControllerMove.Operation.MOVE_TO || this.i.getNavigation().n()) {
                     this.i.o(0.0F);
                     return;
                 }
@@ -234,19 +229,18 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
                 double d3 = (double) MathHelper.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
 
                 d1 /= d3;
-                float f = (float) (MathHelper.c(d2, d0) * 57.2957763671875D) - 90.0F;
+                float f = (float) (MathHelper.d(d2, d0) * 57.2957763671875D) - 90.0F;
 
                 this.i.yaw = this.a(this.i.yaw, f, 90.0F);
-                this.i.aQ = this.i.yaw;
+                this.i.aK = this.i.yaw;
                 float f1 = (float) (this.e * this.i.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).getValue());
+                float f2 = MathHelper.g(0.125F, this.i.db(), f1);
 
-                this.i.o(this.i.cK() + (f1 - this.i.cK()) * 0.125F);
-                this.i.motY += (double) this.i.cK() * d1 * 0.1D;
-                this.i.motX += (double) this.i.cK() * d0 * 0.005D;
-                this.i.motZ += (double) this.i.cK() * d2 * 0.005D;
+                this.i.o(f2);
+                this.i.setMot(this.i.getMot().add((double) f2 * d0 * 0.005D, (double) f2 * d1 * 0.1D, (double) f2 * d2 * 0.005D));
             } else {
                 if (!this.i.onGround) {
-                    this.i.motY -= 0.008D;
+                    this.i.setMot(this.i.getMot().add(0.0D, -0.008D, 0.0D));
                 }
 
                 super.a();
@@ -264,16 +258,18 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
             this.d = entitydrowned;
         }
 
+        @Override
         public boolean a() {
-            return super.a() && this.d.f(this.d.getGoalTarget());
+            return super.a() && this.d.h(this.d.getGoalTarget());
         }
 
+        @Override
         public boolean b() {
-            return super.b() && this.d.f(this.d.getGoalTarget());
+            return super.b() && this.d.h(this.d.getGoalTarget());
         }
     }
 
-    static class d extends PathfinderGoal {
+    static class c extends PathfinderGoal {
 
         private final EntityCreature a;
         private double b;
@@ -282,15 +278,16 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
         private final double e;
         private final World f;
 
-        public d(EntityCreature entitycreature, double d0) {
+        public c(EntityCreature entitycreature, double d0) {
             this.a = entitycreature;
             this.e = d0;
             this.f = entitycreature.world;
-            this.a(1);
+            this.a(EnumSet.of(PathfinderGoal.Type.MOVE));
         }
 
+        @Override
         public boolean a() {
-            if (!this.f.L()) {
+            if (!this.f.J()) {
                 return false;
             } else if (this.a.isInWater()) {
                 return false;
@@ -308,10 +305,12 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
             }
         }
 
+        @Override
         public boolean b() {
-            return !this.a.getNavigation().p();
+            return !this.a.getNavigation().n();
         }
 
+        @Override
         public void c() {
             this.a.getNavigation().a(this.b, this.c, this.d, this.e);
         }
@@ -322,7 +321,7 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
             BlockPosition blockposition = new BlockPosition(this.a.locX, this.a.getBoundingBox().minY, this.a.locZ);
 
             for (int i = 0; i < 10; ++i) {
-                BlockPosition blockposition1 = blockposition.a(random.nextInt(20) - 10, 2 - random.nextInt(8), random.nextInt(20) - 10);
+                BlockPosition blockposition1 = blockposition.b(random.nextInt(20) - 10, 2 - random.nextInt(8), random.nextInt(20) - 10);
 
                 if (this.f.getType(blockposition1).getBlock() == Blocks.WATER) {
                     return new Vec3D((double) blockposition1.getX(), (double) blockposition1.getY(), (double) blockposition1.getZ());
@@ -333,63 +332,71 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
         }
     }
 
-    static class c extends PathfinderGoalGotoTarget {
+    static class b extends PathfinderGoalGotoTarget {
 
-        private final EntityDrowned f;
+        private final EntityDrowned g;
 
-        public c(EntityDrowned entitydrowned, double d0) {
+        public b(EntityDrowned entitydrowned, double d0) {
             super(entitydrowned, d0, 8, 2);
-            this.f = entitydrowned;
+            this.g = entitydrowned;
         }
 
+        @Override
         public boolean a() {
-            return super.a() && !this.f.world.L() && this.f.isInWater() && this.f.locY >= (double) (this.f.world.getSeaLevel() - 3);
+            return super.a() && !this.g.world.J() && this.g.isInWater() && this.g.locY >= (double) (this.g.world.getSeaLevel() - 3);
         }
 
+        @Override
         public boolean b() {
             return super.b();
         }
 
+        @Override
         protected boolean a(IWorldReader iworldreader, BlockPosition blockposition) {
             BlockPosition blockposition1 = blockposition.up();
 
-            return iworldreader.isEmpty(blockposition1) && iworldreader.isEmpty(blockposition1.up()) ? iworldreader.getType(blockposition).q() : false;
+            return iworldreader.isEmpty(blockposition1) && iworldreader.isEmpty(blockposition1.up()) ? iworldreader.getType(blockposition).a((IBlockAccess) iworldreader, blockposition, (Entity) this.g) : false;
         }
 
+        @Override
         public void c() {
-            this.f.a(false);
-            this.f.navigation = this.f.b;
+            this.g.r(false);
+            this.g.navigation = this.g.c;
             super.c();
         }
 
+        @Override
         public void d() {
             super.d();
         }
     }
 
-    static class f extends PathfinderGoal {
+    static class e extends PathfinderGoal {
 
         private final EntityDrowned a;
         private final double b;
         private final int c;
         private boolean d;
 
-        public f(EntityDrowned entitydrowned, double d0, int i) {
+        public e(EntityDrowned entitydrowned, double d0, int i) {
             this.a = entitydrowned;
             this.b = d0;
             this.c = i;
         }
 
+        @Override
         public boolean a() {
-            return !this.a.world.L() && this.a.isInWater() && this.a.locY < (double) (this.c - 2);
+            return !this.a.world.J() && this.a.isInWater() && this.a.locY < (double) (this.c - 2);
         }
 
+        @Override
         public boolean b() {
             return this.a() && !this.d;
         }
 
+        @Override
         public void e() {
-            if (this.a.locY < (double) (this.c - 1) && (this.a.getNavigation().p() || this.a.dD())) {
+            if (this.a.locY < (double) (this.c - 1) && (this.a.getNavigation().n() || this.a.dZ())) {
                 Vec3D vec3d = RandomPositionGenerator.a(this.a, 4, 8, new Vec3D(this.a.locX, (double) (this.c - 1), this.a.locZ));
 
                 if (vec3d == null) {
@@ -402,37 +409,44 @@ public class EntityDrowned extends EntityZombie implements IRangedEntity {
 
         }
 
+        @Override
         public void c() {
-            this.a.a(true);
+            this.a.r(true);
             this.d = false;
         }
 
+        @Override
         public void d() {
-            this.a.a(false);
+            this.a.r(false);
         }
     }
 
-    static class g extends PathfinderGoalArrowAttack {
+    static class f extends PathfinderGoalArrowAttack {
 
         private final EntityDrowned a;
 
-        public g(IRangedEntity irangedentity, double d0, int i, float f) {
+        public f(IRangedEntity irangedentity, double d0, int i, float f) {
             super(irangedentity, d0, i, f);
             this.a = (EntityDrowned) irangedentity;
         }
 
+        @Override
         public boolean a() {
             return super.a() && this.a.getItemInMainHand().getItem() == Items.TRIDENT;
         }
 
+        @Override
         public void c() {
             super.c();
-            this.a.s(true);
+            this.a.q(true);
+            this.a.c(EnumHand.MAIN_HAND);
         }
 
+        @Override
         public void d() {
             super.d();
-            this.a.s(false);
+            this.a.dp();
+            this.a.q(false);
         }
     }
 }

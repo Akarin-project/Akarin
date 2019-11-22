@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Maps;
-import com.mojang.datafixers.DataFixTypes;
 import com.mojang.datafixers.DataFixer;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,8 +19,8 @@ import org.apache.logging.log4j.Logger;
 
 public class DefinedStructureManager implements IResourcePackListener {
 
-    private static final Logger a = LogManager.getLogger();
-    private final Map<MinecraftKey, DefinedStructure> b = Maps.newConcurrentMap(); // Paper
+    private static final Logger LOGGER = LogManager.getLogger();
+    private final Map<MinecraftKey, DefinedStructure> b = Maps.newConcurrentMap(); // SPIGOT-5287
     private final DataFixer c;
     private final MinecraftServer d;
     private final java.nio.file.Path e;
@@ -30,7 +29,7 @@ public class DefinedStructureManager implements IResourcePackListener {
         this.d = minecraftserver;
         this.c = datafixer;
         this.e = file.toPath().resolve("generated").normalize();
-        minecraftserver.getResourceManager().a((IResourcePackListener) this);
+        minecraftserver.getResourceManager().a((IReloadListener) this);
     }
 
     public DefinedStructure a(MinecraftKey minecraftkey) {
@@ -53,13 +52,14 @@ public class DefinedStructureManager implements IResourcePackListener {
         });
     }
 
+    @Override
     public void a(IResourceManager iresourcemanager) {
         this.b.clear();
     }
 
     @Nullable
     private DefinedStructure e(MinecraftKey minecraftkey) {
-        MinecraftKey minecraftkey1 = new MinecraftKey(minecraftkey.b(), "structures/" + minecraftkey.getKey() + ".nbt");
+        MinecraftKey minecraftkey1 = new MinecraftKey(minecraftkey.getNamespace(), "structures/" + minecraftkey.getKey() + ".nbt");
 
         try {
             IResource iresource = this.d.getResourceManager().a(minecraftkey1);
@@ -91,7 +91,7 @@ public class DefinedStructureManager implements IResourcePackListener {
         } catch (FileNotFoundException filenotfoundexception) {
             return null;
         } catch (Throwable throwable3) {
-            DefinedStructureManager.a.error("Couldn't load structure {}: {}", minecraftkey, throwable3.toString());
+            DefinedStructureManager.LOGGER.error("Couldn't load structure {}: {}", minecraftkey, throwable3.toString());
             return null;
         }
     }
@@ -133,7 +133,7 @@ public class DefinedStructureManager implements IResourcePackListener {
             } catch (FileNotFoundException filenotfoundexception) {
                 return null;
             } catch (IOException ioexception) {
-                DefinedStructureManager.a.error("Couldn't load structure from {}", java_nio_file_path, ioexception);
+                DefinedStructureManager.LOGGER.error("Couldn't load structure from {}", java_nio_file_path, ioexception);
                 return null;
             }
         }
@@ -167,7 +167,7 @@ public class DefinedStructureManager implements IResourcePackListener {
                 try {
                     Files.createDirectories(Files.exists(java_nio_file_path1, new LinkOption[0]) ? java_nio_file_path1.toRealPath() : java_nio_file_path1);
                 } catch (IOException ioexception) {
-                    DefinedStructureManager.a.error("Failed to create parent directory: {}", java_nio_file_path1);
+                    DefinedStructureManager.LOGGER.error("Failed to create parent directory: {}", java_nio_file_path1);
                     return false;
                 }
 
@@ -207,10 +207,10 @@ public class DefinedStructureManager implements IResourcePackListener {
 
     private java.nio.file.Path a(MinecraftKey minecraftkey, String s) {
         try {
-            java.nio.file.Path java_nio_file_path = this.e.resolve(minecraftkey.b());
+            java.nio.file.Path java_nio_file_path = this.e.resolve(minecraftkey.getNamespace());
             java.nio.file.Path java_nio_file_path1 = java_nio_file_path.resolve("structures");
 
-            return SystemUtils.a(java_nio_file_path1, minecraftkey.getKey(), s);
+            return FileUtils.b(java_nio_file_path1, minecraftkey.getKey(), s);
         } catch (InvalidPathException invalidpathexception) {
             throw new ResourceKeyInvalidException("Invalid resource path: " + minecraftkey, invalidpathexception);
         }
@@ -222,7 +222,7 @@ public class DefinedStructureManager implements IResourcePackListener {
         } else {
             java.nio.file.Path java_nio_file_path = this.a(minecraftkey, s);
 
-            if (java_nio_file_path.startsWith(this.e) && SystemUtils.a(java_nio_file_path) && SystemUtils.b(java_nio_file_path)) {
+            if (java_nio_file_path.startsWith(this.e) && FileUtils.a(java_nio_file_path) && FileUtils.b(java_nio_file_path)) {
                 return java_nio_file_path;
             } else {
                 throw new ResourceKeyInvalidException("Invalid resource path: " + java_nio_file_path);

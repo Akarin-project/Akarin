@@ -39,34 +39,45 @@ public class SpigotWorldConfig
         config.set( "world-settings.default." + path, val );
     }
 
-    public boolean getBoolean(String path, boolean def)
+    public boolean getBoolean(String path, boolean def) // Paper - private -> public
     {
         config.addDefault( "world-settings.default." + path, def );
         return config.getBoolean( "world-settings." + worldName + "." + path, config.getBoolean( "world-settings.default." + path ) );
     }
 
-    public double getDouble(String path, double def)
+    public double getDouble(String path, double def) // Paper - private -> public
     {
         config.addDefault( "world-settings.default." + path, def );
         return config.getDouble( "world-settings." + worldName + "." + path, config.getDouble( "world-settings.default." + path ) );
     }
 
-    public int getInt(String path, int def)
+    public int getInt(String path) // Paper - private -> public
+    {
+        return config.getInt( "world-settings." + worldName + "." + path );
+    }
+
+    public int getInt(String path, int def) // Paper - private -> public
     {
         config.addDefault( "world-settings.default." + path, def );
         return config.getInt( "world-settings." + worldName + "." + path, config.getInt( "world-settings.default." + path ) );
     }
 
-    public <T> List getList(String path, T def)
+    public <T> List getList(String path, T def) // Paper - private -> public
     {
         config.addDefault( "world-settings.default." + path, def );
         return (List<T>) config.getList( "world-settings." + worldName + "." + path, config.getList( "world-settings.default." + path ) );
     }
 
-    public String getString(String path, String def)
+    public String getString(String path, String def) // Paper - private -> public
     {
         config.addDefault( "world-settings.default." + path, def );
         return config.getString( "world-settings." + worldName + "." + path, config.getString( "world-settings.default." + path ) );
+    }
+
+    private Object get(String path, Object def)
+    {
+        config.addDefault( "world-settings.default." + path, def );
+        return config.get( "world-settings." + worldName + "." + path, config.get( "world-settings.default." + path ) );
     }
 
     // Crop growth rates
@@ -83,6 +94,9 @@ public class SpigotWorldConfig
     public int wartModifier;
     public int vineModifier;
     public int cocoaModifier;
+    public int bambooModifier;
+    public int sweetBerryModifier;
+    public int kelpModifier;
     private int getAndValidateGrowth(String crop)
     {
         int modifier = getInt( "growth." + crop.toLowerCase(java.util.Locale.ENGLISH) + "-modifier", 100 );
@@ -110,6 +124,9 @@ public class SpigotWorldConfig
         wartModifier = getAndValidateGrowth( "NetherWart" );
         vineModifier = getAndValidateGrowth( "Vine" );
         cocoaModifier = getAndValidateGrowth( "Cocoa" );
+        bambooModifier = getAndValidateGrowth( "Bamboo" );
+        sweetBerryModifier = getAndValidateGrowth( "SweetBerry" );
+        kelpModifier = getAndValidateGrowth( "Kelp" );
     }
 
     public double itemMerge;
@@ -129,7 +146,19 @@ public class SpigotWorldConfig
     public int viewDistance;
     private void viewDistance()
     {
-        viewDistance = getInt( "view-distance", Bukkit.getViewDistance() );
+        if ( SpigotConfig.version < 12 )
+        {
+            set( "view-distance", null );
+        }
+
+        Object viewDistanceObject = get( "view-distance", "default" );
+        viewDistance = ( viewDistanceObject ) instanceof Number ? ( (Number) viewDistanceObject ).intValue() : -1;
+        if ( viewDistance <= 0 )
+        {
+            viewDistance = Bukkit.getViewDistance();
+        }
+
+        viewDistance = Math.max( Math.min( viewDistance,  32 ), 3 );
         log( "View Distance: " + viewDistance );
     }
 
@@ -149,17 +178,17 @@ public class SpigotWorldConfig
 
     public int animalActivationRange = 32;
     public int monsterActivationRange = 32;
+    public int raiderActivationRange = 48;
     public int miscActivationRange = 16;
-    public int waterActivationRange = 16; // Paper
     public boolean tickInactiveVillagers = true;
     private void activationRange()
     {
         animalActivationRange = getInt( "entity-activation-range.animals", animalActivationRange );
         monsterActivationRange = getInt( "entity-activation-range.monsters", monsterActivationRange );
+        raiderActivationRange = getInt( "entity-activation-range.raiders", raiderActivationRange );
         miscActivationRange = getInt( "entity-activation-range.misc", miscActivationRange );
-        waterActivationRange = getInt( "entity-activation-range.water", waterActivationRange ); // Paper
         tickInactiveVillagers = getBoolean( "entity-activation-range.tick-inactive-villagers", tickInactiveVillagers );
-        log( "Entity Activation Range: An " + animalActivationRange + " / Mo " + monsterActivationRange + " / Mi " + miscActivationRange + " / Tiv " + tickInactiveVillagers );
+        log( "Entity Activation Range: An " + animalActivationRange + " / Mo " + monsterActivationRange + " / Ra " + raiderActivationRange + " / Mi " + miscActivationRange + " / Tiv " + tickInactiveVillagers );
     }
 
     public int playerTrackingRange = 48;
@@ -191,13 +220,6 @@ public class SpigotWorldConfig
         hopperCheck = getInt( "ticks-per.hopper-check", 1 );
         hopperAmount = getInt( "hopper-amount", 1 );
         log( "Hopper Transfer: " + hopperTransfer + " Hopper Check: " + hopperCheck + " Hopper Amount: " + hopperAmount );
-    }
-
-    public boolean randomLightUpdates;
-    private void lightUpdates()
-    {
-        randomLightUpdates = getBoolean( "random-light-updates", false );
-        log( "Random Lighting Updates: " + randomLightUpdates );
     }
 
     public int arrowDespawnRate;
@@ -247,6 +269,7 @@ public class SpigotWorldConfig
     public int swampSeed;
     public int monumentSeed;
     public int oceanSeed;
+    public int outpostSeed;
     public int shipwreckSeed;
     public int slimeSeed;
     private void initWorldGenSeeds()
@@ -259,6 +282,7 @@ public class SpigotWorldConfig
         monumentSeed = getInt( "seed-monument", 10387313 );
         shipwreckSeed = getInt( "seed-shipwreck", 165745295 );
         oceanSeed = getInt( "seed-ocean", 14357621 );
+        outpostSeed = getInt( "seed-outpost", 165745296 );
         slimeSeed = getInt( "seed-slime", 987234911 );
         log( "Custom Map Seeds:  Village: " + villageSeed + " Desert: " + desertSeed + " Igloo: " + iglooSeed + " Jungle: " + jungleSeed + " Swamp: " + swampSeed + " Monument: " + monumentSeed + "Ocean: " + oceanSeed + " Shipwreck: " + shipwreckSeed + " Slime: " + slimeSeed );
     }

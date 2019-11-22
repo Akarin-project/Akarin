@@ -4,19 +4,17 @@ import javax.annotation.Nullable;
 
 public abstract class WorldProvider {
 
-    public static final float[] a = new float[] { 1.0F, 0.75F, 0.5F, 0.25F, 0.0F, 0.25F, 0.5F, 0.75F};
-    protected World b;
+    public static final float[] a = new float[]{1.0F, 0.75F, 0.5F, 0.25F, 0.0F, 0.25F, 0.5F, 0.75F};
+    protected final World b;
+    private final DimensionManager f;
     protected boolean c;
     protected boolean d;
-    protected boolean e;
-    protected final float[] f = new float[16];
+    protected final float[] e = new float[16];
     private final float[] g = new float[4];
 
-    public WorldProvider() {}
-
-    public final void a(World world) {
+    public WorldProvider(World world, DimensionManager dimensionmanager) {
         this.b = world;
-        this.m();
+        this.f = dimensionmanager;
         this.a();
     }
 
@@ -26,7 +24,7 @@ public abstract class WorldProvider {
         for (int i = 0; i <= 15; ++i) {
             float f1 = 1.0F - (float) i / 15.0F;
 
-            this.f[i] = (1.0F - f1) / (f1 * 3.0F + 1.0F) * 1.0F + 0.0F;
+            this.e[i] = (1.0F - f1) / (f1 * 3.0F + 1.0F) * 1.0F + 0.0F;
         }
 
     }
@@ -45,7 +43,7 @@ public abstract class WorldProvider {
     }
 
     public boolean g() {
-        return this.e;
+        return this.f.hasSkyLight();
     }
 
     public boolean h() {
@@ -53,26 +51,16 @@ public abstract class WorldProvider {
     }
 
     public float[] i() {
-        return this.f;
+        return this.e;
     }
 
     public WorldBorder getWorldBorder() {
         return new WorldBorder();
     }
 
-    public void a(EntityPlayer entityplayer) {}
-
-    public void b(EntityPlayer entityplayer) {}
-
     public void k() {}
 
     public void l() {}
-
-    public boolean a(int i, int j) {
-        return !this.b.isSpawnChunk(i, j) && !this.b.isForceLoaded(i, j); // Paper - Use spawn chunks check for all worlds
-    }
-
-    protected abstract void m();
 
     public abstract ChunkGenerator<?> getChunkGenerator();
 
@@ -88,5 +76,5 @@ public abstract class WorldProvider {
 
     public abstract boolean canRespawn();
 
-    public abstract DimensionManager getDimensionManager();
+    public DimensionManager getDimensionManager() { return this.f; } // CraftBukkit
 }

@@ -3,7 +3,6 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import net.minecraft.server.EntityZombie;
 import net.minecraft.server.EntityZombieVillager;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
@@ -25,18 +24,22 @@ public class CraftZombie extends CraftMonster implements Zombie {
         return "CraftZombie";
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.ZOMBIE;
     }
 
+    @Override
     public boolean isBaby() {
         return getHandle().isBaby();
     }
 
+    @Override
     public void setBaby(boolean flag) {
         getHandle().setBaby(flag);
     }
 
+    @Override
     public boolean isVillager() {
         return getHandle() instanceof EntityZombieVillager;
     }
@@ -79,30 +82,37 @@ public class CraftZombie extends CraftMonster implements Zombie {
     }
 
     // Paper start
+    @Override
     public boolean isDrowning() {
         return getHandle().isDrowning();
     }
 
+    @Override
     public void startDrowning(int drownedConversionTime) {
         getHandle().startDrownedConversion(drownedConversionTime);
     }
 
+    @Override
     public void stopDrowning() {
         getHandle().stopDrowning();
     }
 
-    public void setArmsRaised(boolean raised) {
-        getHandle().setArmsRaised(raised);
-    }
-
-    public boolean isArmsRaised() {
-        return getHandle().isArmsRaised();
-    }
-
+    @Override
     public boolean shouldBurnInDay() {
         return getHandle().shouldBurnInDay();
     }
 
+    @Override
+    public boolean isArmsRaised() {
+        return getHandle().isArmsRaisedZombie();
+    }
+
+    @Override
+    public void setArmsRaised(final boolean raised) {
+        getHandle().setArmsRaisedZombie(raised);
+    }
+
+    @Override
     public void setShouldBurnInDay(boolean shouldBurnInDay) {
         getHandle().setShouldBurnInDay(shouldBurnInDay);
     }

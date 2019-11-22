@@ -1,18 +1,17 @@
 package com.destroystokyo.paper.profile;
 
 import com.destroystokyo.paper.PaperConfig;
+import com.google.common.base.Charsets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
-
-import net.minecraft.server.AkarinUserCache;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.UserCache;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.spigotmc.SpigotConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
@@ -144,9 +143,7 @@ public class CraftPlayerProfile implements PlayerProfile {
         }
         MinecraftServer server = MinecraftServer.getServer();
         String name = profile.getName();
-        // Akarin start
-        AkarinUserCache userCache = server.getModernUserCache();
-        /*
+        UserCache userCache = server.getUserCache();
         if (profile.getId() == null) {
             final GameProfile profile;
             boolean isOnlineMode = server.getOnlineMode() || (SpigotConfig.bungee && PaperConfig.bungeeOnlineMode);
@@ -168,24 +165,7 @@ public class CraftPlayerProfile implements PlayerProfile {
                 this.profile = profile;
             }
         }
-        */
-        
-        if (profile.getId() == null) {
-            if (lookupName) {
-                profile = userCache.acquire(name);
-            } else {
-                GameProfile peeked = userCache.peek(name);
-                
-                if (peeked != null)
-                    profile = peeked;
-            }
-        }
-        
-        if (profile.getName() == null)
-            profile = userCache.acquire(name);
-        
-        return profile.isComplete();
-        // Akarin end
+        return this.profile.isComplete();
     }
 
     public boolean complete(boolean textures) {

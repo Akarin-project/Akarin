@@ -1,153 +1,249 @@
 package net.minecraft.server;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import com.google.common.base.MoreObjects;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import joptsimple.OptionSet; // CraftBukkit
 
-public class PropertyManager {
+public abstract class PropertyManager<T extends PropertyManager<T>> {
 
-    private static final Logger a = LogManager.getLogger();
-    public final Properties properties = new Properties();
-    private final File file;
-
-    public PropertyManager(File file) {
-        this.file = file;
-        if (file.exists()) {
-            FileInputStream fileinputstream = null;
-
-            try {
-                fileinputstream = new FileInputStream(file);
-                this.properties.load(fileinputstream);
-            } catch (Exception exception) {
-                PropertyManager.a.warn("Failed to load {}", file, exception);
-                this.a();
-            } finally {
-                if (fileinputstream != null) {
-                    try {
-                        fileinputstream.close();
-                    } catch (IOException ioexception) {
-                        ;
-                    }
-                }
-
-            }
-        } else {
-            PropertyManager.a.warn("{} does not exist", file);
-            this.a();
-        }
-
-    }
-
+    private static final Logger LOGGER = LogManager.getLogger();
+    public final Properties properties;
     // CraftBukkit start
     private OptionSet options = null;
 
-    public PropertyManager(final OptionSet options) {
-        this((File) options.valueOf("config"));
+    public PropertyManager(Properties properties, final OptionSet options) {
+        this.properties = properties;
 
         this.options = options;
     }
 
-    private <T> T getOverride(String name, T value) {
+    private String getOverride(String name, String value) {
         if ((this.options != null) && (this.options.has(name)) && !name.equals( "online-mode")) { // Spigot
-            return (T) this.options.valueOf(name);
+            return String.valueOf(this.options.valueOf(name));
         }
 
         return value;
     }
     // CraftBukkit end
 
-    public void a() {
-        PropertyManager.a.info("Generating new properties file");
-        this.savePropertiesFile();
-    }
-
-    public void savePropertiesFile() {
-        FileOutputStream fileoutputstream = null;
+    public static Properties loadPropertiesFile(java.nio.file.Path java_nio_file_path) {
+        Properties properties = new Properties();
 
         try {
+            InputStream inputstream = Files.newInputStream(java_nio_file_path);
+            Throwable throwable = null;
+
+            try {
+                properties.load(inputstream);
+            } catch (Throwable throwable1) {
+                throwable = throwable1;
+                throw throwable1;
+            } finally {
+                if (inputstream != null) {
+                    if (throwable != null) {
+                        try {
+                            inputstream.close();
+                        } catch (Throwable throwable2) {
+                            throwable.addSuppressed(throwable2);
+                        }
+                    } else {
+                        inputstream.close();
+                    }
+                }
+
+            }
+        } catch (IOException ioexception) {
+            PropertyManager.LOGGER.error("Failed to load properties from file: " + java_nio_file_path);
+        }
+
+        return properties;
+    }
+
+    public void savePropertiesFile(java.nio.file.Path java_nio_file_path) {
+        try {
             // CraftBukkit start - Don't attempt writing to file if it's read only
-            if (this.file.exists() && !this.file.canWrite()) {
+            if (java_nio_file_path.toFile().exists() && !java_nio_file_path.toFile().canWrite()) {
                 return;
             }
             // CraftBukkit end
+            OutputStream outputstream = Files.newOutputStream(java_nio_file_path);
+            Throwable throwable = null;
 
-            fileoutputstream = new FileOutputStream(this.file);
-            this.properties.store(fileoutputstream, "Minecraft server properties");
-        } catch (Exception exception) {
-            PropertyManager.a.warn("Failed to save {}", this.file, exception);
-            this.a();
-        } finally {
-            if (fileoutputstream != null) {
-                try {
-                    fileoutputstream.close();
-                } catch (IOException ioexception) {
-                    ;
+            try {
+                this.properties.store(outputstream, "Minecraft server properties");
+            } catch (Throwable throwable1) {
+                throwable = throwable1;
+                throw throwable1;
+            } finally {
+                if (outputstream != null) {
+                    if (throwable != null) {
+                        try {
+                            outputstream.close();
+                        } catch (Throwable throwable2) {
+                            throwable.addSuppressed(throwable2);
+                        }
+                    } else {
+                        outputstream.close();
+                    }
                 }
+
             }
-
+        } catch (IOException ioexception) {
+            PropertyManager.LOGGER.error("Failed to store properties to file: " + java_nio_file_path);
         }
 
     }
 
-    public File c() {
-        return this.file;
+    private static <V extends Number> Function<String, V> a(Function<String, V> function) {
+        return (s) -> {
+            try {
+                return (V) function.apply(s); // CraftBukkit - decompile error
+            } catch (NumberFormatException numberformatexception) {
+                return null;
+            }
+        };
     }
 
-    public String getString(String s, String s1) {
-        if (!this.properties.containsKey(s)) {
-            this.properties.setProperty(s, s1);
-            this.savePropertiesFile();
-            this.savePropertiesFile();
-        }
-
-        return getOverride(s, this.properties.getProperty(s, s1)); // CraftBukkit
+    protected static <V> Function<String, V> a(IntFunction<V> intfunction, Function<String, V> function) {
+        return (s) -> {
+            try {
+                return intfunction.apply(Integer.parseInt(s));
+            } catch (NumberFormatException numberformatexception) {
+                return function.apply(s);
+            }
+        };
     }
 
-    public int getInt(String s, int i) {
-        try {
-            return getOverride(s, Integer.parseInt(this.getString(s, "" + i))); // CraftBukkit
-        } catch (Exception exception) {
-            this.properties.setProperty(s, "" + i);
-            this.savePropertiesFile();
-            return getOverride(s, i); // CraftBukkit
-        }
+    @Nullable String getSettingIfExists(final String path) { return this.c(path); } // Paper - OBFHELPER
+    @Nullable private String c(String s) { // Paper - OBFHELPER
+        return (String) getOverride(s, this.properties.getProperty(s)); // CraftBukkit
     }
 
-    public long getLong(String s, long i) {
-        try {
-            return getOverride(s, Long.parseLong(this.getString(s, "" + i))); // CraftBukkit
-        } catch (Exception exception) {
-            this.properties.setProperty(s, "" + i);
-            this.savePropertiesFile();
-            return getOverride(s, i); // CraftBukkit
-        }
-    }
+    @Nullable
+    protected <V> V a(String s, Function<String, V> function) {
+        String s1 = this.c(s);
 
-    public boolean getBoolean(String s, boolean flag) {
-        try {
-            return getOverride(s, Boolean.parseBoolean(this.getString(s, "" + flag))); //CraftBukkit
-        } catch (Exception exception) {
-            this.properties.setProperty(s, "" + flag);
-            this.savePropertiesFile();
-            return getOverride(s, flag); // CraftBukkit
+        if (s1 == null) {
+            return null;
+        } else {
+            this.properties.remove(s);
+            return function.apply(s1);
         }
     }
 
-    public void setProperty(String s, Object object) {
-        this.properties.setProperty(s, "" + object);
+    protected <V> V a(String s, Function<String, V> function, Function<V, String> function1, V v0) {
+        String s1 = this.c(s);
+        V v1 = MoreObjects.firstNonNull(s1 != null ? function.apply(s1) : null, v0);
+
+        this.properties.put(s, function1.apply(v1));
+        return v1;
     }
 
-    public boolean a(String s) {
-        return this.properties.containsKey(s);
+    protected <V> PropertyManager<T>.EditableProperty<V> b(String s, Function<String, V> function, Function<V, String> function1, V v0) {
+        String s1 = this.c(s);
+        V v1 = MoreObjects.firstNonNull(s1 != null ? function.apply(s1) : null, v0);
+
+        this.properties.put(s, function1.apply(v1));
+        return new PropertyManager.EditableProperty(s, v1, function1); // CraftBukkit - decompile error
     }
 
-    public void b(String s) {
-        this.properties.remove(s);
+    protected <V> V a(String s, Function<String, V> function, UnaryOperator<V> unaryoperator, Function<V, String> function1, V v0) {
+        return this.a(s, (s1) -> {
+            V v1 = function.apply(s1);
+
+            return v1 != null ? unaryoperator.apply(v1) : null;
+        }, function1, v0);
+    }
+
+    protected <V> V a(String s, Function<String, V> function, V v0) {
+        return this.a(s, function, Objects::toString, v0);
+    }
+
+    protected <V> PropertyManager<T>.EditableProperty<V> b(String s, Function<String, V> function, V v0) {
+        return this.b(s, function, Objects::toString, v0);
+    }
+
+    protected String getString(String s, String s1) {
+        return (String) this.a(s, Function.identity(), Function.identity(), s1);
+    }
+
+    @Nullable
+    protected String a(String s) {
+        return (String) this.a(s, Function.identity());
+    }
+
+    protected int getInt(String s, int i) {
+        return (Integer) this.a(s, a(Integer::parseInt), i); // CraftBukkit - decompile error
+    }
+
+    protected PropertyManager<T>.EditableProperty<Integer> b(String s, int i) {
+        return this.b(s, a(Integer::parseInt), i);
+    }
+
+    protected int a(String s, UnaryOperator<Integer> unaryoperator, int i) {
+        return (Integer) this.a(s, a(Integer::parseInt), unaryoperator, Objects::toString, i);
+    }
+
+    protected long getLong(String s, long i) {
+        return (Long) this.a(s, a(Long::parseLong), i); // CraftBukkit - decompile error
+    }
+
+    protected boolean getBoolean(String s, boolean flag) {
+        return (Boolean) this.a(s, Boolean::valueOf, (Object) flag);
+    }
+
+    protected PropertyManager<T>.EditableProperty<Boolean> b(String s, boolean flag) {
+        return this.b(s, Boolean::valueOf, flag);
+    }
+
+    @Nullable
+    protected Boolean b(String s) {
+        return (Boolean) this.a(s, Boolean::valueOf);
+    }
+
+    protected Properties a() {
+        Properties properties = new Properties();
+
+        properties.putAll(this.properties);
+        return properties;
+    }
+
+    protected abstract T reload(Properties properties, OptionSet optionset); // CraftBukkit
+
+    public class EditableProperty<V> implements Supplier<V> {
+
+        private final String b;
+        private final V c;
+        private final Function<V, String> d;
+
+        private EditableProperty(String s, V object, Function function) { // CraftBukkit - decompile error
+            this.b = s;
+            this.c = object;
+            this.d = function;
+        }
+
+        public V get() {
+            return this.c;
+        }
+
+        public T set(V v0) {
+            Properties properties = PropertyManager.this.a();
+
+            properties.put(this.b, this.d.apply(v0));
+            return PropertyManager.this.reload(properties, PropertyManager.this.options); // CraftBukkit
+        }
     }
 }

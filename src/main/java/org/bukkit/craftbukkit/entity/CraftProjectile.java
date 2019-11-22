@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.EntityProjectile;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Projectile;
 import org.bukkit.projectiles.ProjectileSource;
@@ -12,10 +11,12 @@ public abstract class CraftProjectile extends AbstractProjectile implements Proj
         super(server, entity);
     }
 
+    @Override
     public ProjectileSource getShooter() {
         return getHandle().projectileSource;
     }
 
+    @Override
     public void setShooter(ProjectileSource shooter) {
         if (shooter instanceof CraftLivingEntity) {
             getHandle().shooter = (EntityLiving) ((CraftLivingEntity) shooter).entity;

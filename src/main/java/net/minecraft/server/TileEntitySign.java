@@ -3,13 +3,16 @@ package net.minecraft.server;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import javax.annotation.Nullable;
 
-public class TileEntitySign extends TileEntity implements ICommandListener {
+public class TileEntitySign extends TileEntity implements ICommandListener { // CraftBukkit - implements
 
-    public final IChatBaseComponent[] lines = new IChatBaseComponent[] { new ChatComponentText(""), new ChatComponentText(""), new ChatComponentText(""), new ChatComponentText("")};
-    public int e = -1;
+    public final IChatBaseComponent[] lines = new IChatBaseComponent[]{new ChatComponentText(""), new ChatComponentText(""), new ChatComponentText(""), new ChatComponentText("")};
+    private int c = -1;
+    private int g = -1;
+    private int h = -1;
     public boolean isEditable = true;
-    private EntityHuman g;
-    private final String[] h = new String[4];
+    private EntityHuman j;
+    private final String[] k = new String[4];
+    private EnumColor color;
 
     // Paper start - Strip invalid unicode from signs on load
     private static final boolean keepInvalidUnicode = Boolean.getBoolean("Paper.keepInvalidUnicode"); // Allow people to keep their bad unicode if they really want it
@@ -20,8 +23,10 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
 
     public TileEntitySign() {
         super(TileEntityTypes.SIGN);
+        this.color = EnumColor.BLACK;
     }
 
+    @Override
     public NBTTagCompound save(NBTTagCompound nbttagcompound) {
         super.save(nbttagcompound);
 
@@ -37,7 +42,8 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
         }
         // CraftBukkit end
 
-        // Paper start - Only remove private area unicode once
+        nbttagcompound.setString("Color", this.color.b());
+        // Paper start - Only remove private area unicode once // TODO - this doesn't need to run for every sign, check data ver
         if (this.privateUnicodeRemoved) {
             nbttagcompound.setBoolean("Paper.RemovedPrivateUnicode", true);
         }
@@ -46,9 +52,11 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
         return nbttagcompound;
     }
 
+    @Override
     public void load(NBTTagCompound nbttagcompound) {
         this.isEditable = false;
         super.load(nbttagcompound);
+        this.color = EnumColor.a(nbttagcompound.getString("Color"), EnumColor.BLACK);
 
         // Paper start - Keep track, only do it once per sign
         this.privateUnicodeRemoved = nbttagcompound.getBoolean("Paper.RemovedPrivateUnicode");
@@ -81,18 +89,18 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
             // Paper end
 
             try {
-                //IChatBaseComponent ichatbasecomponent = IChatBaseComponent.ChatSerializer.a(s); // Paper - move down - the old format might throw a json error
+                //IChatBaseComponent ichatbasecomponent = IChatBaseComponent.ChatSerializer.a(s.isEmpty() ? "\"\"" : s); // Paper - move down - the old format might throw a json error
 
                 if (oldSign && !isLoadingStructure) { // Paper - saved structures will be in the new format, but will not have isConverted
                     lines[i] = org.bukkit.craftbukkit.util.CraftChatMessage.fromString(s)[0];
                     continue;
                 }
                 // CraftBukkit end
-                IChatBaseComponent ichatbasecomponent = IChatBaseComponent.ChatSerializer.a(s); // Paper - after old sign
+                IChatBaseComponent ichatbasecomponent = IChatBaseComponent.ChatSerializer.a(s.isEmpty() ? "\"\"" : s); // Paper - after old sign
 
                 if (this.world instanceof WorldServer) {
                     try {
-                        this.lines[i] = ChatComponentUtils.filterForDisplay(this.a((EntityPlayer) null), ichatbasecomponent, (Entity) null);
+                        this.lines[i] = ChatComponentUtils.filterForDisplay(this.a((EntityPlayer) null), ichatbasecomponent, (Entity) null, 0);
                     } catch (CommandSyntaxException commandsyntaxexception) {
                         this.lines[i] = ichatbasecomponent;
                     }
@@ -103,7 +111,7 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
                 this.lines[i] = new ChatComponentText(s);
             }
 
-            this.h[i] = null;
+            this.k[i] = null;
         }
 
         if (ranUnicodeRemoval) this.privateUnicodeRemoved = true; // Paper - Flag to write NBT
@@ -111,18 +119,21 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
 
     public void a(int i, IChatBaseComponent ichatbasecomponent) {
         this.lines[i] = ichatbasecomponent;
-        this.h[i] = null;
+        this.k[i] = null;
     }
 
     @Nullable
+    @Override
     public PacketPlayOutTileEntityData getUpdatePacket() {
-        return new PacketPlayOutTileEntityData(this.position, 9, this.aa_());
+        return new PacketPlayOutTileEntityData(this.position, 9, this.b());
     }
 
-    public NBTTagCompound aa_() {
+    @Override
+    public NBTTagCompound b() {
         return this.save(new NBTTagCompound());
     }
 
+    @Override
     public boolean isFilteredNBT() {
         return true;
     }
@@ -138,8 +149,8 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
         // Paper end
     }
 
-    public EntityHuman e() {
-        return this.g;
+    public EntityHuman f() {
+        return this.j;
     }
 
     public boolean b(EntityHuman entityhuman) {
@@ -150,11 +161,11 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
             IChatBaseComponent ichatbasecomponent = aichatbasecomponent[j];
             ChatModifier chatmodifier = ichatbasecomponent == null ? null : ichatbasecomponent.getChatModifier();
 
-            if (chatmodifier != null && chatmodifier.h() != null) {
-                ChatClickable chatclickable = chatmodifier.h();
+            if (chatmodifier != null && chatmodifier.getClickEvent() != null) {
+                ChatClickable chatclickable = chatmodifier.getClickEvent();
 
                 if (chatclickable.a() == ChatClickable.EnumClickAction.RUN_COMMAND) {
-                    entityhuman.bK().getCommandDispatcher().a(this.a((EntityPlayer) entityhuman), chatclickable.b());
+                    entityhuman.getMinecraftServer().getCommandDispatcher().a(this.a((EntityPlayer) entityhuman), chatclickable.b());
                 }
             }
         }
@@ -162,12 +173,28 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
         return true;
     }
 
+    // CraftBukkit start
+    @Override
     public void sendMessage(IChatBaseComponent ichatbasecomponent) {}
 
-    // CraftBukkit start
     @Override
     public org.bukkit.command.CommandSender getBukkitSender(CommandListenerWrapper wrapper) {
         return wrapper.getEntity() != null ? wrapper.getEntity().getBukkitSender(wrapper) : new org.bukkit.craftbukkit.command.CraftBlockCommandSender(wrapper, this);
+    }
+
+    @Override
+    public boolean shouldSendSuccess() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldSendFailure() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldBroadcastCommands() {
+        return false;
     }
     // CraftBukkit end
 
@@ -175,18 +202,22 @@ public class TileEntitySign extends TileEntity implements ICommandListener {
         String s = entityplayer == null ? "Sign" : entityplayer.getDisplayName().getString();
         Object object = entityplayer == null ? new ChatComponentText("Sign") : entityplayer.getScoreboardDisplayName();
 
+        // CraftBukkit - this
         return new CommandListenerWrapper(this, new Vec3D((double) this.position.getX() + 0.5D, (double) this.position.getY() + 0.5D, (double) this.position.getZ() + 0.5D), Vec2F.a, (WorldServer) this.world, 2, s, (IChatBaseComponent) object, this.world.getMinecraftServer(), entityplayer);
     }
 
-    public boolean a() {
-        return false;
+    public EnumColor getColor() {
+        return this.color;
     }
 
-    public boolean b() {
-        return false;
-    }
-
-    public boolean B_() {
-        return false;
+    public boolean setColor(EnumColor enumcolor) {
+        if (enumcolor != this.getColor()) {
+            this.color = enumcolor;
+            this.update();
+            if (this.world != null) this.world.notify(this.getPosition(), this.getBlock(), this.getBlock(), 3); // CraftBukkit - skip notify if world is null (SPIGOT-5122)
+            return true;
+        } else {
+            return false;
+        }
     }
 }

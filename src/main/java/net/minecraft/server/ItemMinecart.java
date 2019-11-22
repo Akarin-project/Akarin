@@ -8,10 +8,11 @@ import org.bukkit.event.block.BlockDispenseEvent;
 public class ItemMinecart extends Item {
 
     private static final IDispenseBehavior a = new DispenseBehaviorItem() {
-        private final DispenseBehaviorItem a = new DispenseBehaviorItem();
+        private final DispenseBehaviorItem b = new DispenseBehaviorItem();
 
+        @Override
         public ItemStack a(ISourceBlock isourceblock, ItemStack itemstack) {
-            EnumDirection enumdirection = (EnumDirection) isourceblock.e().get(BlockDispenser.FACING);
+            EnumDirection enumdirection = (EnumDirection) isourceblock.getBlockData().get(BlockDispenser.FACING);
             World world = isourceblock.getWorld();
             double d0 = isourceblock.getX() + (double) enumdirection.getAdjacentX() * 1.125D;
             double d1 = Math.floor(isourceblock.getY()) + (double) enumdirection.getAdjacentY();
@@ -29,7 +30,7 @@ public class ItemMinecart extends Item {
                 }
             } else {
                 if (!iblockdata.isAir() || !world.getType(blockposition.down()).a(TagsBlock.RAILS)) {
-                    return this.a.dispense(isourceblock, itemstack);
+                    return this.b.dispense(isourceblock, itemstack);
                 }
 
                 IBlockData iblockdata1 = world.getType(blockposition.down());
@@ -45,7 +46,7 @@ public class ItemMinecart extends Item {
             // CraftBukkit start
             // EntityMinecartAbstract entityminecartabstract = EntityMinecartAbstract.a(world, d0, d1 + d3, d2, ((ItemMinecart) itemstack.getItem()).b);
             ItemStack itemstack1 = itemstack.cloneAndSubtract(1);
-            org.bukkit.block.Block block2 = world.getWorld().getBlockAt(isourceblock.getBlockPosition()); // Akarin
+            org.bukkit.block.Block block2 = world.getWorld().getBlockAt(isourceblock.getBlockPosition().getX(), isourceblock.getBlockPosition().getY(), isourceblock.getBlockPosition().getZ());
             CraftItemStack craftItem = CraftItemStack.asCraftMirror(itemstack1);
 
             BlockDispenseEvent event = new BlockDispenseEvent(block2, craftItem.clone(), new org.bukkit.util.Vector(d0, d1 + d3, d2));
@@ -82,6 +83,7 @@ public class ItemMinecart extends Item {
             return itemstack;
         }
 
+        @Override
         protected void a(ISourceBlock isourceblock) {
             isourceblock.getWorld().triggerEffect(1000, isourceblock.getBlockPosition(), 0);
         }
@@ -94,6 +96,7 @@ public class ItemMinecart extends Item {
         BlockDispenser.a((IMaterial) this, ItemMinecart.a);
     }
 
+    @Override
     public EnumInteractionResult a(ItemActionContext itemactioncontext) {
         World world = itemactioncontext.getWorld();
         BlockPosition blockposition = itemactioncontext.getClickPosition();

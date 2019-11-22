@@ -3,11 +3,11 @@ package org.bukkit.craftbukkit.util;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-
+import java.util.Set;
 import net.minecraft.server.BlockPosition;
+import net.minecraft.server.Fluid;
 import net.minecraft.server.IBlockData;
 import net.minecraft.server.World;
-
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 
@@ -25,7 +25,24 @@ public class BlockStateListPopulator extends DummyGeneratorAccess {
     }
 
     @Override
+    public IBlockData getType(BlockPosition bp) {
+        CraftBlockState state = list.get(bp);
+        return (state != null) ? state.getHandle() : world.getType(bp);
+    }
+
+    @Override
+    public Fluid getFluid(BlockPosition bp) {
+        CraftBlockState state = list.get(bp);
+        return (state != null) ? state.getHandle().p() : world.getFluid(bp);
+    }
+
+    @Override
     public boolean setTypeAndData(BlockPosition position, IBlockData data, int flag) {
+        // Paper start
+        // When a LinkedHashMap entry is overwritten, it keeps its old position. Removing the entry here before adding
+        // a new one ensures that the nether portal blocks are placed last and are not destroyed by physics.
+        list.remove(position);
+        // Paper end
         CraftBlockState state = CraftBlockState.getBlockState(world, position, flag);
         state.setData(data);
         list.put(position, state);
@@ -36,6 +53,10 @@ public class BlockStateListPopulator extends DummyGeneratorAccess {
         for (BlockState state : list.values()) {
             state.update(true);
         }
+    }
+
+    public Set<BlockPosition> getBlocks() {
+        return list.keySet();
     }
 
     public List<CraftBlockState> getList() {

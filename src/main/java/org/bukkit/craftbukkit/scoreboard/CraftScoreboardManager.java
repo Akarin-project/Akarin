@@ -1,14 +1,11 @@
 package org.bukkit.craftbukkit.scoreboard;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.IScoreboardCriteria;
 import net.minecraft.server.MinecraftServer;
@@ -19,7 +16,6 @@ import net.minecraft.server.ScoreboardObjective;
 import net.minecraft.server.ScoreboardScore;
 import net.minecraft.server.ScoreboardServer;
 import net.minecraft.server.ScoreboardTeam;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.util.WeakCollection;
@@ -38,12 +34,14 @@ public final class CraftScoreboardManager implements ScoreboardManager {
         scoreboards.add(mainScoreboard);
     }
 
+    @Override
     public CraftScoreboard getMainScoreboard() {
         return mainScoreboard;
     }
 
+    @Override
     public CraftScoreboard getNewScoreboard() {
-        //org.spigotmc.AsyncCatcher.catchOp( "scoreboard creation"); // Spigot // Akarin
+        org.spigotmc.AsyncCatcher.catchOp("scoreboard creation"); // Spigot
         CraftScoreboard scoreboard = new CraftScoreboard(new ScoreboardServer(server));
         scoreboards.add(scoreboard);
         return scoreboard;

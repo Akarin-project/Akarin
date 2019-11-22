@@ -31,20 +31,23 @@ public class CommandSummon {
             EntityLightning entitylightning = new EntityLightning(commandlistenerwrapper.getWorld(), vec3d.x, vec3d.y, vec3d.z, false);
 
             commandlistenerwrapper.getWorld().strikeLightning(entitylightning, org.bukkit.event.weather.LightningStrikeEvent.Cause.COMMAND); // CraftBukkit
-            commandlistenerwrapper.sendMessage(new ChatMessage("commands.summon.success", new Object[] { entitylightning.getScoreboardDisplayName()}), true);
+            commandlistenerwrapper.sendMessage(new ChatMessage("commands.summon.success", new Object[]{entitylightning.getScoreboardDisplayName()}), true);
             return 1;
         } else {
-            Entity entity = ChunkRegionLoader.a(nbttagcompound1, commandlistenerwrapper.getWorld(), vec3d.x, vec3d.y, vec3d.z, true);
+            WorldServer worldserver = commandlistenerwrapper.getWorld();
+            Entity entity = EntityTypes.a(nbttagcompound1, worldserver, (entity1) -> {
+                entity1.setPositionRotation(vec3d.x, vec3d.y, vec3d.z, entity1.yaw, entity1.pitch);
+                return !worldserver.addEntitySerialized(entity1) ? null : entity1;
+            });
 
             if (entity == null) {
                 throw CommandSummon.a.create();
             } else {
-                entity.setPositionRotation(vec3d.x, vec3d.y, vec3d.z, entity.yaw, entity.pitch);
                 if (flag && entity instanceof EntityInsentient) {
-                    ((EntityInsentient) entity).prepare(commandlistenerwrapper.getWorld().getDamageScaler(new BlockPosition(entity)), (GroupDataEntity) null, (NBTTagCompound) null);
+                    ((EntityInsentient) entity).prepare(commandlistenerwrapper.getWorld(), commandlistenerwrapper.getWorld().getDamageScaler(new BlockPosition(entity)), EnumMobSpawn.COMMAND, (GroupDataEntity) null, (NBTTagCompound) null);
                 }
 
-                commandlistenerwrapper.sendMessage(new ChatMessage("commands.summon.success", new Object[] { entity.getScoreboardDisplayName()}), true);
+                commandlistenerwrapper.sendMessage(new ChatMessage("commands.summon.success", new Object[]{entity.getScoreboardDisplayName()}), true);
                 return 1;
             }
         }

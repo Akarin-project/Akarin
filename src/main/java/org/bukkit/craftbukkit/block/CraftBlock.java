@@ -1,13 +1,27 @@
 package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-
-import net.minecraft.server.*;
-
+import java.util.stream.Collectors;
+import net.minecraft.server.AxisAlignedBB;
+import net.minecraft.server.BiomeBase;
+import net.minecraft.server.BlockPosition;
+import net.minecraft.server.BlockRedstoneWire;
+import net.minecraft.server.BlockTileEntity;
+import net.minecraft.server.Blocks;
+import net.minecraft.server.EnumDirection;
+import net.minecraft.server.EnumSkyBlock;
+import net.minecraft.server.GeneratorAccess;
+import net.minecraft.server.IBlockData;
+import net.minecraft.server.IRegistry;
+import net.minecraft.server.MinecraftKey;
+import net.minecraft.server.MovingObjectPosition;
+import net.minecraft.server.RayTrace;
+import net.minecraft.server.TileEntity;
+import net.minecraft.server.Vec3D;
+import net.minecraft.server.VoxelShape;
+import net.minecraft.server.WorldServer;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Chunk;
 import org.bukkit.FluidCollisionMode;
@@ -40,7 +54,7 @@ public class CraftBlock implements Block {
 
     public CraftBlock(GeneratorAccess world, BlockPosition position) {
         this.world = world;
-        this.position = position.h();
+        this.position = position.immutableCopy();
     }
 
     public static CraftBlock at(GeneratorAccess world, BlockPosition position) {
@@ -59,6 +73,7 @@ public class CraftBlock implements Block {
         return position;
     }
 
+    @Override
     public World getWorld() {
         return world.getMinecraftWorld().getWorld();
     }
@@ -67,10 +82,12 @@ public class CraftBlock implements Block {
         return (CraftWorld) getWorld();
     }
 
+    @Override
     public Location getLocation() {
         return new Location(getWorld(), position.getX(), position.getY(), position.getZ());
     }
 
+    @Override
     public Location getLocation(Location loc) {
         if (loc != null) {
             loc.setWorld(getWorld());
@@ -88,18 +105,22 @@ public class CraftBlock implements Block {
         return new BlockVector(getX(), getY(), getZ());
     }
 
+    @Override
     public int getX() {
         return position.getX();
     }
 
+    @Override
     public int getY() {
         return position.getY();
     }
 
+    @Override
     public int getZ() {
         return position.getZ();
     }
 
+    @Override
     public Chunk getChunk() {
         return getWorld().getChunkAt(this);
     }
@@ -124,6 +145,7 @@ public class CraftBlock implements Block {
         return world.getType(position);
     }
 
+    @Override
     public byte getData() {
         IBlockData blockData = world.getType(position);
         return CraftMagicNumbers.toLegacyData(blockData);
@@ -134,6 +156,7 @@ public class CraftBlock implements Block {
        return CraftBlockData.fromData(getData0());
     }
 
+    @Override
     public void setType(final Material type) {
         setType(type, true);
     }
@@ -158,7 +181,12 @@ public class CraftBlock implements Block {
     public boolean setTypeAndData(final IBlockData blockData, final boolean applyPhysics) {
         // SPIGOT-611: need to do this to prevent glitchiness. Easier to handle this here (like /setblock) than to fix weirdness in tile entity cleanup
         if (!blockData.isAir() && blockData.getBlock() instanceof BlockTileEntity && blockData.getBlock() != getNMSBlock()) {
-            world.setTypeAndData(position, Blocks.AIR.getBlockData(), 0);
+            // SPIGOT-4612: faster - just clear tile
+            if (world instanceof net.minecraft.server.World) {
+                ((net.minecraft.server.World) world).removeTileEntity(position);
+            } else {
+                world.setTypeAndData(position, Blocks.AIR.getBlockData(), 0);
+            }
         }
 
         if (applyPhysics) {
@@ -178,18 +206,22 @@ public class CraftBlock implements Block {
         }
     }
 
+    @Override
     public Material getType() {
         return CraftMagicNumbers.getMaterial(world.getType(position).getBlock());
     }
 
+    @Override
     public byte getLightLevel() {
         return (byte) world.getMinecraftWorld().getLightLevel(position);
     }
 
+    @Override
     public byte getLightFromSky() {
         return (byte) world.getBrightness(EnumSkyBlock.SKY, position);
     }
 
+    @Override
     public byte getLightFromBlocks() {
         return (byte) world.getBrightness(EnumSkyBlock.BLOCK, position);
     }
@@ -203,18 +235,22 @@ public class CraftBlock implements Block {
         return getRelative(face, distance);
     }
 
+    @Override
     public Block getRelative(final int modX, final int modY, final int modZ) {
         return getWorld().getBlockAt(getX() + modX, getY() + modY, getZ() + modZ);
     }
 
+    @Override
     public Block getRelative(BlockFace face) {
         return getRelative(face, 1);
     }
 
+    @Override
     public Block getRelative(BlockFace face, int distance) {
         return getRelative(face.getModX() * distance, face.getModY() * distance, face.getModZ() * distance);
     }
 
+    @Override
     public BlockFace getFace(final Block block) {
         BlockFace[] values = BlockFace.values();
 
@@ -274,6 +310,7 @@ public class CraftBlock implements Block {
         }
     }
 
+    @Override
     public BlockState getState() {
         // Paper start - allow disabling the use of snapshots
         return getState(true);
@@ -292,14 +329,24 @@ public class CraftBlock implements Block {
         Material material = getType();
 
         switch (material) {
-        case SIGN:
-        case WALL_SIGN:
+        case ACACIA_SIGN:
+        case ACACIA_WALL_SIGN:
+        case BIRCH_SIGN:
+        case BIRCH_WALL_SIGN:
+        case DARK_OAK_SIGN:
+        case DARK_OAK_WALL_SIGN:
+        case JUNGLE_SIGN:
+        case JUNGLE_WALL_SIGN:
+        case OAK_SIGN:
+        case OAK_WALL_SIGN:
+        case SPRUCE_SIGN:
+        case SPRUCE_WALL_SIGN:
             return new CraftSign(this);
         case CHEST:
         case TRAPPED_CHEST:
             return new CraftChest(this);
         case FURNACE:
-            return new CraftFurnace(this);
+            return new CraftFurnaceFurnace(this);
         case DISPENSER:
             return new CraftDispenser(this);
         case DROPPER:
@@ -413,6 +460,20 @@ public class CraftBlock implements Block {
             return new CraftBed(this);
         case CONDUIT:
             return new CraftConduit(this);
+        case BARREL:
+            return new CraftBarrel(this);
+        case BELL:
+            return new CraftBell(this);
+        case BLAST_FURNACE:
+            return new CraftBlastFurnace(this);
+        case CAMPFIRE:
+            return new CraftCampfire(this);
+        case JIGSAW:
+            return new CraftJigsaw(this);
+        case LECTERN:
+            return new CraftLectern(this);
+        case SMOKER:
+            return new CraftSmoker(this);
         default:
             TileEntity tileEntity = world.getTileEntity(position);
             if (tileEntity != null) {
@@ -425,10 +486,12 @@ public class CraftBlock implements Block {
         }
     }
 
+    @Override
     public Biome getBiome() {
         return getWorld().getBiome(getX(), getZ());
     }
 
+    @Override
     public void setBiome(Biome bio) {
         getWorld().setBiome(getX(), getZ(), bio);
     }
@@ -449,18 +512,22 @@ public class CraftBlock implements Block {
         return IRegistry.BIOME.get(new MinecraftKey(bio.name().toLowerCase(java.util.Locale.ENGLISH)));
     }
 
+    @Override
     public double getTemperature() {
         return world.getBiome(position).getAdjustedTemperature(position);
     }
 
+    @Override
     public double getHumidity() {
         return getWorld().getHumidity(getX(), getZ());
     }
 
+    @Override
     public boolean isBlockPowered() {
         return world.getMinecraftWorld().getBlockPower(position) > 0;
     }
 
+    @Override
     public boolean isBlockIndirectlyPowered() {
         return world.getMinecraftWorld().isBlockIndirectlyPowered(position);
     }
@@ -479,10 +546,12 @@ public class CraftBlock implements Block {
         return this.position.hashCode() ^ this.getWorld().hashCode();
     }
 
+    @Override
     public boolean isBlockFacePowered(BlockFace face) {
         return world.getMinecraftWorld().isBlockFacePowered(position, blockFaceToNotch(face));
     }
 
+    @Override
     public boolean isBlockFaceIndirectlyPowered(BlockFace face) {
         int power = world.getMinecraftWorld().getBlockFacePower(position, blockFaceToNotch(face));
 
@@ -494,6 +563,7 @@ public class CraftBlock implements Block {
         return power > 0;
     }
 
+    @Override
     public int getBlockPower(BlockFace face) {
         int power = 0;
         BlockRedstoneWire wire = (BlockRedstoneWire) Blocks.REDSTONE_WIRE;
@@ -510,110 +580,72 @@ public class CraftBlock implements Block {
         return power > 0 ? power : (face == BlockFace.SELF ? isBlockIndirectlyPowered() : isBlockFaceIndirectlyPowered(face)) ? 15 : 0;
     }
 
+    @Override
     public int getBlockPower() {
         return getBlockPower(BlockFace.SELF);
     }
 
+    @Override
     public boolean isEmpty() {
         return getNMS().isAir();
     }
 
+    @Override
     public boolean isLiquid() {
-        return (getType() == Material.WATER) || (getType() == Material.LAVA);
+        return getNMS().getMaterial().isLiquid();
     }
 
+    @Override
     public PistonMoveReaction getPistonMoveReaction() {
         return PistonMoveReaction.getById(getNMS().getPushReaction().ordinal());
     }
 
-    private boolean itemCausesDrops(ItemStack item) {
-        net.minecraft.server.Block block = this.getNMSBlock();
-        net.minecraft.server.Item itemType = CraftMagicNumbers.getItem(item.getType());
-        return block != null && (block.getBlockData().getMaterial().isAlwaysDestroyable() || (itemType != null && itemType.canDestroySpecialBlock(block.getBlockData())));
+    @Override
+    public boolean breakNaturally() {
+        return breakNaturally(new ItemStack(Material.AIR));
     }
 
-    public boolean breakNaturally() {
+    @Override
+    public boolean breakNaturally(ItemStack item) {
         // Order matters here, need to drop before setting to air so skulls can get their data
         net.minecraft.server.Block block = this.getNMSBlock();
         boolean result = false;
 
         if (block != null && block != Blocks.AIR) {
-            block.dropNaturally(getNMS(), world.getMinecraftWorld(), position, 1.0F, 0);
+            net.minecraft.server.Block.dropItems(getNMS(), world.getMinecraftWorld(), position, world.getTileEntity(position), null, CraftItemStack.asNMSCopy(item));
             result = true;
         }
 
-        setType(Material.AIR);
-        return result;
+        return setTypeAndData(Blocks.AIR.getBlockData(), true) && result;
     }
 
-    public boolean breakNaturally(ItemStack item) {
-        if (itemCausesDrops(item)) {
-            return breakNaturally();
-        } else {
-            return setTypeAndData(Blocks.AIR.getBlockData(), true);
-        }
-    }
-
+    @Override
     public Collection<ItemStack> getDrops() {
-        List<ItemStack> drops = new ArrayList<ItemStack>();
-
-        net.minecraft.server.Block block = this.getNMSBlock();
-        if (block != Blocks.AIR) {
-            IBlockData data = getData0();
-            // based on nms.Block.dropNaturally
-            int count = block.getDropCount(data, 0, world.getMinecraftWorld(), position, world.getMinecraftWorld().random);
-            for (int i = 0; i < count; ++i) {
-                Item item = block.getDropType(data, world.getMinecraftWorld(), position, 0).getItem();
-                if (item != Items.AIR) {
-                    // Skulls are special, their data is based on the tile entity
-                    if (block instanceof BlockSkullAbstract) {
-                        net.minecraft.server.ItemStack nmsStack = block.a((IBlockAccess) world, position, data);
-                        TileEntitySkull tileentityskull = (TileEntitySkull) world.getTileEntity(position);
-
-                        if ((block == Blocks.PLAYER_HEAD || block == Blocks.PLAYER_WALL_HEAD) && tileentityskull.getGameProfile() != null) {
-                            NBTTagCompound nbttagcompound = new NBTTagCompound();
-
-                            GameProfileSerializer.serialize(nbttagcompound, tileentityskull.getGameProfile());
-                            nmsStack.getOrCreateTag().set("SkullOwner", nbttagcompound);
-                        }
-
-                        drops.add(CraftItemStack.asBukkitCopy(nmsStack));
-                        // We don't want to drop cocoa blocks, we want to drop cocoa beans.
-                    } else if (Blocks.COCOA == block) {
-                        int age = (Integer) data.get(BlockCocoa.AGE);
-                        int dropAmount = (age >= 2 ? 3 : 1);
-                        for (int j = 0; j < dropAmount; ++j) {
-                            drops.add(new ItemStack(Material.COCOA_BEANS, 1));
-                        }
-                    } else {
-                        drops.add(new ItemStack(org.bukkit.craftbukkit.util.CraftMagicNumbers.getMaterial(item), 1));
-                    }
-                }
-            }
-        }
-        return drops;
+        return getDrops(new ItemStack(Material.AIR));
     }
 
+    @Override
     public Collection<ItemStack> getDrops(ItemStack item) {
-        if (itemCausesDrops(item)) {
-            return getDrops();
-        } else {
-            return Collections.emptyList();
-        }
+        return net.minecraft.server.Block.getDrops(getNMS(), (WorldServer) world.getMinecraftWorld(), position, world.getTileEntity(position), null, CraftItemStack.asNMSCopy(item))
+                .stream().map(CraftItemStack::asBukkitCopy).collect(Collectors.toList());
     }
 
+    @Override
     public void setMetadata(String metadataKey, MetadataValue newMetadataValue) {
         getCraftWorld().getBlockMetadata().setMetadata(this, metadataKey, newMetadataValue);
     }
 
+    @Override
     public List<MetadataValue> getMetadata(String metadataKey) {
         return getCraftWorld().getBlockMetadata().getMetadata(this, metadataKey);
     }
 
+    @Override
     public boolean hasMetadata(String metadataKey) {
         return getCraftWorld().getBlockMetadata().hasMetadata(this, metadataKey);
     }
 
+    @Override
     public void removeMetadata(String metadataKey, Plugin owningPlugin) {
         getCraftWorld().getBlockMetadata().removeMetadata(this, metadataKey, owningPlugin);
     }
@@ -642,25 +674,7 @@ public class CraftBlock implements Block {
         Vec3D startPos = new Vec3D(start.getX(), start.getY(), start.getZ());
         Vec3D endPos = new Vec3D(start.getX() + dir.getX(), start.getY() + dir.getY(), start.getZ() + dir.getZ());
 
-        // Similar to to nms.World#rayTrace:
-        IBlockData blockData = world.getType(position);
-        Fluid fluid = world.getFluid(position);
-        boolean collidableBlock = blockData.getBlock().isCollidable(blockData);
-        boolean collideWithFluid = CraftFluidCollisionMode.toNMS(fluidCollisionMode).predicate.test(fluid);
-
-        if (!collidableBlock && !collideWithFluid) {
-            return null;
-        }
-
-        MovingObjectPosition nmsHitResult = null;
-        if (collidableBlock) {
-            nmsHitResult = net.minecraft.server.Block.rayTrace(blockData, world.getMinecraftWorld(), position, startPos, endPos);
-        }
-
-        if (nmsHitResult == null && collideWithFluid) {
-            nmsHitResult = VoxelShapes.create(0.0D, 0.0D, 0.0D, 1.0D, (double) fluid.getHeight(), 1.0D).rayTrace(startPos, endPos, position);
-        }
-
+        MovingObjectPosition nmsHitResult = world.rayTraceBlock(new RayTrace(startPos, endPos, RayTrace.BlockCollisionOption.OUTLINE, CraftFluidCollisionMode.toNMS(fluidCollisionMode), null), position);
         return CraftRayTraceResult.fromNMS(this.getWorld(), nmsHitResult);
     }
 
@@ -675,4 +689,11 @@ public class CraftBlock implements Block {
         AxisAlignedBB aabb = shape.getBoundingBox();
         return new BoundingBox(getX() + aabb.minX, getY() + aabb.minY, getZ() + aabb.minZ, getX() + aabb.maxX, getY() + aabb.maxY, getZ() + aabb.maxZ);
     }
+
+    // Paper start
+    @Override
+    public com.destroystokyo.paper.block.BlockSoundGroup getSoundGroup() {
+        return new com.destroystokyo.paper.block.CraftBlockSoundGroup(getNMSBlock().getBlockData().getStepSound());
+    }
+    // Paper end
 }

@@ -8,37 +8,43 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 
 public class EntitySnowman extends EntityGolem implements IRangedEntity {
 
-    private static final DataWatcherObject<Byte> a = DataWatcher.a(EntitySnowman.class, DataWatcherRegistry.a);
+    private static final DataWatcherObject<Byte> b = DataWatcher.a(EntitySnowman.class, DataWatcherRegistry.a);
 
-    public EntitySnowman(World world) {
-        super(EntityTypes.SNOW_GOLEM, world);
-        this.setSize(0.7F, 1.9F);
+    public EntitySnowman(EntityTypes<? extends EntitySnowman> entitytypes, World world) {
+        super(entitytypes, world);
     }
 
-    protected void n() {
+    @Override
+    protected void initPathfinder() {
         this.goalSelector.a(1, new PathfinderGoalArrowAttack(this, 1.25D, 20, 10.0F));
         this.goalSelector.a(2, new PathfinderGoalRandomStrollLand(this, 1.0D, 1.0000001E-5F));
         this.goalSelector.a(3, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 6.0F));
         this.goalSelector.a(4, new PathfinderGoalRandomLookaround(this));
-        this.targetSelector.a(1, new PathfinderGoalNearestAttackableTarget<>(this, EntityInsentient.class, 10, true, false, IMonster.d));
+        this.targetSelector.a(1, new PathfinderGoalNearestAttackableTarget<>(this, EntityInsentient.class, 10, true, false, (entityliving) -> {
+            return entityliving instanceof IMonster;
+        }));
     }
 
+    @Override
     protected void initAttributes() {
         super.initAttributes();
-        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(4.0D);
+        this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(4.0D);
         this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.20000000298023224D);
     }
 
-    protected void x_() {
-        super.x_();
-        this.datawatcher.register(EntitySnowman.a, (byte) 16);
+    @Override
+    protected void initDatawatcher() {
+        super.initDatawatcher();
+        this.datawatcher.register(EntitySnowman.b, (byte) 16);
     }
 
+    @Override
     public void b(NBTTagCompound nbttagcompound) {
         super.b(nbttagcompound);
         nbttagcompound.setBoolean("Pumpkin", this.hasPumpkin());
     }
 
+    @Override
     public void a(NBTTagCompound nbttagcompound) {
         super.a(nbttagcompound);
         if (nbttagcompound.hasKey("Pumpkin")) {
@@ -47,6 +53,7 @@ public class EntitySnowman extends EntityGolem implements IRangedEntity {
 
     }
 
+    @Override
     public void movementTick() {
         super.movementTick();
         if (!this.world.isClientSide) {
@@ -54,7 +61,7 @@ public class EntitySnowman extends EntityGolem implements IRangedEntity {
             int j = MathHelper.floor(this.locY);
             int k = MathHelper.floor(this.locZ);
 
-            if (this.ap()) {
+            if (this.au()) {
                 this.damageEntity(DamageSource.DROWN, 1.0F);
             }
 
@@ -62,7 +69,7 @@ public class EntitySnowman extends EntityGolem implements IRangedEntity {
                 this.damageEntity(CraftEventFactory.MELTING, 1.0F); // CraftBukkit - DamageSource.BURN -> CraftEventFactory.MELTING
             }
 
-            if (!this.world.getGameRules().getBoolean("mobGriefing")) {
+            if (!this.world.getGameRules().getBoolean(GameRules.MOB_GRIEFING)) {
                 return;
             }
 
@@ -82,11 +89,7 @@ public class EntitySnowman extends EntityGolem implements IRangedEntity {
 
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.H;
-    }
-
+    @Override
     public void a(EntityLiving entityliving, float f) {
         EntitySnowball entitysnowball = new EntitySnowball(this.world, this);
         double d0 = entityliving.locY + (double) entityliving.getHeadHeight() - 1.100000023841858D;
@@ -100,10 +103,12 @@ public class EntitySnowman extends EntityGolem implements IRangedEntity {
         this.world.addEntity(entitysnowball);
     }
 
-    public float getHeadHeight() {
+    @Override
+    protected float b(EntityPose entitypose, EntitySize entitysize) {
         return 1.7F;
     }
 
+    @Override
     protected boolean a(EntityHuman entityhuman, EnumHand enumhand) {
         ItemStack itemstack = entityhuman.b(enumhand);
 
@@ -118,41 +123,44 @@ public class EntitySnowman extends EntityGolem implements IRangedEntity {
             // CraftBukkit end
 
             this.setHasPumpkin(false);
-            itemstack.damage(1, entityhuman);
+            itemstack.damage(1, entityhuman, (entityhuman1) -> {
+                entityhuman1.d(enumhand);
+            });
         }
 
         return super.a(entityhuman, enumhand);
     }
 
     public boolean hasPumpkin() {
-        return ((Byte) this.datawatcher.get(EntitySnowman.a) & 16) != 0;
+        return ((Byte) this.datawatcher.get(EntitySnowman.b) & 16) != 0;
     }
 
     public void setHasPumpkin(boolean flag) {
-        byte b0 = (Byte) this.datawatcher.get(EntitySnowman.a);
+        byte b0 = (Byte) this.datawatcher.get(EntitySnowman.b);
 
         if (flag) {
-            this.datawatcher.set(EntitySnowman.a, (byte) (b0 | 16));
+            this.datawatcher.set(EntitySnowman.b, (byte) (b0 | 16));
         } else {
-            this.datawatcher.set(EntitySnowman.a, (byte) (b0 & -17));
+            this.datawatcher.set(EntitySnowman.b, (byte) (b0 & -17));
         }
 
     }
 
     @Nullable
-    protected SoundEffect D() {
+    @Override
+    protected SoundEffect getSoundAmbient() {
         return SoundEffects.ENTITY_SNOW_GOLEM_AMBIENT;
     }
 
     @Nullable
-    protected SoundEffect d(DamageSource damagesource) {
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return SoundEffects.ENTITY_SNOW_GOLEM_HURT;
     }
 
     @Nullable
-    protected SoundEffect cs() {
+    @Override
+    protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_SNOW_GOLEM_DEATH;
     }
-
-    public void s(boolean flag) {}
 }

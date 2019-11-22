@@ -1,6 +1,5 @@
 package org.spigotmc;
 
-import co.aikar.timings.ThreadAssertion;
 import net.minecraft.server.MinecraftServer;
 
 public class AsyncCatcher
@@ -11,7 +10,7 @@ public class AsyncCatcher
 
     public static void catchOp(String reason)
     {
-        if ( enabled && !ThreadAssertion.is() && Thread.currentThread() != MinecraftServer.getServer().primaryThread )
+        if ( enabled && Thread.currentThread() != MinecraftServer.getServer().serverThread )
         {
             throw new IllegalStateException( "Asynchronous " + reason + "!" );
         }

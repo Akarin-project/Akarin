@@ -7,7 +7,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 
 public class ContainerShulkerBox extends Container {
 
-    private final IInventory a;
+    private final IInventory c;
     // CraftBukkit start
     private CraftInventoryView bukkitEntity;
     private PlayerInventory player;
@@ -18,43 +18,51 @@ public class ContainerShulkerBox extends Container {
             return bukkitEntity;
         }
 
-        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), new CraftInventory(this.a), this);
+        bukkitEntity = new CraftInventoryView(this.player.player.getBukkitEntity(), new CraftInventory(this.c), this);
         return bukkitEntity;
     }
     // CraftBukkit end
 
-    public ContainerShulkerBox(PlayerInventory playerinventory, IInventory iinventory, EntityHuman entityhuman) {
-        this.a = iinventory;
+    public ContainerShulkerBox(int i, PlayerInventory playerinventory) {
+        this(i, playerinventory, new InventorySubcontainer(27));
+    }
+
+    public ContainerShulkerBox(int i, PlayerInventory playerinventory, IInventory iinventory) {
+        super(Containers.SHULKER_BOX, i);
+        a(iinventory, 27);
+        this.c = iinventory;
         this.player = playerinventory; // CraftBukkit - save player
-        iinventory.startOpen(entityhuman);
+        iinventory.startOpen(playerinventory.player);
         boolean flag = true;
         boolean flag1 = true;
 
-        int i;
         int j;
+        int k;
 
-        for (i = 0; i < 3; ++i) {
-            for (j = 0; j < 9; ++j) {
-                this.a((Slot) (new SlotShulkerBox(iinventory, j + i * 9, 8 + j * 18, 18 + i * 18)));
+        for (j = 0; j < 3; ++j) {
+            for (k = 0; k < 9; ++k) {
+                this.a((Slot) (new SlotShulkerBox(iinventory, k + j * 9, 8 + k * 18, 18 + j * 18)));
             }
         }
 
-        for (i = 0; i < 3; ++i) {
-            for (j = 0; j < 9; ++j) {
-                this.a(new Slot(playerinventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+        for (j = 0; j < 3; ++j) {
+            for (k = 0; k < 9; ++k) {
+                this.a(new Slot(playerinventory, k + j * 9 + 9, 8 + k * 18, 84 + j * 18));
             }
         }
 
-        for (i = 0; i < 9; ++i) {
-            this.a(new Slot(playerinventory, i, 8 + i * 18, 142));
+        for (j = 0; j < 9; ++j) {
+            this.a(new Slot(playerinventory, j, 8 + j * 18, 142));
         }
 
     }
 
+    @Override
     public boolean canUse(EntityHuman entityhuman) {
-        return this.a.a(entityhuman);
+        return this.c.a(entityhuman);
     }
 
+    @Override
     public ItemStack shiftClick(EntityHuman entityhuman, int i) {
         ItemStack itemstack = ItemStack.a;
         Slot slot = (Slot) this.slots.get(i);
@@ -63,26 +71,27 @@ public class ContainerShulkerBox extends Container {
             ItemStack itemstack1 = slot.getItem();
 
             itemstack = itemstack1.cloneItemStack();
-            if (i < this.a.getSize()) {
-                if (!this.a(itemstack1, this.a.getSize(), this.slots.size(), true)) {
+            if (i < this.c.getSize()) {
+                if (!this.a(itemstack1, this.c.getSize(), this.slots.size(), true)) {
                     return ItemStack.a;
                 }
-            } else if (!this.a(itemstack1, 0, this.a.getSize(), false)) {
+            } else if (!this.a(itemstack1, 0, this.c.getSize(), false)) {
                 return ItemStack.a;
             }
 
             if (itemstack1.isEmpty()) {
                 slot.set(ItemStack.a);
             } else {
-                slot.f();
+                slot.d();
             }
         }
 
         return itemstack;
     }
 
+    @Override
     public void b(EntityHuman entityhuman) {
         super.b(entityhuman);
-        this.a.closeContainer(entityhuman);
+        this.c.closeContainer(entityhuman);
     }
 }

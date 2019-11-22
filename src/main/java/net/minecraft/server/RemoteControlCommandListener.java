@@ -2,51 +2,55 @@ package net.minecraft.server;
 
 public class RemoteControlCommandListener implements ICommandListener {
 
-    private final StringBuffer a = new StringBuffer();
-    private final MinecraftServer b;
+    private final StringBuffer buffer = new StringBuffer();
+    private final MinecraftServer server;
 
     public RemoteControlCommandListener(MinecraftServer minecraftserver) {
-        this.b = minecraftserver;
+        this.server = minecraftserver;
     }
 
     public void clearMessages() {
-        this.a.setLength(0);
+        this.buffer.setLength(0);
     }
 
     public String getMessages() {
-        return this.a.toString();
+        return this.buffer.toString();
     }
 
-    public CommandListenerWrapper f() {
-        WorldServer worldserver = this.b.getWorldServer(DimensionManager.OVERWORLD);
+    public CommandListenerWrapper getWrapper() {
+        WorldServer worldserver = this.server.getWorldServer(DimensionManager.OVERWORLD);
 
-        return new CommandListenerWrapper(this, new Vec3D(worldserver.getSpawn()), Vec2F.a, worldserver, 4, "Recon", new ChatComponentText("Rcon"), this.b, (Entity) null);
+        return new CommandListenerWrapper(this, new Vec3D(worldserver.getSpawn()), Vec2F.a, worldserver, 4, "Recon", new ChatComponentText("Rcon"), this.server, (Entity) null);
     }
 
     // CraftBukkit start - Send a String
     public void sendMessage(String message) {
-        this.a.append(message);
+        this.buffer.append(message);
     }
 
     @Override
     public org.bukkit.command.CommandSender getBukkitSender(CommandListenerWrapper wrapper) {
-        return b.remoteConsole;
+        return server.remoteConsole;
     }
     // CraftBukkit end
 
+    @Override
     public void sendMessage(IChatBaseComponent ichatbasecomponent) {
-        this.a.append(ichatbasecomponent.getString());
+        this.buffer.append(ichatbasecomponent.getString());
     }
 
-    public boolean a() {
+    @Override
+    public boolean shouldSendSuccess() {
         return true;
     }
 
-    public boolean b() {
+    @Override
+    public boolean shouldSendFailure() {
         return true;
     }
 
-    public boolean B_() {
-        return this.b.k();
+    @Override
+    public boolean shouldBroadcastCommands() {
+        return this.server.l();
     }
 }

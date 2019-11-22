@@ -1,30 +1,23 @@
 package org.bukkit.craftbukkit.inventory;
 
-import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS;
-import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS_ID;
-import static org.bukkit.craftbukkit.inventory.CraftMetaItem.ENCHANTMENTS_LVL;
-
-import java.util.Iterator;
+import static org.bukkit.craftbukkit.inventory.CraftMetaItem.*;
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-
 import net.minecraft.server.EnchantmentManager;
 import net.minecraft.server.Item;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.NBTTagList;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
+import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
+import org.bukkit.craftbukkit.util.CraftLegacy;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
-
-import com.google.common.collect.ImmutableMap;
-import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
-import org.bukkit.craftbukkit.util.CraftLegacy;
-import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 
 @DelegateDeserialization(ItemStack.class)
 public final class CraftItemStack extends ItemStack {
@@ -47,9 +40,6 @@ public final class CraftItemStack extends ItemStack {
         net.minecraft.server.ItemStack stack = new net.minecraft.server.ItemStack(item, original.getAmount());
         if (original.hasItemMeta()) {
             setItemMeta(stack, original.getItemMeta());
-        } else {
-            // Converted after setItemMeta
-            stack.convertStack();
         }
         return stack;
     }
@@ -307,6 +297,7 @@ public final class CraftItemStack extends ItemStack {
             case ZOMBIE_WALL_HEAD:
                 return new CraftMetaSkull(item.getTag());
             case LEATHER_HELMET:
+            case LEATHER_HORSE_ARMOR:
             case LEATHER_CHESTPLATE:
             case LEATHER_LEGGINGS:
             case LEATHER_BOOTS:
@@ -359,18 +350,20 @@ public final class CraftItemStack extends ItemStack {
                 return new CraftMetaBanner(item.getTag());
             case BAT_SPAWN_EGG:
             case BLAZE_SPAWN_EGG:
+            case CAT_SPAWN_EGG:
             case CAVE_SPIDER_SPAWN_EGG:
             case CHICKEN_SPAWN_EGG:
             case COD_SPAWN_EGG:
             case COW_SPAWN_EGG:
             case CREEPER_SPAWN_EGG:
             case DOLPHIN_SPAWN_EGG:
-            case DROWNED_SPAWN_EGG:
             case DONKEY_SPAWN_EGG:
+            case DROWNED_SPAWN_EGG:
             case ELDER_GUARDIAN_SPAWN_EGG:
             case ENDERMAN_SPAWN_EGG:
             case ENDERMITE_SPAWN_EGG:
             case EVOKER_SPAWN_EGG:
+            case FOX_SPAWN_EGG:
             case GHAST_SPAWN_EGG:
             case GUARDIAN_SPAWN_EGG:
             case HORSE_SPAWN_EGG:
@@ -380,12 +373,15 @@ public final class CraftItemStack extends ItemStack {
             case MOOSHROOM_SPAWN_EGG:
             case MULE_SPAWN_EGG:
             case OCELOT_SPAWN_EGG:
+            case PANDA_SPAWN_EGG:
             case PARROT_SPAWN_EGG:
             case PHANTOM_SPAWN_EGG:
             case PIG_SPAWN_EGG:
+            case PILLAGER_SPAWN_EGG:
             case POLAR_BEAR_SPAWN_EGG:
             case PUFFERFISH_SPAWN_EGG:
             case RABBIT_SPAWN_EGG:
+            case RAVAGER_SPAWN_EGG:
             case SALMON_SPAWN_EGG:
             case SHEEP_SPAWN_EGG:
             case SHULKER_SPAWN_EGG:
@@ -396,11 +392,13 @@ public final class CraftItemStack extends ItemStack {
             case SPIDER_SPAWN_EGG:
             case SQUID_SPAWN_EGG:
             case STRAY_SPAWN_EGG:
+            case TRADER_LLAMA_SPAWN_EGG:
             case TROPICAL_FISH_SPAWN_EGG:
             case TURTLE_SPAWN_EGG:
             case VEX_SPAWN_EGG:
             case VILLAGER_SPAWN_EGG:
             case VINDICATOR_SPAWN_EGG:
+            case WANDERING_TRADER_SPAWN_EGG:
             case WITCH_SPAWN_EGG:
             case WITHER_SKELETON_SPAWN_EGG:
             case WOLF_SPAWN_EGG:
@@ -409,17 +407,28 @@ public final class CraftItemStack extends ItemStack {
             case ZOMBIE_SPAWN_EGG:
             case ZOMBIE_VILLAGER_SPAWN_EGG:
                 return new CraftMetaSpawnEgg(item.getTag());
+            case ARMOR_STAND:
+                return new CraftMetaArmorStand(item.getTag());
             case KNOWLEDGE_BOOK:
                 return new CraftMetaKnowledgeBook(item.getTag());
-            case ARMOR_STAND:
-                return new CraftMetaArmorStand(item.getTag()); // Paper
             case FURNACE:
             case CHEST:
             case TRAPPED_CHEST:
             case JUKEBOX:
             case DISPENSER:
             case DROPPER:
-            case SIGN:
+            case ACACIA_SIGN:
+            case ACACIA_WALL_SIGN:
+            case BIRCH_SIGN:
+            case BIRCH_WALL_SIGN:
+            case DARK_OAK_SIGN:
+            case DARK_OAK_WALL_SIGN:
+            case JUNGLE_SIGN:
+            case JUNGLE_WALL_SIGN:
+            case OAK_SIGN:
+            case OAK_WALL_SIGN:
+            case SPRUCE_SIGN:
+            case SPRUCE_WALL_SIGN:
             case SPAWNER:
             case BREWING_STAND:
             case ENCHANTING_TABLE:
@@ -450,9 +459,20 @@ public final class CraftItemStack extends ItemStack {
             case RED_SHULKER_BOX:
             case BLACK_SHULKER_BOX:
             case ENDER_CHEST:
+            case BARREL:
+            case BELL:
+            case BLAST_FURNACE:
+            case CAMPFIRE:
+            case JIGSAW:
+            case LECTERN:
+            case SMOKER:
                 return new CraftMetaBlockState(item.getTag(), CraftMagicNumbers.getMaterial(item.getItem()));
             case TROPICAL_FISH_BUCKET:
                 return new CraftMetaTropicalFishBucket(item.getTag());
+            case CROSSBOW:
+                return new CraftMetaCrossbow(item.getTag());
+            case SUSPICIOUS_STEW:
+                return new CraftMetaSuspiciousStew(item.getTag());
             default:
                 return new CraftMetaItem(item.getTag());
         }
@@ -492,7 +512,7 @@ public final class CraftItemStack extends ItemStack {
         item.setTag(tag);
 
         ((CraftMetaItem) itemMeta).applyToItem(tag);
-        item.convertStack();
+        item.convertStack(((CraftMetaItem) itemMeta).getVersion());
 
         return true;
     }

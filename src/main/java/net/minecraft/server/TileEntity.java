@@ -3,26 +3,36 @@ package net.minecraft.server;
 import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.apache.logging.log4j.util.Supplier;
+// CraftBukkit start
+import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
+import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
+import org.bukkit.inventory.InventoryHolder;
+// CraftBukkit end
 import co.aikar.timings.MinecraftTimings; // Paper
 import co.aikar.timings.Timing; // Paper
-import org.bukkit.inventory.InventoryHolder; // CraftBukkit
 
 public abstract class TileEntity implements KeyedObject { // Paper
 
     public Timing tickTimer = MinecraftTimings.getTileEntityTimings(this); // Paper
+    // CraftBukkit start - data containers
+    private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
+    public CraftPersistentDataContainer persistentDataContainer;
+    // CraftBukkit end
+    private static final Logger LOGGER = LogManager.getLogger();
     boolean isLoadingStructure = false; // Paper
-    private static final Logger a = LogManager.getLogger();
-    private final TileEntityTypes<?> e; public TileEntityTypes getTileEntityType() { return e; } // Paper - OBFHELPER
+    private final TileEntityTypes<?> b; public TileEntityTypes getTileEntityType() { return b; } // Paper - OBFHELPER
+    @Nullable
     protected World world;
     protected BlockPosition position;
-    protected boolean d;
+    protected boolean f;
     @Nullable
-    private IBlockData f;
+    private IBlockData c;
+    private boolean g;
 
     public TileEntity(TileEntityTypes<?> tileentitytypes) {
         this.position = BlockPosition.ZERO;
-        this.e = tileentitytypes;
+        this.b = tileentitytypes;
     }
 
     // Paper start
@@ -70,6 +80,14 @@ public abstract class TileEntity implements KeyedObject { // Paper
 
     public void load(NBTTagCompound nbttagcompound) {
         this.position = new BlockPosition(nbttagcompound.getInt("x"), nbttagcompound.getInt("y"), nbttagcompound.getInt("z"));
+        // CraftBukkit start - read container
+        this.persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
+
+        NBTTagCompound persistentDataTag = nbttagcompound.getCompound("PublicBukkitValues");
+        if (persistentDataTag != null) {
+            this.persistentDataContainer.putAll(persistentDataTag);
+        }
+        // CraftBukkit end
     }
 
     public NBTTagCompound save(NBTTagCompound nbttagcompound) {
@@ -77,7 +95,7 @@ public abstract class TileEntity implements KeyedObject { // Paper
     }
 
     private NBTTagCompound d(NBTTagCompound nbttagcompound) {
-        MinecraftKey minecraftkey = TileEntityTypes.a(this.C());
+        MinecraftKey minecraftkey = TileEntityTypes.a(this.q());
 
         if (minecraftkey == null) {
             throw new RuntimeException(this.getClass() + " is missing a mapping! This is a bug!");
@@ -86,50 +104,47 @@ public abstract class TileEntity implements KeyedObject { // Paper
             nbttagcompound.setInt("x", this.position.getX());
             nbttagcompound.setInt("y", this.position.getY());
             nbttagcompound.setInt("z", this.position.getZ());
+            // CraftBukkit start - store container
+            if (this.persistentDataContainer != null && !this.persistentDataContainer.isEmpty()) {
+                nbttagcompound.set("PublicBukkitValues", this.persistentDataContainer.toTagCompound());
+            }
+            // CraftBukkit end
             return nbttagcompound;
         }
     }
 
-    // CraftBukkit start
     @Nullable
     public static TileEntity create(NBTTagCompound nbttagcompound) {
-        return create(nbttagcompound, null);
-    }
-
-    @Nullable
-    public static TileEntity create(NBTTagCompound nbttagcompound, @Nullable World world) {
-        // CraftBukkit end
-        TileEntity tileentity = null;
         String s = nbttagcompound.getString("id");
 
-        try {
-            tileentity = TileEntityTypes.a(s);
-        } catch (Throwable throwable) {
-            TileEntity.a.error("Failed to create block entity {}", s, throwable);
-        }
-
-        if (tileentity != null) {
+        return (TileEntity) IRegistry.BLOCK_ENTITY_TYPE.getOptional(new MinecraftKey(s)).map((tileentitytypes) -> {
             try {
-                tileentity.setWorld(world); // CraftBukkit
-                tileentity.load(nbttagcompound);
-            } catch (Throwable throwable1) {
-                TileEntity.a.error("Failed to load data for block entity {}", s, throwable1);
-                tileentity = null;
+                return tileentitytypes.a();
+            } catch (Throwable throwable) {
+                TileEntity.LOGGER.error("Failed to create block entity {}", s, throwable);
+                return null;
             }
-        } else {
-            TileEntity.a.warn("Skipping BlockEntity with id {}", s);
-        }
-
-        return tileentity;
+        }).map((tileentity) -> {
+            try {
+                tileentity.load(nbttagcompound);
+                return tileentity;
+            } catch (Throwable throwable) {
+                TileEntity.LOGGER.error("Failed to load data for block entity {}", s, throwable);
+                return null;
+            }
+        }).orElseGet(() -> {
+            TileEntity.LOGGER.warn("Skipping BlockEntity with id {}", s);
+            return null;
+        });
     }
 
     public void update() {
         if (this.world != null) {
             if (IGNORE_TILE_UPDATES) return; // Paper
-            this.f = this.world.getType(this.position);
+            this.c = this.world.getType(this.position);
             this.world.b(this.position, this);
-            if (!this.f.isAir()) {
-                this.world.updateAdjacentComparators(this.position, this.f.getBlock());
+            if (!this.c.isAir()) {
+                this.world.updateAdjacentComparators(this.position, this.c.getBlock());
             }
         }
 
@@ -140,11 +155,11 @@ public abstract class TileEntity implements KeyedObject { // Paper
     }
 
     public IBlockData getBlock() {
-        if (this.f == null) {
-            this.f = this.world.getType(this.position);
+        if (this.c == null) {
+            this.c = this.world.getType(this.position);
         }
 
-        return this.f;
+        return this.c;
     }
 
     @Nullable
@@ -152,33 +167,33 @@ public abstract class TileEntity implements KeyedObject { // Paper
         return null;
     }
 
-    public NBTTagCompound aa_() {
+    public NBTTagCompound b() {
         return this.d(new NBTTagCompound());
     }
 
-    public boolean x() {
-        return this.d;
+    public boolean isRemoved() {
+        return this.f;
     }
 
-    public void y() {
-        this.d = true;
+    public void V_() {
+        this.f = true;
     }
 
-    public void z() {
-        this.d = false;
+    public void n() {
+        this.f = false;
     }
 
-    public boolean c(int i, int j) {
+    public boolean setProperty(int i, int j) {
         return false;
     }
 
     public void invalidateBlockCache() {
-        this.f = null;
+        this.c = null;
     }
 
     public void a(CrashReportSystemDetails crashreportsystemdetails) {
         crashreportsystemdetails.a("Name", () -> {
-            return IRegistry.BLOCK_ENTITY_TYPE.getKey(this.C()) + " // " + this.getClass().getCanonicalName();
+            return IRegistry.BLOCK_ENTITY_TYPE.getKey(this.q()) + " // " + this.getClass().getCanonicalName();
         });
         if (this.world != null) {
             // Paper start - Prevent TileEntity and Entity crashes
@@ -192,7 +207,7 @@ public abstract class TileEntity implements KeyedObject { // Paper
     }
 
     public void setPosition(BlockPosition blockposition) {
-        this.position = blockposition.h();
+        this.position = blockposition.immutableCopy();
     }
 
     public boolean isFilteredNBT() {
@@ -203,8 +218,17 @@ public abstract class TileEntity implements KeyedObject { // Paper
 
     public void a(EnumBlockMirror enumblockmirror) {}
 
-    public TileEntityTypes<?> C() {
-        return this.e;
+    public TileEntityTypes<?> q() {
+        return this.b;
+    }
+
+    public void r() {
+        if (!this.g) {
+            this.g = true;
+            TileEntity.LOGGER.warn("Block entity invalid: {} @ {}", new Supplier[]{() -> {
+                        return IRegistry.BLOCK_ENTITY_TYPE.getKey(this.q());
+                    }, this::getPosition});
+        }
     }
 
     // CraftBukkit start - add method
@@ -216,7 +240,7 @@ public abstract class TileEntity implements KeyedObject { // Paper
         // Paper end
         if (world == null) return null;
         // Spigot start
-        org.bukkit.block.Block block = world.getWorld().getBlockAt(position); // Akarin
+        org.bukkit.block.Block block = world.getWorld().getBlockAt(position.getX(), position.getY(), position.getZ());
         if (block == null) {
             org.bukkit.Bukkit.getLogger().log(java.util.logging.Level.WARNING, "No block for owner at %s %d %d %d", new Object[]{world.getWorld(), position.getX(), position.getY(), position.getZ()});
             return null;

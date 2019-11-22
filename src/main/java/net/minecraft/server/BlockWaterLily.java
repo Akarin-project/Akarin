@@ -8,21 +8,24 @@ public class BlockWaterLily extends BlockPlant {
         super(block_info);
     }
 
+    @Override
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity) {
         super.a(iblockdata, world, blockposition, entity);
         if (entity instanceof EntityBoat && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(entity, blockposition, Blocks.AIR.getBlockData()).isCancelled()) { // CraftBukkit
-            world.setAir(new BlockPosition(blockposition), true);
+            world.b(new BlockPosition(blockposition), true);
         }
 
     }
 
-    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+    @Override
+    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision) {
         return BlockWaterLily.a;
     }
 
-    protected boolean b(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+    @Override
+    protected boolean a_(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
         Fluid fluid = iblockaccess.getFluid(blockposition);
 
-        return fluid.c() == FluidTypes.WATER || iblockdata.getMaterial() == Material.ICE;
+        return fluid.getType() == FluidTypes.WATER || iblockdata.getMaterial() == Material.ICE;
     }
 }

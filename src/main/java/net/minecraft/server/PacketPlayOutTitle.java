@@ -29,10 +29,11 @@ public class PacketPlayOutTitle implements Packet<PacketListenerPlayOut> {
         this.e = k;
     }
 
+    @Override
     public void a(PacketDataSerializer packetdataserializer) throws IOException {
         this.a = (PacketPlayOutTitle.EnumTitleAction) packetdataserializer.a(PacketPlayOutTitle.EnumTitleAction.class);
         if (this.a == PacketPlayOutTitle.EnumTitleAction.TITLE || this.a == PacketPlayOutTitle.EnumTitleAction.SUBTITLE || this.a == PacketPlayOutTitle.EnumTitleAction.ACTIONBAR) {
-            this.b = packetdataserializer.f();
+            this.b = packetdataserializer.h();
         }
 
         if (this.a == PacketPlayOutTitle.EnumTitleAction.TIMES) {
@@ -54,6 +55,7 @@ public class PacketPlayOutTitle implements Packet<PacketListenerPlayOut> {
     }
     // Paper end
 
+    @Override
     public void b(PacketDataSerializer packetdataserializer) throws IOException {
         packetdataserializer.a((Enum) this.a);
         if (this.a == PacketPlayOutTitle.EnumTitleAction.TITLE || this.a == PacketPlayOutTitle.EnumTitleAction.SUBTITLE || this.a == PacketPlayOutTitle.EnumTitleAction.ACTIONBAR) {

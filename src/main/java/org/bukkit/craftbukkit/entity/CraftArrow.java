@@ -1,27 +1,29 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.server.BlockPosition;
 import net.minecraft.server.EntityArrow;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.entity.Arrow;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.projectiles.ProjectileSource;
 
-public class CraftArrow extends AbstractProjectile implements Arrow {
+public class CraftArrow extends AbstractProjectile implements AbstractArrow {
 
     public CraftArrow(CraftServer server, EntityArrow entity) {
         super(server, entity);
     }
 
+    @Override
     public void setKnockbackStrength(int knockbackStrength) {
         Validate.isTrue(knockbackStrength >= 0, "Knockback cannot be negative");
         getHandle().setKnockbackStrength(knockbackStrength);
     }
 
+    @Override
     public int getKnockbackStrength() {
         return getHandle().knockbackStrength;
     }
@@ -37,18 +39,34 @@ public class CraftArrow extends AbstractProjectile implements Arrow {
         getHandle().setDamage(damage);
     }
 
+    @Override
+    public int getPierceLevel() {
+        return getHandle().getPierceLevel();
+    }
+
+    @Override
+    public void setPierceLevel(int pierceLevel) {
+        Preconditions.checkArgument(0 <= pierceLevel && pierceLevel <= Byte.MAX_VALUE, "Pierce level out of range, expected 0 < level < 127");
+
+        getHandle().setPierceLevel((byte) pierceLevel);
+    }
+
+    @Override
     public boolean isCritical() {
         return getHandle().isCritical();
     }
 
+    @Override
     public void setCritical(boolean critical) {
         getHandle().setCritical(critical);
     }
 
+    @Override
     public ProjectileSource getShooter() {
         return getHandle().projectileSource;
     }
 
+    @Override
     public void setShooter(ProjectileSource shooter) {
         if (shooter instanceof Entity) {
             getHandle().setShooter(((CraftEntity) shooter).getHandle());
@@ -69,8 +87,8 @@ public class CraftArrow extends AbstractProjectile implements Arrow {
             return null;
         }
 
-        EntityArrow handle = getHandle();
-        return getWorld().getBlockAt(handle.tileX, handle.tileY, handle.tileZ);
+        BlockPosition pos = getHandle().getChunkCoordinates();
+        return getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
     }
 
     @Override
@@ -102,29 +120,8 @@ public class CraftArrow extends AbstractProjectile implements Arrow {
         return "CraftArrow";
     }
 
+    @Override
     public EntityType getType() {
-        return EntityType.ARROW;
+        return EntityType.UNKNOWN;
     }
-
-    // Spigot start
-    private final Arrow.Spigot spigot = new Arrow.Spigot()
-    {
-        @Override
-        public double getDamage()
-        {
-            return getHandle().getDamage();
-        }
-
-        @Override
-        public void setDamage(double damage)
-        {
-            getHandle().setDamage( damage );
-        }
-    };
-
-    public Arrow.Spigot spigot()
-    {
-        return spigot;
-    }
-    // Spigot end
 }

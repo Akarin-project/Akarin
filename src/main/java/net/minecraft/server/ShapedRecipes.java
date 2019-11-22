@@ -22,7 +22,7 @@ import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.RecipeChoice;
 // CraftBukkit end
 
-public class ShapedRecipes implements IRecipe {
+public class ShapedRecipes implements RecipeCrafting {
 
     private final int width;
     private final int height;
@@ -100,45 +100,45 @@ public class ShapedRecipes implements IRecipe {
     }
     // CraftBukkit end
 
+    @Override
     public MinecraftKey getKey() {
         return this.key;
     }
 
-    public RecipeSerializer<?> a() {
-        return RecipeSerializers.a;
+    @Override
+    public RecipeSerializer<?> getRecipeSerializer() {
+        return RecipeSerializer.a;
     }
 
-    public ItemStack d() {
+    @Override
+    public ItemStack c() {
         return this.result;
     }
 
-    public NonNullList<RecipeItemStack> e() {
+    @Override
+    public NonNullList<RecipeItemStack> a() {
         return this.items;
     }
 
-    public boolean a(IInventory iinventory, World world) {
-        if (!(iinventory instanceof InventoryCrafting)) {
-            return false;
-        } else {
-            for (int i = 0; i <= iinventory.U_() - this.width; ++i) {
-                for (int j = 0; j <= iinventory.n() - this.height; ++j) {
-                    if (this.a(iinventory, i, j, true)) {
-                        return true;
-                    }
+    public boolean a(InventoryCrafting inventorycrafting, World world) {
+        for (int i = 0; i <= inventorycrafting.g() - this.width; ++i) {
+            for (int j = 0; j <= inventorycrafting.f() - this.height; ++j) {
+                if (this.a(inventorycrafting, i, j, true)) {
+                    return true;
+                }
 
-                    if (this.a(iinventory, i, j, false)) {
-                        return true;
-                    }
+                if (this.a(inventorycrafting, i, j, false)) {
+                    return true;
                 }
             }
-
-            return false;
         }
+
+        return false;
     }
 
-    private boolean a(IInventory iinventory, int i, int j, boolean flag) {
-        for (int k = 0; k < iinventory.U_(); ++k) {
-            for (int l = 0; l < iinventory.n(); ++l) {
+    private boolean a(InventoryCrafting inventorycrafting, int i, int j, boolean flag) {
+        for (int k = 0; k < inventorycrafting.g(); ++k) {
+            for (int l = 0; l < inventorycrafting.f(); ++l) {
                 int i1 = k - i;
                 int j1 = l - j;
                 RecipeItemStack recipeitemstack = RecipeItemStack.a;
@@ -151,7 +151,7 @@ public class ShapedRecipes implements IRecipe {
                     }
                 }
 
-                if (!recipeitemstack.test(iinventory.getItem(k + l * iinventory.U_()))) {
+                if (!recipeitemstack.test(inventorycrafting.getItem(k + l * inventorycrafting.g()))) {
                     return false;
                 }
             }
@@ -160,15 +160,15 @@ public class ShapedRecipes implements IRecipe {
         return true;
     }
 
-    public ItemStack craftItem(IInventory iinventory) {
-        return this.d().cloneItemStack();
+    public ItemStack a(InventoryCrafting inventorycrafting) {
+        return this.c().cloneItemStack();
     }
 
-    public int g() {
+    public int i() {
         return this.width;
     }
 
-    public int h() {
+    public int j() {
         return this.height;
     }
 
@@ -307,14 +307,14 @@ public class ShapedRecipes implements IRecipe {
 
     public static ItemStack a(JsonObject jsonobject) {
         String s = ChatDeserializer.h(jsonobject, "item");
-        Item item = (Item) IRegistry.ITEM.get(new MinecraftKey(s));
+        Item item = (Item) IRegistry.ITEM.getOptional(new MinecraftKey(s)).orElseThrow(() -> {
+            return new JsonSyntaxException("Unknown item '" + s + "'");
+        });
 
-        if (item == null) {
-            throw new JsonSyntaxException("Unknown item '" + s + "'");
-        } else if (jsonobject.has("data")) {
+        if (jsonobject.has("data")) {
             throw new JsonParseException("Disallowed data tag found");
         } else {
-            int i = ChatDeserializer.a(jsonobject, "count", 1);
+            int i = ChatDeserializer.a(jsonobject, "count", (int) 1);
 
             return new ItemStack(item, i);
         }
@@ -324,6 +324,7 @@ public class ShapedRecipes implements IRecipe {
 
         public a() {}
 
+        @Override
         public ShapedRecipes a(MinecraftKey minecraftkey, JsonObject jsonobject) {
             String s = ChatDeserializer.a(jsonobject, "group", "");
             Map<String, RecipeItemStack> map = ShapedRecipes.c(ChatDeserializer.t(jsonobject, "key"));
@@ -336,13 +337,10 @@ public class ShapedRecipes implements IRecipe {
             return new ShapedRecipes(minecraftkey, s, i, j, nonnulllist, itemstack);
         }
 
-        public String a() {
-            return "crafting_shaped";
-        }
-
+        @Override
         public ShapedRecipes a(MinecraftKey minecraftkey, PacketDataSerializer packetdataserializer) {
-            int i = packetdataserializer.g();
-            int j = packetdataserializer.g();
+            int i = packetdataserializer.i();
+            int j = packetdataserializer.i();
             String s = packetdataserializer.e(32767);
             NonNullList<RecipeItemStack> nonnulllist = NonNullList.a(i * j, RecipeItemStack.a);
 
@@ -350,7 +348,7 @@ public class ShapedRecipes implements IRecipe {
                 nonnulllist.set(k, RecipeItemStack.b(packetdataserializer));
             }
 
-            ItemStack itemstack = packetdataserializer.k();
+            ItemStack itemstack = packetdataserializer.m();
 
             return new ShapedRecipes(minecraftkey, s, i, j, nonnulllist, itemstack);
         }

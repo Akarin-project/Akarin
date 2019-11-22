@@ -9,68 +9,89 @@ import org.bukkit.entity.Witch;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import javax.annotation.Nullable;
+import java.util.function.Predicate;
 
-public class EntityWitch extends EntityMonster implements IRangedEntity {
+public class EntityWitch extends EntityRaider implements IRangedEntity {
 
-    private static final UUID a = UUID.fromString("5CD17E52-A79A-43D3-A529-90FDE04B181E");
-    private static final AttributeModifier b = (new AttributeModifier(EntityWitch.a, "Drinking speed penalty", -0.25D, 0)).a(false); private static final AttributeModifier DRINKING_SPEED = b; // Paper - OBFHELPER
-    private static final DataWatcherObject<Boolean> c = DataWatcher.a(EntityWitch.class, DataWatcherRegistry.i);
-    private int bC; public int getPotionUseTimeLeft() { return bC; } public void setPotionUseTimeLeft(int timeLeft) { bC = timeLeft; } // Paper - OBFHELPER
+    private static final UUID b = UUID.fromString("5CD17E52-A79A-43D3-A529-90FDE04B181E");
+    private static final AttributeModifier bz = (new AttributeModifier(EntityWitch.b, "Drinking speed penalty", -0.25D, AttributeModifier.Operation.ADDITION)).a(false); private static final AttributeModifier DRINKING_SPEED = bz; // Paper - OBFHELPER
+    private static final DataWatcherObject<Boolean> bA = DataWatcher.a(EntityWitch.class, DataWatcherRegistry.i);
+    private int bB; public int getPotionUseTimeLeft() { return bB; } public void setPotionUseTimeLeft(int timeLeft) { bB = timeLeft; } // Paper - OBFHELPER
+    private PathfinderGoalNearestHealableRaider<EntityRaider> bC;
+    private PathfinderGoalNearestAttackableTargetWitch<EntityHuman> bD;
 
-    public EntityWitch(World world) {
-        super(EntityTypes.WITCH, world);
-        this.setSize(0.6F, 1.95F);
+    public EntityWitch(EntityTypes<? extends EntityWitch> entitytypes, World world) {
+        super(entitytypes, world);
     }
 
-    protected void n() {
+    @Override
+    protected void initPathfinder() {
+        super.initPathfinder();
+        this.bC = new PathfinderGoalNearestHealableRaider<>(this, EntityRaider.class, true, (entityliving) -> {
+            return entityliving != null && this.ek() && entityliving.getEntityType() != EntityTypes.WITCH;
+        });
+        this.bD = new PathfinderGoalNearestAttackableTargetWitch<>(this, EntityHuman.class, 10, true, false, (Predicate) null);
         this.goalSelector.a(1, new PathfinderGoalFloat(this));
         this.goalSelector.a(2, new PathfinderGoalArrowAttack(this, 1.0D, 60, 10.0F));
         this.goalSelector.a(2, new PathfinderGoalRandomStrollLand(this, 1.0D));
         this.goalSelector.a(3, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 8.0F));
         this.goalSelector.a(3, new PathfinderGoalRandomLookaround(this));
-        this.targetSelector.a(1, new PathfinderGoalHurtByTarget(this, false, new Class[0]));
-        this.targetSelector.a(2, new PathfinderGoalNearestAttackableTarget<>(this, EntityHuman.class, true));
+        this.targetSelector.a(1, new PathfinderGoalHurtByTarget(this, new Class[]{EntityRaider.class}));
+        this.targetSelector.a(2, this.bC);
+        this.targetSelector.a(3, this.bD);
     }
 
-    protected void x_() {
-        super.x_();
-        this.getDataWatcher().register(EntityWitch.c, false);
+    @Override
+    protected void initDatawatcher() {
+        super.initDatawatcher();
+        this.getDataWatcher().register(EntityWitch.bA, false);
     }
 
-    protected SoundEffect D() {
+    @Override
+    protected SoundEffect getSoundAmbient() {
         return SoundEffects.ENTITY_WITCH_AMBIENT;
     }
 
-    protected SoundEffect d(DamageSource damagesource) {
+    @Override
+    protected SoundEffect getSoundHurt(DamageSource damagesource) {
         return SoundEffects.ENTITY_WITCH_HURT;
     }
 
-    protected SoundEffect cs() {
+    @Override
+    protected SoundEffect getSoundDeath() {
         return SoundEffects.ENTITY_WITCH_DEATH;
     }
 
-    public void setDrinkingPotion(boolean drinkingPotion) { a(drinkingPotion); } // Paper - OBFHELPER
-    public void a(boolean flag) {
-        this.getDataWatcher().set(EntityWitch.c, flag);
+    public void setDrinkingPotion(boolean drinkingPotion) { s(drinkingPotion); } // Paper - OBFHELPER
+    public void s(boolean flag) {
+        this.getDataWatcher().set(EntityWitch.bA, flag);
     }
 
     public boolean isDrinkingPotion() { return l(); } // Paper - OBFHELPER
     public boolean l() {
-        return (Boolean) this.getDataWatcher().get(EntityWitch.c);
+        return (Boolean) this.getDataWatcher().get(EntityWitch.bA);
     }
 
+    @Override
     protected void initAttributes() {
         super.initAttributes();
-        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(26.0D);
+        this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(26.0D);
         this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.25D);
     }
 
+    @Override
     public void movementTick() {
-        if (!this.world.isClientSide) {
+        if (!this.world.isClientSide && this.isAlive()) {
+            this.bC.j();
+            if (this.bC.h() <= 0) {
+                this.bD.a(true);
+            } else {
+                this.bD.a(false);
+            }
+
             if (this.l()) {
-                if (this.bC-- <= 0) {
-                    this.a(false);
+                if (this.bB-- <= 0) {
+                    this.s(false);
                     ItemStack itemstack = this.getItemInMainHand();
 
                     this.setSlot(EnumItemSlot.MAINHAND, ItemStack.a);
@@ -92,32 +113,35 @@ public class EntityWitch extends EntityMonster implements IRangedEntity {
                         }
                     }
 
-                    this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).c(EntityWitch.b);
+                    this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).removeModifier(EntityWitch.bz);
                 }
             } else {
                 PotionRegistry potionregistry = null;
 
                 if (this.random.nextFloat() < 0.15F && this.a(TagsFluid.WATER) && !this.hasEffect(MobEffects.WATER_BREATHING)) {
-                    potionregistry = Potions.x;
-                } else if (this.random.nextFloat() < 0.15F && (this.isBurning() || this.cr() != null && this.cr().p()) && !this.hasEffect(MobEffects.FIRE_RESISTANCE)) {
-                    potionregistry = Potions.m;
+                    potionregistry = Potions.WATER_BREATHING;
+                } else if (this.random.nextFloat() < 0.15F && (this.isBurning() || this.cE() != null && this.cE().p()) && !this.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+                    potionregistry = Potions.FIRE_RESISTANCE;
                 } else if (this.random.nextFloat() < 0.05F && this.getHealth() < this.getMaxHealth()) {
-                    potionregistry = Potions.z;
-                } else if (this.random.nextFloat() < 0.5F && this.getGoalTarget() != null && !this.hasEffect(MobEffects.FASTER_MOVEMENT) && this.getGoalTarget().h(this) > 121.0D) {
-                    potionregistry = Potions.o;
+                    potionregistry = Potions.HEALING;
+                } else if (this.random.nextFloat() < 0.5F && this.getGoalTarget() != null && !this.hasEffect(MobEffects.FASTER_MOVEMENT) && this.getGoalTarget().h((Entity) this) > 121.0D) {
+                    potionregistry = Potions.SWIFTNESS;
                 }
 
                 if (potionregistry != null) {
-                    // Paper start - moved all this down into its own method
-                    //this.setSlot(EnumItemSlot.MAINHAND, PotionUtil.a(new ItemStack(Items.POTION), potionregistry));
-                    //this.bC = this.getItemInMainHand().k();
-                    //this.a(true);
-                    //this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_WITCH_DRINK, this.bV(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
-                    //AttributeInstance attributeinstance = this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED);
-                    //attributeinstance.c(EntityWitch.b);
-                    //attributeinstance.b(EntityWitch.b);
-
-                    setDrinkingPotion(PotionUtil.addPotionToItemStack(new ItemStack(Items.POTION), potionregistry));
+                    // Paper start - move all this down into its own method
+//                    ItemStack potion = PotionUtil.a(new ItemStack(Items.POTION), potionregistry);
+//                    org.bukkit.inventory.ItemStack bukkitStack = com.destroystokyo.paper.event.entity.WitchReadyPotionEvent.process((org.bukkit.entity.Witch) this.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(potion));
+//                    this.setSlot(EnumItemSlot.MAINHAND, org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(bukkitStack));
+//                    // Paper end
+//                    this.bB = this.getItemInMainHand().k();
+//                    this.s(true);
+//                    this.world.playSound((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_WITCH_DRINK, this.getSoundCategory(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
+//                    AttributeInstance attributeinstance = this.getAttributeInstance(GenericAttributes.MOVEMENT_SPEED);
+//
+//                    attributeinstance.removeModifier(EntityWitch.bz);
+//                    attributeinstance.addModifier(EntityWitch.bz);
+                    this.setDrinkingPotion(PotionUtil.addPotionToItemStack(new ItemStack(Items.POTION), potionregistry));
                     // Paper end
                 }
             }
@@ -142,6 +166,12 @@ public class EntityWitch extends EntityMonster implements IRangedEntity {
     }
     // Paper end
 
+    @Override
+    public SoundEffect dV() {
+        return SoundEffects.ENTITY_WITCH_CELEBRATE;
+    }
+
+    @Override
     protected float applyMagicModifier(DamageSource damagesource, float f) {
         f = super.applyMagicModifier(damagesource, f);
         if (damagesource.getEntity() == this) {
@@ -155,26 +185,30 @@ public class EntityWitch extends EntityMonster implements IRangedEntity {
         return f;
     }
 
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.v;
-    }
-
+    @Override
     public void a(EntityLiving entityliving, float f) {
         if (!this.l()) {
-            double d0 = entityliving.locY + (double) entityliving.getHeadHeight() - 1.100000023841858D;
-            double d1 = entityliving.locX + entityliving.motX - this.locX;
-            double d2 = d0 - this.locY;
-            double d3 = entityliving.locZ + entityliving.motZ - this.locZ;
-            float f1 = MathHelper.sqrt(d1 * d1 + d3 * d3);
-            PotionRegistry potionregistry = Potions.B;
+            Vec3D vec3d = entityliving.getMot();
+            double d0 = entityliving.locX + vec3d.x - this.locX;
+            double d1 = entityliving.locY + (double) entityliving.getHeadHeight() - 1.100000023841858D - this.locY;
+            double d2 = entityliving.locZ + vec3d.z - this.locZ;
+            float f1 = MathHelper.sqrt(d0 * d0 + d2 * d2);
+            PotionRegistry potionregistry = Potions.HARMING;
 
-            if (f1 >= 8.0F && !entityliving.hasEffect(MobEffects.SLOWER_MOVEMENT)) {
-                potionregistry = Potions.r;
+            if (entityliving instanceof EntityRaider) {
+                if (entityliving.getHealth() <= 4.0F) {
+                    potionregistry = Potions.HEALING;
+                } else {
+                    potionregistry = Potions.REGENERATION;
+                }
+
+                this.setGoalTarget((EntityLiving) null);
+            } else if (f1 >= 8.0F && !entityliving.hasEffect(MobEffects.SLOWER_MOVEMENT)) {
+                potionregistry = Potions.SLOWNESS;
             } else if (entityliving.getHealth() >= 8.0F && !entityliving.hasEffect(MobEffects.POISON)) {
-                potionregistry = Potions.D;
+                potionregistry = Potions.POISON;
             } else if (f1 <= 3.0F && !entityliving.hasEffect(MobEffects.WEAKNESS) && this.random.nextFloat() < 0.25F) {
-                potionregistry = Potions.M;
+                potionregistry = Potions.WEAKNESS;
             }
 
             // Paper start
@@ -184,19 +218,26 @@ public class EntityWitch extends EntityMonster implements IRangedEntity {
                 return;
             }
             potion = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(event.getPotion());
-            EntityPotion entitypotion = new EntityPotion(this.world, this, potion);
+            EntityPotion entitypotion = new EntityPotion(this.world, this);
+            entitypotion.setItem(potion);
             // Paper end
-
             entitypotion.pitch -= -20.0F;
-            entitypotion.shoot(d1, d2 + (double) (f1 * 0.2F), d3, 0.75F, 8.0F);
-            this.world.a((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_WITCH_THROW, this.bV(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
+            entitypotion.shoot(d0, d1 + (double) (f1 * 0.2F), d2, 0.75F, 8.0F);
+            this.world.playSound((EntityHuman) null, this.locX, this.locY, this.locZ, SoundEffects.ENTITY_WITCH_THROW, this.getSoundCategory(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
             this.world.addEntity(entitypotion);
         }
     }
 
-    public float getHeadHeight() {
+    @Override
+    protected float b(EntityPose entitypose, EntitySize entitysize) {
         return 1.62F;
     }
 
-    public void s(boolean flag) {}
+    @Override
+    public void a(int i, boolean flag) {}
+
+    @Override
+    public boolean dX() {
+        return false;
+    }
 }

@@ -1,9 +1,7 @@
 package org.spigotmc;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-
-import co.aikar.timings.MinecraftTimings;
 import net.minecraft.server.AxisAlignedBB;
 import net.minecraft.server.Chunk;
 import net.minecraft.server.Entity;
@@ -15,38 +13,41 @@ import net.minecraft.server.EntityCreature;
 import net.minecraft.server.EntityCreeper;
 import net.minecraft.server.EntityEnderCrystal;
 import net.minecraft.server.EntityEnderDragon;
-import net.minecraft.server.EntityFallingBlock;
+import net.minecraft.server.EntityFallingBlock; // Paper
 import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityFireworks;
-import net.minecraft.server.EntityFish;
 import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityInsentient;
+import net.minecraft.server.EntityLightning;
 import net.minecraft.server.EntityLiving;
-import net.minecraft.server.EntityLlama;
 import net.minecraft.server.EntityMonster;
 import net.minecraft.server.EntityProjectile;
+import net.minecraft.server.EntityRaider;
 import net.minecraft.server.EntitySheep;
+import net.minecraft.server.EntitySlice;
 import net.minecraft.server.EntitySlime;
 import net.minecraft.server.EntityTNTPrimed;
 import net.minecraft.server.EntityThrownTrident;
 import net.minecraft.server.EntityVillager;
-import net.minecraft.server.EntityWaterAnimal;
-import net.minecraft.server.EntityWeather;
 import net.minecraft.server.EntityWither;
-import net.minecraft.server.MCUtil;
 import net.minecraft.server.MathHelper;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.NavigationGuardian;
 import net.minecraft.server.World;
+import co.aikar.timings.MinecraftTimings;
 
 public class ActivationRange
 {
 
+    public enum ActivationType
+    {
+        MONSTER,
+        ANIMAL,
+        RAIDER,
+        MISC;
+
+        AxisAlignedBB boundingBox = new AxisAlignedBB( 0, 0, 0, 0, 0, 0 );
+    }
+
     static AxisAlignedBB maxBB = new AxisAlignedBB( 0, 0, 0, 0, 0, 0 );
-    static AxisAlignedBB miscBB = new AxisAlignedBB( 0, 0, 0, 0, 0, 0 );
-    static AxisAlignedBB animalBB = new AxisAlignedBB( 0, 0, 0, 0, 0, 0 );
-    static AxisAlignedBB waterBB = new AxisAlignedBB( 0, 0, 0, 0, 0, 0 ); // Paper
-    static AxisAlignedBB monsterBB = new AxisAlignedBB( 0, 0, 0, 0, 0, 0 );
 
     /**
      * Initializes an entities type on construction to specify what group this
@@ -55,18 +56,20 @@ public class ActivationRange
      * @param entity
      * @return group id
      */
-    public static byte initializeEntityActivationType(Entity entity)
+    public static ActivationType initializeEntityActivationType(Entity entity)
     {
-        if (entity instanceof EntityWaterAnimal) { return 4; } // Paper
-        if ( entity instanceof EntityMonster || entity instanceof EntitySlime )
+        if ( entity instanceof EntityRaider )
         {
-            return 1; // Monster
+            return ActivationType.RAIDER;
+        } else if ( entity instanceof EntityMonster || entity instanceof EntitySlime )
+        {
+            return ActivationType.MONSTER;
         } else if ( entity instanceof EntityCreature || entity instanceof EntityAmbient )
         {
-            return 2; // Animal
+            return ActivationType.ANIMAL;
         } else
         {
-            return 3; // Misc
+            return ActivationType.MISC;
         }
     }
 
@@ -79,17 +82,17 @@ public class ActivationRange
      */
     public static boolean initializeEntityActivationState(Entity entity, SpigotWorldConfig config)
     {
-        if ( ( entity.activationType == 3 && config.miscActivationRange == 0 )
-                || ( entity.activationType == 2 && config.animalActivationRange == 0 )
-                || ( entity.activationType == 1 && config.monsterActivationRange == 0 )
-                || ( entity.activationType == 4 && config.waterActivationRange == 0 ) // Paper
+        if ( ( entity.activationType == ActivationType.MISC && config.miscActivationRange == 0 )
+                || ( entity.activationType == ActivationType.RAIDER && config.raiderActivationRange == 0 )
+                || ( entity.activationType == ActivationType.ANIMAL && config.animalActivationRange == 0 )
+                || ( entity.activationType == ActivationType.MONSTER && config.monsterActivationRange == 0 )
                 || entity instanceof EntityHuman
                 || entity instanceof EntityProjectile
                 || entity instanceof EntityEnderDragon
                 || entity instanceof EntityComplexPart
                 || entity instanceof EntityWither
                 || entity instanceof EntityFireball
-                || entity instanceof EntityWeather
+                || entity instanceof EntityLightning
                 || entity instanceof EntityTNTPrimed
                 || entity instanceof EntityFallingBlock // Paper - Always tick falling blocks
                 || entity instanceof EntityEnderCrystal
@@ -110,26 +113,26 @@ public class ActivationRange
      */
     public static void activateEntities(World world)
     {
-        MinecraftTimings.entityActivationCheckTimer.startTimingUnsafe();
+        MinecraftTimings.entityActivationCheckTimer.startTiming();
         final int miscActivationRange = world.spigotConfig.miscActivationRange;
+        final int raiderActivationRange = world.spigotConfig.raiderActivationRange;
         final int animalActivationRange = world.spigotConfig.animalActivationRange;
         final int monsterActivationRange = world.spigotConfig.monsterActivationRange;
-        final int waterActivationRange = world.spigotConfig.waterActivationRange; // Paper
 
         int maxRange = Math.max( monsterActivationRange, animalActivationRange );
+        maxRange = Math.max( maxRange, raiderActivationRange );
         maxRange = Math.max( maxRange, miscActivationRange );
-        //maxRange = Math.min( ( world.spigotConfig.viewDistance << 4 ) - 8, maxRange ); Paper - Use player view distance API below instead
+        maxRange = Math.min( ( world.spigotConfig.viewDistance << 4 ) - 8, maxRange );
 
-        Chunk chunk; // Paper
-        for ( EntityHuman player : world.players )
+        for ( EntityHuman player : world.getPlayers() )
         {
-            int playerMaxRange = maxRange = Math.min( ( player.getViewDistance() << 4 ) - 8, maxRange ); // Paper - Use player view distance API
+
             player.activatedTick = MinecraftServer.currentTick;
-            maxBB = player.getBoundingBox().grow( playerMaxRange, 256, playerMaxRange ); // Paper - Use player view distance API
-            miscBB = player.getBoundingBox().grow( miscActivationRange, 256, miscActivationRange );
-            animalBB = player.getBoundingBox().grow( animalActivationRange, 256, animalActivationRange );
-            waterBB = player.getBoundingBox().grow( waterActivationRange, 256, waterActivationRange ); // Paper
-            monsterBB = player.getBoundingBox().grow( monsterActivationRange, 256, monsterActivationRange );
+            maxBB = player.getBoundingBox().grow( maxRange, 256, maxRange );
+            ActivationType.MISC.boundingBox = player.getBoundingBox().grow( miscActivationRange, 256, miscActivationRange );
+            ActivationType.RAIDER.boundingBox = player.getBoundingBox().grow( raiderActivationRange, 256, raiderActivationRange );
+            ActivationType.ANIMAL.boundingBox = player.getBoundingBox().grow( animalActivationRange, 256, animalActivationRange );
+            ActivationType.MONSTER.boundingBox = player.getBoundingBox().grow( monsterActivationRange, 256, monsterActivationRange );
 
             int i = MathHelper.floor( maxBB.minX / 16.0D );
             int j = MathHelper.floor( maxBB.maxX / 16.0D );
@@ -140,14 +143,15 @@ public class ActivationRange
             {
                 for ( int j1 = k; j1 <= l; ++j1 )
                 {
-                    if ( (chunk = world.getChunkIfLoaded(i1, j1 )) != null ) // Paper
+                    Chunk chunk = (Chunk) world.getChunkIfLoadedImmediately( i1, j1 );
+                    if ( chunk != null )
                     {
-                        activateChunkEntities( chunk ); // Paper
+                        activateChunkEntities( chunk );
                     }
                 }
             }
         }
-        MinecraftTimings.entityActivationCheckTimer.stopTimingUnsafe();
+        MinecraftTimings.entityActivationCheckTimer.stopTiming();
     }
 
     /**
@@ -159,7 +163,7 @@ public class ActivationRange
     {
         for ( List<Entity> slice : chunk.entitySlices )
         {
-            for ( Entity entity : slice )
+            for ( Entity entity : (Collection<Entity>) slice )
             {
                 if ( MinecraftServer.currentTick > entity.activatedTick )
                 {
@@ -168,34 +172,9 @@ public class ActivationRange
                         entity.activatedTick = MinecraftServer.currentTick;
                         continue;
                     }
-                    switch ( entity.activationType )
+                    if ( entity.activationType.boundingBox.c( entity.getBoundingBox() ) )
                     {
-                        case 1:
-                            if ( monsterBB.c( entity.getBoundingBox() ) )
-                            {
-                                entity.activatedTick = MinecraftServer.currentTick;
-                            }
-                            break;
-                        case 2:
-                            if ( animalBB.c( entity.getBoundingBox() ) )
-                            {
-                                entity.activatedTick = MinecraftServer.currentTick;
-                            }
-                            break;
-                            // Paper start
-                        case 4:
-                            if ( waterBB.c( entity.getBoundingBox() ) )
-                            {
-                                entity.activatedTick = MinecraftServer.currentTick;
-                            }
-                            break;
-                            // Paper end
-                        case 3:
-                        default:
-                            if ( miscBB.c( entity.getBoundingBox() ) )
-                            {
-                                entity.activatedTick = MinecraftServer.currentTick;
-                            }
+                        entity.activatedTick = MinecraftServer.currentTick;
                     }
                 }
             }
@@ -211,17 +190,11 @@ public class ActivationRange
      */
     public static boolean checkEntityImmunities(Entity entity)
     {
-        // Paper start - optimize Water cases
-        if (entity instanceof EntityFish) {
-            return false;
-        }
-        if (entity.inWater && (!(entity instanceof EntityInsentient) || !(((EntityInsentient) entity).getNavigation() instanceof NavigationGuardian))) {
+        // quick checks.
+        if ( entity.inWater || entity.fireTicks > 0 )
+        {
             return true;
         }
-        if (entity.fireTicks > 0) {
-            return true;
-        }
-        // Paper end
         if ( !( entity instanceof EntityArrow ) )
         {
             if ( !entity.onGround || !entity.passengers.isEmpty() || entity.isPassenger() )
@@ -236,29 +209,18 @@ public class ActivationRange
         if ( entity instanceof EntityLiving )
         {
             EntityLiving living = (EntityLiving) entity;
-            if ( living.lastDamageByPlayerTime > 0 || living.hurtTicks > 0 || living.effects.size() > 0 ) // Paper
+            if ( /*TODO: Missed mapping? living.attackTicks > 0 || */ living.hurtTicks > 0 || living.effects.size() > 0 )
             {
                 return true;
             }
-            if ( entity instanceof EntityCreature )
-            {
-                // Paper start
-                EntityCreature creature = (EntityCreature) entity;
-                if (creature.getGoalTarget() != null || creature.getMovingTarget() != null) {
-                    return true;
-                }
-                // Paper end
-            }
-            if ( entity instanceof EntityVillager && ( (EntityVillager) entity ).isInLove() )
+            if ( entity instanceof EntityCreature && ( (EntityCreature) entity ).getGoalTarget() != null )
             {
                 return true;
             }
-            // Paper start
-            if ( entity instanceof EntityLlama && ( (EntityLlama ) entity ).inCaravan() )
+            if ( entity instanceof EntityVillager && ( (EntityVillager) entity ).canBreed() )
             {
                 return true;
             }
-            // Paper end
             if ( entity instanceof EntityAnimal )
             {
                 EntityAnimal animal = (EntityAnimal) entity;
@@ -305,29 +267,12 @@ public class ActivationRange
                     entity.activatedTick = MinecraftServer.currentTick + 20;
                 }
                 isActive = true;
-                // Paper start
-            } else if (entity instanceof EntityInsentient && ((EntityInsentient) entity).targetSelector.hasTasks()) {
-                isActive = true;
             }
-            // Paper end
             // Add a little performance juice to active entities. Skip 1/4 if not immune.
-        } else if ( !entity.defaultActivationState && entity.ticksLived % 4 == 0 && !(entity instanceof EntityInsentient && ((EntityInsentient) entity).targetSelector.hasTasks()) && !checkEntityImmunities( entity ) ) // Paper - add targetSelector.hasTasks
+        } else if ( !entity.defaultActivationState && entity.ticksLived % 4 == 0 && !checkEntityImmunities( entity ) )
         {
             isActive = false;
         }
-        //int x = MathHelper.floor( entity.locX ); // Paper
-        //int z = MathHelper.floor( entity.locZ ); // Paper
-        // Make sure not on edge of unloaded chunk
-        Chunk chunk = entity.getChunkAtLocation(); // Paper
-        if ( isActive && !( chunk != null && chunk.areNeighborsLoaded( 1 ) ) )
-        {
-            isActive = false;
-        }
-        // Paper start - Skip ticking in chunks scheduled for unload
-        else if (entity.world.paperConfig.skipEntityTickingInChunksScheduledForUnload && (chunk == null || chunk.scheduledForUnload != null)) {
-            isActive = false;
-        }
-        // Paper end
         return isActive;
     }
 }

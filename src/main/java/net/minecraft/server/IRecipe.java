@@ -1,38 +1,40 @@
 package net.minecraft.server;
 
-public interface IRecipe {
+public interface IRecipe<C extends IInventory> {
 
-    boolean a(IInventory iinventory, World world);
+    boolean a(C c0, World world);
 
-    ItemStack craftItem(IInventory iinventory);
+    ItemStack a(C c0);
 
-    ItemStack d();
+    ItemStack c();
 
-    default NonNullList<ItemStack> b(IInventory iinventory) {
-        NonNullList<ItemStack> nonnulllist = NonNullList.a(iinventory.getSize(), ItemStack.a);
+    default NonNullList<ItemStack> b(C c0) {
+        NonNullList<ItemStack> nonnulllist = NonNullList.a(c0.getSize(), ItemStack.a);
 
         for (int i = 0; i < nonnulllist.size(); ++i) {
-            Item item = iinventory.getItem(i).getItem();
+            Item item = c0.getItem(i).getItem();
 
-            if (item.p()) {
-                nonnulllist.set(i, new ItemStack(item.o()));
+            if (item.o()) {
+                nonnulllist.set(i, new ItemStack(item.n()));
             }
         }
 
         return nonnulllist;
     }
 
-    default NonNullList<RecipeItemStack> e() {
+    default NonNullList<RecipeItemStack> a() {
         return NonNullList.a();
     }
 
-    default boolean c() {
+    default boolean isComplex() {
         return false;
     }
 
     MinecraftKey getKey();
 
-    RecipeSerializer<?> a();
+    RecipeSerializer<?> getRecipeSerializer();
+
+    Recipes<?> g();
 
     org.bukkit.inventory.Recipe toBukkitRecipe(); // CraftBukkit
 }

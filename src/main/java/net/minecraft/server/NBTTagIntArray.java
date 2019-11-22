@@ -33,6 +33,7 @@ public class NBTTagIntArray extends NBTList<NBTTagInt> {
         return aint;
     }
 
+    @Override
     public void write(DataOutput dataoutput) throws IOException {
         dataoutput.writeInt(this.data.length);
         int[] aint = this.data;
@@ -46,6 +47,7 @@ public class NBTTagIntArray extends NBTList<NBTTagInt> {
 
     }
 
+    @Override
     public void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) throws IOException {
         nbtreadlimiter.a(192L);
         int j = datainput.readInt();
@@ -60,10 +62,12 @@ public class NBTTagIntArray extends NBTList<NBTTagInt> {
 
     }
 
+    @Override
     public byte getTypeId() {
         return 11;
     }
 
+    @Override
     public String toString() {
         StringBuilder stringbuilder = new StringBuilder("[I;");
 
@@ -78,6 +82,7 @@ public class NBTTagIntArray extends NBTList<NBTTagInt> {
         return stringbuilder.append(']').toString();
     }
 
+    @Override
     public NBTTagIntArray clone() {
         int[] aint = new int[this.data.length];
 
@@ -93,10 +98,11 @@ public class NBTTagIntArray extends NBTList<NBTTagInt> {
         return Arrays.hashCode(this.data);
     }
 
-    public int[] d() {
+    public int[] getInts() {
         return this.data;
     }
 
+    @Override
     public IChatBaseComponent a(String s, int i) {
         IChatBaseComponent ichatbasecomponent = (new ChatComponentText("I")).a(NBTTagIntArray.e);
         IChatBaseComponent ichatbasecomponent1 = (new ChatComponentText("[")).addSibling(ichatbasecomponent).a(";");
@@ -116,15 +122,50 @@ public class NBTTagIntArray extends NBTList<NBTTagInt> {
         return this.data.length;
     }
 
-    public NBTTagInt c(int i) {
+    public NBTTagInt get(int i) {
         return new NBTTagInt(this.data[i]);
     }
 
-    public void a(int i, NBTBase nbtbase) {
-        this.data[i] = ((NBTNumber) nbtbase).asInt();
+    public NBTTagInt set(int i, NBTTagInt nbttagint) {
+        int j = this.data[i];
+
+        this.data[i] = nbttagint.asInt();
+        return new NBTTagInt(j);
     }
 
-    public void b(int i) {
+    public void add(int i, NBTTagInt nbttagint) {
+        this.data = ArrayUtils.add(this.data, i, nbttagint.asInt());
+    }
+
+    @Override
+    public boolean a(int i, NBTBase nbtbase) {
+        if (nbtbase instanceof NBTNumber) {
+            this.data[i] = ((NBTNumber) nbtbase).asInt();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean b(int i, NBTBase nbtbase) {
+        if (nbtbase instanceof NBTNumber) {
+            this.data = ArrayUtils.add(this.data, i, ((NBTNumber) nbtbase).asInt());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public NBTTagInt remove(int i) {
+        int j = this.data[i];
+
         this.data = ArrayUtils.remove(this.data, i);
+        return new NBTTagInt(j);
+    }
+
+    public void clear() {
+        this.data = new int[0];
     }
 }

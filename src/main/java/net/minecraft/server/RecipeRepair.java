@@ -2,9 +2,9 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.stream.Stream; // CraftBukkit
 
-public class RecipeRepair extends ShapelessRecipes implements IRecipe { // CraftBukkit - added extends
+public class RecipeRepair extends ShapelessRecipes { // CraftBukkit - added extends
 
     // CraftBukkit start - Delegate to new parent class
     public RecipeRepair(MinecraftKey minecraftkey) {
@@ -12,38 +12,34 @@ public class RecipeRepair extends ShapelessRecipes implements IRecipe { // Craft
     }
     // CraftBukkit end
 
-    public boolean a(IInventory iinventory, World world) {
-        if (!(iinventory instanceof InventoryCrafting)) {
-            return false;
-        } else {
-            List<ItemStack> list = Lists.newArrayList();
+    public boolean a(InventoryCrafting inventorycrafting, World world) {
+        List<ItemStack> list = Lists.newArrayList();
 
-            for (int i = 0; i < iinventory.getSize(); ++i) {
-                ItemStack itemstack = iinventory.getItem(i);
+        for (int i = 0; i < inventorycrafting.getSize(); ++i) {
+            ItemStack itemstack = inventorycrafting.getItem(i);
 
-                if (!itemstack.isEmpty()) {
-                    list.add(itemstack);
-                    if (list.size() > 1) {
-                        ItemStack itemstack1 = (ItemStack) list.get(0);
+            if (!itemstack.isEmpty()) {
+                list.add(itemstack);
+                if (list.size() > 1) {
+                    ItemStack itemstack1 = (ItemStack) list.get(0);
 
-                        if (itemstack.getItem() != itemstack1.getItem() || itemstack1.getCount() != 1 || itemstack.getCount() != 1 || !itemstack1.getItem().usesDurability()) {
-                            return false;
-                        }
+                    if (itemstack.getItem() != itemstack1.getItem() || itemstack1.getCount() != 1 || itemstack.getCount() != 1 || !itemstack1.getItem().usesDurability()) {
+                        return false;
                     }
                 }
             }
-
-            return list.size() == 2;
         }
+
+        return list.size() == 2;
     }
 
-    public ItemStack craftItem(IInventory iinventory) {
+    public ItemStack a(InventoryCrafting inventorycrafting) {
         List<ItemStack> list = Lists.newArrayList();
 
         ItemStack itemstack;
 
-        for (int i = 0; i < iinventory.getSize(); ++i) {
-            itemstack = iinventory.getItem(i);
+        for (int i = 0; i < inventorycrafting.getSize(); ++i) {
+            itemstack = inventorycrafting.getItem(i);
             if (!itemstack.isEmpty()) {
                 list.add(itemstack);
                 if (list.size() > 1) {
@@ -75,15 +71,12 @@ public class RecipeRepair extends ShapelessRecipes implements IRecipe { // Craft
 
                 itemstack3.setDamage(i1);
                 // CraftBukkit start - Construct a dummy repair recipe
-                if (iinventory instanceof InventoryCrafting) {
-                    InventoryCrafting inventorycrafting = (InventoryCrafting) iinventory;
-                    NonNullList<RecipeItemStack> ingredients = NonNullList.a();
-                    ingredients.add(new RecipeItemStack(Stream.of(new RecipeItemStack.StackProvider(itemstack2.cloneItemStack()))));
-                    ingredients.add(new RecipeItemStack(Stream.of(new RecipeItemStack.StackProvider(itemstack.cloneItemStack()))));
-                    ShapelessRecipes recipe = new ShapelessRecipes(new MinecraftKey("repairitem"), "", itemstack3.cloneItemStack(), ingredients);
-                    inventorycrafting.setCurrentRecipe(recipe);
-                    itemstack3 = org.bukkit.craftbukkit.event.CraftEventFactory.callPreCraftEvent(inventorycrafting, inventorycrafting.resultInventory, itemstack3, inventorycrafting.container.getBukkitView(), true);
-                }
+                NonNullList<RecipeItemStack> ingredients = NonNullList.a();
+                ingredients.add(new RecipeItemStack(Stream.of(new RecipeItemStack.StackProvider(itemstack2.cloneItemStack()))));
+                ingredients.add(new RecipeItemStack(Stream.of(new RecipeItemStack.StackProvider(itemstack.cloneItemStack()))));
+                ShapelessRecipes recipe = new ShapelessRecipes(new MinecraftKey("repairitem"), "", itemstack3.cloneItemStack(), ingredients);
+                inventorycrafting.setCurrentRecipe(recipe);
+                itemstack3 = org.bukkit.craftbukkit.event.CraftEventFactory.callPreCraftEvent(inventorycrafting, inventorycrafting.resultInventory, itemstack3, inventorycrafting.container.getBukkitView(), true);
                 // CraftBukkit end
                 return itemstack3;
             }
@@ -92,7 +85,8 @@ public class RecipeRepair extends ShapelessRecipes implements IRecipe { // Craft
         return ItemStack.a;
     }
 
-    public RecipeSerializer<?> a() {
-        return RecipeSerializers.j;
+    @Override
+    public RecipeSerializer<?> getRecipeSerializer() {
+        return RecipeSerializer.o;
     }
 }

@@ -1,17 +1,18 @@
 package co.aikar.timings;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.google.common.collect.MapMaker;
 import net.minecraft.server.*;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
-import org.checkerframework.checker.nullness.qual.NonNull;
+
 import org.bukkit.craftbukkit.scheduler.CraftTask;
 
 import java.util.Map;
 
+// TODO: Re-implement missing timers
 public final class MinecraftTimings {
 
+    public static final Timing serverOversleep = Timings.ofSafe("Server Oversleep");
     public static final Timing playerListTimer = Timings.ofSafe("Player List");
     public static final Timing commandFunctionsTimer = Timings.ofSafe("Command Functions");
     public static final Timing connectionTimer = Timings.ofSafe("Connection Handler");
@@ -32,6 +33,7 @@ public final class MinecraftTimings {
     public static final Timing structureGenerationTimer = Timings.ofSafe("Structure Generation");
 
     public static final Timing processQueueTimer = Timings.ofSafe("processQueue");
+    public static final Timing processTasksTimer = Timings.ofSafe("processTasks");
 
     public static final Timing playerCommandTimer = Timings.ofSafe("playerCommand");
 
@@ -40,7 +42,7 @@ public final class MinecraftTimings {
     public static final Timing antiXrayUpdateTimer = Timings.ofSafe("anti-xray - update");
     public static final Timing antiXrayObfuscateTimer = Timings.ofSafe("anti-xray - obfuscate");
 
-    private static final Cache<Class<?>, String> taskNameCache = com.github.benmanes.caffeine.cache.Caffeine.newBuilder().weakKeys().build(); // Akarin - caffeine
+    private static final Map<Class<?>, String> taskNameCache = new MapMaker().weakKeys().makeMap();
 
     private MinecraftTimings() {}
 
@@ -65,7 +67,7 @@ public final class MinecraftTimings {
             plugin = TimingsManager.getPluginByClassloader(taskClass);
         }
 
-        final String taskname = taskNameCache.get(taskClass, clazz -> // Akarin - caffeine
+        final String taskname = taskNameCache.computeIfAbsent(taskClass, clazz ->
                 clazz.isAnonymousClass() || clazz.isLocalClass()
                         ? clazz.getName()
                         : clazz.getCanonicalName());

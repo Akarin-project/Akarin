@@ -9,6 +9,7 @@ public class ItemPotion extends Item {
         super(item_info);
     }
 
+    @Override
     public ItemStack a(ItemStack itemstack, World world, EntityLiving entityliving) {
         EntityHuman entityhuman = entityliving instanceof EntityHuman ? (EntityHuman) entityliving : null;
 
@@ -52,23 +53,28 @@ public class ItemPotion extends Item {
         return itemstack;
     }
 
-    public int c(ItemStack itemstack) {
+    @Override
+    public int f_(ItemStack itemstack) {
         return 32;
     }
 
-    public EnumAnimation d(ItemStack itemstack) {
+    @Override
+    public EnumAnimation e_(ItemStack itemstack) {
         return EnumAnimation.DRINK;
     }
 
+    @Override
     public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
         entityhuman.c(enumhand);
         return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, entityhuman.b(enumhand));
     }
 
-    public String h(ItemStack itemstack) {
+    @Override
+    public String f(ItemStack itemstack) {
         return PotionUtil.d(itemstack).b(this.getName() + ".effect.");
     }
 
+    @Override
     public void a(CreativeModeTab creativemodetab, NonNullList<ItemStack> nonnulllist) {
         if (this.a(creativemodetab)) {
             Iterator iterator = IRegistry.POTION.iterator();

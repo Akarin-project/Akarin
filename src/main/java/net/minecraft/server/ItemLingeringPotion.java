@@ -6,22 +6,25 @@ public class ItemLingeringPotion extends ItemPotion {
         super(item_info);
     }
 
+    @Override
     public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
         ItemStack itemstack = entityhuman.b(enumhand);
         /* // Paper start
         ItemStack itemstack1 = entityhuman.abilities.canInstantlyBuild ? itemstack.cloneItemStack() : itemstack.cloneAndSubtract(1);
 
-        world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemLingeringPotion.i.nextFloat() * 0.4F + 0.8F));
+        world.playSound((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (ItemLingeringPotion.i.nextFloat() * 0.4F + 0.8F));
         */ // Paper end
         if (!world.isClientSide) {
+
             // Paper start - ensure stack count matches vanilla behavior without modifying original stack yet
             ItemStack itemstack1 = itemstack.cloneItemStack();
             if (!entityhuman.abilities.canInstantlyBuild) {
                 itemstack1.setCount(1);
             }
             // Paper end
-            EntityPotion entitypotion = new EntityPotion(world, entityhuman, itemstack1);
+            EntityPotion entitypotion = new EntityPotion(world, entityhuman);
 
+            entitypotion.setItem(itemstack1);
             entitypotion.a(entityhuman, entityhuman.pitch, entityhuman.yaw, -20.0F, 0.5F, 1.0F);
             // Paper start
             com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent event = new com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemstack), (org.bukkit.entity.Projectile) entitypotion.getBukkitEntity());
@@ -32,7 +35,7 @@ public class ItemLingeringPotion extends ItemPotion {
                     ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
                 }
 
-                world.a((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (Entity.SHARED_RANDOM.nextFloat() * 0.4F + 0.8F));
+                world.playSound((EntityHuman) null, entityhuman.locX, entityhuman.locY, entityhuman.locZ, SoundEffects.ENTITY_LINGERING_POTION_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (Entity.SHARED_RANDOM.nextFloat() * 0.4F + 0.8F));
             } else {
                 if (entityhuman instanceof EntityPlayer) {
                     ((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();

@@ -33,11 +33,13 @@ public class NBTTagByteArray extends NBTList<NBTTagByte> {
         return abyte;
     }
 
+    @Override
     public void write(DataOutput dataoutput) throws IOException {
         dataoutput.writeInt(this.data.length);
         dataoutput.write(this.data);
     }
 
+    @Override
     public void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) throws IOException {
         nbtreadlimiter.a(192L);
         int j = datainput.readInt();
@@ -48,10 +50,12 @@ public class NBTTagByteArray extends NBTList<NBTTagByte> {
         datainput.readFully(this.data);
     }
 
+    @Override
     public byte getTypeId() {
         return 7;
     }
 
+    @Override
     public String toString() {
         StringBuilder stringbuilder = new StringBuilder("[B;");
 
@@ -67,7 +71,7 @@ public class NBTTagByteArray extends NBTList<NBTTagByte> {
     }
 
     @Override
-    public NBTTagByteArray clone() { // Paper - decompile fix
+    public NBTBase clone() {
         byte[] abyte = new byte[this.data.length];
 
         System.arraycopy(this.data, 0, abyte, 0, this.data.length);
@@ -82,6 +86,7 @@ public class NBTTagByteArray extends NBTList<NBTTagByte> {
         return Arrays.hashCode(this.data);
     }
 
+    @Override
     public IChatBaseComponent a(String s, int i) {
         IChatBaseComponent ichatbasecomponent = (new ChatComponentText("B")).a(NBTTagByteArray.e);
         IChatBaseComponent ichatbasecomponent1 = (new ChatComponentText("[")).addSibling(ichatbasecomponent).a(";");
@@ -99,7 +104,7 @@ public class NBTTagByteArray extends NBTList<NBTTagByte> {
         return ichatbasecomponent1;
     }
 
-    public byte[] c() {
+    public byte[] getBytes() {
         return this.data;
     }
 
@@ -107,15 +112,50 @@ public class NBTTagByteArray extends NBTList<NBTTagByte> {
         return this.data.length;
     }
 
-    public NBTTagByte c(int i) {
+    public NBTTagByte get(int i) {
         return new NBTTagByte(this.data[i]);
     }
 
-    public void a(int i, NBTBase nbtbase) {
-        this.data[i] = ((NBTNumber) nbtbase).asByte();
+    public NBTTagByte set(int i, NBTTagByte nbttagbyte) {
+        byte b0 = this.data[i];
+
+        this.data[i] = nbttagbyte.asByte();
+        return new NBTTagByte(b0);
     }
 
-    public void b(int i) {
+    public void add(int i, NBTTagByte nbttagbyte) {
+        this.data = ArrayUtils.add(this.data, i, nbttagbyte.asByte());
+    }
+
+    @Override
+    public boolean a(int i, NBTBase nbtbase) {
+        if (nbtbase instanceof NBTNumber) {
+            this.data[i] = ((NBTNumber) nbtbase).asByte();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean b(int i, NBTBase nbtbase) {
+        if (nbtbase instanceof NBTNumber) {
+            this.data = ArrayUtils.add(this.data, i, ((NBTNumber) nbtbase).asByte());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public NBTTagByte remove(int i) {
+        byte b0 = this.data[i];
+
         this.data = ArrayUtils.remove(this.data, i);
+        return new NBTTagByte(b0);
+    }
+
+    public void clear() {
+        this.data = new byte[0];
     }
 }

@@ -14,13 +14,14 @@ public class GameProfileBanEntry extends ExpirableListEntry<GameProfile> {
     }
 
     public GameProfileBanEntry(GameProfile gameprofile, @Nullable Date date, @Nullable String s, @Nullable Date date1, @Nullable String s1) {
-        super(gameprofile, date, s, date1, s1); // Spigot
+        super(gameprofile, date, s, date1, s1);
     }
 
     public GameProfileBanEntry(JsonObject jsonobject) {
         super(b(jsonobject), jsonobject);
     }
 
+    @Override
     protected void a(JsonObject jsonobject) {
         if (this.getKey() != null) {
             jsonobject.addProperty("uuid", ((GameProfile) this.getKey()).getId() == null ? "" : ((GameProfile) this.getKey()).getId().toString());
@@ -29,6 +30,7 @@ public class GameProfileBanEntry extends ExpirableListEntry<GameProfile> {
         }
     }
 
+    @Override
     public IChatBaseComponent e() {
         GameProfile gameprofile = (GameProfile) this.getKey();
 

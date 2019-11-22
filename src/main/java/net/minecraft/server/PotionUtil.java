@@ -115,7 +115,7 @@ public class PotionUtil {
         MinecraftKey minecraftkey = IRegistry.POTION.getKey(potionregistry);
 
         if (potionregistry == Potions.EMPTY) {
-            itemstack.c("Potion");
+            itemstack.removeTag("Potion");
         } else {
             itemstack.getOrCreateTag().setString("Potion", minecraftkey.toString());
         }
@@ -134,7 +134,7 @@ public class PotionUtil {
             while (iterator.hasNext()) {
                 MobEffect mobeffect = (MobEffect) iterator.next();
 
-                nbttaglist.add((NBTBase) mobeffect.a(new NBTTagCompound()));
+                nbttaglist.add(mobeffect.a(new NBTTagCompound()));
             }
 
             nbttagcompound.set("CustomPotionEffects", nbttaglist);

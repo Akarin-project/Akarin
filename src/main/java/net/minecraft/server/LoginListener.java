@@ -4,8 +4,6 @@ import com.destroystokyo.paper.profile.CraftPlayerProfile;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
-
-import co.aikar.timings.ThreadAssertion;
 import io.netty.channel.ChannelFuture;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -29,17 +27,17 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
 // CraftBukkit end
 
-public class LoginListener implements PacketLoginInListener, ITickable {
+public class LoginListener implements PacketLoginInListener {
 
     private static final AtomicInteger b = new AtomicInteger(0);
-    private static final Logger c = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final Random random = new Random();
     private final byte[] e = new byte[4];
     private final MinecraftServer server;
     public final NetworkManager networkManager;
     private LoginListener.EnumProtocolState g; public final LoginListener.EnumProtocolState getLoginState() { return this.g; }; // Paper - OBFHELPER
     private int h;
-    private GameProfile i; private void setGameProfile(GameProfile profile) { i = profile; } public final GameProfile getGameProfile() { return i; } // Paper - OBFHELPER
+    private GameProfile i; private void setGameProfile(final GameProfile profile) { this.i = profile; } public GameProfile getGameProfile() { return this.i; } // Paper - OBFHELPER
     private final String j;
     private SecretKey loginKey;
     private EntityPlayer l;
@@ -64,7 +62,7 @@ public class LoginListener implements PacketLoginInListener, ITickable {
         if (this.g == LoginListener.EnumProtocolState.READY_TO_ACCEPT) {
             // Paper start - prevent logins to be processed even though disconnect was called
             if (networkManager.isConnected()) {
-                this.b();
+                this.c();
             }
             // Paper end
         } else if (this.g == LoginListener.EnumProtocolState.DELAY_ACCEPT) {
@@ -88,22 +86,27 @@ public class LoginListener implements PacketLoginInListener, ITickable {
     public void disconnect(String s) {
         try {
             IChatBaseComponent ichatbasecomponent = new ChatComponentText(s);
-            LoginListener.c.info("Disconnecting {}: {}", this.c(), s);
+            LoginListener.LOGGER.info("Disconnecting {}: {}", this.d(), s);
             this.networkManager.sendPacket(new PacketLoginOutDisconnect(ichatbasecomponent));
             this.networkManager.close(ichatbasecomponent);
         } catch (Exception exception) {
-            LoginListener.c.error("Error whilst disconnecting player", exception);
+            LoginListener.LOGGER.error("Error whilst disconnecting player", exception);
         }
     }
     // CraftBukkit end
 
+    @Override
+    public NetworkManager a() {
+        return this.networkManager;
+    }
+
     public void disconnect(IChatBaseComponent ichatbasecomponent) {
         try {
-            LoginListener.c.info("Disconnecting {}: {}", this.c(), ichatbasecomponent.getString());
+            LoginListener.LOGGER.info("Disconnecting {}: {}", this.d(), ichatbasecomponent.getString());
             this.networkManager.sendPacket(new PacketLoginOutDisconnect(ichatbasecomponent));
             this.networkManager.close(ichatbasecomponent);
         } catch (Exception exception) {
-            LoginListener.c.error("Error whilst disconnecting player", exception);
+            LoginListener.LOGGER.error("Error whilst disconnecting player", exception);
         }
 
     }
@@ -138,7 +141,7 @@ public class LoginListener implements PacketLoginInListener, ITickable {
     }
     // Spigot end
 
-    public void b() {
+    public void c() {
         // Spigot start - Moved to initUUID
         /*
         if (!this.i.isComplete()) {
@@ -155,9 +158,9 @@ public class LoginListener implements PacketLoginInListener, ITickable {
             // CraftBukkit end
         } else {
             this.g = LoginListener.EnumProtocolState.ACCEPTED;
-            if (this.server.aw() >= 0 && !this.networkManager.isLocal()) {
-                this.networkManager.sendPacket(new PacketLoginOutSetCompression(this.server.aw()), (channelfuture) -> {
-                    this.networkManager.setCompressionLevel(this.server.aw());
+            if (this.server.az() >= 0 && !this.networkManager.isLocal()) {
+                this.networkManager.sendPacket(new PacketLoginOutSetCompression(this.server.az()), (channelfuture) -> {
+                    this.networkManager.setCompressionLevel(this.server.az());
                 });
             }
 
@@ -174,20 +177,22 @@ public class LoginListener implements PacketLoginInListener, ITickable {
 
     }
 
+    @Override
     public void a(IChatBaseComponent ichatbasecomponent) {
-        LoginListener.c.info("{} lost connection: {}", this.c(), ichatbasecomponent.getString());
+        LoginListener.LOGGER.info("{} lost connection: {}", this.d(), ichatbasecomponent.getString());
     }
 
-    public String c() {
+    public String d() {
         return this.i != null ? this.i + " (" + this.networkManager.getSocketAddress() + ")" : String.valueOf(this.networkManager.getSocketAddress());
     }
 
+    @Override
     public void a(PacketLoginInStart packetlogininstart) {
         Validate.validState(this.g == LoginListener.EnumProtocolState.HELLO, "Unexpected hello packet", new Object[0]);
         this.i = packetlogininstart.b();
         if (this.server.getOnlineMode() && !this.networkManager.isLocal()) {
             this.g = LoginListener.EnumProtocolState.KEY;
-            this.networkManager.sendPacket(new PacketLoginOutEncryptionBegin("", this.server.E().getPublic(), this.e));
+            this.networkManager.sendPacket(new PacketLoginOutEncryptionBegin("", this.server.getKeyPair().getPublic(), this.e));
         } else {
             // Paper start - Velocity support
             if (com.destroystokyo.paper.PaperConfig.velocitySupport) {
@@ -202,7 +207,6 @@ public class LoginListener implements PacketLoginInListener, ITickable {
             authenticatorPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ThreadAssertion.close(); // Akarin
                     try {
                         initUUID();
                         new LoginHandler().fireEvents();
@@ -218,9 +222,10 @@ public class LoginListener implements PacketLoginInListener, ITickable {
 
     }
 
+    @Override
     public void a(PacketLoginInEncryptionBegin packetlogininencryptionbegin) {
         Validate.validState(this.g == LoginListener.EnumProtocolState.KEY, "Unexpected key packet", new Object[0]);
-        PrivateKey privatekey = this.server.E().getPrivate();
+        PrivateKey privatekey = this.server.getKeyPair().getPrivate();
 
         if (!Arrays.equals(this.e, packetlogininencryptionbegin.b(privatekey))) {
             throw new IllegalStateException("Invalid nonce!");
@@ -231,13 +236,12 @@ public class LoginListener implements PacketLoginInListener, ITickable {
             // Paper start - Cache authenticator threads
             authenticatorPool.execute(new Runnable() {
                 public void run() {
-                    ThreadAssertion.close(); // Akarin
                     GameProfile gameprofile = LoginListener.this.i;
 
                     try {
-                        String s = (new BigInteger(MinecraftEncryption.a("", LoginListener.this.server.E().getPublic(), LoginListener.this.loginKey))).toString(16);
+                        String s = (new BigInteger(MinecraftEncryption.a("", LoginListener.this.server.getKeyPair().getPublic(), LoginListener.this.loginKey))).toString(16);
 
-                        LoginListener.this.i = LoginListener.this.server.ap().hasJoinedServer(new GameProfile((UUID) null, gameprofile.getName()), s, this.a());
+                        LoginListener.this.i = LoginListener.this.server.getMinecraftSessionService().hasJoinedServer(new GameProfile((UUID) null, gameprofile.getName()), s, this.a());
                         if (LoginListener.this.i != null) {
                             // CraftBukkit start - fire PlayerPreLoginEvent
                             if (!networkManager.isConnected()) {
@@ -245,17 +249,17 @@ public class LoginListener implements PacketLoginInListener, ITickable {
                             }
 
                             new LoginHandler().fireEvents();
-                        } else if (LoginListener.this.server.H()) {
-                            LoginListener.c.warn("Failed to verify username but will let them in anyway!");
+                        } else if (LoginListener.this.server.isEmbeddedServer()) {
+                            LoginListener.LOGGER.warn("Failed to verify username but will let them in anyway!");
                             LoginListener.this.i = LoginListener.this.a(gameprofile);
                             LoginListener.this.g = LoginListener.EnumProtocolState.READY_TO_ACCEPT;
                         } else {
                             LoginListener.this.disconnect(new ChatMessage("multiplayer.disconnect.unverified_username", new Object[0]));
-                            LoginListener.c.error("Username '{}' tried to join with an invalid session", gameprofile.getName());
+                            LoginListener.LOGGER.error("Username '{}' tried to join with an invalid session", gameprofile.getName());
                         }
                     } catch (AuthenticationUnavailableException authenticationunavailableexception) {
-                        if (LoginListener.this.server.H()) {
-                            LoginListener.c.warn("Authentication servers are down but will let them in anyway!");
+                        if (LoginListener.this.server.isEmbeddedServer()) {
+                            LoginListener.LOGGER.warn("Authentication servers are down but will let them in anyway!");
                             LoginListener.this.i = LoginListener.this.a(gameprofile);
                             LoginListener.this.g = LoginListener.EnumProtocolState.READY_TO_ACCEPT;
                         } else {
@@ -264,7 +268,7 @@ public class LoginListener implements PacketLoginInListener, ITickable {
                                 LoginListener.this.disconnect(new ChatComponentText(com.destroystokyo.paper.PaperConfig.authenticationServersDownKickMessage));
                             } else // Paper end
                             LoginListener.this.disconnect(new ChatMessage("multiplayer.disconnect.authservers_down", new Object[0]));
-                            LoginListener.c.error("Couldn't verify username because servers are unavailable");
+                            LoginListener.LOGGER.error("Couldn't verify username because servers are unavailable");
                         }
                         // CraftBukkit start - catch all exceptions
                     } catch (Exception exception) {
@@ -279,42 +283,12 @@ public class LoginListener implements PacketLoginInListener, ITickable {
                 private InetAddress a() {
                     SocketAddress socketaddress = LoginListener.this.networkManager.getSocketAddress();
 
-                    return LoginListener.this.server.S() && socketaddress instanceof InetSocketAddress ? ((InetSocketAddress) socketaddress).getAddress() : null;
+                    return LoginListener.this.server.U() && socketaddress instanceof InetSocketAddress ? ((InetSocketAddress) socketaddress).getAddress() : null;
                 }
             });
             // Paper end
         }
     }
-
-    // Paper start - Delay async prelogin until plugins are ready
-    private static volatile Object blockingLogins = new Object();
-
-    public static void checkStartupAndBlock() {
-        final Object lock = LoginListener.blockingLogins;
-        if (lock != null) {
-            synchronized (lock) {
-                for (;;) {
-                    if (LoginListener.blockingLogins == null) {
-                        return;
-                    }
-                    try {
-                        lock.wait();
-                    } catch (final InterruptedException ignore) {// handled by the if statement above
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-        }
-    }
-
-    public static void allowLogins() {
-        final Object lock = LoginListener.blockingLogins;
-        synchronized (lock) {
-            LoginListener.blockingLogins = null;
-            lock.notifyAll();
-        }
-    }
-    // Paper end
 
     // Spigot start
     public class LoginHandler {
@@ -326,7 +300,6 @@ public class LoginListener implements PacketLoginInListener, ITickable {
                                 return;
                             }
                             // Paper end
-                            LoginListener.checkStartupAndBlock(); // Paper - Delay async login events until plugins are ready
                             String playerName = i.getName();
                             java.net.InetAddress address = ((java.net.InetSocketAddress) networkManager.getSocketAddress()).getAddress();
                             java.util.UUID uniqueId = i.getId();
@@ -367,7 +340,7 @@ public class LoginListener implements PacketLoginInListener, ITickable {
                                 }
                             }
                             // CraftBukkit end
-                            LoginListener.c.info("UUID of player {} is {}", LoginListener.this.i.getName(), LoginListener.this.i.getId());
+                            LoginListener.LOGGER.info("UUID of player {} is {}", LoginListener.this.i.getName(), LoginListener.this.i.getId());
                             LoginListener.this.g = LoginListener.EnumProtocolState.READY_TO_ACCEPT;
                 }
         }
@@ -393,7 +366,6 @@ public class LoginListener implements PacketLoginInListener, ITickable {
 
             // Proceed with login
             authenticatorPool.execute(() -> {
-                ThreadAssertion.close(); // Akarin
                 try {
                     new LoginHandler().fireEvents();
                 } catch (Exception ex) {

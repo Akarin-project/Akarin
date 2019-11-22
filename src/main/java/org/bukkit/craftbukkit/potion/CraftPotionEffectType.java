@@ -1,7 +1,6 @@
 package org.bukkit.craftbukkit.potion;
 
 import net.minecraft.server.MobEffectList;
-
 import org.bukkit.Color;
 import org.bukkit.potion.PotionEffectType;
 
@@ -15,7 +14,7 @@ public class CraftPotionEffectType extends PotionEffectType {
 
     @Override
     public double getDurationModifier() {
-        return handle.durationModifier;
+        return 1.0D;
     }
 
     public MobEffectList getHandle() {
@@ -85,6 +84,10 @@ public class CraftPotionEffectType extends PotionEffectType {
             return "CONDUIT_POWER";
         case 30:
             return "DOLPHINS_GRACE";
+        case 31:
+            return "BAD_OMEN";
+        case 32:
+            return "HERO_OF_THE_VILLAGE";
         default:
             return "UNKNOWN_EFFECT_TYPE_" + getId();
         }

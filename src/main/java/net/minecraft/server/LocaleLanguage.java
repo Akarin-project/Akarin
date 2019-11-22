@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 public class LocaleLanguage {
 
-    private static final Logger a = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final Pattern b = Pattern.compile("%(\\d+\\$)?[\\d\\.]*[df]");
     private static final LocaleLanguage c = new LocaleLanguage();
     private final Map<String, String> d = Maps.newHashMap();
@@ -26,20 +27,40 @@ public class LocaleLanguage {
     public LocaleLanguage() {
         try {
             InputStream inputstream = LocaleLanguage.class.getResourceAsStream("/assets/minecraft/lang/en_us.json");
-            JsonElement jsonelement = (JsonElement) (new Gson()).fromJson(new InputStreamReader(inputstream, StandardCharsets.UTF_8), JsonElement.class);
-            JsonObject jsonobject = ChatDeserializer.m(jsonelement, "strings");
-            Iterator iterator = jsonobject.entrySet().iterator();
+            Throwable throwable = null;
 
-            while (iterator.hasNext()) {
-                Entry<String, JsonElement> entry = (Entry) iterator.next();
-                String s = LocaleLanguage.b.matcher(ChatDeserializer.a((JsonElement) entry.getValue(), (String) entry.getKey())).replaceAll("%$1s");
+            try {
+                JsonElement jsonelement = (JsonElement) (new Gson()).fromJson(new InputStreamReader(inputstream, StandardCharsets.UTF_8), JsonElement.class);
+                JsonObject jsonobject = ChatDeserializer.m(jsonelement, "strings");
+                Iterator iterator = jsonobject.entrySet().iterator();
 
-                this.d.put(entry.getKey(), s);
+                while (iterator.hasNext()) {
+                    Entry<String, JsonElement> entry = (Entry) iterator.next();
+                    String s = LocaleLanguage.b.matcher(ChatDeserializer.a((JsonElement) entry.getValue(), (String) entry.getKey())).replaceAll("%$1s");
+
+                    this.d.put(entry.getKey(), s);
+                }
+
+                this.e = SystemUtils.getMonotonicMillis();
+            } catch (Throwable throwable1) {
+                throwable = throwable1;
+                throw throwable1;
+            } finally {
+                if (inputstream != null) {
+                    if (throwable != null) {
+                        try {
+                            inputstream.close();
+                        } catch (Throwable throwable2) {
+                            throwable.addSuppressed(throwable2);
+                        }
+                    } else {
+                        inputstream.close();
+                    }
+                }
+
             }
-
-            this.e = SystemUtils.getMonotonicMillis();
-        } catch (JsonParseException jsonparseexception) {
-            LocaleLanguage.a.error("Couldn't read strings from /assets/minecraft/lang/en_us.json", jsonparseexception);
+        } catch (JsonParseException | IOException ioexception) {
+            LocaleLanguage.LOGGER.error("Couldn't read strings from /assets/minecraft/lang/en_us.json", ioexception);
         }
 
     }

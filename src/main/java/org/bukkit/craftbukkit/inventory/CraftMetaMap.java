@@ -1,22 +1,19 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.NBTTagInt;
 import net.minecraft.server.NBTTagString;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
+import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapView;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 
 @DelegateDeserialization(SerializableMeta.class)
 class CraftMetaMap extends CraftMetaItem implements MapMeta {
@@ -102,7 +99,7 @@ class CraftMetaMap extends CraftMetaItem implements MapMeta {
         if (hasMapId()){
             tag.setInt(MAP_ID.NBT, getMapId());
         }
-        
+
         if (hasScaling()) {
             tag.setBoolean(MAP_SCALING.NBT, isScaling());
         }
@@ -170,10 +167,12 @@ class CraftMetaMap extends CraftMetaItem implements MapMeta {
         return scaling != SCALING_EMPTY;
     }
 
+    @Override
     public boolean isScaling() {
         return scaling == SCALING_TRUE;
     }
 
+    @Override
     public void setScaling(boolean scaling) {
         this.scaling = scaling ? SCALING_TRUE : SCALING_FALSE;
     }
@@ -251,6 +250,7 @@ class CraftMetaMap extends CraftMetaItem implements MapMeta {
     }
 
 
+    @Override
     public CraftMetaMap clone() {
         return (CraftMetaMap) super.clone();
     }

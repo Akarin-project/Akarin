@@ -5,20 +5,25 @@ import java.util.Random;
 
 public class BlockReed extends Block {
 
-    public static final BlockStateInteger AGE = BlockProperties.X;
+    public static final BlockStateInteger AGE = BlockProperties.ad;
     protected static final VoxelShape b = Block.a(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
 
     protected BlockReed(Block.Info block_info) {
         super(block_info);
-        this.v((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockReed.AGE, 0));
+        this.o((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockReed.AGE, 0));
     }
 
-    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+    @Override
+    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision) {
         return BlockReed.b;
     }
 
-    public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
-        if (iblockdata.canPlace(world, blockposition) && world.isEmpty(blockposition.up())) {
+    @Override
+    public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
+        if (!iblockdata.canPlace(world, blockposition)) {
+            world.b(blockposition, true);
+        } else if (world.isEmpty(blockposition.up())) {
+            if (world.paperConfig.fixZeroTickInstantGrowFarms && !randomTick) return; // Paper - fix MC-113809
             int i;
 
             for (i = 1; world.getType(blockposition.down(i)).getBlock() == this; ++i) {
@@ -39,10 +44,16 @@ public class BlockReed extends Block {
 
     }
 
+    @Override
     public IBlockData updateState(IBlockData iblockdata, EnumDirection enumdirection, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
-        return !iblockdata.canPlace(generatoraccess, blockposition) ? Blocks.AIR.getBlockData() : super.updateState(iblockdata, enumdirection, iblockdata1, generatoraccess, blockposition, blockposition1);
+        if (!iblockdata.canPlace(generatoraccess, blockposition)) {
+            generatoraccess.getBlockTickList().a(blockposition, this, 1);
+        }
+
+        return super.updateState(iblockdata, enumdirection, iblockdata1, generatoraccess, blockposition, blockposition1);
     }
 
+    @Override
     public boolean canPlace(IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) {
         Block block = iworldreader.getType(blockposition.down()).getBlock();
 
@@ -68,19 +79,13 @@ public class BlockReed extends Block {
         }
     }
 
-    public boolean a(IBlockData iblockdata) {
-        return false;
-    }
-
+    @Override
     public TextureType c() {
         return TextureType.CUTOUT;
     }
 
+    @Override
     protected void a(BlockStateList.a<Block, IBlockData> blockstatelist_a) {
         blockstatelist_a.a(BlockReed.AGE);
-    }
-
-    public EnumBlockFaceShape a(IBlockAccess iblockaccess, IBlockData iblockdata, BlockPosition blockposition, EnumDirection enumdirection) {
-        return EnumBlockFaceShape.UNDEFINED;
     }
 }

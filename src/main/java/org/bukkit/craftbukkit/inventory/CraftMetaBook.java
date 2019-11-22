@@ -1,33 +1,29 @@
 package org.bukkit.craftbukkit.inventory;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap.Builder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import net.minecraft.server.IChatBaseComponent;
+import net.minecraft.server.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.NBTTagList;
-
+import net.minecraft.server.NBTTagString;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.inventory.CraftMetaItem.SerializableMeta;
+import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.inventory.meta.BookMeta;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap.Builder;
-import java.util.AbstractList;
-import net.minecraft.server.IChatBaseComponent.ChatSerializer;
-import net.minecraft.server.IChatBaseComponent;
-import net.minecraft.server.NBTTagString;
-import org.bukkit.craftbukkit.util.CraftChatMessage;
-
 // Spigot start
 import static org.spigotmc.ValidateUtils.*;
+import java.util.AbstractList;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-import net.minecraft.server.ChatBaseComponent;
 // Spigot end
 
 @DelegateDeserialization(SerializableMeta.class)
@@ -37,7 +33,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
     static final ItemMetaKey BOOK_PAGES = new ItemMetaKey("pages");
     static final ItemMetaKey RESOLVED = new ItemMetaKey("resolved");
     static final ItemMetaKey GENERATION = new ItemMetaKey("generation");
-    static final int MAX_PAGES = 50;
+    static final int MAX_PAGES = 100;
     static final int MAX_PAGE_LENGTH = 320; // 256 limit + 64 characters to allow for psuedo colour codes
     static final int MAX_TITLE_LENGTH = 32;
     private static final boolean OVERRIDE_CHECKS = Boolean.getBoolean("disable.book-limits"); // Paper - Add override
@@ -140,7 +136,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
             if (hasPages()) {
                 NBTTagList list = new NBTTagList();
                 for (IChatBaseComponent page : pages) {
-                    list.add(new NBTTagString(CraftChatMessage.fromComponent(page)));
+                    list.add(new NBTTagString(page == null ? "" : page.e())); // PAIL getLegacyString
                 }
                 itemData.set(BOOK_PAGES.NBT, list);
             }
@@ -173,26 +169,32 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
         }
     }
 
+    @Override
     public boolean hasAuthor() {
         return !Strings.isNullOrEmpty(author);
     }
 
+    @Override
     public boolean hasTitle() {
         return !Strings.isNullOrEmpty(title);
     }
 
+    @Override
     public boolean hasPages() {
         return !pages.isEmpty();
     }
 
+    @Override
     public boolean hasGeneration() {
         return generation != null;
     }
 
+    @Override
     public String getTitle() {
         return this.title;
     }
 
+    @Override
     public boolean setTitle(final String title) {
         if (title == null) {
             this.title = null;
@@ -205,10 +207,12 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
         return true;
     }
 
+    @Override
     public String getAuthor() {
         return this.author;
     }
 
+    @Override
     public void setAuthor(final String author) {
         this.author = author;
     }
@@ -223,11 +227,13 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
         this.generation = (generation == null) ? null : generation.ordinal();
     }
 
+    @Override
     public String getPage(final int page) {
         Validate.isTrue(isValidPage(page), "Invalid page number");
         return CraftChatMessage.fromComponent(pages.get(page - 1));
     }
 
+    @Override
     public void setPage(final int page, final String text) {
         if (!isValidPage(page)) {
             throw new IllegalArgumentException("Invalid page number " + page + "/" + pages.size());
@@ -237,12 +243,14 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
         pages.set(page - 1, CraftChatMessage.fromString(newText, true)[0]);
     }
 
+    @Override
     public void setPages(final String... pages) {
         this.pages.clear();
 
         addPage(pages);
     }
 
+    @Override
     public void addPage(final String... pages) {
         for (String page : pages) {
             if (this.pages.size() >= MAX_PAGES && !OVERRIDE_CHECKS) {
@@ -259,14 +267,17 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
         }
     }
 
+    @Override
     public int getPageCount() {
         return pages.size();
     }
 
+    @Override
     public List<String> getPages() {
         return pages.stream().map(CraftChatMessage::fromComponent).collect(ImmutableList.toImmutableList());
     }
 
+    @Override
     public void setPages(List<String> pages) {
         this.pages.clear();
         for (String page : pages) {

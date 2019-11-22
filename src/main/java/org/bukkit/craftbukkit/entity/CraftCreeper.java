@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.server.EntityCreeper;
-
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EntityType;
@@ -14,10 +13,12 @@ public class CraftCreeper extends CraftMonster implements Creeper {
         super(server, entity);
     }
 
+    @Override
     public boolean isPowered() {
         return getHandle().isPowered();
     }
 
+    @Override
     public void setPowered(boolean powered) {
         CraftServer server = this.server;
         Creeper entity = (Creeper) this.getHandle().getBukkitEntity();
@@ -64,6 +65,16 @@ public class CraftCreeper extends CraftMonster implements Creeper {
     }
 
     @Override
+    public void explode() {
+        getHandle().explode();
+    }
+
+    @Override
+    public void ignite() {
+        getHandle().ignite();
+    }
+
+    @Override
     public EntityCreeper getHandle() {
         return (EntityCreeper) entity;
     }
@@ -73,6 +84,7 @@ public class CraftCreeper extends CraftMonster implements Creeper {
         return "CraftCreeper";
     }
 
+    @Override
     public EntityType getType() {
         return EntityType.CREEPER;
     }
@@ -88,10 +100,6 @@ public class CraftCreeper extends CraftMonster implements Creeper {
 
     public int getFuseTicks() {
         return getHandle().fuseTicks;
-    }
-
-    public void explode() {
-        getHandle().explode();
     }
     // Paper end
 }

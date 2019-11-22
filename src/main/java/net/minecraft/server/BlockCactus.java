@@ -7,19 +7,21 @@ import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 
 public class BlockCactus extends Block {
 
-    public static final BlockStateInteger AGE = BlockProperties.X;
+    public static final BlockStateInteger AGE = BlockProperties.ad;
     protected static final VoxelShape b = Block.a(1.0D, 0.0D, 1.0D, 15.0D, 15.0D, 15.0D);
     protected static final VoxelShape c = Block.a(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
 
     protected BlockCactus(Block.Info block_info) {
         super(block_info);
-        this.v((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockCactus.AGE, 0));
+        this.o((IBlockData) ((IBlockData) this.blockStateList.getBlockData()).set(BlockCactus.AGE, 0));
     }
 
-    public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
+    @Override
+    public void tick(IBlockData iblockdata, World world, BlockPosition blockposition, Random random) {
         if (!iblockdata.canPlace(world, blockposition)) {
-            world.setAir(blockposition, true);
+            world.b(blockposition, true);
         } else {
+            if (world.paperConfig.fixZeroTickInstantGrowFarms && !randomTick) return; // Paper - fix MC-113809
             BlockPosition blockposition1 = blockposition.up();
 
             if (world.isEmpty(blockposition1)) {
@@ -37,7 +39,7 @@ public class BlockCactus extends Block {
                         IBlockData iblockdata1 = (IBlockData) iblockdata.set(BlockCactus.AGE, 0);
 
                         world.setTypeAndData(blockposition, iblockdata1, 4);
-                        iblockdata1.doPhysics(world, blockposition1, this, blockposition);
+                        iblockdata1.doPhysics(world, blockposition1, this, blockposition, false);
                     } else {
                         world.setTypeAndData(blockposition, (IBlockData) iblockdata.set(BlockCactus.AGE, j + 1), 4);
                     }
@@ -47,22 +49,22 @@ public class BlockCactus extends Block {
         }
     }
 
-    public VoxelShape f(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+    @Override
+    public VoxelShape b(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision) {
         return BlockCactus.b;
     }
 
-    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition) {
+    @Override
+    public VoxelShape a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, VoxelShapeCollision voxelshapecollision) {
         return BlockCactus.c;
     }
 
+    @Override
     public boolean f(IBlockData iblockdata) {
         return true;
     }
 
-    public boolean a(IBlockData iblockdata) {
-        return false;
-    }
-
+    @Override
     public IBlockData updateState(IBlockData iblockdata, EnumDirection enumdirection, IBlockData iblockdata1, GeneratorAccess generatoraccess, BlockPosition blockposition, BlockPosition blockposition1) {
         if (!iblockdata.canPlace(generatoraccess, blockposition)) {
             generatoraccess.getBlockTickList().a(blockposition, this, 1);
@@ -71,6 +73,7 @@ public class BlockCactus extends Block {
         return super.updateState(iblockdata, enumdirection, iblockdata1, generatoraccess, blockposition, blockposition1);
     }
 
+    @Override
     public boolean canPlace(IBlockData iblockdata, IWorldReader iworldreader, BlockPosition blockposition) {
         Iterator iterator = EnumDirection.EnumDirectionLimit.HORIZONTAL.iterator();
 
@@ -93,24 +96,24 @@ public class BlockCactus extends Block {
         return false;
     }
 
+    @Override
     public void a(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity) {
-        CraftEventFactory.blockDamage = world.getWorld().getBlockAt(blockposition); // CraftBukkit // Akarin
+        CraftEventFactory.blockDamage = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()); // CraftBukkit
         entity.damageEntity(DamageSource.CACTUS, 1.0F);
         CraftEventFactory.blockDamage = null; // CraftBukkit
     }
 
+    @Override
     public TextureType c() {
         return TextureType.CUTOUT;
     }
 
+    @Override
     protected void a(BlockStateList.a<Block, IBlockData> blockstatelist_a) {
         blockstatelist_a.a(BlockCactus.AGE);
     }
 
-    public EnumBlockFaceShape a(IBlockAccess iblockaccess, IBlockData iblockdata, BlockPosition blockposition, EnumDirection enumdirection) {
-        return EnumBlockFaceShape.UNDEFINED;
-    }
-
+    @Override
     public boolean a(IBlockData iblockdata, IBlockAccess iblockaccess, BlockPosition blockposition, PathMode pathmode) {
         return false;
     }

@@ -8,67 +8,53 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 public class ContainerBrewingStand extends Container {
 
     private final IInventory brewingStand;
-    private final Slot f;
-    private int g;
-    private int h;
+    private final IContainerProperties d;
+    private final Slot e;
 
     // CraftBukkit start
     private CraftInventoryView bukkitEntity = null;
     private PlayerInventory player;
     // CraftBukkit end
 
-    public ContainerBrewingStand(PlayerInventory playerinventory, IInventory iinventory) {
+    public ContainerBrewingStand(int i, PlayerInventory playerinventory) {
+        this(i, playerinventory, new InventorySubcontainer(5), new ContainerProperties(2));
+    }
+
+    public ContainerBrewingStand(int i, PlayerInventory playerinventory, IInventory iinventory, IContainerProperties icontainerproperties) {
+        super(Containers.BREWING_STAND, i);
         player = playerinventory; // CraftBukkit
+        a(iinventory, 5);
+        a(icontainerproperties, 2);
         this.brewingStand = iinventory;
+        this.d = icontainerproperties;
         this.a((Slot) (new ContainerBrewingStand.SlotPotionBottle(iinventory, 0, 56, 51)));
         this.a((Slot) (new ContainerBrewingStand.SlotPotionBottle(iinventory, 1, 79, 58)));
         this.a((Slot) (new ContainerBrewingStand.SlotPotionBottle(iinventory, 2, 102, 51)));
-        this.f = this.a((Slot) (new ContainerBrewingStand.SlotBrewing(iinventory, 3, 79, 17)));
+        this.e = this.a((Slot) (new ContainerBrewingStand.SlotBrewing(iinventory, 3, 79, 17)));
         this.a((Slot) (new ContainerBrewingStand.a(iinventory, 4, 17, 17)));
+        this.a(icontainerproperties);
 
-        int i;
+        int j;
 
-        for (i = 0; i < 3; ++i) {
-            for (int j = 0; j < 9; ++j) {
-                this.a(new Slot(playerinventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+        for (j = 0; j < 3; ++j) {
+            for (int k = 0; k < 9; ++k) {
+                this.a(new Slot(playerinventory, k + j * 9 + 9, 8 + k * 18, 84 + j * 18));
             }
         }
 
-        for (i = 0; i < 9; ++i) {
-            this.a(new Slot(playerinventory, i, 8 + i * 18, 142));
+        for (j = 0; j < 9; ++j) {
+            this.a(new Slot(playerinventory, j, 8 + j * 18, 142));
         }
 
     }
 
-    public void addSlotListener(ICrafting icrafting) {
-        super.addSlotListener(icrafting);
-        icrafting.setContainerData(this, this.brewingStand);
-    }
-
-    public void b() {
-        super.b();
-
-        for (int i = 0; i < this.listeners.size(); ++i) {
-            ICrafting icrafting = (ICrafting) this.listeners.get(i);
-
-            if (this.g != this.brewingStand.getProperty(0)) {
-                icrafting.setContainerData(this, 0, this.brewingStand.getProperty(0));
-            }
-
-            if (this.h != this.brewingStand.getProperty(1)) {
-                icrafting.setContainerData(this, 1, this.brewingStand.getProperty(1));
-            }
-        }
-
-        this.g = this.brewingStand.getProperty(0);
-        this.h = this.brewingStand.getProperty(1);
-    }
-
+    @Override
     public boolean canUse(EntityHuman entityhuman) {
         if (!this.checkReachable) return true; // CraftBukkit
         return this.brewingStand.a(entityhuman);
     }
 
+    @Override
     public ItemStack shiftClick(EntityHuman entityhuman, int i) {
         ItemStack itemstack = ItemStack.a;
         Slot slot = (Slot) this.slots.get(i);
@@ -78,15 +64,15 @@ public class ContainerBrewingStand extends Container {
 
             itemstack = itemstack1.cloneItemStack();
             if ((i < 0 || i > 2) && i != 3 && i != 4) {
-                if (this.f.isAllowed(itemstack1)) {
+                if (this.e.isAllowed(itemstack1)) {
                     if (!this.a(itemstack1, 3, 4, false)) {
                         return ItemStack.a;
                     }
-                } else if (ContainerBrewingStand.SlotPotionBottle.c_(itemstack) && itemstack.getCount() == 1) {
+                } else if (ContainerBrewingStand.SlotPotionBottle.b_(itemstack) && itemstack.getCount() == 1) {
                     if (!this.a(itemstack1, 0, 3, false)) {
                         return ItemStack.a;
                     }
-                } else if (ContainerBrewingStand.a.b_(itemstack)) {
+                } else if (ContainerBrewingStand.a.a_(itemstack)) {
                     if (!this.a(itemstack1, 4, 5, false)) {
                         return ItemStack.a;
                     }
@@ -112,7 +98,7 @@ public class ContainerBrewingStand extends Container {
             if (itemstack1.isEmpty()) {
                 slot.set(ItemStack.a);
             } else {
-                slot.f();
+                slot.d();
             }
 
             if (itemstack1.getCount() == itemstack.getCount()) {
@@ -131,14 +117,16 @@ public class ContainerBrewingStand extends Container {
             super(iinventory, i, j, k);
         }
 
+        @Override
         public boolean isAllowed(ItemStack itemstack) {
-            return b_(itemstack);
+            return a_(itemstack);
         }
 
-        public static boolean b_(ItemStack itemstack) {
+        public static boolean a_(ItemStack itemstack) {
             return itemstack.getItem() == Items.BLAZE_POWDER;
         }
 
+        @Override
         public int getMaxStackSize() {
             return 64;
         }
@@ -150,10 +138,12 @@ public class ContainerBrewingStand extends Container {
             super(iinventory, i, j, k);
         }
 
+        @Override
         public boolean isAllowed(ItemStack itemstack) {
             return PotionBrewer.a(itemstack);
         }
 
+        @Override
         public int getMaxStackSize() {
             return 64;
         }
@@ -165,14 +155,17 @@ public class ContainerBrewingStand extends Container {
             super(iinventory, i, j, k);
         }
 
+        @Override
         public boolean isAllowed(ItemStack itemstack) {
-            return c_(itemstack);
+            return b_(itemstack);
         }
 
+        @Override
         public int getMaxStackSize() {
             return 1;
         }
 
+        @Override
         public ItemStack a(EntityHuman entityhuman, ItemStack itemstack) {
             PotionRegistry potionregistry = PotionUtil.d(itemstack);
 
@@ -184,7 +177,7 @@ public class ContainerBrewingStand extends Container {
             return itemstack;
         }
 
-        public static boolean c_(ItemStack itemstack) {
+        public static boolean b_(ItemStack itemstack) {
             Item item = itemstack.getItem();
 
             return item == Items.POTION || item == Items.SPLASH_POTION || item == Items.LINGERING_POTION || item == Items.GLASS_BOTTLE;

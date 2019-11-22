@@ -4,18 +4,19 @@ import javax.annotation.Nullable;
 
 public class EntityCaveSpider extends EntitySpider {
 
-    public EntityCaveSpider(World world) {
-        super(EntityTypes.CAVE_SPIDER, world);
-        this.setSize(0.7F, 0.5F);
+    public EntityCaveSpider(EntityTypes<? extends EntityCaveSpider> entitytypes, World world) {
+        super(entitytypes, world);
     }
 
+    @Override
     protected void initAttributes() {
         super.initAttributes();
-        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(12.0D);
+        this.getAttributeInstance(GenericAttributes.MAX_HEALTH).setValue(12.0D);
     }
 
-    public boolean B(Entity entity) {
-        if (super.B(entity)) {
+    @Override
+    public boolean C(Entity entity) {
+        if (super.C(entity)) {
             if (entity instanceof EntityLiving) {
                 byte b0 = 0;
 
@@ -37,16 +38,13 @@ public class EntityCaveSpider extends EntitySpider {
     }
 
     @Nullable
-    public GroupDataEntity prepare(DifficultyDamageScaler difficultydamagescaler, @Nullable GroupDataEntity groupdataentity, @Nullable NBTTagCompound nbttagcompound) {
+    @Override
+    public GroupDataEntity prepare(GeneratorAccess generatoraccess, DifficultyDamageScaler difficultydamagescaler, EnumMobSpawn enummobspawn, @Nullable GroupDataEntity groupdataentity, @Nullable NBTTagCompound nbttagcompound) {
         return groupdataentity;
     }
 
-    public float getHeadHeight() {
+    @Override
+    protected float b(EntityPose entitypose, EntitySize entitysize) {
         return 0.45F;
-    }
-
-    @Nullable
-    protected MinecraftKey getDefaultLootTable() {
-        return LootTables.z;
     }
 }

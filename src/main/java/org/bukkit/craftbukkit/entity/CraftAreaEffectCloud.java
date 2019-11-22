@@ -1,11 +1,11 @@
 package org.bukkit.craftbukkit.entity;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import net.minecraft.server.EntityAreaEffectCloud;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.MobEffect;
 import net.minecraft.server.MobEffectList;
-
 import org.apache.commons.lang.Validate;
 import org.bukkit.Color;
 import org.bukkit.Particle;
@@ -15,12 +15,10 @@ import org.bukkit.craftbukkit.potion.CraftPotionUtil;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
-import org.bukkit.potion.PotionData;
-
-import com.google.common.collect.ImmutableList;
 
 public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud {
 
@@ -153,7 +151,7 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
             }
             getHandle().effects.remove(existing);
         }
-        getHandle().a(CraftPotionUtil.fromBukkit(effect));
+        getHandle().addEffect(CraftPotionUtil.fromBukkit(effect));
         getHandle().refreshEffects();
         return true;
     }
@@ -216,11 +214,13 @@ public class CraftAreaEffectCloud extends CraftEntity implements AreaEffectCloud
         return CraftPotionUtil.toBukkit(getHandle().getType());
     }
 
+    @Override
     public ProjectileSource getSource() {
         EntityLiving source = getHandle().getSource();
         return (source == null) ? null : (LivingEntity) source.getBukkitEntity();
     }
 
+    @Override
     public void setSource(ProjectileSource shooter) {
         if (shooter instanceof CraftLivingEntity) {
             getHandle().setSource((EntityLiving) ((CraftLivingEntity) shooter).getHandle());

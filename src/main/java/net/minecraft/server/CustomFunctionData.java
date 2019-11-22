@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import javax.annotation.Nullable;
@@ -16,30 +17,28 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class CustomFunctionData implements ITickable, IResourcePackListener {
+public class CustomFunctionData implements IResourcePackListener {
 
-    private static final Logger c = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final MinecraftKey d = new MinecraftKey("tick");
     private static final MinecraftKey e = new MinecraftKey("load");
     public static final int a = "functions/".length();
     public static final int b = ".mcfunction".length();
     private final MinecraftServer server;
     private final Map<MinecraftKey, CustomFunction> g = Maps.newHashMap();
-    private final ArrayDeque<CustomFunctionData.a> h = new ArrayDeque();
-    private boolean i;
-    private final Tags<CustomFunction> j = new Tags<>((minecraftkey) -> {
-        return this.a(minecraftkey) != null;
-    }, this::a, "tags/functions", true, "function");
-    private final List<CustomFunction> k = Lists.newArrayList();
-    private boolean l;
+    private boolean h;
+    private final ArrayDeque<CustomFunctionData.a> i = new ArrayDeque();
+    private final List<CustomFunctionData.a> j = Lists.newArrayList();
+    private final Tags<CustomFunction> k = new Tags<>(this::a, "tags/functions", true, "function");
+    private final List<CustomFunction> l = Lists.newArrayList();
+    private boolean m;
 
     public CustomFunctionData(MinecraftServer minecraftserver) {
         this.server = minecraftserver;
     }
 
-    @Nullable
-    public CustomFunction a(MinecraftKey minecraftkey) {
-        return (CustomFunction) this.g.get(minecraftkey);
+    public Optional<CustomFunction> a(MinecraftKey minecraftkey) {
+        return Optional.ofNullable(this.g.get(minecraftkey));
     }
 
     public MinecraftServer a() {
@@ -47,7 +46,7 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
     }
 
     public int b() {
-        return this.server.getGameRules().c("maxCommandChainLength");
+        return this.server.getGameRules().getInt(GameRules.MAX_COMMAND_CHAIN_LENGTH);
     }
 
     public Map<MinecraftKey, CustomFunction> c() {
@@ -59,10 +58,11 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
     }
 
     public void tick() {
+        GameProfiler gameprofiler = this.server.getMethodProfiler();
         MinecraftKey minecraftkey = CustomFunctionData.d;
 
-        //this.server.methodProfiler.a(minecraftkey::toString); // Akarin - remove caller
-        Iterator iterator = this.k.iterator();
+        gameprofiler.a(minecraftkey::toString);
+        Iterator iterator = this.l.iterator();
 
         while (iterator.hasNext()) {
             CustomFunction customfunction = (CustomFunction) iterator.next();
@@ -70,13 +70,14 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
             this.a(customfunction, this.f());
         }
 
-        //this.server.methodProfiler.exit(); // Akarin - remove caller
-        if (this.l) {
-            this.l = false;
-            Collection<CustomFunction> collection = this.g().b(CustomFunctionData.e).a();
+        this.server.getMethodProfiler().exit();
+        if (this.m) {
+            this.m = false;
+            Collection<CustomFunction> collection = this.h().b(CustomFunctionData.e).a();
 
+            gameprofiler = this.server.getMethodProfiler();
             minecraftkey = CustomFunctionData.e;
-            //this.server.methodProfiler.a(minecraftkey::toString); // Akarin - remove caller
+            gameprofiler.a(minecraftkey::toString);
             Iterator iterator1 = collection.iterator();
 
             while (iterator1.hasNext()) {
@@ -85,7 +86,7 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
                 this.a(customfunction1, this.f());
             }
 
-            //this.server.methodProfiler.exit(); // Akarin - remove caller
+            this.server.getMethodProfiler().exit();
         }
 
     }
@@ -93,32 +94,40 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
     public int a(CustomFunction customfunction, CommandListenerWrapper commandlistenerwrapper) {
         int i = this.b();
 
-        if (this.i) {
-            if (this.h.size() < i) {
-                this.h.addFirst(new CustomFunctionData.a(this, commandlistenerwrapper, new CustomFunction.d(customfunction)));
+        if (this.h) {
+            if (this.i.size() + this.j.size() < i) {
+                this.j.add(new CustomFunctionData.a(this, commandlistenerwrapper, new CustomFunction.d(customfunction)));
             }
 
             return 0;
         } else {
             try (co.aikar.timings.Timing timing = customfunction.getTiming().startTiming()) { // Paper
-                this.i = true;
+                this.h = true;
                 int j = 0;
                 CustomFunction.c[] acustomfunction_c = customfunction.b();
 
                 int k;
 
                 for (k = acustomfunction_c.length - 1; k >= 0; --k) {
-                    this.h.push(new CustomFunctionData.a(this, commandlistenerwrapper, acustomfunction_c[k]));
+                    this.i.push(new CustomFunctionData.a(this, commandlistenerwrapper, acustomfunction_c[k]));
                 }
 
-                while (!this.h.isEmpty()) {
+                while (!this.i.isEmpty()) {
                     try {
-                        CustomFunctionData.a customfunctiondata_a = (CustomFunctionData.a) this.h.removeFirst();
+                        CustomFunctionData.a customfunctiondata_a = (CustomFunctionData.a) this.i.removeFirst();
 
-                        //this.server.methodProfiler.a(customfunctiondata_a::toString); // Akarin - remove caller
-                        customfunctiondata_a.a(this.h, i);
+                        this.server.getMethodProfiler().a(customfunctiondata_a::toString);
+                        customfunctiondata_a.a(this.i, i);
+                        if (!this.j.isEmpty()) {
+                            List list = Lists.reverse(this.j);
+                            ArrayDeque arraydeque = this.i;
+
+                            this.i.getClass();
+                            list.forEach(arraydeque::addFirst);
+                            this.j.clear();
+                        }
                     } finally {
-                        //this.server.methodProfiler.exit(); // Akarin - remove caller
+                        this.server.getMethodProfiler().exit();
                     }
 
                     ++j;
@@ -131,16 +140,17 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
                 k = j;
                 return k;
             } finally {
-                this.h.clear();
-                this.i = false;
+                this.i.clear();
+                this.j.clear();
+                this.h = false;
             }
         }
     }
 
+    @Override
     public void a(IResourceManager iresourcemanager) {
         this.g.clear();
-        this.k.clear();
-        this.j.b();
+        this.l.clear();
         Collection<MinecraftKey> collection = iresourcemanager.a("functions", (s) -> {
             return s.endsWith(".mcfunction");
         });
@@ -150,31 +160,31 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
         while (iterator.hasNext()) {
             MinecraftKey minecraftkey = (MinecraftKey) iterator.next();
             String s = minecraftkey.getKey();
-            MinecraftKey minecraftkey1 = new MinecraftKey(minecraftkey.b(), s.substring(CustomFunctionData.a, s.length() - CustomFunctionData.b));
+            MinecraftKey minecraftkey1 = new MinecraftKey(minecraftkey.getNamespace(), s.substring(CustomFunctionData.a, s.length() - CustomFunctionData.b));
 
             list.add(CompletableFuture.supplyAsync(() -> {
                 return a(iresourcemanager, minecraftkey);
             }, Resource.a).thenApplyAsync((list1) -> {
                 return CustomFunction.a(minecraftkey1, this, list1);
-            }).handle((customfunction, throwable) -> {
+            }, this.server.aU()).handle((customfunction, throwable) -> {
                 return this.a(customfunction, throwable, minecraftkey);
             }));
         }
 
         CompletableFuture.allOf((CompletableFuture[]) list.toArray(new CompletableFuture[0])).join();
         if (!this.g.isEmpty()) {
-            CustomFunctionData.c.info("Loaded {} custom command functions", this.g.size());
+            CustomFunctionData.LOGGER.info("Loaded {} custom command functions", this.g.size());
         }
 
-        this.j.a(iresourcemanager);
-        this.k.addAll(this.j.b(CustomFunctionData.d).a());
-        this.l = true;
+        this.k.a((Map) this.k.a(iresourcemanager, this.server.aU()).join());
+        this.l.addAll(this.k.b(CustomFunctionData.d).a());
+        this.m = true;
     }
 
     @Nullable
     private CustomFunction a(CustomFunction customfunction, @Nullable Throwable throwable, MinecraftKey minecraftkey) {
         if (throwable != null) {
-            CustomFunctionData.c.error("Couldn't load function at {}", minecraftkey, throwable);
+            CustomFunctionData.LOGGER.error("Couldn't load function at {}", minecraftkey, throwable);
             return null;
         } else {
             Map map = this.g;
@@ -223,8 +233,12 @@ public class CustomFunctionData implements ITickable, IResourcePackListener {
         return this.server.getServerCommandListener().a(2).a();
     }
 
-    public Tags<CustomFunction> g() {
-        return this.j;
+    public CommandListenerWrapper g() {
+        return new CommandListenerWrapper(ICommandListener.DUMMY, Vec3D.a, Vec2F.a, (WorldServer) null, this.server.k(), "", new ChatComponentText(""), this.server, (Entity) null);
+    }
+
+    public Tags<CustomFunction> h() {
+        return this.k;
     }
 
     public static class a {

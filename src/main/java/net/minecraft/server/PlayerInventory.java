@@ -4,25 +4,22 @@ import com.google.common.collect.ImmutableList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 
 // CraftBukkit start
 import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.Location;
-
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.entity.HumanEntity;
 // CraftBukkit end
 
-public class PlayerInventory implements IInventory {
+public class PlayerInventory implements IInventory, INamableTileEntity {
 
     public final NonNullList<ItemStack> items;
     public final NonNullList<ItemStack> armor;
     public final NonNullList<ItemStack> extraSlots;
     private final List<NonNullList<ItemStack>> f;List<NonNullList<ItemStack>> getComponents() { return f; } // Paper - OBFHELPER
     public int itemInHandIndex;
-    public EntityHuman player;
+    public final EntityHuman player;
     private ItemStack carried;
     private int h;
 
@@ -59,6 +56,11 @@ public class PlayerInventory implements IInventory {
         return this.player.getBukkitEntity();
     }
 
+    @Override
+    public int getMaxStackSize() {
+        return maxStack;
+    }
+
     public void setMaxStackSize(int size) {
         maxStack = size;
     }
@@ -79,7 +81,7 @@ public class PlayerInventory implements IInventory {
     }
 
     public ItemStack getItemInHand() {
-        return e(this.itemInHandIndex) ? (ItemStack) this.items.get(this.itemInHandIndex) : ItemStack.a;
+        return d(this.itemInHandIndex) ? (ItemStack) this.items.get(this.itemInHandIndex) : ItemStack.a;
     }
 
     public static int getHotbarSize() {
@@ -106,6 +108,12 @@ public class PlayerInventory implements IInventory {
             }
             if (remains <= 0) return itemstack.getCount();
         }
+        ItemStack offhandItemStack = this.getItem(this.items.size() + this.armor.size());
+        if (this.a(offhandItemStack, itemstack)) {
+            remains -= (offhandItemStack.getMaxStackSize() < this.getMaxStackSize() ? offhandItemStack.getMaxStackSize() : this.getMaxStackSize()) - offhandItemStack.getCount();
+        }
+        if (remains <= 0) return itemstack.getCount();
+
         return itemstack.getCount() - remains;
     }
     // CraftBukkit end
@@ -120,15 +128,15 @@ public class PlayerInventory implements IInventory {
         return -1;
     }
 
-    public void d(int i) {
-        this.itemInHandIndex = this.l();
+    public void c(int i) {
+        this.itemInHandIndex = this.i();
         ItemStack itemstack = (ItemStack) this.items.get(this.itemInHandIndex);
 
         this.items.set(this.itemInHandIndex, this.items.get(i));
         this.items.set(i, itemstack);
     }
 
-    public static boolean e(int i) {
+    public static boolean d(int i) {
         return i >= 0 && i < 9;
     }
 
@@ -144,7 +152,7 @@ public class PlayerInventory implements IInventory {
         return -1;
     }
 
-    public int l() {
+    public int i() {
         int i;
         int j;
 
@@ -268,7 +276,7 @@ public class PlayerInventory implements IInventory {
         }
     }
 
-    public void p() {
+    public void j() {
         Iterator iterator = this.f.iterator();
 
         while (iterator.hasNext()) {
@@ -365,6 +373,7 @@ public class PlayerInventory implements IInventory {
         }
     }
 
+    @Override
     public ItemStack splitStack(int i, int j) {
         List<ItemStack> list = null;
 
@@ -397,6 +406,7 @@ public class PlayerInventory implements IInventory {
 
     }
 
+    @Override
     public ItemStack splitWithoutUpdate(int i) {
         NonNullList<ItemStack> nonnulllist = null;
 
@@ -420,6 +430,7 @@ public class PlayerInventory implements IInventory {
         }
     }
 
+    @Override
     public void setItem(int i, ItemStack itemstack) {
         NonNullList<ItemStack> nonnulllist = null;
 
@@ -452,7 +463,7 @@ public class PlayerInventory implements IInventory {
                 nbttagcompound = new NBTTagCompound();
                 nbttagcompound.setByte("Slot", (byte) i);
                 ((ItemStack) this.items.get(i)).save(nbttagcompound);
-                nbttaglist.add((NBTBase) nbttagcompound);
+                nbttaglist.add(nbttagcompound);
             }
         }
 
@@ -461,7 +472,7 @@ public class PlayerInventory implements IInventory {
                 nbttagcompound = new NBTTagCompound();
                 nbttagcompound.setByte("Slot", (byte) (i + 100));
                 ((ItemStack) this.armor.get(i)).save(nbttagcompound);
-                nbttaglist.add((NBTBase) nbttagcompound);
+                nbttaglist.add(nbttagcompound);
             }
         }
 
@@ -470,7 +481,7 @@ public class PlayerInventory implements IInventory {
                 nbttagcompound = new NBTTagCompound();
                 nbttagcompound.setByte("Slot", (byte) (i + 150));
                 ((ItemStack) this.extraSlots.get(i)).save(nbttagcompound);
-                nbttaglist.add((NBTBase) nbttagcompound);
+                nbttaglist.add(nbttagcompound);
             }
         }
 
@@ -500,11 +511,13 @@ public class PlayerInventory implements IInventory {
 
     }
 
+    @Override
     public int getSize() {
         return this.items.size() + this.armor.size() + this.extraSlots.size();
     }
 
-    public boolean P_() {
+    @Override
+    public boolean isNotEmpty() {
         Iterator iterator = this.items.iterator();
 
         ItemStack itemstack;
@@ -540,6 +553,7 @@ public class PlayerInventory implements IInventory {
         return false;
     }
 
+    @Override
     public ItemStack getItem(int i) {
         List<ItemStack> list = null;
 
@@ -556,21 +570,9 @@ public class PlayerInventory implements IInventory {
         return list == null ? ItemStack.a : (ItemStack) list.get(i);
     }
 
+    @Override
     public IChatBaseComponent getDisplayName() {
         return new ChatMessage("container.inventory", new Object[0]);
-    }
-
-    @Nullable
-    public IChatBaseComponent getCustomName() {
-        return null;
-    }
-
-    public boolean hasCustomName() {
-        return false;
-    }
-
-    public int getMaxStackSize() {
-        return maxStack; // CraftBukkit
     }
 
     public boolean b(IBlockData iblockdata) {
@@ -588,7 +590,10 @@ public class PlayerInventory implements IInventory {
                 ItemStack itemstack = (ItemStack) this.armor.get(i);
 
                 if (itemstack.getItem() instanceof ItemArmor) {
-                    itemstack.damage((int) f, this.player);
+                    int finalI = i; // CraftBukkit - decompile error
+                    itemstack.damage((int) f, this.player, (entityhuman) -> {
+                        entityhuman.c(EnumItemSlot.a(EnumItemSlot.Function.ARMOR, finalI)); // CraftBukkit - decompile error
+                    });
                 }
             }
 
@@ -613,6 +618,7 @@ public class PlayerInventory implements IInventory {
 
     }
 
+    @Override
     public void update() {
         ++this.h;
     }
@@ -630,8 +636,9 @@ public class PlayerInventory implements IInventory {
         return this.carried;
     }
 
+    @Override
     public boolean a(EntityHuman entityhuman) {
-        return this.player.dead ? false : entityhuman.h(this.player) <= 64.0D;
+        return this.player.dead ? false : entityhuman.h((Entity) this.player) <= 64.0D;
     }
 
     public boolean h(ItemStack itemstack) {
@@ -653,14 +660,6 @@ public class PlayerInventory implements IInventory {
         return false;
     }
 
-    public void startOpen(EntityHuman entityhuman) {}
-
-    public void closeContainer(EntityHuman entityhuman) {}
-
-    public boolean b(int i, ItemStack itemstack) {
-        return true;
-    }
-
     public void a(PlayerInventory playerinventory) {
         for (int i = 0; i < this.getSize(); ++i) {
             this.setItem(i, playerinventory.getItem(i));
@@ -669,16 +668,7 @@ public class PlayerInventory implements IInventory {
         this.itemInHandIndex = playerinventory.itemInHandIndex;
     }
 
-    public int getProperty(int i) {
-        return 0;
-    }
-
-    public void setProperty(int i, int j) {}
-
-    public int h() {
-        return 0;
-    }
-
+    @Override
     public void clear() {
         Iterator iterator = this.f.iterator();
 

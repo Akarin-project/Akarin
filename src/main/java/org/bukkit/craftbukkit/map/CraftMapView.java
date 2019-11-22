@@ -6,12 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-
 import net.minecraft.server.DimensionManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldMap;
 import net.minecraft.server.WorldServer;
-
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -46,18 +44,22 @@ public final class CraftMapView implements MapView {
         }
     }
 
+    @Override
     public boolean isVirtual() {
         return renderers.size() > 0 && !(renderers.get(0) instanceof CraftMapRenderer);
     }
 
+    @Override
     public Scale getScale() {
         return Scale.valueOf(worldMap.scale);
     }
 
+    @Override
     public void setScale(Scale scale) {
         worldMap.scale = scale.getValue();
     }
 
+    @Override
     public World getWorld() {
         DimensionManager dimension = worldMap.map;
         WorldServer world = MinecraftServer.getServer().getWorldServer(dimension);
@@ -65,30 +67,37 @@ public final class CraftMapView implements MapView {
         return (world == null) ? null : world.getWorld();
     }
 
+    @Override
     public void setWorld(World world) {
-        worldMap.map = ((CraftWorld) world).getHandle().dimension;
+        worldMap.map = ((CraftWorld) world).getHandle().getWorldProvider().getDimensionManager();
     }
 
+    @Override
     public int getCenterX() {
         return worldMap.centerX;
     }
 
+    @Override
     public int getCenterZ() {
         return worldMap.centerZ;
     }
 
+    @Override
     public void setCenterX(int x) {
         worldMap.centerX = x;
     }
 
+    @Override
     public void setCenterZ(int z) {
         worldMap.centerZ = z;
     }
 
+    @Override
     public List<MapRenderer> getRenderers() {
         return new ArrayList<MapRenderer>(renderers);
     }
 
+    @Override
     public void addRenderer(MapRenderer renderer) {
         if (!renderers.contains(renderer)) {
             renderers.add(renderer);
@@ -97,6 +106,7 @@ public final class CraftMapView implements MapView {
         }
     }
 
+    @Override
     public boolean removeRenderer(MapRenderer renderer) {
         if (renderers.contains(renderer)) {
             renderers.remove(renderer);
@@ -167,6 +177,16 @@ public final class CraftMapView implements MapView {
     }
 
     @Override
+    public boolean isTrackingPosition() {
+        return worldMap.track;
+    }
+
+    @Override
+    public void setTrackingPosition(boolean trackingPosition) {
+        worldMap.track = trackingPosition;
+    }
+
+    @Override
     public boolean isUnlimitedTracking() {
         return worldMap.unlimitedTracking;
     }
@@ -174,5 +194,15 @@ public final class CraftMapView implements MapView {
     @Override
     public void setUnlimitedTracking(boolean unlimited) {
         worldMap.unlimitedTracking = unlimited;
+    }
+
+    @Override
+    public boolean isLocked() {
+        return worldMap.locked;
+    }
+
+    @Override
+    public void setLocked(boolean locked) {
+        worldMap.locked = locked;
     }
 }

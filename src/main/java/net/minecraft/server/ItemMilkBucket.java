@@ -6,6 +6,7 @@ public class ItemMilkBucket extends Item {
         super(item_info);
     }
 
+    @Override
     public ItemStack a(ItemStack itemstack, World world, EntityLiving entityliving) {
         if (entityliving instanceof EntityPlayer) {
             EntityPlayer entityplayer = (EntityPlayer) entityliving;
@@ -25,14 +26,17 @@ public class ItemMilkBucket extends Item {
         return itemstack.isEmpty() ? new ItemStack(Items.BUCKET) : itemstack;
     }
 
-    public int c(ItemStack itemstack) {
+    @Override
+    public int f_(ItemStack itemstack) {
         return 32;
     }
 
-    public EnumAnimation d(ItemStack itemstack) {
+    @Override
+    public EnumAnimation e_(ItemStack itemstack) {
         return EnumAnimation.DRINK;
     }
 
+    @Override
     public InteractionResultWrapper<ItemStack> a(World world, EntityHuman entityhuman, EnumHand enumhand) {
         entityhuman.c(enumhand);
         return new InteractionResultWrapper<>(EnumInteractionResult.SUCCESS, entityhuman.b(enumhand));

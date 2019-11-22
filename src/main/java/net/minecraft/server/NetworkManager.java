@@ -1,17 +1,11 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import io.akarin.server.core.AkarinGlobalConfig;
-import io.akarin.server.core.PacketType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultEventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -22,15 +16,8 @@ import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import io.netty.util.concurrent.PromiseNotifier;
-
 import java.net.SocketAddress;
-import java.nio.channels.Channels;
-import java.util.Iterator;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import org.apache.commons.lang3.Validate;
@@ -41,7 +28,7 @@ import org.apache.logging.log4j.MarkerManager;
 
 public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
-    private static final Logger g = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     public static final Marker a = MarkerManager.getMarker("NETWORK");
     public static final Marker b = MarkerManager.getMarker("NETWORK_PACKETS", NetworkManager.a);
     public static final AttributeKey<EnumProtocol> c = AttributeKey.valueOf("protocol");
@@ -55,9 +42,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         return new DefaultEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Local Client IO #%d").setDaemon(true).build());
     });
     private final EnumProtocolDirection h;
-    private final ConcurrentLinkedQueue<NetworkManager.QueuedPacket> packetQueue = new ConcurrentLinkedQueue<NetworkManager.QueuedPacket>();  private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.packetQueue; } // Paper - OBFHELPER // Akarin
-    private final Queue<PacketPlayOutMapChunk> pendingChunkQueue = Queues.newConcurrentLinkedQueue(); // Akarin - remove packet queue
-    private final ReentrantReadWriteLock j = new ReentrantReadWriteLock();
+    private final Queue<NetworkManager.QueuedPacket> packetQueue = Queues.newConcurrentLinkedQueue(); private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.packetQueue; } // Paper - OBFHELPER
     public Channel channel;
     public SocketAddress socketAddress; public void setSpoofedRemoteAddress(SocketAddress address) { this.socketAddress = address; } // Paper - OBFHELPER
     // Spigot Start
@@ -66,15 +51,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     public boolean preparing = true;
     // Spigot End
     private PacketListener packetListener;
-    private IChatBaseComponent n;
+    private IChatBaseComponent m;
+    private boolean n;
     private boolean o;
-    private AtomicBoolean p = new AtomicBoolean(false); // Akarin - atomic
+    private int p;
     private int q;
-    private int r;
+    private float r;
     private float s;
-    private float t;
-    private int u;
-    private boolean v;
+    private int t;
+    private boolean u;
     // Paper start - NetworkClient implementation
     public int protocolVersion;
     public java.net.InetSocketAddress virtualHost;
@@ -96,7 +81,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         try {
             this.setProtocol(EnumProtocol.HANDSHAKING);
         } catch (Throwable throwable) {
-            NetworkManager.g.fatal(throwable);
+            NetworkManager.LOGGER.fatal(throwable);
         }
 
     }
@@ -104,7 +89,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     public void setProtocol(EnumProtocol enumprotocol) {
         this.channel.attr(NetworkManager.c).set(enumprotocol);
         this.channel.config().setAutoRead(true);
-        NetworkManager.g.debug("Enabled auto read");
+        NetworkManager.LOGGER.debug("Enabled auto read");
     }
 
     public void channelInactive(ChannelHandlerContext channelhandlercontext) throws Exception {
@@ -122,26 +107,26 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         }
         // Paper end
         if (throwable instanceof SkipEncodeException) {
-            NetworkManager.g.debug("Skipping packet due to errors", throwable.getCause());
+            NetworkManager.LOGGER.debug("Skipping packet due to errors", throwable.getCause());
         } else {
-            boolean flag = !this.v;
+            boolean flag = !this.u;
 
-            this.v = true;
+            this.u = true;
             if (this.channel.isOpen()) {
                 if (throwable instanceof TimeoutException) {
-                    NetworkManager.g.debug("Timeout", throwable);
+                    NetworkManager.LOGGER.debug("Timeout", throwable);
                     this.close(new ChatMessage("disconnect.timeout", new Object[0]));
                 } else {
-                    ChatMessage chatmessage = new ChatMessage("disconnect.genericReason", new Object[] { "Internal Exception: " + throwable});
+                    ChatMessage chatmessage = new ChatMessage("disconnect.genericReason", new Object[]{"Internal Exception: " + throwable});
 
                     if (flag) {
-                        NetworkManager.g.debug("Failed to sent packet", throwable);
+                        NetworkManager.LOGGER.debug("Failed to sent packet", throwable);
                         this.sendPacket(new PacketPlayOutKickDisconnect(chatmessage), (future) -> {
                             this.close(chatmessage);
                         });
                         this.stopReading();
                     } else {
-                        NetworkManager.g.debug("Double fault", throwable);
+                        NetworkManager.LOGGER.debug("Double fault", throwable);
                         this.close(chatmessage);
                     }
                 }
@@ -159,7 +144,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
                 ;
             }
 
-            ++this.q;
+            ++this.p;
         }
 
     }
@@ -170,7 +155,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     public void setPacketListener(PacketListener packetlistener) {
         Validate.notNull(packetlistener, "packetListener", new Object[0]);
-        NetworkManager.g.debug("Set listener of {} to {}", this, packetlistener);
+        NetworkManager.LOGGER.debug("Set listener of {} to {}", this, packetlistener);
         this.packetListener = packetlistener;
     }
 
@@ -178,88 +163,24 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         this.sendPacket(packet, (GenericFutureListener) null);
     }
 
-    // Akarin start
-    public final void sendPackets(Packet<?> packet0, Packet<?> packet1) {
-        if (this.isConnected() && this.channel.isRegistered()) { // why send packet to whom not connected?
-            //this.j.readLock().lock();
-            //try {
-                // Queue new packets
-                this.dispatchPacket(packet0, null);
-                this.dispatchPacket(packet1, null);
-            //} finally {
-            //    this.j.readLock().unlock();
-            //}
-        }
-    }
-
-    public final void sendPackets(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2) {
-        if (this.isConnected() && this.channel.isRegistered()) { // why send packet to whom not connected?
-            //this.j.readLock().lock();
-            //try {
-                // Queue new packets
-                this.dispatchPacket(packet0, null);
-                this.dispatchPacket(packet1, null);
-                this.dispatchPacket(packet2, null);
-            //} finally {
-            //this.j.readLock().unlock();
-            //}
-        }
-    }
-
-    public final void sendPackets(Packet<?> packet0, Packet<?> packet1, Packet<?> packet2, Packet<?> packet3, Packet<?> packet4, Packet<?> packet5, Packet<?> packet6) {
-        if (this.isConnected() && this.channel.isRegistered()) { // why send packet to whom not connected?
-            //this.j.readLock().lock();
-            //try {
-                // Queue new packets
-                this.dispatchPacket(packet0, null);
-                this.dispatchPacket(packet1, null);
-                this.dispatchPacket(packet2, null);
-                this.dispatchPacket(packet3, null);
-                this.dispatchPacket(packet4, null);
-                this.dispatchPacket(packet5, null);
-                this.dispatchPacket(packet6, null);
-            //} finally {
-            //this.j.readLock().unlock();
-            //}
-        }
-    }
-    // Akarin end
     public void sendPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
-        if (this.isConnected() && this.channel.isRegistered() /*&& this.sendPacketQueue() && !(packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady())*/) { // Paper - Async-Anti-Xray - Add chunk packets which are not ready or all packets if the packet queue contains chunk packets which are not ready to the packet queue and send the packets later in the right order // Akarin
+        if (this.isConnected() && this.sendPacketQueue() && !(packet instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) packet).isReady())) { // Paper - Async-Anti-Xray - Add chunk packets which are not ready or all packets if the packet queue contains chunk packets which are not ready to the packet queue and send the packets later in the right order
             //this.o(); // Paper - Async-Anti-Xray - Move to if statement (this.sendPacketQueue())
-            // Akarin start
-            //this.j.readLock().lock();
-            //try {
-                // Dispatch or queue new packets
-                this.dispatchPacket(packet, genericfuturelistener);
-            //} finally {
-            //    this.j.readLock().unlock();
-            //}
-        } else if (false) {
-            // Akarin end
-            this.j.writeLock().lock();
-
-            try {
-                this.packetQueue.add(new NetworkManager.QueuedPacket(packet, genericfuturelistener));
-            } finally {
-                this.j.writeLock().unlock();
-            }
+            this.b(packet, genericfuturelistener);
+        } else {
+            this.packetQueue.add(new NetworkManager.QueuedPacket(packet, genericfuturelistener));
         }
 
     }
 
-    // Akarin start
-    private final void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
-    private final void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
-        if (!packet.canDispatchImmediately())
-            this.pendingChunkQueue.add((PacketPlayOutMapChunk) packet);
-        // Akarin end
+    private void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
+    private void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
         EnumProtocol enumprotocol = EnumProtocol.a(packet);
         EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
 
-        //++this.r; // Akarin - unused
+        ++this.q;
         if (enumprotocol1 != enumprotocol) {
-            NetworkManager.g.debug("Disabled auto read");
+            NetworkManager.LOGGER.debug("Disabled auto read");
             this.channel.config().setAutoRead(false);
         }
 
@@ -292,39 +213,23 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         }
 
         // Paper start
-        if (AkarinGlobalConfig.allowExcessiveSigns) { // Akarin
         java.util.List<Packet> extraPackets = packet.getExtraPackets();
         if (extraPackets != null && !extraPackets.isEmpty()) {
             for (Packet extraPacket : extraPackets) {
                 this.dispatchPacket(extraPacket, genericfuturelistener);
             }
         }
-        } // Akarin
         // Paper end
 
     }
 
     // Paper start - Async-Anti-Xray - Stop dispatching further packets and return false if the peeked packet is a chunk packet which is not ready
-    public boolean sendPacketQueue() { return this.o(); } // OBFHELPER // void -> boolean // Akarin - public
+    private boolean sendPacketQueue() { return this.o(); } // OBFHELPER // void -> boolean
     private boolean o() { // void -> boolean
-        if (this.channel != null && this.channel.isOpen() && this.channel.isRegistered() && !this.pendingChunkQueue.isEmpty()) {
-            // Akarin start
-            Iterator<PacketPlayOutMapChunk> iterator = this.pendingChunkQueue.iterator();
-            while (iterator.hasNext()) {
-                PacketPlayOutMapChunk packet = iterator.next();
-                if (packet.isReady()) {
-                    this.dispatchPacket(packet, null);
-                    iterator.remove();
-                }
-            }
-            /*
-            if (this.packetQueue.isEmpty()) { // return if the packet queue is empty so that the write lock by Anti-Xray doesn't affect the vanilla performance at all
-                return true;
-            }
+        if (this.channel != null && this.channel.isOpen()) {
+            Queue queue = this.packetQueue;
 
-            this.j.writeLock().lock(); // readLock -> writeLock (because of race condition between peek and poll)
-
-            try {
+            synchronized (this.packetQueue) {
                 while (!this.packetQueue.isEmpty()) {
                     NetworkManager.QueuedPacket networkmanager_queuedpacket = (NetworkManager.QueuedPacket) this.getPacketQueue().peek(); // poll -> peek
 
@@ -337,12 +242,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
                         }
                     }
                 }
-            } finally {
-                this.j.writeLock().unlock(); // readLock -> writeLock (because of race condition between peek and poll)
-            }
-            */
-            // Akarin end
 
+            }
         }
 
         return true; // Return true if all packets were dispatched
@@ -350,20 +251,24 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     // Paper end
 
     public void a() {
-        //this.o(); // Akarin - move to scheduler
-        if (this.packetListener instanceof ITickable) {
-            ((ITickable) this.packetListener).tick();
+        this.o();
+        if (this.packetListener instanceof LoginListener) {
+            ((LoginListener) this.packetListener).tick();
+        }
+
+        if (this.packetListener instanceof PlayerConnection) {
+            ((PlayerConnection) this.packetListener).tick();
         }
 
         if (this.channel != null) {
             if (enableExplicitFlush) this.channel.eventLoop().execute(() -> this.channel.flush()); // Paper - we don't need to explicit flush here, but allow opt in incase issues are found to a better version
         }
 
-        if (this.u++ % 20 == 0) {
-            this.t = this.t * 0.75F + (float) this.r * 0.25F;
+        if (this.t++ % 20 == 0) {
             this.s = this.s * 0.75F + (float) this.q * 0.25F;
-            this.r = 0;
+            this.r = this.r * 0.75F + (float) this.p * 0.25F;
             this.q = 0;
+            this.p = 0;
         }
 
     }
@@ -378,7 +283,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         // Spigot End
         if (this.channel.isOpen()) {
             this.channel.close(); // We can't wait as this may be called from an event loop.
-            this.n = ichatbasecomponent;
+            this.m = ichatbasecomponent;
         }
 
     }
@@ -388,7 +293,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
     }
 
     public void a(SecretKey secretkey) {
-        this.o = true;
+        this.n = true;
         this.channel.pipeline().addBefore("splitter", "decrypt", new PacketDecrypter(MinecraftEncryption.a(2, secretkey)));
         this.channel.pipeline().addBefore("prepender", "encrypt", new PacketEncrypter(MinecraftEncryption.a(1, secretkey)));
     }
@@ -407,7 +312,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     @Nullable
     public IChatBaseComponent j() {
-        return this.n;
+        return this.m;
     }
 
     public void stopReading() {
@@ -441,10 +346,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     public void handleDisconnection() {
         if (this.channel != null && !this.channel.isOpen()) {
-            if (!this.p.compareAndSet(false, true)) { // Akarin
-                //NetworkManager.g.warn("handleDisconnection() called twice"); // Akarin
+            if (this.o) {
+                NetworkManager.LOGGER.warn("handleDisconnection() called twice");
             } else {
-                //this.p = true; // Akarin
+                this.o = true;
                 if (this.j() != null) {
                     this.i().a(this.j());
                 } else if (this.i() != null) {
