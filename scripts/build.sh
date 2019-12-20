@@ -35,7 +35,7 @@ echo "[Akarin] Ready to build"
 		\cp -rf "$basedir/api/pom.xml" "$paperbasedir/Paper-API/"
 		\cp -rf "$basedir/src" "$paperbasedir/Paper-Server/"
 		\cp -rf "$basedir/pom.xml" "$paperbasedir/Paper-Server/"
-		mvn clean install -DskipTests
+		mvn clean install -Dmaven.test.skip=true
 	else
 		rm -rf Paper-API/src
 		rm -rf Paper-Server/src
@@ -44,7 +44,7 @@ echo "[Akarin] Ready to build"
 		\cp -rf "$basedir/api/pom.xml" "$paperbasedir/Paper-API/"
 		\cp -rf "$basedir/src" "$paperbasedir/Paper-Server/"
 		\cp -rf "$basedir/pom.xml" "$paperbasedir/Paper-Server/"
-		mvn clean install -DskipTests
+		mvn clean install -Dmaven.test.skip=true
 	fi
 	
 	minecraftversion=$(cat "$paperworkdir/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
