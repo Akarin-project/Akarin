@@ -210,8 +210,8 @@
         </repository>
         <!-- Akarin -->
         <repository>
-            <id>nallar-repo</id>
-            <url>https://repo.nallar.me/</url>
+            <id>piratescode</id>
+            <url>https://nexus.piratescode.co.uk/</url>
         </repository>
         <repository>
             <id>spongepowered-repo</id>

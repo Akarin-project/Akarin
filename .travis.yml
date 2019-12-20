@@ -6,7 +6,8 @@ install: true
 script:
   - git config --global user.email "circle@circleci.com"
   - git config --global user.name "CircleCI"
-  - chmod +x ./scripts/inst.sh
+  - chmod -Rv +x scripts/
+  - ./scripts/build.sh
   - ./scripts/inst.sh --setup --remote
 after_success:
   - rm -rf push
