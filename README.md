@@ -38,6 +38,8 @@ Get Akarin
 
 #### Compile
 ```sh
+chmod -Rv a+x scripts/
+./scripts/build.sh 
 ./scripts/inst.sh --setup --fast
 ```
 
