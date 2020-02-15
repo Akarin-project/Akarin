@@ -209,6 +209,10 @@
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
         <!-- Akarin -->
+		<repository>
+			<id>papermc</id>
+			<url>https://papermc.io/repo/repository/maven-public/</url>
+		</repository>
         <repository>
             <id>piratescode</id>
             <url>https://nexus.piratescode.co.uk/</url>
