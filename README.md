@@ -3,7 +3,7 @@
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
 [![Build Status](https://ci.melon.cat/job/Akarin/badge/icon?subject=Jenkins)](https://ci.melon.cat/job/Akarin/)
-[![Patreon](https://img.shields.io/badge/Patreon-donate_us-yellow.svg?style=flat)](https://www.patreon.com/akarinproject)
+[![Patreon](https://img.shields.io/badge/Patreon-Donate-yellow.svg?style=flat)](https://www.patreon.com/akarinproject)
 [![Circle CI](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg)](https://circleci.com/gh/Akarin-project/Akarin)
 
 Akarin is currently **under heavy development** and contributions are welcome!
