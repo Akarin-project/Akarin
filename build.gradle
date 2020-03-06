@@ -1,0 +1,57 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'com.destroystokyo.paper'
+version = '1.14.4-R0.1-SNAPSHOT'
+
+description = """Akarin"""
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+
+
+repositories {
+        
+     maven { url "https://hub.spigotmc.org/nexus/content/groups/public/" }
+     maven { url "https://papermc.io/repo/repository/maven-public/" }
+     maven { url "https://nexus.piratescode.co.uk/" }
+     maven { url "https://repo.spongepowered.org/maven/" }
+     maven { url "https://oss.sonatype.org/content/repositories" }
+     maven { url "https://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-releases/" }
+     maven { url "https://repo.md-5.net/content/repositories/releases/" }
+     maven { url "https://repo.aikar.co/content/groups/aikar/" }
+     maven { url "https://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'com.destroystokyo.paper', name: 'paper-api', version:'1.14.4-R0.1-SNAPSHOT'
+    compile group: 'org.spigotmc', name: 'minecraft-server', version:'1.14.4-SNAPSHOT'
+    compile group: 'net.minecrell', name: 'terminalconsoleappender', version:'1.1.1'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version:'2.8.1'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-iostreams', version:'2.8.1'
+    compile group: 'org.ow2.asm', name: 'asm', version:'7.1'
+    compile group: 'com.github.ben-manes.caffeine', name: 'caffeine', version:'2.7.0'
+    compile group: 'com.koloboke', name: 'koloboke-api-jdk8', version:'1.0.0'
+    compile group: 'gnu.trove', name: 'trove', version:'3.0.3'
+    compile group: 'org.jetbrains', name: 'annotations', version:'16.0.1'
+    compile group: 'io.netty', name: 'netty-all', version:'4.1.42.Final'
+    runtime group: 'net.java.dev.jna', name: 'jna', version:'4.5.2'
+    runtime group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version:'2.8.1'
+    runtime group: 'com.lmax', name: 'disruptor', version:'3.4.2'
+    runtime group: 'org.xerial', name: 'sqlite-jdbc', version:'3.28.0'
+    runtime group: 'mysql', name: 'mysql-connector-java', version:'5.1.47'
+    runtime group: 'com.koloboke', name: 'koloboke-impl-jdk8', version:'1.0.0'
+    runtime group: 'it.unimi.dsi', name: 'fastutil', version:'8.2.2'
+    runtime group: 'com.google.code.findbugs', name: 'jsr305', version:'1.3.9'
+    runtime group: 'com.google.guava', name: 'guava', version:'21.0'
+    runtime group: 'com.google.code.gson', name: 'gson', version:'2.8.0'
+    runtime group: 'org.jetbrains', name: 'annotations-java5', version:'17.0.0'
+    runtime group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+    runtime group: 'org.ow2.asm', name: 'asm-commons', version:'7.1'
+    testCompile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'org.hamcrest', name: 'hamcrest-library', version:'1.3'
+    compileOnly group: 'org.projectlombok', name: 'lombok', version:'1.16.20'
+}
