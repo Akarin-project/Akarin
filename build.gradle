@@ -6,12 +6,13 @@ version = '1.14.4-R0.1-SNAPSHOT'
 
 description = """Akarin"""
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
+
+
 
 repositories {
         
