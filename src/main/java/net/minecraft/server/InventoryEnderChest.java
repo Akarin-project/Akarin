@@ -20,7 +20,7 @@ public class InventoryEnderChest extends InventorySubcontainer {
     }
 
     public InventoryEnderChest(EntityHuman owner) {
-        super(27);
+        super(54); // For Personnalise our EnderChest via Plugins :)
         this.owner = owner;
         // CraftBukkit end
     }
