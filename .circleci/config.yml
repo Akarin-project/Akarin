@@ -29,7 +29,8 @@ jobs:
     - run: git config --global user.email "circle@circleci.com"
     - run: git config --global user.name "CircleCI"
     - run: chmod -Rv +x scripts/
-    - run: ./scripts/build.sh 
+    #- run: ./scripts/build.sh 
+    - run: git submodule update --init --recursive
     - run: ./scripts/inst.sh --setup --remote
     # Save dependency cache
     - save_cache:
