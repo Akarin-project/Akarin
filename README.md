@@ -2,7 +2,7 @@
 [![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.io)
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
-[![Build Status](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin/)](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin/)
+[![Build Status](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin/badge/icon)](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin/)
 [![Patreon](https://img.shields.io/badge/Patreon-Donate-yellow.svg?style=flat)](https://www.patreon.com/akarinproject)
 [![Circle CI](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg)](https://circleci.com/gh/Akarin-project/Akarin)
 
