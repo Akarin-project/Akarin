@@ -1,5 +1,5 @@
 # <img src="https://i.loli.net/2018/05/17/5afd869c443ef.png" alt="Akarin Face" align="right">Akarin
-[![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.io)
+[![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.app/)
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
 [![Build Status](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin/badge/icon)](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin/)
@@ -27,7 +27,8 @@ Get Akarin
 ### Download
 #### Recommended
 + [**Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/ver/master) - Checkout the 'Artifacts' tab of the latest build *Login required*
-+ [**Melon Jenkins**](https://ci.melon.cat/job/Akarin/)
++ [**JosephWorks Jenkins**](http://localhost:8080/job/Akarin-project/job/Akarin/)
++ [**Melon Jenkins**](https://ci.melon.cat/job/Akarin/) - Offline
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
