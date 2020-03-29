@@ -1,8 +1,8 @@
 # <img src="https://i.loli.net/2018/05/17/5afd869c443ef.png" alt="Akarin Face" align="right">Akarin
-[![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.io)
+[![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.app/)
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
-[![Build Status](https://ci.melon.cat/job/Akarin/badge/icon?subject=Jenkins)](https://ci.melon.cat/job/Akarin/)
+[![Build Status](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin/badge/icon)](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin/)
 [![Patreon](https://img.shields.io/badge/Patreon-Donate-yellow.svg?style=flat)](https://www.patreon.com/akarinproject)
 [![Circle CI](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg)](https://circleci.com/gh/Akarin-project/Akarin)
 
@@ -27,7 +27,8 @@ Get Akarin
 ### Download
 #### Recommended
 + [**Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/ver/master) - Checkout the 'Artifacts' tab of the latest build *Login required*
-+ [**Melon Jenkins**](https://ci.melon.cat/job/Akarin/)
++ [**JosephWorks Jenkins**](http://localhost:8080/job/Akarin-project/job/Akarin/)
++ [**Melon Jenkins**](https://ci.melon.cat/job/Akarin/) - Offline
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
@@ -51,7 +52,7 @@ chmod -Rv a+x scripts/
 Demo Servers
 ---
 * [Fair Server](https://fairserver.ru)
-* [LoyaltyMC](https://minecraft-mp.com/server-s212077)
+* [LoyaltyMC](https://www.loyaltymc.net/)
 * ~~`demo.akarin.io` (official)~~
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
