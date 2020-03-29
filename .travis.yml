@@ -1,5 +1,5 @@
 language: java
-dist: trust
+dist: trusty
 jdk:
   - oraclejdk8
 install: true
