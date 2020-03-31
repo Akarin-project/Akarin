@@ -1,5 +1,5 @@
-version: 2
-jobs:
+version: 2.1
+
   build:
     working_directory: ~/Akarin-project/Akarin
     parallelism: 1
@@ -9,7 +9,7 @@ jobs:
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
     docker:
     - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
-      run: sudo service postgresql start
+      command: /sbin/init
     steps:
     # Machine Setup
     - checkout
@@ -24,12 +24,13 @@ jobs:
         keys:
         # This branch if available
         - v1-dep-{{ .Branch }}-
+        # Default branch if not
+        - v1-dep-ver/1.12.2-
         # Any branch if there are none on the default branch - this should be unnecessary if you have your default branch configured correctly
         - v1-dep-
     - run: git config --global user.email "circle@circleci.com"
     - run: git config --global user.name "CircleCI"
-    - run: chmod -Rv +x scripts/
-    - run: ./scripts/build.sh 
+    - run: chmod +x scripts/inst.sh
     - run: ./scripts/inst.sh --setup --remote
     # Save dependency cache
     - save_cache:
