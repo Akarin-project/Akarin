@@ -29,15 +29,14 @@ jobs:
     - run: git config --global user.email "circle@circleci.com"
     - run: git config --global user.name "CircleCI"
     - run: chmod -Rv +x scripts/
-    - run: ./scripts/build.sh 
-    - run: ./scripts/inst.sh --setup --remote
+    - run: ./akarin build
     # Save dependency cache
     - save_cache:
         key: v1-dep-{{ .Branch }}-{{ epoch }}
         paths:
         - ~/.m2
     # Test
-    - run: yes|cp -rf ./akarin-*.jar $CIRCLE_ARTIFACTS
+    - run: cp akarin-paperclip.jar $CIRCLE_ARTIFACTS
     # Teardown
     # Save test results
     - store_test_results:

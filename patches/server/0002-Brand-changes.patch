@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+ <tsao-chi@the-lingo.org>
+Date: Tue, 18 Dec 2018 06:27:02 -0800
+Subject: [PATCH] Brand changes
+
+
+diff --git a/src/main/java/net/minecraft/server/EULA.java b/src/main/java/net/minecraft/server/EULA.java
+index cf00f35a5b7c2d2f6b6989e0855de8b882dcef50..a45e63a02759305e119a41eac55a7f40488dd12c 100644
+--- a/src/main/java/net/minecraft/server/EULA.java
++++ b/src/main/java/net/minecraft/server/EULA.java
+@@ -70,7 +70,7 @@ public class EULA {
+                     Properties properties = new Properties();
+ 
+                     properties.setProperty("eula", "false");
+-                    properties.store(outputstream, "By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\nYou also agree that tacos are tasty, and the best food in the world.");  // Paper - fix lag;
++                    properties.store(outputstream, "By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).");  // Paper - fix lag; // Akarin - Tacos are disgusting
+                 } catch (Throwable throwable1) {
+                     throwable = throwable1;
+                     throw throwable1;
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index c9deaffc4a317c8ec75d9e6ef5889ab909e2fbe8..4dd21b5e15ab2bd5b09ab1bb6e60cc3ae1bfd00e 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -1484,7 +1484,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+     }
+ 
+     public String getServerModName() {
+-        return "Paper"; //Paper - Paper > // Spigot - Spigot > // CraftBukkit - cb > vanilla!
++        return "Akarin"; // Akarin //Paper - Paper > // Spigot - Spigot > // CraftBukkit - cb > vanilla!
+     }
+ 
+     public CrashReport b(CrashReport crashreport) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index b9a398bc577b16317057d70bb43a261b078d67a9..b03443f9a72a3c455f49746fea2f555c2f53e504 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -203,7 +203,7 @@ import javax.annotation.Nullable; // Paper
+ import javax.annotation.Nonnull; // Paper
+ 
+ public final class CraftServer implements Server {
+-    private final String serverName = "Paper"; // Paper
++    private final String serverName = "Akarin"; // Paper // Akarin
+     private final String serverVersion;
+     private final String bukkitVersion = Versioning.getBukkitVersion();
+     private final Logger logger = Logger.getLogger("Minecraft");

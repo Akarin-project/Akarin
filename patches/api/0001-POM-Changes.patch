@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+ <tsao-chi@the-lingo.org>
+Date: Fri, 14 Dec 2018 21:52:29 -0800
+Subject: [PATCH] POM Changes
+
+
+diff --git a/pom.xml b/pom.xml
+index 2cb9714084c8a7aa1b20d445edd5be4cc206672f..d167304be5ca4d067886a9740230b25b9fa21b56 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -3,18 +3,18 @@
+          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+     <modelVersion>4.0.0</modelVersion>
+     <parent>
+-        <groupId>com.destroystokyo.paper</groupId>
+-        <artifactId>paper-parent</artifactId>
++        <groupId>io.akarin.server</groupId>
++        <artifactId>akarin-parent</artifactId>
+         <version>dev-SNAPSHOT</version>
++        <relativePath>../pom.xml</relativePath>
+     </parent>
+ 
+-    <groupId>com.destroystokyo.paper</groupId>
+-    <artifactId>paper-api</artifactId>
++    <artifactId>akarin-api</artifactId>
+     <version>1.15.2-R0.1-SNAPSHOT</version>
+     <packaging>jar</packaging>
+ 
+-    <name>Paper-API</name>
+-    <url>https://github.com/PaperMC/Paper</url>
++    <name>Akarin-API</name>
++    <url>https://github.com/Akarin-project/Akarin</url>
+     <description>An enhanced plugin API for Minecraft servers.</description>
+ 
+     <properties>
