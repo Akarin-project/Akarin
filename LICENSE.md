@@ -1,3 +1,5 @@
+# License
+
 Akarin inherits its licensing from upstream projects.
 
 As such, Akarin is licensed under the
