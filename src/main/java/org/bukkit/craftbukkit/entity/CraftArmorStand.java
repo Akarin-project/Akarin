@@ -246,7 +246,7 @@ public class CraftArmorStand extends CraftLivingEntity implements ArmorStand {
                 return;
             case LEGS:
                 setLeggings(item);
-                break;
+                return;
             case CHEST:
                 setChestplate(item);
                 return;
