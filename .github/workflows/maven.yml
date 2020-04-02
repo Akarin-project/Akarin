@@ -29,4 +29,27 @@ jobs:
       uses: actions/upload-artifact@v2-preview
       with:
         path: akarin-paperclip.jar
-
+    - name: Get time
+      uses: gerred/actions/current-time@master
+      id: time 
+    - uses: actions/create-release@latest
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: akarin-${{ github.sha }}
+        release_name: Akarin ${{ steps.time.outputs.time }}
+        body: |
+          Auto release from commit
+        draft: false
+        prerelease: false  
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+     with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: akarin-paperclip.jar
+        asset_name: akarin-paperclip.jar
+        asset_content_type: application/java-archive 
