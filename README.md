@@ -52,7 +52,7 @@ Get Akarin
 
 **Notes**
 
-* For non-modified projects, it is recommended to add the `--fast` option to skip any tests.
+* For non-modified projects, it is recommended to add the `fast` option to skip any tests.
 
 Demo Servers
 ---
