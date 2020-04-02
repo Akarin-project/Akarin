@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+ <tsao-chi@the-lingo.org>
+Date: Thu, 2 Apr 2020 14:03:29 +0800
+Subject: [PATCH] Disable Snooper
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index aea487f51e0d3520b8adeca39e15d2e3a2fcb1cc..7932a07d21260fbd931c7683295b13dd313ca42c 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -1148,6 +1148,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+         //} // Paper
+ 
+         //this.methodProfiler.enter("snooper"); // Akarin - remove caller
++        // Akarin - Disable Snooper
++        /*
+         if (((DedicatedServer) this).getDedicatedServerProperties().snooperEnabled && !this.snooper.d() && this.ticks > 100) { // Spigot
+             this.snooper.a();
+         }
+@@ -1155,6 +1157,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+         if (((DedicatedServer) this).getDedicatedServerProperties().snooperEnabled && this.ticks % 6000 == 0) { // Spigot
+             this.snooper.b();
+         }
++        */
+ 
+         //this.methodProfiler.exit(); // Akarin - remove caller
+         //this.methodProfiler.enter("tallying"); // Akarin - remove caller
