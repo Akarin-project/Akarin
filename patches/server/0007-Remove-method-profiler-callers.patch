@@ -157,7 +157,7 @@ index ee42e1dfa493c3d7f5af8cc7b8e17e80fcb32b71..bd9684c4ed0d8e71278fbf8547b34899
  
                      ++k;
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index eb706f86367a77fb830b719c659843f65e59da91..d36a07e3fc29e91f49e7819a94e6008f064f773c 100644
+index d098b224fb8e6b91abbfab3bdd3c010d80810803..e3b45481196adb551f6f36874e2df9a3a75537ab 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -395,7 +395,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -187,7 +187,7 @@ index eb706f86367a77fb830b719c659843f65e59da91..d36a07e3fc29e91f49e7819a94e6008f
              if (this.y.g() > 1.0E-7D) {
                  vec3d = vec3d.h(this.y);
                  this.y = Vec3D.a;
-@@ -578,8 +578,8 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -584,8 +584,8 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                  this.recalcPosition();
              }
  
@@ -198,7 +198,7 @@ index eb706f86367a77fb830b719c659843f65e59da91..d36a07e3fc29e91f49e7819a94e6008f
              this.positionChanged = !MathHelper.b(vec3d.x, vec3d1.x) || !MathHelper.b(vec3d.z, vec3d1.z);
              this.v = vec3d.y != vec3d1.y;
              this.onGround = this.v && vec3d.y < 0.0D;
-@@ -701,7 +701,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -707,7 +707,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                  this.fireTicks = -this.getMaxFireTicks();
              }
  
@@ -207,7 +207,7 @@ index eb706f86367a77fb830b719c659843f65e59da91..d36a07e3fc29e91f49e7819a94e6008f
          }
      }
  
-@@ -2198,7 +2198,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -2208,7 +2208,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
  
              if (this.af) {
                  if ((true || this.world.getMinecraftServer().getAllowNether()) && !this.isPassenger() && this.ag++ >= i) { // CraftBukkit
@@ -216,7 +216,7 @@ index eb706f86367a77fb830b719c659843f65e59da91..d36a07e3fc29e91f49e7819a94e6008f
                      this.ag = i;
                      this.portalCooldown = this.ba();
                      // CraftBukkit start
-@@ -2208,7 +2208,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -2218,7 +2218,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                          this.a(this.world.worldProvider.getDimensionManager().getType() == DimensionManager.NETHER ? DimensionManager.OVERWORLD : DimensionManager.NETHER);
                      }
                      // CraftBukkit end
@@ -225,7 +225,7 @@ index eb706f86367a77fb830b719c659843f65e59da91..d36a07e3fc29e91f49e7819a94e6008f
                  }
  
                  this.af = false;
-@@ -2586,7 +2586,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -2596,7 +2596,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
      public Entity teleportTo(DimensionManager dimensionmanager, BlockPosition location) {
          // CraftBukkit end
          if (!this.world.isClientSide && !this.dead) {
@@ -234,7 +234,7 @@ index eb706f86367a77fb830b719c659843f65e59da91..d36a07e3fc29e91f49e7819a94e6008f
              MinecraftServer minecraftserver = this.getMinecraftServer();
              DimensionManager dimensionmanager1 = this.dimension;
              WorldServer worldserver = minecraftserver.getWorldServer(dimensionmanager1);
-@@ -2599,7 +2599,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -2609,7 +2609,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
              // this.dimension = dimensionmanager;
              // this.decouple();
              // CraftBukkit end
@@ -243,7 +243,7 @@ index eb706f86367a77fb830b719c659843f65e59da91..d36a07e3fc29e91f49e7819a94e6008f
              Vec3D vec3d = this.getMot();
              float f = 0.0F;
              BlockPosition blockposition = location; // CraftBukkit
-@@ -2678,7 +2678,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -2688,7 +2688,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
              this.decouple();
              // CraftBukkit end
  
@@ -252,7 +252,7 @@ index eb706f86367a77fb830b719c659843f65e59da91..d36a07e3fc29e91f49e7819a94e6008f
              Entity entity = this.getEntityType().a((World) worldserver1);
  
              if (entity != null) {
-@@ -2697,10 +2697,10 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -2707,10 +2707,10 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
              }
  
              this.dead = true;
@@ -351,7 +351,7 @@ index 1991cee43d429574f2c0889f807e7cd090f7d7dd..e9f00a1e131faa42d280cab255bc61cd
      }
  
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 8efb646a05ab656dcfb67d8247132fa46ceade64..5acf97db10a0f58221f57368eec15dc8d3c82967 100644
+index ad474500e2f6fd6ad6db7bf2436b74c2d9d6136a..e93b7b280968ad1620a24fb06f2e5a503bdecad0 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
 +++ b/src/main/java/net/minecraft/server/EntityLiving.java
 @@ -242,7 +242,7 @@ public abstract class EntityLiving extends Entity {
@@ -750,7 +750,7 @@ index 5117dafbcf402d0db82d791a6b4b821eaa1350ba..509fbfb0967cd9a16695e43e764a4b0e
  
                  /*
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 941eee838bab0ba88c8f2a3a447fc61428690f94..167b493da2a56fefab102f76aab4a329d8eace65 100644
+index c7ec8cbc11f95e84c6aa932f068a2f1802a5d902..95e982063b2645e2b809848ae846532e87c7f6e0 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -824,7 +824,7 @@ public class WorldServer extends World {
