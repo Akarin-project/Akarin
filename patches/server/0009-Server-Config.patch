@@ -1,0 +1,283 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+ <tsao-chi@the-lingo.org>
+Date: Fri, 3 Apr 2020 14:59:22 +0800
+Subject: [PATCH] Server Config
+
+
+diff --git a/src/main/java/io/akarin/server/Config.java b/src/main/java/io/akarin/server/Config.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2ac8f02a97429f04f3e5c9206ec228edccaf24c9
+--- /dev/null
++++ b/src/main/java/io/akarin/server/Config.java
+@@ -0,0 +1,183 @@
++package io.akarin.server;
++
++import org.bukkit.Bukkit;
++import org.bukkit.configuration.ConfigurationSection;
++import org.bukkit.configuration.file.YamlConfiguration;
++
++import java.io.File;
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
++import java.util.List;
++import java.util.logging.Level;
++
++public final class Config {
++
++    public static final String CONFIG_HEADER = "Configuration file for Akarin.";
++    public static final int CURRENT_CONFIG_VERSION = 1;
++
++    private static final Object[] EMPTY = new Object[0];
++
++    private static File configFile;
++    public static YamlConfiguration config;
++    private static int configVersion;
++
++    public static void init(final File file) {
++        Config.configFile = file;
++        final YamlConfiguration config = new YamlConfiguration();
++        config.options().header(CONFIG_HEADER);
++        config.options().copyDefaults(true);
++
++        if (!file.exists()) {
++            try {
++                file.createNewFile();
++            } catch (final Exception ex) {
++                Bukkit.getLogger().log(Level.SEVERE, "Failure to create Akarin config", ex);
++            }
++        } else {
++            try {
++                config.load(file);
++            } catch (final Exception ex) {
++                Bukkit.getLogger().log(Level.SEVERE, "Failure to load Akarin config", ex);
++                throw new RuntimeException(ex);
++            }
++        }
++
++        Config.load(config);
++    }
++
++    public static void load(final YamlConfiguration config) {
++        Config.config = config;
++        Config.configVersion = Config.getInt("config-version-please-do-not-modify-me", CURRENT_CONFIG_VERSION);
++        Config.set("config-version-please-do-not-modify-me", CURRENT_CONFIG_VERSION);
++
++        for (final Method method : Config.class.getDeclaredMethods()) {
++            if (method.getReturnType() != void.class || method.getParameterCount() != 0 ||
++                    !Modifier.isPrivate(method.getModifiers()) || !Modifier.isStatic(method.getModifiers())) {
++                continue;
++            }
++
++            try {
++                method.setAccessible(true);
++                method.invoke(null, EMPTY);
++            } catch (final Exception ex) {
++                throw new RuntimeException(ex);
++            }
++        }
++
++        /* We re-save to add new options */
++        try {
++            config.save(Config.configFile);
++        } catch (final Exception ex) {
++            Bukkit.getLogger().log(Level.SEVERE, "Unable to save Akarin config", ex);
++        }
++    }
++
++    static void set(final String path, final Object value) {
++        Config.config.set(path, value);
++    }
++
++    static boolean getBoolean(final String path, final boolean dfl) {
++        Config.config.addDefault(path, Boolean.valueOf(dfl));
++        return Config.config.getBoolean(path, dfl);
++    }
++
++    static int getInt(final String path, final int dfl) {
++        Config.config.addDefault(path, Integer.valueOf(dfl));
++        return Config.config.getInt(path, dfl);
++    }
++
++    static long getLong(final String path, final long dfl) {
++        Config.config.addDefault(path, Long.valueOf(dfl));
++        return Config.config.getLong(path, dfl);
++    }
++
++    static double getDouble(final String path, final double dfl) {
++        Config.config.addDefault(path, Double.valueOf(dfl));
++        return Config.config.getDouble(path, dfl);
++    }
++
++    public static final class WorldConfig {
++
++        public final String worldName;
++        public ConfigurationSection config;
++        ConfigurationSection worldDefaults;
++
++        public WorldConfig(final String worldName) {
++            this.worldName = worldName;
++            this.init();
++        }
++
++        public void init() {
++            this.worldDefaults = Config.config.getConfigurationSection("world-settings.default");
++            if (this.worldDefaults == null) {
++                this.worldDefaults = Config.config.createSection("world-settings.default");
++            }
++
++            String worldSectionPath = "world-settings.".concat(this.worldName);
++            ConfigurationSection section = Config.config.getConfigurationSection(worldSectionPath);
++            if (section == null) {
++                section = Config.config.createSection(worldSectionPath);
++            }
++            Config.config.set(worldSectionPath, section);
++
++            this.load(section);
++        }
++
++        public void load(final ConfigurationSection config) {
++            this.config = config;
++
++            for (final Method method : Config.WorldConfig.class.getDeclaredMethods()) {
++                if (method.getReturnType() != void.class || method.getParameterCount() != 0 ||
++                        !Modifier.isPrivate(method.getModifiers()) || Modifier.isStatic(method.getModifiers())) {
++                    continue;
++                }
++
++                try {
++                    method.setAccessible(true);
++                    method.invoke(this, EMPTY);
++                } catch (final Exception ex) {
++                    throw new RuntimeException(ex);
++                }
++            }
++
++            /* We re-save to add new options */
++            try {
++                Config.config.save(Config.configFile);
++            } catch (final Exception ex) {
++                Bukkit.getLogger().log(Level.SEVERE, "Unable to save Akarin config", ex);
++            }
++        }
++
++        /**
++         * update world defaults for the specified path, but also sets this world's config value for the path
++         * if it exists
++         */
++        void set(final String path, final Object val) {
++            this.worldDefaults.set(path, val);
++            if (this.config.get(path) != null) {
++                this.config.set(path, val);
++            }
++        }
++
++        boolean getBoolean(final String path, final boolean dfl) {
++            this.worldDefaults.addDefault(path, Boolean.valueOf(dfl));
++            return this.config.getBoolean(path, this.worldDefaults.getBoolean(path));
++        }
++
++        int getInt(final String path, final int dfl) {
++            this.worldDefaults.addDefault(path, Integer.valueOf(dfl));
++            return this.config.getInt(path, this.worldDefaults.getInt(path));
++        }
++
++        long getLong(final String path, final long dfl) {
++            this.worldDefaults.addDefault(path, Long.valueOf(dfl));
++            return this.config.getLong(path, this.worldDefaults.getLong(path));
++        }
++
++        double getDouble(final String path, final double dfl) {
++            this.worldDefaults.addDefault(path, Double.valueOf(dfl));
++            return this.config.getDouble(path, this.worldDefaults.getDouble(path));
++        }
++    }
++
++}
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index 1ef7890da599d13e784861035e7891efcc4cd504..9d82885dcf5bb9309bbf136180551ed12930f59b 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -194,6 +194,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+         com.destroystokyo.paper.PaperConfig.registerCommands();
+         com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // load version history now
+         // Paper end
++        io.akarin.server.Config.init((File) options.valueOf("akarin-settings")); // Akarin - Server Config
+ 
+         this.setSpawnAnimals(dedicatedserverproperties.spawnAnimals);
+         this.setSpawnNPCs(dedicatedserverproperties.spawnNpcs);
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 509fbfb0967cd9a16695e43e764a4b0eb509bb86..8e1b85c7b356ea0713c8fdfac01a59e08039a93e 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -82,6 +82,8 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+     public final com.destroystokyo.paper.PaperWorldConfig paperConfig; // Paper
+     public final ChunkPacketBlockController chunkPacketBlockController; // Paper - Anti-Xray
+ 
++    public final io.akarin.server.Config.WorldConfig akarinConfig; // Akarin - Server Config
++
+     public final co.aikar.timings.WorldTimingsHandler timings; // Paper
+     public static BlockPosition lastPhysicsProblem; // Spigot
+     private org.spigotmc.TickLimiter entityLimiter;
+@@ -131,6 +133,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+         this.spigotConfig = new org.spigotmc.SpigotWorldConfig( worlddata.getName() ); // Spigot
+         this.paperConfig = new com.destroystokyo.paper.PaperWorldConfig(worlddata.getName(), this.spigotConfig); // Paper
+         this.chunkPacketBlockController = this.paperConfig.antiXray ? new ChunkPacketBlockControllerAntiXray(this.paperConfig) : ChunkPacketBlockController.NO_OPERATION_INSTANCE; // Paper - Anti-Xray
++        this.akarinConfig = new io.akarin.server.Config.WorldConfig(worlddata.getName()); // Akarin - Server Config
+         this.generator = gen;
+         this.world = new CraftWorld((WorldServer) this, gen, env);
+         this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index b03443f9a72a3c455f49746fea2f555c2f53e504..dbee3bed7ae77fed33fe53cdb24ef5c5aeffbf7c 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -806,6 +806,7 @@ public final class CraftServer implements Server {
+ 
+         org.spigotmc.SpigotConfig.init((File) console.options.valueOf("spigot-settings")); // Spigot
+         com.destroystokyo.paper.PaperConfig.init((File) console.options.valueOf("paper-settings")); // Paper
++        io.akarin.server.Config.init((File) console.options.valueOf("akarin-settings")); // Akarin - Server Config
+         for (WorldServer world : console.getWorlds()) {
+             world.worldData.setDifficulty(config.difficulty);
+             world.setSpawnFlags(config.spawnMonsters, config.spawnAnimals);
+@@ -834,6 +835,7 @@ public final class CraftServer implements Server {
+             }
+             world.spigotConfig.init(); // Spigot
+             world.paperConfig.init(); // Paper
++            world.akarinConfig.init(); // Akarin - Server Config
+         }
+ 
+         Plugin[] pluginClone = pluginManager.getPlugins().clone(); // Paper
+@@ -2082,6 +2084,14 @@ public final class CraftServer implements Server {
+             return com.destroystokyo.paper.PaperConfig.config;
+         }
+ 
++        // Akarin Start - Server Config
++        @Override
++        public YamlConfiguration getAkarinConfig()
++        {
++            return io.akarin.server.Config.config;
++        }
++        // Akarin End - Server Config
++
+         @Override
+         public void restart() {
+             org.spigotmc.RestartCommand.restart();
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index cb60310e63ce0f55f5e706edf9e1ef61a3732600..04694464b105aba007718e7b5933df8709d98b33 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -138,6 +138,14 @@ public class Main {
+                         .describedAs("Yml file");
+                 // Paper end
+ 
++                // Akarin Start - Server Config
++                acceptsAll(asList("akarin", "akarin-settings"), "File for Akarin settings")
++                        .withRequiredArg()
++                        .ofType(File.class)
++                        .defaultsTo(new File("akarin.yml"))
++                        .describedAs("Yml file");
++                // Akarin End - Server Config
++
+                 // Paper start
+                 acceptsAll(asList("server-name"), "Name of the server")
+                         .withRequiredArg()

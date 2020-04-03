@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+ <tsao-chi@the-lingo.org>
+Date: Fri, 3 Apr 2020 15:18:38 +0800
+Subject: [PATCH] Server Config
+
+
+diff --git a/src/main/java/co/aikar/timings/TimingsExport.java b/src/main/java/co/aikar/timings/TimingsExport.java
+index 93d5a3f97a1b2b3a1cd2731d48e8ebd01d29aa91..08e428bd3aafa1aa9c601da832766906b070190e 100644
+--- a/src/main/java/co/aikar/timings/TimingsExport.java
++++ b/src/main/java/co/aikar/timings/TimingsExport.java
+@@ -206,7 +206,8 @@ class TimingsExport extends Thread {
+         parent.put("config", createObject(
+             pair("spigot", mapAsJSON(Bukkit.spigot().getSpigotConfig(), null)),
+             pair("bukkit", mapAsJSON(Bukkit.spigot().getBukkitConfig(), null)),
+-            pair("paper", mapAsJSON(Bukkit.spigot().getPaperConfig(), null))
++            pair("paper", mapAsJSON(Bukkit.spigot().getPaperConfig(), null)),
++            pair("akarin", mapAsJSON(Bukkit.spigot().getAkarinConfig(), null)) // Akarin - Server Config
+         ));
+ 
+         new TimingsExport(listeners, parent, history).start();
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 80f9abdca71bba79cbf09035cfd5534e41002a27..68929946287d5dc1729022e34dcb7e9fa05aea9f 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -1371,6 +1371,14 @@ public interface Server extends PluginMessageRecipient {
+         }
+         // Paper end
+ 
++        // Akarin Start - Server Config
++        @NotNull
++        public YamlConfiguration getAkarinConfig()
++        {
++            throw new UnsupportedOperationException("Not supported yet.");
++        }
++        // Akarin End - Server Config
++
+         /**
+          * Sends the component to the player
+          *
