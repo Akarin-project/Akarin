@@ -20,7 +20,7 @@ index 93d5a3f97a1b2b3a1cd2731d48e8ebd01d29aa91..08e428bd3aafa1aa9c601da832766906
  
          new TimingsExport(listeners, parent, history).start();
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 80f9abdca71bba79cbf09035cfd5534e41002a27..68929946287d5dc1729022e34dcb7e9fa05aea9f 100644
+index 80f9abdca71bba79cbf09035cfd5534e41002a27..b6cc96ba32dfeccd0304b6ceb6e3b5388e84a286 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -1371,6 +1371,14 @@ public interface Server extends PluginMessageRecipient {
@@ -29,7 +29,7 @@ index 80f9abdca71bba79cbf09035cfd5534e41002a27..68929946287d5dc1729022e34dcb7e9f
  
 +        // Akarin Start - Server Config
 +        @NotNull
-+        public YamlConfiguration getAkarinConfig()
++        public org.bukkit.configuration.file.YamlConfiguration getAkarinConfig()
 +        {
 +            throw new UnsupportedOperationException("Not supported yet.");
 +        }
