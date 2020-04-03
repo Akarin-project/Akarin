@@ -30,7 +30,6 @@ Get Akarin
 
 #### Recommended
 
-+ [**Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/ver/master) - Checkout the 'Artifacts' tab of the latest build *Login required*
 + [**JosephWorks Jenkins**](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin-1.15.2/)
 + [**Melon Jenkins**](https://ci.melon.cat/job/Akarin/) - Offline
 
