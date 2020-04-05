@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
-Date: Sun, 5 Apr 2020 14:37:52 +0800
-Subject: [PATCH] Async Sending packets
+Date: Sun, 5 Apr 2020 14:59:10 +0800
+Subject: [PATCH] Optimizations for network
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
@@ -106,10 +106,38 @@ index f1222fcb2bd52b8781d0f92c94e1472fa7b1e493..522cfed4cb09bc9ecc48b6313da47f9a
  
      protected GameProfile a(GameProfile gameprofile) {
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..203f19a5d6f5aa8cc8d7374b05e1004215bbf8db 100644
+index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..e889252eee402e2f9c25fca5660655267c934e89 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -184,7 +184,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -43,6 +43,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+     });
+     private final EnumProtocolDirection h;
+     private final Queue<NetworkManager.QueuedPacket> packetQueue = Queues.newConcurrentLinkedQueue(); private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.packetQueue; } // Paper - OBFHELPER
++    private boolean handled = false; // Akarin - free packet queue
++    private EnumProtocol protocol; // Akarin - avoid map lookup
+     public Channel channel;
+     public SocketAddress socketAddress; public void setSpoofedRemoteAddress(SocketAddress address) { this.socketAddress = address; } // Paper - OBFHELPER
+     // Spigot Start
+@@ -88,6 +90,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+ 
+     public void setProtocol(EnumProtocol enumprotocol) {
+         this.channel.attr(NetworkManager.c).set(enumprotocol);
++        protocol = enumprotocol; // Akarin - avoid map lookup
+         this.channel.config().setAutoRead(true);
+         NetworkManager.LOGGER.debug("Enabled auto read");
+     }
+@@ -175,8 +178,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+ 
+     private void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
+     private void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
+-        EnumProtocol enumprotocol = EnumProtocol.a(packet);
+-        EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
++        EnumProtocol enumprotocol = packet.protocol();//EnumProtocol.a(packet); // Akarin - avoid map lookup
++        EnumProtocol enumprotocol1 = protocol;//(EnumProtocol) this.channel.attr(NetworkManager.c).get(); // Akarin - avoid map lookup
+ 
+         ++this.q;
+         if (enumprotocol1 != enumprotocol) {
+@@ -184,7 +187,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
              this.channel.config().setAutoRead(false);
          }
  
@@ -118,7 +146,7 @@ index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..203f19a5d6f5aa8cc8d7374b05e10042
              if (enumprotocol != enumprotocol1) {
                  this.setProtocol(enumprotocol);
              }
-@@ -223,6 +223,46 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -223,9 +226,50 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
  
      }
  
@@ -165,6 +193,127 @@ index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..203f19a5d6f5aa8cc8d7374b05e10042
      // Paper start - Async-Anti-Xray - Stop dispatching further packets and return false if the peeked packet is a chunk packet which is not ready
      private boolean sendPacketQueue() { return this.o(); } // OBFHELPER // void -> boolean
      private boolean o() { // void -> boolean
++        if (!handled) { // Akarin  - free packet queue
+         if (this.channel != null && this.channel.isOpen()) {
+             Queue queue = this.packetQueue;
+ 
+@@ -245,6 +289,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+ 
+             }
+         }
++        handled = true; // Akarin  - free packet queue
++        } // Akarin  - free packet queue
+ 
+         return true; // Return true if all packets were dispatched
+     }
+@@ -260,9 +306,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+             ((PlayerConnection) this.packetListener).tick();
+         }
+ 
+-        if (this.channel != null) {
+-            if (enableExplicitFlush) this.channel.eventLoop().execute(() -> this.channel.flush()); // Paper - we don't need to explicit flush here, but allow opt in incase issues are found to a better version
+-        }
++        //if (this.channel != null) { // Akarin - already did
++            //if (enableExplicitFlush) this.channel.eventLoop().execute(() -> this.channel.flush()); // Paper - we don't need to explicit flush here, but allow opt in incase issues are found to a better version
++        //}
+ 
+         if (this.t++ % 20 == 0) {
+             this.s = this.s * 0.75F + (float) this.q * 0.25F;
+diff --git a/src/main/java/net/minecraft/server/Packet.java b/src/main/java/net/minecraft/server/Packet.java
+index 8d0965a0535b16f19eda21b97a44464b85b05460..7e27cd280fa889f6178d46aa9f9d3a613d9702e6 100644
+--- a/src/main/java/net/minecraft/server/Packet.java
++++ b/src/main/java/net/minecraft/server/Packet.java
+@@ -20,4 +20,10 @@ public interface Packet<T extends PacketListener> {
+     default boolean a() {
+         return false;
+     }
++
++    // Akarin start - add protocol
++    default EnumProtocol protocol() {
++        return EnumProtocol.PLAY;
++    }
++    // Akarin end
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketLoginOutCustomPayload.java b/src/main/java/net/minecraft/server/PacketLoginOutCustomPayload.java
+index 7eb230f1b27eddf48f1b12fc78877a3678d802df..d01cac0bd40a11d82fa0d6874d87ad3f576a4e20 100644
+--- a/src/main/java/net/minecraft/server/PacketLoginOutCustomPayload.java
++++ b/src/main/java/net/minecraft/server/PacketLoginOutCustomPayload.java
+@@ -41,4 +41,11 @@ public class PacketLoginOutCustomPayload implements Packet<PacketLoginOutListene
+     public void a(PacketLoginOutListener packetloginoutlistener) {
+         packetloginoutlistener.a(this);
+     }
++
++    // Akarin start - add protocol
++    @Override
++    public EnumProtocol protocol() {
++        return EnumProtocol.LOGIN;
++    }
++    // Akarin end
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketLoginOutDisconnect.java b/src/main/java/net/minecraft/server/PacketLoginOutDisconnect.java
+index e5094f55f1472c9b74f7f9394aec448237e87149..a5d9b6d94c386f05659f10d69cb84b150610138e 100644
+--- a/src/main/java/net/minecraft/server/PacketLoginOutDisconnect.java
++++ b/src/main/java/net/minecraft/server/PacketLoginOutDisconnect.java
+@@ -25,4 +25,11 @@ public class PacketLoginOutDisconnect implements Packet<PacketLoginOutListener>
+     public void a(PacketLoginOutListener packetloginoutlistener) {
+         packetloginoutlistener.a(this);
+     }
++
++    // Akarin start - add protocol
++    @Override
++    public EnumProtocol protocol() {
++        return EnumProtocol.LOGIN;
++    }
++    // Akarin end
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketLoginOutEncryptionBegin.java b/src/main/java/net/minecraft/server/PacketLoginOutEncryptionBegin.java
+index b0d6342c319a48290fd8bf6aa07a16d108feae18..eeabb54c44d39197f34a7171884cc7e885bce453 100644
+--- a/src/main/java/net/minecraft/server/PacketLoginOutEncryptionBegin.java
++++ b/src/main/java/net/minecraft/server/PacketLoginOutEncryptionBegin.java
+@@ -34,4 +34,11 @@ public class PacketLoginOutEncryptionBegin implements Packet<PacketLoginOutListe
+     public void a(PacketLoginOutListener packetloginoutlistener) {
+         packetloginoutlistener.a(this);
+     }
++
++    // Akarin start - add protocol
++    @Override
++    public EnumProtocol protocol() {
++        return EnumProtocol.LOGIN;
++    }
++    // Akarin end
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketLoginOutSetCompression.java b/src/main/java/net/minecraft/server/PacketLoginOutSetCompression.java
+index fa0653a7e4a21445fa5c2221a73e9ea419ae157c..d3b5f83d5659322360c89e379db9aef4c623159a 100644
+--- a/src/main/java/net/minecraft/server/PacketLoginOutSetCompression.java
++++ b/src/main/java/net/minecraft/server/PacketLoginOutSetCompression.java
+@@ -25,4 +25,11 @@ public class PacketLoginOutSetCompression implements Packet<PacketLoginOutListen
+     public void a(PacketLoginOutListener packetloginoutlistener) {
+         packetloginoutlistener.a(this);
+     }
++
++    // Akarin start - add protocol
++    @Override
++    public EnumProtocol protocol() {
++        return EnumProtocol.LOGIN;
++    }
++    // Akarin end
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketLoginOutSuccess.java b/src/main/java/net/minecraft/server/PacketLoginOutSuccess.java
+index 54c29047180794a9802b4f1d79fbd35478870226..75d7bc19683a6c411af5f381a4809267a4cadaaa 100644
+--- a/src/main/java/net/minecraft/server/PacketLoginOutSuccess.java
++++ b/src/main/java/net/minecraft/server/PacketLoginOutSuccess.java
+@@ -34,4 +34,11 @@ public class PacketLoginOutSuccess implements Packet<PacketLoginOutListener> {
+     public void a(PacketLoginOutListener packetloginoutlistener) {
+         packetloginoutlistener.a(this);
+     }
++
++    // Akarin start - add protocol
++    @Override
++    public EnumProtocol protocol() {
++        return EnumProtocol.LOGIN;
++    }
++    // Akarin end
+ }
 diff --git a/src/main/java/net/minecraft/server/PacketStatusListener.java b/src/main/java/net/minecraft/server/PacketStatusListener.java
 index 4bb21c48bd50353370ec3c3546a00a5d20e4b9d8..06af567fc1fb3a2053eb4e8af6d93dbb2391616a 100644
 --- a/src/main/java/net/minecraft/server/PacketStatusListener.java
@@ -177,6 +326,38 @@ index 4bb21c48bd50353370ec3c3546a00a5d20e4b9d8..06af567fc1fb3a2053eb4e8af6d93dbb
 +        this.networkManager.sendPacketAsync(new PacketStatusOutPong(packetstatusinping.b())); // Akarin - Async Sending packets
          this.networkManager.close(PacketStatusListener.a);
      }
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketStatusOutPong.java b/src/main/java/net/minecraft/server/PacketStatusOutPong.java
+index 94a0da87db34ee5131686e4fa813500794ffc30d..577c6ef9cfe26d38783cd38353720b0fe457d7f5 100644
+--- a/src/main/java/net/minecraft/server/PacketStatusOutPong.java
++++ b/src/main/java/net/minecraft/server/PacketStatusOutPong.java
+@@ -25,4 +25,11 @@ public class PacketStatusOutPong implements Packet<PacketStatusOutListener> {
+     public void a(PacketStatusOutListener packetstatusoutlistener) {
+         packetstatusoutlistener.a(this);
+     }
++
++    // Akarin start - add protocol
++    @Override
++    public EnumProtocol protocol() {
++        return EnumProtocol.STATUS;
++    }
++    // Akarin end
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java b/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
+index 50d5fb62efa7c89c7a73ccf072a0e7e433bcc650..4da7a2c1a4f84661e1018c7233b7a52449532d5b 100644
+--- a/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
++++ b/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
+@@ -28,4 +28,11 @@ public class PacketStatusOutServerInfo implements Packet<PacketStatusOutListener
+     public void a(PacketStatusOutListener packetstatusoutlistener) {
+         packetstatusoutlistener.a(this);
+     }
++
++    // Akarin start - add protocol
++    @Override
++    public EnumProtocol protocol() {
++        return EnumProtocol.STATUS;
++    }
++    // Akarin end
  }
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
 index e1225d5017cc0b65a4fd5ac753a705a11679cf2b..3d0397620392043c196cdcf59986ef8a8af17c1c 100644
