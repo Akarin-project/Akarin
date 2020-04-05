@@ -106,7 +106,7 @@ index f1222fcb2bd52b8781d0f92c94e1472fa7b1e493..522cfed4cb09bc9ecc48b6313da47f9a
  
      protected GameProfile a(GameProfile gameprofile) {
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..e889252eee402e2f9c25fca5660655267c934e89 100644
+index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..c5e32e42465aece552f09bc5c73d6e0d51735c91 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -43,6 +43,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
@@ -146,7 +146,7 @@ index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..e889252eee402e2f9c25fca566065526
              if (enumprotocol != enumprotocol1) {
                  this.setProtocol(enumprotocol);
              }
-@@ -223,9 +226,50 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -223,9 +226,51 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
  
      }
  
@@ -168,7 +168,7 @@ index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..e889252eee402e2f9c25fca566065526
 +
 +    }
 +
-+    public void sendPackets(Packet<?> ...packets) {
++    public void sendPackets(Packet<?> packet, Packet<?> ...packets) {
 +        EnumProtocol enumprotocol = packet.protocol();
 +
 +        ++this.q;
@@ -182,8 +182,9 @@ index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..e889252eee402e2f9c25fca566065526
 +                this.setProtocol(enumprotocol);
 +            }
 +
-+            for (Packet<?> packet : packets) {
-+                this.channel.write(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
++            this.channel.write(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
++            for (Packet<?> pkt : packets) {
++                this.channel.write(pkt).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 +            }
 +            this.channel.flush();
 +        });
@@ -197,7 +198,7 @@ index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..e889252eee402e2f9c25fca566065526
          if (this.channel != null && this.channel.isOpen()) {
              Queue queue = this.packetQueue;
  
-@@ -245,6 +289,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -245,6 +290,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
  
              }
          }
@@ -206,7 +207,7 @@ index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..e889252eee402e2f9c25fca566065526
  
          return true; // Return true if all packets were dispatched
      }
-@@ -260,9 +306,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -260,9 +307,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
              ((PlayerConnection) this.packetListener).tick();
          }
  
