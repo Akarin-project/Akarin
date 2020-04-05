@@ -1,0 +1,223 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+ <tsao-chi@the-lingo.org>
+Date: Sun, 5 Apr 2020 14:37:52 +0800
+Subject: [PATCH] Async Sending packets
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
+index a85466bc7e0a8aa54b9eff14077fe6c992ae2902..324af1a12a5780170f8cd6e060ff2f2f9d152c3d 100644
+--- a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
++++ b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
+@@ -106,7 +106,7 @@ public final class StandardPaperServerListPingEventImpl extends PaperServerListP
+         }
+ 
+         // Send response
+-        networkManager.sendPacket(new PacketStatusOutServerInfo(ping));
++        networkManager.sendPacketAsync(new PacketStatusOutServerInfo(ping)); // Akarin - Async Sending packets
+     }
+ 
+ }
+diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
+index 0532f975b7af5b3f2916c26141221cd3701765d0..e7be1074b1b8fde3590b1323508965961824e671 100644
+--- a/src/main/java/net/minecraft/server/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/HandshakeListener.java
+@@ -39,7 +39,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+                         if (throttleTracker.containsKey(address) && !"127.0.0.1".equals(address.getHostAddress()) && currentTime - throttleTracker.get(address) < connectionThrottle) {
+                             throttleTracker.put(address, currentTime);
+                         chatmessage = new ChatMessage(com.destroystokyo.paper.PaperConfig.connectionThrottleKickMessage); // Paper - Configurable connection throttle kick message
+-                            this.b.sendPacket(new PacketLoginOutDisconnect(chatmessage));
++                            this.b.sendPacketAsync(new PacketLoginOutDisconnect(chatmessage)); // Akarin - Async Sending packets
+                             this.b.close(chatmessage);
+                             return;
+                         }
+@@ -66,11 +66,11 @@ public class HandshakeListener implements PacketHandshakingInListener {
+ 
+                 if (packethandshakinginsetprotocol.c() > SharedConstants.getGameVersion().getProtocolVersion()) {
+                     chatmessage = new ChatMessage( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedServerMessage.replaceAll("'", "''"), SharedConstants.getGameVersion().getName() ) ); // Spigot
+-                    this.b.sendPacket(new PacketLoginOutDisconnect(chatmessage));
++                    this.b.sendPacketAsync(new PacketLoginOutDisconnect(chatmessage));
+                     this.b.close(chatmessage);
+                 } else if (packethandshakinginsetprotocol.c() < SharedConstants.getGameVersion().getProtocolVersion()) {
+                     chatmessage = new ChatMessage( java.text.MessageFormat.format( org.spigotmc.SpigotConfig.outdatedClientMessage.replaceAll("'", "''"), SharedConstants.getGameVersion().getName() ) ); // Spigot
+-                    this.b.sendPacket(new PacketLoginOutDisconnect(chatmessage));
++                    this.b.sendPacketAsync(new PacketLoginOutDisconnect(chatmessage));
+                     this.b.close(chatmessage);
+                 } else {
+                     this.b.setPacketListener(new LoginListener(this.a, this.b));
+diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
+index f1222fcb2bd52b8781d0f92c94e1472fa7b1e493..522cfed4cb09bc9ecc48b6313da47f9af7a5e1d8 100644
+--- a/src/main/java/net/minecraft/server/LoginListener.java
++++ b/src/main/java/net/minecraft/server/LoginListener.java
+@@ -111,6 +111,19 @@ public class LoginListener implements PacketLoginInListener {
+ 
+     }
+ 
++    // Akarin Start - Async Sending packets
++    public void disconnectAsync(IChatBaseComponent ichatbasecomponent) {
++        try {
++            LoginListener.LOGGER.info("Disconnecting {}: {}", this.d(), ichatbasecomponent.getString());
++            this.networkManager.sendPacketAsync(new PacketLoginOutDisconnect(ichatbasecomponent));
++            this.networkManager.close(ichatbasecomponent);
++        } catch (Exception exception) {
++            LoginListener.LOGGER.error("Error whilst disconnecting player", exception);
++        }
++
++    }
++    // Akarin End - Async Sending packets
++
+     // Paper start - Cache authenticator threads
+     private static final AtomicInteger threadId = new AtomicInteger(0);
+     private static final java.util.concurrent.ExecutorService authenticatorPool = java.util.concurrent.Executors.newCachedThreadPool(
+@@ -192,7 +205,7 @@ public class LoginListener implements PacketLoginInListener {
+         this.i = packetlogininstart.b();
+         if (this.server.getOnlineMode() && !this.networkManager.isLocal()) {
+             this.g = LoginListener.EnumProtocolState.KEY;
+-            this.networkManager.sendPacket(new PacketLoginOutEncryptionBegin("", this.server.getKeyPair().getPublic(), this.e));
++            this.networkManager.sendPacketAsync(new PacketLoginOutEncryptionBegin("", this.server.getKeyPair().getPublic(), this.e)); // Akarin - Async Sending packets
+         } else {
+             // Paper start - Velocity support
+             if (com.destroystokyo.paper.PaperConfig.velocitySupport) {
+@@ -254,7 +267,7 @@ public class LoginListener implements PacketLoginInListener {
+                             LoginListener.this.i = LoginListener.this.a(gameprofile);
+                             LoginListener.this.g = LoginListener.EnumProtocolState.READY_TO_ACCEPT;
+                         } else {
+-                            LoginListener.this.disconnect(new ChatMessage("multiplayer.disconnect.unverified_username", new Object[0]));
++                            LoginListener.this.disconnectAsync(new ChatMessage("multiplayer.disconnect.unverified_username", new Object[0])); // Akarin - Async Sending packets
+                             LoginListener.LOGGER.error("Username '{}' tried to join with an invalid session", gameprofile.getName());
+                         }
+                     } catch (AuthenticationUnavailableException authenticationunavailableexception) {
+@@ -267,7 +280,7 @@ public class LoginListener implements PacketLoginInListener {
+                             if (com.destroystokyo.paper.PaperConfig.authenticationServersDownKickMessage != null) {
+                                 LoginListener.this.disconnect(new ChatComponentText(com.destroystokyo.paper.PaperConfig.authenticationServersDownKickMessage));
+                             } else // Paper end
+-                            LoginListener.this.disconnect(new ChatMessage("multiplayer.disconnect.authservers_down", new Object[0]));
++                            LoginListener.this.disconnectAsync(new ChatMessage("multiplayer.disconnect.authservers_down", new Object[0])); // Akarin - Async Sending packets
+                             LoginListener.LOGGER.error("Couldn't verify username because servers are unavailable");
+                         }
+                         // CraftBukkit start - catch all exceptions
+@@ -376,7 +389,7 @@ public class LoginListener implements PacketLoginInListener {
+             return;
+         }
+         // Paper end
+-        this.disconnect(new ChatMessage("multiplayer.disconnect.unexpected_query_response", new Object[0]));
++        this.disconnectAsync(new ChatMessage("multiplayer.disconnect.unexpected_query_response", new Object[0])); // Akarin - Async Sending packets
+     }
+ 
+     protected GameProfile a(GameProfile gameprofile) {
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index 96a785af27e1924b0cc1959254d4ae3cdd0385a1..203f19a5d6f5aa8cc8d7374b05e1004215bbf8db 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -184,7 +184,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+             this.channel.config().setAutoRead(false);
+         }
+ 
+-        if (this.channel.eventLoop().inEventLoop()) {
++        if (false && this.channel.eventLoop().inEventLoop()) { // Akarin - Async Sending packets
+             if (enumprotocol != enumprotocol1) {
+                 this.setProtocol(enumprotocol);
+             }
+@@ -223,6 +223,46 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+ 
+     }
+ 
++    // Akarin Start - Async Sending packets - multiple packets, copied from above
++    public void sendPacketAsync(Packet<?> packet) {
++        EnumProtocol enumprotocol = packet.protocol();
++        EnumProtocol enumprotocol1 = protocol;
++
++        ++this.q;
++        if (enumprotocol1 != enumprotocol) {
++            NetworkManager.LOGGER.debug("Disabled auto read");
++            this.channel.config().setAutoRead(false);
++            this.setProtocol(enumprotocol);
++        }
++
++        ChannelFuture channelfuture = this.channel.writeAndFlush(packet);
++
++        channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
++
++    }
++
++    public void sendPackets(Packet<?> ...packets) {
++        EnumProtocol enumprotocol = packet.protocol();
++
++        ++this.q;
++        if (protocol != enumprotocol) {
++            NetworkManager.LOGGER.debug("Disabled auto read");
++            this.channel.config().setAutoRead(false);
++        }
++
++        this.channel.eventLoop().execute(() -> {
++            if (enumprotocol != protocol) {
++                this.setProtocol(enumprotocol);
++            }
++
++            for (Packet<?> packet : packets) {
++                this.channel.write(packet).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
++            }
++            this.channel.flush();
++        });
++    }
++    // Akarin End
++
+     // Paper start - Async-Anti-Xray - Stop dispatching further packets and return false if the peeked packet is a chunk packet which is not ready
+     private boolean sendPacketQueue() { return this.o(); } // OBFHELPER // void -> boolean
+     private boolean o() { // void -> boolean
+diff --git a/src/main/java/net/minecraft/server/PacketStatusListener.java b/src/main/java/net/minecraft/server/PacketStatusListener.java
+index 4bb21c48bd50353370ec3c3546a00a5d20e4b9d8..06af567fc1fb3a2053eb4e8af6d93dbb2391616a 100644
+--- a/src/main/java/net/minecraft/server/PacketStatusListener.java
++++ b/src/main/java/net/minecraft/server/PacketStatusListener.java
+@@ -143,7 +143,7 @@ public class PacketStatusListener implements PacketStatusInListener {
+ 
+     @Override
+     public void a(PacketStatusInPing packetstatusinping) {
+-        this.networkManager.sendPacket(new PacketStatusOutPong(packetstatusinping.b()));
++        this.networkManager.sendPacketAsync(new PacketStatusOutPong(packetstatusinping.b())); // Akarin - Async Sending packets
+         this.networkManager.close(PacketStatusListener.a);
+     }
+ }
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index e1225d5017cc0b65a4fd5ac753a705a11679cf2b..3d0397620392043c196cdcf59986ef8a8af17c1c 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -284,9 +284,9 @@ public class PlayerConnection implements PacketListenerPlayIn {
+         MinecraftServer minecraftserver = this.minecraftServer;
+         NetworkManager networkmanager = this.networkManager;
+ 
+-        this.networkManager.getClass();
++        //this.networkManager.getClass(); // Akarin - decompile fixes
+         // CraftBukkit - Don't wait
+-        minecraftserver.scheduleOnMain(networkmanager::handleDisconnection); // Paper
++        //minecraftserver.scheduleOnMain(networkmanager::handleDisconnection); // Paper // Akarin - Async Sending packets - already did
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index 7b79ee4fe5893d0c8c5825776c3c09ca8553abc8..ea409e639318e95a781986778463e2f46466c6bd 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -158,13 +158,15 @@ public abstract class PlayerList {
+         // Spigot - view distance
+         playerconnection.sendPacket(new PacketPlayOutLogin(entityplayer.getId(), entityplayer.playerInteractManager.getGameMode(), WorldData.c(worlddata.getSeed()), worlddata.isHardcore(), worldserver.worldProvider.getDimensionManager().getType(), this.getMaxPlayers(), worlddata.getType(), worldserver.spigotConfig.viewDistance, flag1, !flag));
+         entityplayer.getBukkitEntity().sendSupportedChannels(); // CraftBukkit
+-        playerconnection.sendPacket(new PacketPlayOutCustomPayload(PacketPlayOutCustomPayload.a, (new PacketDataSerializer(Unpooled.buffer())).a(this.getServer().getServerModName())));
+-        playerconnection.sendPacket(new PacketPlayOutServerDifficulty(worlddata.getDifficulty(), worlddata.isDifficultyLocked()));
+-        playerconnection.sendPacket(new PacketPlayOutAbilities(entityplayer.abilities));
+-        playerconnection.sendPacket(new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex));
+-        playerconnection.sendPacket(new PacketPlayOutRecipeUpdate(this.server.getCraftingManager().b()));
+-        playerconnection.sendPacket(new PacketPlayOutTags(this.server.getTagRegistry()));
+-        playerconnection.sendPacket(new PacketPlayOutEntityStatus(entityplayer, (byte) (worldserver.getGameRules().getBoolean(GameRules.REDUCED_DEBUG_INFO) ? 22 : 23))); // Paper - fix this rule not being initialized on the client
++        // Akarin Start
++        playerconnection.networkManager.sendPackets(new PacketPlayOutCustomPayload(PacketPlayOutCustomPayload.a, (new PacketDataSerializer(Unpooled.buffer())).a(this.getServer().getServerModName())),
++        new PacketPlayOutServerDifficulty(worlddata.getDifficulty(), worlddata.isDifficultyLocked()),
++        new PacketPlayOutAbilities(entityplayer.abilities),
++        new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex),
++        new PacketPlayOutRecipeUpdate(this.server.getCraftingManager().b()),
++        new PacketPlayOutTags(this.server.getTagRegistry()),
++        new PacketPlayOutEntityStatus(entityplayer, (byte) (worldserver.getGameRules().getBoolean(GameRules.REDUCED_DEBUG_INFO) ? 22 : 23))); // Paper - fix this rule not being initialized on the client
++        // Akarin End
+         this.d(entityplayer);
+         entityplayer.getStatisticManager().c();
+         entityplayer.B().a(entityplayer);
