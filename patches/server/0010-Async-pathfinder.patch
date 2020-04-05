@@ -18,26 +18,6 @@ index e9f00a1e131faa42d280cab255bc61cd1dcddf2a..72fa93d75f335dadac514362f9367ede
          //this.world.getMethodProfiler().exit(); // Akarin - remove caller
          //this.world.getMethodProfiler().enter("mob tick"); // Akarin - remove caller
          this.mobTick();
-diff --git a/src/main/java/net/minecraft/server/EntityRabbit.java b/src/main/java/net/minecraft/server/EntityRabbit.java
-index 2ed2d0b6bb93cf6d3b928f365811289e213614e5..d97fc957957e660744dfda3b6c643bcb7532174b 100644
---- a/src/main/java/net/minecraft/server/EntityRabbit.java
-+++ b/src/main/java/net/minecraft/server/EntityRabbit.java
-@@ -42,6 +42,7 @@ public class EntityRabbit extends EntityAnimal {
- 
-     @Override
-     protected float dp() {
-+        synchronized (this.navigation) { // Akarin - Async pathfinder
-         if (!this.positionChanged && (!this.moveController.b() || this.moveController.e() <= this.locY() + 0.5D)) {
-             PathEntity pathentity = this.navigation.k();
- 
-@@ -57,6 +58,7 @@ public class EntityRabbit extends EntityAnimal {
-         } else {
-             return 0.5F;
-         }
-+        } // Akarin - Async pathfinder
-     }
- 
-     @Override
 diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
 index 1e6b3931a3d2781c122dfc0fef1c61dcbe28fa69..9859b0c000da8acee248339cd0e6755fbd375d99 100644
 --- a/src/main/java/net/minecraft/server/NavigationAbstract.java
