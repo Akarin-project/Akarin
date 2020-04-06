@@ -2,20 +2,15 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+The checked versions below are supported by us.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 1.15.2  | :white_check_mark: |
+| 1.14.4  | :white_check_mark: |
+| 1.13.2  | :x:                |
+| 1.12.2  | :white_check_mark: |
 
-## Reporting a Vulnerability
+## Reporting an Issue
 
-Use this section to tell people how to report a vulnerability.
-
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Have a problem, feel free to [create an issue](https://github.com/Akarin-project/Akarin/issues) or [ask us on discord](https://discord.gg/dX8MMvP)
