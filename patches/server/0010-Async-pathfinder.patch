@@ -18,6 +18,19 @@ index e9f00a1e131faa42d280cab255bc61cd1dcddf2a..72fa93d75f335dadac514362f9367ede
          //this.world.getMethodProfiler().exit(); // Akarin - remove caller
          //this.world.getMethodProfiler().enter("mob tick"); // Akarin - remove caller
          this.mobTick();
+diff --git a/src/main/java/net/minecraft/server/Navigation.java b/src/main/java/net/minecraft/server/Navigation.java
+index abf450917e605972d84cb603b966feb013ae0002..4f7f40d5e7050d9b2da29c6e6efe7c5bef560d55 100644
+--- a/src/main/java/net/minecraft/server/Navigation.java
++++ b/src/main/java/net/minecraft/server/Navigation.java
+@@ -183,7 +183,7 @@ public class Navigation extends NavigationAbstract {
+                     double d3 = (double) j2 + 0.5D - vec3d.z;
+ 
+                     if (d2 * d0 + d3 * d1 >= 0.0D) {
+-                        PathType pathtype = this.o.a(this.b, i2, j - 1, j2, this.a, l, i1, j1, true, true);
++                        PathType pathtype = this.o.a(this.o.a, i2, j - 1, j2, this.a, l, i1, j1, true, true); // Akarin - use chunk cache
+ 
+                         if (pathtype == PathType.WATER) {
+                             return false;
 diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
 index 1e6b3931a3d2781c122dfc0fef1c61dcbe28fa69..9859b0c000da8acee248339cd0e6755fbd375d99 100644
 --- a/src/main/java/net/minecraft/server/NavigationAbstract.java
@@ -301,3 +314,29 @@ index 67c63cfe333e328cbd00ada970bd81efebfe30b6..00bd2327f24ea7c8ee4c92b51f18abb2
      private PathEntity a(PathPoint pathpoint, BlockPosition blockposition, boolean flag) {
          List<PathPoint> list = Lists.newArrayList();
          PathPoint pathpoint1 = pathpoint;
+diff --git a/src/main/java/net/minecraft/server/PathfinderTurtle.java b/src/main/java/net/minecraft/server/PathfinderTurtle.java
+index 59b1fe289c57b9e9f21b74c26cc1836255dad78b..1790878ae9ac33be86bed0b962b8171bf666d119 100644
+--- a/src/main/java/net/minecraft/server/PathfinderTurtle.java
++++ b/src/main/java/net/minecraft/server/PathfinderTurtle.java
+@@ -148,7 +148,7 @@ public class PathfinderTurtle extends PathfinderNormal {
+                 if (pathtype == PathType.OPEN) {
+                     AxisAlignedBB axisalignedbb = new AxisAlignedBB((double) i - d2 + 0.5D, (double) j + 0.001D, (double) k - d2 + 0.5D, (double) i + d2 + 0.5D, (double) ((float) j + this.b.getHeight()), (double) k + d2 + 0.5D);
+ 
+-                    if (!this.b.world.getCubes(this.b, axisalignedbb)) {
++                    if (!this.a.getCubes(this.b, axisalignedbb)) { // Akarin - use chunk cache
+                         return null;
+                     }
+ 
+diff --git a/src/main/java/net/minecraft/server/PathfinderWater.java b/src/main/java/net/minecraft/server/PathfinderWater.java
+index 075b63ef57a1528118f03a00c7156b3cb7744969..a3473ddcfe15d329eba78bbd60c00541cb1b88bb 100644
+--- a/src/main/java/net/minecraft/server/PathfinderWater.java
++++ b/src/main/java/net/minecraft/server/PathfinderWater.java
+@@ -63,7 +63,7 @@ public class PathfinderWater extends PathfinderAbstract {
+     @Override
+     protected PathPoint a(int i, int j, int k) {
+         PathPoint pathpoint = null;
+-        PathType pathtype = this.a(this.b.world, i, j, k);
++        PathType pathtype = this.a(this.a, i, j, k); // Akarin - use chunk cache
+         float f = this.b.a(pathtype);
+ 
+         if (f >= 0.0F) {
