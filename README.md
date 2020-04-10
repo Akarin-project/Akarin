@@ -48,10 +48,6 @@ Get Akarin
 ./akarin jar
 ```
 
-**Notes**
-
-* For non-modified projects, it is recommended to add the `fast` option to skip any tests.
-
 Demo Servers
 ---
 
