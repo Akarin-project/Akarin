@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+ <tsao-chi@the-lingo.org>
+Date: Fri, 10 Apr 2020 15:47:15 +0800
+Subject: [PATCH] Swaps the predicate order of collision
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 719f1bc1538dd34827a22b344334d71f92c1d561..f29a4416738343b062c2b80983c5fab3026429f4 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -1402,8 +1402,8 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+     public void pickup(EntityHuman entityhuman) {}
+ 
+     public void collide(Entity entity) {
+-        if (!this.isSameVehicle(entity)) {
+-            if (!entity.noclip && !this.noclip) {
++        if (!entity.noclip && !this.noclip && !this.isSameVehicle(entity)) { // Akarin - Swaps the predicate order of collision
++            //if (!entity.noclip && !this.noclip) { // Akarin - Swaps the predicate order of collision
+                 double d0 = entity.locX() - this.locX();
+                 double d1 = entity.locZ() - this.locZ();
+                 double d2 = MathHelper.a(d0, d1);
+@@ -1433,7 +1433,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+                     }
+                 }
+ 
+-            }
++            //} // Akarin - Swaps the predicate order of collision
+         }
+     }
+ 
