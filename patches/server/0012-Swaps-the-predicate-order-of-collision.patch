@@ -6,25 +6,72 @@ Subject: [PATCH] Swaps the predicate order of collision
 
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 719f1bc1538dd34827a22b344334d71f92c1d561..f29a4416738343b062c2b80983c5fab3026429f4 100644
+index 719f1bc1538dd34827a22b344334d71f92c1d561..79a2d48c0d2ef53d034a61c0ff7f3810aadb69e0 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -1402,8 +1402,8 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -1402,38 +1402,38 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
      public void pickup(EntityHuman entityhuman) {}
  
      public void collide(Entity entity) {
 -        if (!this.isSameVehicle(entity)) {
 -            if (!entity.noclip && !this.noclip) {
+-                double d0 = entity.locX() - this.locX();
+-                double d1 = entity.locZ() - this.locZ();
+-                double d2 = MathHelper.a(d0, d1);
+-
+-                if (d2 >= 0.009999999776482582D) {
+-                    d2 = (double) MathHelper.sqrt(d2);
+-                    d0 /= d2;
+-                    d1 /= d2;
+-                    double d3 = 1.0D / d2;
+-
+-                    if (d3 > 1.0D) {
+-                        d3 = 1.0D;
+-                    }
+-
+-                    d0 *= d3;
+-                    d1 *= d3;
+-                    d0 *= 0.05000000074505806D;
+-                    d1 *= 0.05000000074505806D;
+-                    d0 *= (double) (1.0F - this.J);
+-                    d1 *= (double) (1.0F - this.J);
+-                    if (!this.isVehicle()) {
+-                        this.h(-d0, 0.0D, -d1);
+-                    }
 +        if (!entity.noclip && !this.noclip && !this.isSameVehicle(entity)) { // Akarin - Swaps the predicate order of collision
 +            //if (!entity.noclip && !this.noclip) { // Akarin - Swaps the predicate order of collision
-                 double d0 = entity.locX() - this.locX();
-                 double d1 = entity.locZ() - this.locZ();
-                 double d2 = MathHelper.a(d0, d1);
-@@ -1433,7 +1433,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
-                     }
++            double d0 = entity.locX() - this.locX();
++            double d1 = entity.locZ() - this.locZ();
++            double d2 = MathHelper.a(d0, d1);
++
++            if (d2 >= 0.009999999776482582D) {
++                d2 = (double) MathHelper.sqrt(d2);
++                d0 /= d2;
++                d1 /= d2;
++                double d3 = 1.0D / d2;
++
++                if (d3 > 1.0D) {
++                    d3 = 1.0D;
++                }
+ 
+-                    if (!entity.isVehicle()) {
+-                        entity.h(d0, 0.0D, d1);
+-                    }
++                d0 *= d3;
++                d1 *= d3;
++                d0 *= 0.05000000074505806D;
++                d1 *= 0.05000000074505806D;
++                d0 *= (double) (1.0F - this.J);
++                d1 *= (double) (1.0F - this.J);
++                if (!this.isVehicle()) {
++                    this.h(-d0, 0.0D, -d1);
                  }
  
--            }
++                if (!entity.isVehicle()) {
++                    entity.h(d0, 0.0D, d1);
++                }
+             }
++
 +            //} // Akarin - Swaps the predicate order of collision
          }
      }
