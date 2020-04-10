@@ -2,52 +2,38 @@
 
 # exit immediately if a command exits with a non-zero status
 set -e
-# get base dir regardless of execution location
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-    SOURCE="$(readlink "$SOURCE")"
-    [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-done
-SOURCE=$([[ "$SOURCE" = /* ]] && echo "$SOURCE" || echo "$PWD/${SOURCE#./}")
-basedir=$(dirname "$SOURCE")
-. "$basedir"/scripts/init.sh
 
-paperstash() {
-    STASHED=$(git stash)
-}
+gitcmd="git -c commit.gpgsign=false"
 
-paperunstash() {
-    if [[ "$STASHED" != "No local changes to save" ]] ; then
-        git stash pop
-    fi
-}
+source "./scripts/functions.sh"
 
+failed=0
 case "$1" in
     "rb" | "rbp" | "rebuild")
     (
         set -e
         cd "$basedir"
-        scripts/rebuildpatches.sh "$basedir"
-    )
+        scripts/rebuildPatches.sh "$basedir" $2 || exit 1
+    ) || failed=1
     ;;
     "p" | "patch" | "apply")
     (
         set -e
         cd "$basedir"
         if [ "$2" != "fast" ]; then
-          scripts/upstream.sh
+          scripts/upstream.sh || exit 1
         fi
-        scripts/apply.sh "$basedir"
-    )
+        scripts/apply.sh "$basedir" || exit 1
+    ) || failed=1
     ;;
     "b" | "bu" | "build")
     (
-        basedir
-        mvn -N install
+        set -e
+        cd "$basedir"
+        mvn -N install || exit 1
         cd ${FORK_NAME}-API
-        mvn -e clean install && cd ../${FORK_NAME}-Server && mvn -e clean install
-    )
+        mvn -e clean install && cd ../${FORK_NAME}-Server && mvn -e clean install || exit 1
+    ) || failed=1
     ;;
     "jar" | "paperclip")
     (
@@ -88,19 +74,68 @@ case "$1" in
     "s" | "server")
         cd "$basedir/Akarin-Server"
     ;;
+    "c" | "clean")
+        rm -rf Akarin-API
+        rm -rf Akarin-Server
+        rm -rf work
+        echo "Cleaned build files"
+    ;;
+    "e" | "edit")
+        case "$2" in
+            "s" | "server")
+            export AKARIN_LAST_EDIT="$basedir/Akarin-Server"
+            cd "$basedir/Akarin-Server"
+            (
+                set -e
+
+                gitstash
+                $gitcmd rebase -i upstream/upstream
+                gitunstash
+            )
+            ;;
+            "a" | "api")
+            export AKARIN_LAST_EDIT="$basedir/Akarin-API"
+            cd "$basedir/Akarin-API"
+            (
+                set -e
+
+                gitstash
+                $gitcmd rebase -i upstream/upstream
+                gitunstash
+            )
+            ;;
+            "c" | "continue")
+            cd "$AKARIN_LAST_EDIT"
+            unset AKARIN_LAST_EDIT
+            (
+                set -e
+
+                $gitcmd add .
+                $gitcmd commit --amend
+                $gitcmd rebase --continue
+
+                cd "$basedir"
+                scripts/rebuildPatches.sh "$basedir"
+            )
+            ;;
+            *)
+                echo "You must edit either the api or server."
+            ;;
+        esac
+    ;;
     "setup")
         if [[ -f ~/.bashrc ]] ; then
-            NAME="ec"
+            NAME="akarin"
             if [[ ! -z "${2+x}" ]] ; then
                 NAME="$2"
             fi
             (grep "alias $NAME=" ~/.bashrc > /dev/null) && (sed -i "s|alias $NAME=.*|alias $NAME='. $SOURCE'|g" ~/.bashrc) || (echo "alias $NAME='. $SOURCE'" >> ~/.bashrc)
             alias "$NAME=. $SOURCE"
-            echo "You can now just type '$NAME' at any time to access the paper tool."
+            echo "You can now just type '$NAME' at any time to access the akarin tool."
         fi
     ;;
     *)
-        echo "Akarin build tool command. This provides a variety of commands to build and manage the PaperMC build"
+        echo "Akarin build tool command. This provides a variety of commands to build and manage the Akarin build"
         echo "environment. For all of the functionality of this command to be available, you must first run the"
         echo "'setup' command. View below for details. For essential building and patching, you do not need to do the setup."
         echo ""
@@ -108,13 +143,13 @@ case "$1" in
         echo "  * rb, rebuild  | Rebuild patches, can be called from anywhere."
         echo "  * p, patch     | Apply all patches to top of Paper without building it. Can be run from anywhere."
         echo "  * up, upstream | Build Paper upstream, pass arg up to update paper. Can be run from anywhere."
-        echo "  * b, build    | Build API and Server but no deploy. Can be ran anywhere."
-        echo "  * d, deploy    | Build and Deploy API jar and build Server. Can be ran anywhere."
+        echo "  * b, build     | Build the API and the server project without deploying. Can be ran anywhere."
+        echo "  * d, deploy    | Build and deploy jars of the API and the server project. Can be ran anywhere."
         echo ""
         echo " These commands require the setup command before use:"
         echo "  * r, root      | Change directory to the root of the project."
-        echo "  * a. api       | Move to the Paper-API directory."
-        echo "  * s, server    | Move to the Paper-Server directory."
+        echo "  * a. api       | Move to the Akarin-API directory."
+        echo "  * s, server    | Move to the Akarin-Server directory."
         echo "  * e, edit      | Use to edit a specific patch, give it the argument \"server\" or \"api\""
         echo "                 | respectively to edit the correct project. Use the argument \"continue\" after"
         echo "                 | the changes have been made to finish and rebuild patches. Can be called from anywhere."
@@ -129,5 +164,17 @@ case "$1" in
     ;;
 esac
 
-unset -f paperstash
-unset -f paperunstash
+unset RCPATH
+unset SOURCE
+unset basedir
+unset -f color
+unset -f colorend
+unset -f gitstash
+unset -f gitunstash
+if [[ "$failed" == "1" ]]; then
+	unset failed
+	false
+else
+	unset failed
+	true
+fi
