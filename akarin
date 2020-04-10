@@ -3,8 +3,6 @@
 # exit immediately if a command exits with a non-zero status
 set -e
 
-gitcmd="git -c commit.gpgsign=false"
-
 source "./scripts/functions.sh"
 
 failed=0
@@ -59,10 +57,10 @@ case "$1" in
         mvn clean deploy && cd ../${FORK_NAME}-Server && mvn clean install
     )
     ;;
-    "up" | "upstream")
+    "up" | "upstream" | "update")
     (
         cd "$basedir"
-        scripts/upstream.sh "$2"
+        scripts/upstream.sh "$basedir" $2
     )
     ;;
     "r" | "root")

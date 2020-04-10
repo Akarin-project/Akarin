@@ -1,28 +1,17 @@
 #!/usr/bin/env bash
 
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-    SOURCE="$(readlink "$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-done
-. $(dirname $SOURCE)/init.sh
+# get base dir regardless of execution location
+basedir=$1
 
-workdir="$basedir"/Paper/work
+source "$basedir/scripts/functions.sh"
+
+paperworkdir="$basedir/Paper/work"
 minecraftversion=$(cat "$basedir"/Paper/work/BuildData/info.json | grep minecraftVersion | cut -d '"' -f 4)
-decompiledir=$workdir/Minecraft/$minecraftversion/spigot
+decompiledir=$paperworkdir/Minecraft/$minecraftversion/spigot
 
 nms="net/minecraft/server"
 export MODLOG=""
-cd "$basedir"
-
-function containsElement {
-    local e
-    for e in "${@:2}"; do
-        [[ "$e" == "$1" ]] && return 0;
-    done
-    return 1
-}
+basedir
 
 export importedmcdev=""
 function import {
@@ -54,7 +43,7 @@ function importLibrary {
         target="$basedir/Paper/Paper-Server/src/main/java/$file"
         targetdir=$(dirname "$target")
         mkdir -p "${targetdir}"
-        base="$workdir/Minecraft/$minecraftversion/libraries/${group}/${lib}/$file"
+        base="$paperworkdir/Minecraft/$minecraftversion/libraries/${group}/${lib}/$file"
         if [ ! -f "$base" ]; then
             echo "Missing $base"
             exit 1
@@ -67,7 +56,7 @@ function importLibrary {
 (
     cd Paper/Paper-Server/
     lastlog=$(git log -1 --oneline)
-    if [[ "$lastlog" = *"Tuinity-Extra mc-dev Imports"* ]]; then
+    if [[ "$lastlog" = *"Akarin extra mc-dev Imports"* ]]; then
         git reset --hard HEAD^
     fi
 )
@@ -113,6 +102,6 @@ importLibrary com.mojang datafixerupper com/mojang/datafixers/util Either.java
     cd Paper/Paper-Server/
     rm -rf nms-patches
     git add src -A
-    echo -e "Tuinity-Extra mc-dev Imports\n\n$MODLOG" | git commit src -F -
+    echo -e "Akarin extra mc-dev Imports\n\n$MODLOG" | git commit src -F -
     exit 0
 )

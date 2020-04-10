@@ -7,6 +7,8 @@ PAPER_API_REPO=""
 PAPER_SERVER_REPO=""
 MCDEV_REPO=""
 
+gitcmd="git -c commit.gpgsign=false"
+
 # DIR configure
 # resolve shell-specifics
 case "$(echo "$SHELL" | sed -E 's|/usr(/local)?||g')" in
@@ -33,6 +35,10 @@ basedir=$(dirname "$SOURCE")
 
 function basedir {
     cd "$basedir"
+}
+
+function paperdir {
+    cd "$basedir/Paper"
 }
 
 # COLOUR functions
@@ -93,4 +99,12 @@ function cleanupPatches {
             git checkout -- $patch >/dev/null
         fi
     done
+}
+
+function containsElement {
+    local e
+    for e in "${@:2}"; do
+        [[ "$e" == "$1" ]] && return 0;
+    done
+    return 1
 }
