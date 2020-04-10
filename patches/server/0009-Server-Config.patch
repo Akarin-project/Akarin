@@ -207,7 +207,7 @@ index 1ef7890da599d13e784861035e7891efcc4cd504..9d82885dcf5bb9309bbf136180551ed1
          this.setSpawnAnimals(dedicatedserverproperties.spawnAnimals);
          this.setSpawnNPCs(dedicatedserverproperties.spawnNpcs);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 509fbfb0967cd9a16695e43e764a4b0eb509bb86..8e1b85c7b356ea0713c8fdfac01a59e08039a93e 100644
+index ef632a5f9cb480e77026f2f1123f76896f12478c..9708d61fd3795e8b69f27ecea92abe000f4bca1c 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -82,6 +82,8 @@ public abstract class World implements GeneratorAccess, AutoCloseable {

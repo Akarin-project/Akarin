@@ -6,10 +6,10 @@ Subject: [PATCH] Disable Snooper
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index aea487f51e0d3520b8adeca39e15d2e3a2fcb1cc..7932a07d21260fbd931c7683295b13dd313ca42c 100644
+index 95a9f677dfbf180d3d4eaff70abb0f7fd8c87240..6c887c2d3ae3a5276c710d99b1d4403c38a0a8f1 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1148,6 +1148,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1163,6 +1163,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          //} // Paper
  
          //this.methodProfiler.enter("snooper"); // Akarin - remove caller
@@ -18,7 +18,7 @@ index aea487f51e0d3520b8adeca39e15d2e3a2fcb1cc..7932a07d21260fbd931c7683295b13dd
          if (((DedicatedServer) this).getDedicatedServerProperties().snooperEnabled && !this.snooper.d() && this.ticks > 100) { // Spigot
              this.snooper.a();
          }
-@@ -1155,6 +1157,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1170,6 +1172,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          if (((DedicatedServer) this).getDedicatedServerProperties().snooperEnabled && this.ticks % 6000 == 0) { // Spigot
              this.snooper.b();
          }

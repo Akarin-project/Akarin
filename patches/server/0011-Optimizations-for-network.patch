@@ -377,10 +377,10 @@ index e1225d5017cc0b65a4fd5ac753a705a11679cf2b..3d0397620392043c196cdcf59986ef8a
  
      @Override
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 7b79ee4fe5893d0c8c5825776c3c09ca8553abc8..ea409e639318e95a781986778463e2f46466c6bd 100644
+index 6d6fbf2f50159846267199f74575bedeb54c1473..4b549ccc4137f95167458ead0115e461e47c478f 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -158,13 +158,15 @@ public abstract class PlayerList {
+@@ -159,13 +159,15 @@ public abstract class PlayerList {
          // Spigot - view distance
          playerconnection.sendPacket(new PacketPlayOutLogin(entityplayer.getId(), entityplayer.playerInteractManager.getGameMode(), WorldData.c(worlddata.getSeed()), worlddata.isHardcore(), worldserver.worldProvider.getDimensionManager().getType(), this.getMaxPlayers(), worlddata.getType(), worldserver.spigotConfig.viewDistance, flag1, !flag));
          entityplayer.getBukkitEntity().sendSupportedChannels(); // CraftBukkit
