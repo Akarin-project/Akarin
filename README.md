@@ -57,7 +57,6 @@ Demo Servers
 
 * [Fair Server](https://fairserver.ru)
 * [LoyaltyMC](https://www.loyaltymc.net/)
-* ~~`demo.akarin.io` (official)~~
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
