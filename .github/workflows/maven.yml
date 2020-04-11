@@ -24,7 +24,7 @@ jobs:
         git config --global user.email "you@example.com"
         git config --global user.name "Your Name"
         git submodule update --init --recursive
-        bash akarin jar
+        ./akarin jar
     - name: Upload Artifact
       uses: actions/upload-artifact@v2-preview
       with:
