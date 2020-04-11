@@ -34,26 +34,17 @@ tag="${minecraftversion}-${mcVer}-$(echo -e $version | shasum | awk '{print $2}'
 echo "$tag" > "$basedir"/current-paper
 
 "$basedir"/scripts/generateImports.sh $1
-paperdir
 
 function tag {
     cd $1
-    if [ "$2" == "1" ]; then
-        git tag -d "$tag" 2>/dev/null
-    fi
-    echo -e "$(date)\n\n$version" | git tag -a "$tag" -F - 2>/dev/null
+    echo -e "$(date)\n\n$version" | git tag -f -a "$tag" -F - 2>/dev/null
 }
 
 echo "Tagging as $tag"
 echo -e "$version"
 
-forcetag=0
-if [ "$(cat "$basedir"/current-paper)" != "$tag" ]; then
-    forcetag=1
-fi
-
-tag "$basedir"/Paper/Paper-API $forcetag
-tag "$basedir"/Paper/Paper-Server $forcetag
+tag "$basedir"/Paper/Paper-API
+tag "$basedir"/Paper/Paper-Server
 
 gitpush "$basedir"/Paper/Paper-API $PAPER_API_REPO $tag
 gitpush "$basedir"/Paper/Paper-Server $PAPER_SERVER_REPO $tag
