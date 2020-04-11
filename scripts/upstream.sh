@@ -37,8 +37,8 @@ echo "$tag" > "$basedir"/current-paper
 paperdir
 
 function tag {
-    cd $2
-    if [ "$3" == "1" ]; then
+    cd $1
+    if [ "$2" == "1" ]; then
         git tag -d "$tag" 2>/dev/null
     fi
     echo -e "$(date)\n\n$version" | git tag -a "$tag" -F - 2>/dev/null
@@ -52,8 +52,8 @@ if [ "$(cat "$basedir"/current-paper)" != "$tag" ]; then
     forcetag=1
 fi
 
-tag Paper-API $forcetag
-tag Paper-Server $forcetag
+tag "$basedir"/Paper/Paper-API $forcetag
+tag "$basedir"/Paper/Paper-Server $forcetag
 
-push Paper-API $PAPER_API_REPO $tag
-push Paper-Server $PAPER_SERVER_REPO $tag
+gitpush "$basedir"/Paper/Paper-API $PAPER_API_REPO $tag
+gitpush "$basedir"/Paper/Paper-Server $PAPER_SERVER_REPO $tag

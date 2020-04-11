@@ -18,7 +18,7 @@ cd mc-dev
 
 # prepare to push
 if [ ! -d ".git" ]; then
-    gitcmd init
+    $gitcmd init
 fi
 
 # reset dev files to spigot
@@ -39,6 +39,6 @@ done
 # push the dev project
 cd $basedir/mc-dev
 gitcmd add . -A
-gitcmd commit . -m "$paperVer"
+gitcmd commit --allow-empty . -m "$paperVer"
 gitcmd tag -a "$paperVer" -m "$paperVer" 2>/dev/null
-push . $MCDEV_REPO $paperVer
+gitpush . $MCDEV_REPO $paperVer

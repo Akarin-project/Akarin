@@ -3,6 +3,7 @@
 # exit immediately if a command exits with a non-zero status
 set -e
 
+basedir=$(cd "$(dirname "$0")" && pwd -P)
 source "./scripts/functions.sh"
 
 failed=0
@@ -35,10 +36,9 @@ case "$1" in
     ;;
     "jar" | "paperclip")
     (
-       basedir
        cd "$basedir"
        if [ "$2" != "fast" ]; then
-          scripts/upstream.sh
+          scripts/upstream.sh "$basedir"
        fi
        ./scripts/apply.sh "$basedir"
        cd "$basedir"
@@ -51,7 +51,7 @@ case "$1" in
     ;;
     "d" | "de" | "deploy")
     (
-        basedir
+        cd "$basedir"
         mvn -N install
         cd ${FORK_NAME}-API
         mvn clean deploy && cd ../${FORK_NAME}-Server && mvn clean install

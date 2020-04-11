@@ -102,6 +102,6 @@ importLibrary com.mojang datafixerupper com/mojang/datafixers/util Either.java
     cd Paper/Paper-Server/
     rm -rf nms-patches
     git add src -A
-    echo -e "Akarin extra mc-dev Imports\n\n$MODLOG" | git commit src -F -
+    echo -e "Akarin extra mc-dev Imports\n\n$MODLOG" | git commit --allow-empty src -F -
     exit 0
 )
