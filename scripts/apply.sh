@@ -5,8 +5,6 @@ basedir=$1
 
 source "$basedir/scripts/functions.sh"
 
-. $basedir/functions.sh
-
 paperVer=$(cat current-paper)
 gpgsign="$(git config commit.gpgsign || echo "false")"
 echo "Rebuilding Forked projects.... "

@@ -6,7 +6,7 @@ Subject: [PATCH] Remove method profiler callers
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index 15450f36a40908e957cf3ee4e7e392989cdd3617..d9f9892880e894a3a4e7cabaef95b480d61b0ecc 100644
+index bacfc4cba6d127460d293ee32ef5e73707f03b97..8b65ff1ac5f81b2f0ac1cac4a5485e8f59472233 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
 @@ -588,33 +588,33 @@ public class ChunkProviderServer extends IChunkProvider {

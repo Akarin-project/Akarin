@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
-# get base dir regardless of execution location
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-    SOURCE="$(readlink "$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-done
-. $(dirname $SOURCE)/init.sh
 
-PS1="$"
+# get base dir regardless of execution location
+basedir=$1
+
+source "$basedir/scripts/functions.sh"
+
 echo "Rebuilding patch files from current fork state..."
 function savePatches {
     what=$1
@@ -40,4 +36,4 @@ function savePatches {
 savePatches ${FORK_NAME}-API api
 savePatches ${FORK_NAME}-Server server
 
-$basedir/scripts/push.sh
+$basedir/scripts/push.sh "$basedir"

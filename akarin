@@ -12,7 +12,7 @@ case "$1" in
     (
         set -e
         cd "$basedir"
-        scripts/rebuildPatches.sh "$basedir" $2 || exit 1
+        scripts/rebuildpatches.sh "$basedir" || exit 1
     ) || failed=1
     ;;
     "p" | "patch" | "apply")
