@@ -102,3 +102,15 @@ function containsElement {
     done
     return 1
 }
+
+function bashColor {
+if [ $2 ]; then
+    echo -e "\e[$1;$2m"
+else
+    echo -e "\e[$1m"
+fi
+}
+function bashColorReset {
+    echo -e "\e[m"
+}
+
