@@ -4,7 +4,7 @@
 set -e
 
 source "./scripts/functions.sh"
-chmod +X scripts/* # For Github Action
+chmod -R +X scripts # For Github Action
 
 function updateAndPatch {
     basedir
