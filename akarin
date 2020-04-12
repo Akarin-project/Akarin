@@ -46,7 +46,7 @@ case "$1" in
        cd ${FORK_NAME}-API
        mvn -e clean install && cd ../${FORK_NAME}-Server && mvn -e clean install
        basedir
-       $scriptdir/paperclip.sh
+       $scriptdir/installLauncher.sh "$basedir"
     )
     ;;
     "d" | "de" | "deploy")
