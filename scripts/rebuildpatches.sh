@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
+echo "[Akarin] State: Rebuild Patches"
+
 # get base dir regardless of execution location
 basedir=$1
 
 source "$basedir/scripts/functions.sh"
+gitcmd="git -c commit.gpgsign=false -c core.safecrlf=false"
 
-echo "Rebuilding patch files from current fork state..."
+echo "Rebuild patch files from local sources.."
 function savePatches {
-    what=$1
-    cd $basedir/$what/
-
+    basedir
     mkdir -p $basedir/patches/$2
     if [ -d ".git/rebase-apply" ]; then
         # in middle of a rebase, be smarter
@@ -24,16 +25,16 @@ function savePatches {
             fi
         done
     else
-        rm $basedir/patches/$2/*.patch
+        rm -rf $basedir/patches/$2/*.patch
     fi
 
-    git format-patch --no-signature --zero-commit --full-index --no-stat -N -o $basedir/patches/$2 upstream/upstream
-    cd $basedir
-    git add -A $basedir/patches/$2
-    echo "  Patches saved for $what to patches/$2"
+    cd "$basedir/$1"
+    $gitcmd format-patch --no-stat -N -o "$basedir/patches/$2" upstream/upstream >/dev/null
+	basedir
+    $gitcmd add -A "$basedir/patches/$2"
+    echo "  Patches saved for $basedir to patches/$2"
 }
 
 savePatches ${FORK_NAME}-API api
 savePatches ${FORK_NAME}-Server server
-
-$basedir/scripts/push.sh "$basedir"
+# gitpushproject

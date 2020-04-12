@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
+
+echo "[Akarin] State: Commit Upstream"
+
 (
 set -e
-PS1="$"
 
-function changelog() {
+function changeLog() {
     base=$(git ls-tree HEAD $1  | cut -d' ' -f3 | cut -f1)
     cd $1 && git log --oneline ${base}...HEAD
 }
-paper=$(changelog Paper)
+paper=$(changeLog Paper)
 
 updated=""
 logsuffix=""
@@ -21,7 +23,7 @@ if [ ! -z "$1" ]; then
     disclaimer="$@"
 fi
 
-log="${UP_LOG_PREFIX}Updated Upstream ($updated)\n\n${disclaimer}${logsuffix}"
+log="Updated Upstream ($updated)\n\n${disclaimer}${logsuffix}"
 
 echo -e "$log" | git commit -F -
 

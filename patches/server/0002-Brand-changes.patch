@@ -1,12 +1,12 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 075ad41da85158264b2df37852138991654cb26e Mon Sep 17 00:00:00 2001
+From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Tue, 18 Dec 2018 06:27:02 -0800
 Subject: [PATCH] Brand changes
 
 
 diff --git a/src/main/java/net/minecraft/server/EULA.java b/src/main/java/net/minecraft/server/EULA.java
-index cf00f35a5b7c2d2f6b6989e0855de8b882dcef50..a45e63a02759305e119a41eac55a7f40488dd12c 100644
+index cf00f35a5..a45e63a02 100644
 --- a/src/main/java/net/minecraft/server/EULA.java
 +++ b/src/main/java/net/minecraft/server/EULA.java
 @@ -70,7 +70,7 @@ public class EULA {
@@ -19,7 +19,7 @@ index cf00f35a5b7c2d2f6b6989e0855de8b882dcef50..a45e63a02759305e119a41eac55a7f40
                      throwable = throwable1;
                      throw throwable1;
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 2686874f26b7319c50201e62af68aca92edb69b3..c8b10a039f0592d03cc4c0de90da2b62c9aeaeba 100644
+index 2686874f2..c8b10a039 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1510,7 +1510,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -32,7 +32,7 @@ index 2686874f26b7319c50201e62af68aca92edb69b3..c8b10a039f0592d03cc4c0de90da2b62
  
      public CrashReport b(CrashReport crashreport) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 8cc0f66ce52d2c0cedef682b530a852fde38526a..b381514d9ff59ddff515930e2e41e529c42ea206 100644
+index 8cc0f66ce..b381514d9 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -203,7 +203,7 @@ import javax.annotation.Nullable; // Paper
@@ -44,3 +44,6 @@ index 8cc0f66ce52d2c0cedef682b530a852fde38526a..b381514d9ff59ddff515930e2e41e529
      private final String serverVersion;
      private final String bukkitVersion = Versioning.getBukkitVersion();
      private final Logger logger = Logger.getLogger("Minecraft");
+-- 
+2.25.1.windows.1
+

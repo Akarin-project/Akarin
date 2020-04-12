@@ -1,12 +1,12 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 8620d79bc05a58236de15884c5d8d06443b6ccf3 Mon Sep 17 00:00:00 2001
+From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 13:01:13 +0800
 Subject: [PATCH] Async pathfinder
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index e9f00a1e131faa42d280cab255bc61cd1dcddf2a..72fa93d75f335dadac514362f9367edeb089f45f 100644
+index e9f00a1e1..72fa93d75 100644
 --- a/src/main/java/net/minecraft/server/EntityInsentient.java
 +++ b/src/main/java/net/minecraft/server/EntityInsentient.java
 @@ -686,7 +686,7 @@ public abstract class EntityInsentient extends EntityLiving {
@@ -19,7 +19,7 @@ index e9f00a1e131faa42d280cab255bc61cd1dcddf2a..72fa93d75f335dadac514362f9367ede
          //this.world.getMethodProfiler().enter("mob tick"); // Akarin - remove caller
          this.mobTick();
 diff --git a/src/main/java/net/minecraft/server/Navigation.java b/src/main/java/net/minecraft/server/Navigation.java
-index abf450917e605972d84cb603b966feb013ae0002..4f7f40d5e7050d9b2da29c6e6efe7c5bef560d55 100644
+index abf450917..4f7f40d5e 100644
 --- a/src/main/java/net/minecraft/server/Navigation.java
 +++ b/src/main/java/net/minecraft/server/Navigation.java
 @@ -183,7 +183,7 @@ public class Navigation extends NavigationAbstract {
@@ -32,7 +32,7 @@ index abf450917e605972d84cb603b966feb013ae0002..4f7f40d5e7050d9b2da29c6e6efe7c5b
                          if (pathtype == PathType.WATER) {
                              return false;
 diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index 1e6b3931a3d2781c122dfc0fef1c61dcbe28fa69..9859b0c000da8acee248339cd0e6755fbd375d99 100644
+index 1e6b3931a..9859b0c00 100644
 --- a/src/main/java/net/minecraft/server/NavigationAbstract.java
 +++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
 @@ -22,13 +22,15 @@ public abstract class NavigationAbstract {
@@ -250,7 +250,7 @@ index 1e6b3931a3d2781c122dfc0fef1c61dcbe28fa69..9859b0c000da8acee248339cd0e6755f
      protected boolean p() {
          return this.a.az() || this.a.aH();
 diff --git a/src/main/java/net/minecraft/server/PathEntity.java b/src/main/java/net/minecraft/server/PathEntity.java
-index dcb4e250803b8605f9bfb6d590c4e316dfee97d1..265b6df4f67910c4b396a593575628b50aa527c1 100644
+index dcb4e2508..265b6df4f 100644
 --- a/src/main/java/net/minecraft/server/PathEntity.java
 +++ b/src/main/java/net/minecraft/server/PathEntity.java
 @@ -110,7 +110,7 @@ public class PathEntity {
@@ -263,7 +263,7 @@ index dcb4e250803b8605f9bfb6d590c4e316dfee97d1..265b6df4f67910c4b396a593575628b5
      }
  
 diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
-index 67c63cfe333e328cbd00ada970bd81efebfe30b6..00bd2327f24ea7c8ee4c92b51f18abb273b2bb83 100644
+index 67c63cfe3..00bd2327f 100644
 --- a/src/main/java/net/minecraft/server/Pathfinder.java
 +++ b/src/main/java/net/minecraft/server/Pathfinder.java
 @@ -15,9 +15,9 @@ import javax.annotation.Nullable;
@@ -315,7 +315,7 @@ index 67c63cfe333e328cbd00ada970bd81efebfe30b6..00bd2327f24ea7c8ee4c92b51f18abb2
          List<PathPoint> list = Lists.newArrayList();
          PathPoint pathpoint1 = pathpoint;
 diff --git a/src/main/java/net/minecraft/server/PathfinderTurtle.java b/src/main/java/net/minecraft/server/PathfinderTurtle.java
-index 59b1fe289c57b9e9f21b74c26cc1836255dad78b..1790878ae9ac33be86bed0b962b8171bf666d119 100644
+index 59b1fe289..1790878ae 100644
 --- a/src/main/java/net/minecraft/server/PathfinderTurtle.java
 +++ b/src/main/java/net/minecraft/server/PathfinderTurtle.java
 @@ -148,7 +148,7 @@ public class PathfinderTurtle extends PathfinderNormal {
@@ -328,7 +328,7 @@ index 59b1fe289c57b9e9f21b74c26cc1836255dad78b..1790878ae9ac33be86bed0b962b8171b
                      }
  
 diff --git a/src/main/java/net/minecraft/server/PathfinderWater.java b/src/main/java/net/minecraft/server/PathfinderWater.java
-index 075b63ef57a1528118f03a00c7156b3cb7744969..a3473ddcfe15d329eba78bbd60c00541cb1b88bb 100644
+index 075b63ef5..a3473ddcf 100644
 --- a/src/main/java/net/minecraft/server/PathfinderWater.java
 +++ b/src/main/java/net/minecraft/server/PathfinderWater.java
 @@ -63,7 +63,7 @@ public class PathfinderWater extends PathfinderAbstract {
@@ -340,3 +340,6 @@ index 075b63ef57a1528118f03a00c7156b3cb7744969..a3473ddcfe15d329eba78bbd60c00541
          float f = this.b.a(pathtype);
  
          if (f >= 0.0F) {
+-- 
+2.25.1.windows.1
+

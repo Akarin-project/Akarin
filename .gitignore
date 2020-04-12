@@ -2,10 +2,10 @@
 Akarin-Server
 Akarin-API
 mc-dev
-.idea
 testserver
 run
-/akarin-paperclip.jar
+gradle
+*.jar
 
 # Compiled class file
 *.class
@@ -19,11 +19,16 @@ run
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+# Eclipse
+.settings/
+.project
+
 # IntelliJ
 *.iml
 *.ipr
 *.iws
 .idea/
+.idea
 out/
 
 # Maven

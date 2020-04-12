@@ -1,12 +1,12 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 7c3f22c070e5d9027dace7cf295292444472579f Mon Sep 17 00:00:00 2001
+From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 14 Dec 2018 21:52:29 -0800
 Subject: [PATCH] POM Changes
 
 
 diff --git a/pom.xml b/pom.xml
-index 2cb9714084c8a7aa1b20d445edd5be4cc206672f..d167304be5ca4d067886a9740230b25b9fa21b56 100644
+index 2cb97140..d167304b 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -3,18 +3,18 @@
@@ -34,3 +34,6 @@ index 2cb9714084c8a7aa1b20d445edd5be4cc206672f..d167304be5ca4d067886a9740230b25b
      <description>An enhanced plugin API for Minecraft servers.</description>
  
      <properties>
+-- 
+2.25.1.windows.1
+

@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+# SCRIPT HEADER start
+echo "----------------------------------------"
+echo "  $(bashcolor 1 32)Task$(bashcolorend) - Apply Patches"
+echo "  This will apply all of Akarin patches on top of the Paper."
+echo "  "
+echo "  $(bashcolor 1 32)Subtask:$(bashcolorend)"
+echo "  - Import Sources"
+echo "  "
+echo "  $(bashcolor 1 32)Modules:$(bashcolorend)"
+echo "  - $(bashcolor 1 32)1$(bashcolorend) : API"
+echo "  - $(bashcolor 1 32)2$(bashcolorend) : Server"
+echo "----------------------------------------"
+# SCRIPT HEADER end
+
+# get base dir regardless of execution location
+basedir=$1
+
+source "$basedir/scripts/functions.sh"
+
+gpgsign="$(git config commit.gpgsign || echo "false")"
+
+function applyPatch {
+    baseproject=$1
+    basename=$(basename $baseproject)
+    target=$2
+    branch=$3
+    patch_folder=$4
+
+    # Skip if that software have no patch
+    haspatch=-f "$basedir/patches/$patch_folder/"*.patch >/dev/null 2>&1 # too many files
+	if [ ! haspatch ]; then
+	    echo "  $(bashcolor 1 33)($5/$6) Skipped$(bashcolorend) - No patch found for $target under patches/$patch_folder"
+		return
+	fi
+
+    echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Setup upstream project.."
+    cd "$basedir/$baseproject"
+    $gitcmd fetch --all &> /dev/null
+	# Create the upstream branch in Paper project with current state
+    $gitcmd checkout master >/dev/null # possibly already in
+	$gitcmd branch -D upstream >/dev/null &> /dev/null
+	$gitcmd branch -f upstream "$branch" &> /dev/null && $gitcmd checkout upstream &> /dev/null
+	
+	if [ $baseproject != "Paper/Paper-API" ]; then
+	    echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Import new introduced NMS files.."
+	    basedir && $scriptdir/importSources.sh $basedir 1
+    fi
+
+    basedir
+	# Create source project dirs
+    if [ ! -d  "$basedir/$target" ]; then
+        mkdir "$basedir/$target"
+        cd "$basedir/$target"
+        # $gitcmd remote add origin "$5"
+    fi
+    cd "$basedir/$target"
+	$gitcmd init > /dev/null 2>&1
+
+    # Disable GPG signing before AM, slows things down and doesn't play nicely.
+    # There is also zero rational or logical reason to do so for these sub-repo AMs.
+    # Calm down kids, it's re-enabled (if needed) immediately after, pass or fail.
+    $gitcmd config commit.gpgsign false
+
+	echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Reset $target to $basename.."
+	# Add the generated Paper project as the upstream remote of subproject
+    $gitcmd remote rm upstream >/dev/null 2>&1
+    $gitcmd remote add upstream "$basedir/$baseproject" >/dev/null 2>&1
+	# Ensure that we are in the branch we want so not overriding things
+    $gitcmd checkout master 2>/dev/null || $gitcmd checkout -b master
+    $gitcmd fetch upstream >/dev/null 2>&1
+	# Reset our source project to Paper
+    cd "$basedir/$target" && $gitcmd reset --hard upstream/upstream
+
+	echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Apply patches to $target.."
+	# Abort previous applying operation
+    $gitcmd am --abort >/dev/null 2>&1
+	# Apply our patches on top Paper in our dirs
+    $gitcmd am --no-utf8 --3way --ignore-whitespace "$basedir/patches/$patch_folder/"*.patch
+
+    if [ "$?" != "0" ]; then
+        echo "  Something did not apply cleanly to $target."
+        echo "  Please review above details and finish the apply then"
+        echo "  save the changes with rebuildPatches.sh"
+		echo "  or use 'git am --abort' to cancel this applying."
+        echo "  $(bashcolor 1 33)($5/$6) Suspended$(bashcolorend) - Resolve the conflict or abort the apply"
+		echo "  "
+		cd "$basedir/$target"
+        exit 1
+    else
+        echo "  $(bashcolor 1 32)($6/$6) Succeed$(bashcolorend) - Patches applied cleanly to $target"
+		echo "  "
+    fi
+}
+
+function enableCommitSigningIfNeeded {
+    if [[ "$gpgsign" == "true" ]]; then
+        git config commit.gpgsign true
+    fi
+}
+
+    # echo "Importing MC-DEV"
+    # ./scripts/importSources.sh "$basedir" || exit 1
+(
+    (applyPatch Paper/Paper-API ${FORK_NAME}-API HEAD api $API_REPO 0 2 &&
+    applyPatch Paper/Paper-Server ${FORK_NAME}-Server HEAD server $SERVER_REPO 1 2) || exit 1
+    enableCommitSigningIfNeeded
+) || (
+    enableCommitSigningIfNeeded
+    exit 1
+) || exit 1

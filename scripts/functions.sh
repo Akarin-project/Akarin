@@ -14,14 +14,25 @@ gitcmd="git -c commit.gpgsign=false"
 case "$(echo "$SHELL" | sed -E 's|/usr(/local)?||g')" in
     "/bin/zsh")
         RCPATH="$HOME/.zshrc"
+        SOURCE="${BASH_SOURCE[0]:-${(%):-%N}}"
     ;;
     *)
         RCPATH="$HOME/.bashrc"
         if [[ -f "$HOME/.bash_aliases" ]]; then
             RCPATH="$HOME/.bash_aliases"
         fi
+        SOURCE="${BASH_SOURCE[0]}"
     ;;
 esac
+
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+SOURCE=$([[ "$SOURCE" = /* ]] && echo "$SOURCE" || echo "$PWD/${SOURCE#./}")
+scriptdir=$(dirname "$SOURCE")
+basedir=$(dirname "$scriptdir")
 
 function basedir {
     cd "$basedir"
@@ -48,6 +59,18 @@ colorend() {
     echo -e "\e[m"
 }
 
+function bashcolor {
+    if [ $2 ]; then
+        echo -e "\e[$1;$2m"
+    else
+        echo -e "\e[$1m"
+    fi
+}
+
+function bashcolorend {
+    echo -e "\e[m"
+}
+
 # GIT functions
 gitstash() {
     STASHED=$($gitcmd stash  2>/dev/null|| return 0) # errors are ok
@@ -60,7 +83,7 @@ gitunstash() {
 }
 
 function gethead {
-    cd "$1"
+    basedir
     git log -1 --oneline
 }
 
@@ -68,7 +91,7 @@ function gitpush {
     if [ "$(git config minecraft.push-${FORK_NAME})" == "1" ]; then
     echo "Push - $1 ($3) to $2"
     (
-        cd "$1"
+        basedir
         git remote rm script-push > /dev/null 2>&1
         git remote add script-push $2 >/dev/null 2>&1
         git push script-push $3 -f
@@ -102,15 +125,3 @@ function containsElement {
     done
     return 1
 }
-
-function bashColor {
-if [ $2 ]; then
-    echo -e "\e[$1;$2m"
-else
-    echo -e "\e[$1m"
-fi
-}
-function bashColorReset {
-    echo -e "\e[m"
-}
-

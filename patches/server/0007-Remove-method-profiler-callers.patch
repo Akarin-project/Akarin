@@ -1,12 +1,12 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 3ba075eaca355647259518afff4ffa3e9425d385 Mon Sep 17 00:00:00 2001
+From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 12:30:35 +0800
 Subject: [PATCH] Remove method profiler callers
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index f741a034e8eae0a250aa16b26e56f173c88a9769..ae40078d0ffa13c71337d9422eb0524de08a1458 100644
+index f741a034e..ae40078d0 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
 @@ -602,33 +602,33 @@ public class ChunkProviderServer extends IChunkProvider {
@@ -128,7 +128,7 @@ index f741a034e8eae0a250aa16b26e56f173c88a9769..ae40078d0ffa13c71337d9422eb0524d
  
          this.playerChunkMap.g();
 diff --git a/src/main/java/net/minecraft/server/CustomFunctionData.java b/src/main/java/net/minecraft/server/CustomFunctionData.java
-index ee42e1dfa493c3d7f5af8cc7b8e17e80fcb32b71..bd9684c4ed0d8e71278fbf8547b34899c62c108e 100644
+index ee42e1dfa..bd9684c4e 100644
 --- a/src/main/java/net/minecraft/server/CustomFunctionData.java
 +++ b/src/main/java/net/minecraft/server/CustomFunctionData.java
 @@ -70,7 +70,7 @@ public class CustomFunctionData implements IResourcePackListener {
@@ -159,7 +159,7 @@ index ee42e1dfa493c3d7f5af8cc7b8e17e80fcb32b71..bd9684c4ed0d8e71278fbf8547b34899
  
                      ++k;
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 6571cf1eee3ba1c064e064a84a5d3135759b58e7..147c5288a567bd7e4a262cc67dbae9c4164b23b8 100644
+index 6571cf1ee..147c5288a 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -395,7 +395,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -268,7 +268,7 @@ index 6571cf1eee3ba1c064e064a84a5d3135759b58e7..147c5288a567bd7e4a262cc67dbae9c4
          } else {
              return null;
 diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index 1991cee43d429574f2c0889f807e7cd090f7d7dd..e9f00a1e131faa42d280cab255bc61cd1dcddf2a 100644
+index 1991cee43..e9f00a1e1 100644
 --- a/src/main/java/net/minecraft/server/EntityInsentient.java
 +++ b/src/main/java/net/minecraft/server/EntityInsentient.java
 @@ -223,13 +223,13 @@ public abstract class EntityInsentient extends EntityLiving {
@@ -353,7 +353,7 @@ index 1991cee43d429574f2c0889f807e7cd090f7d7dd..e9f00a1e131faa42d280cab255bc61cd
      }
  
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index ad474500e2f6fd6ad6db7bf2436b74c2d9d6136a..e93b7b280968ad1620a24fb06f2e5a503bdecad0 100644
+index ad474500e..e93b7b280 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
 +++ b/src/main/java/net/minecraft/server/EntityLiving.java
 @@ -242,7 +242,7 @@ public abstract class EntityLiving extends Entity {
@@ -452,7 +452,7 @@ index ad474500e2f6fd6ad6db7bf2436b74c2d9d6136a..e93b7b280968ad1620a24fb06f2e5a50
  
      private void n() {
 diff --git a/src/main/java/net/minecraft/server/EntityVillager.java b/src/main/java/net/minecraft/server/EntityVillager.java
-index 6e0020ae0b4d2f2597843129b83fff0d194de337..9d94aa135e1374112c5282e009a8407e2f0e1d37 100644
+index 6e0020ae0..9d94aa135 100644
 --- a/src/main/java/net/minecraft/server/EntityVillager.java
 +++ b/src/main/java/net/minecraft/server/EntityVillager.java
 @@ -144,9 +144,9 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
@@ -468,7 +468,7 @@ index 6e0020ae0b4d2f2597843129b83fff0d194de337..9d94aa135e1374112c5282e009a8407e
              --this.bB;
              if (this.bB <= 0) {
 diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
-index a353f3d5fa5a5f54335f73584589de3f5cb20d3e..81e699b404c3c93a2a0b50d8960c1276067c6580 100644
+index a353f3d5f..81e699b40 100644
 --- a/src/main/java/net/minecraft/server/Explosion.java
 +++ b/src/main/java/net/minecraft/server/Explosion.java
 @@ -285,7 +285,7 @@ public class Explosion {
@@ -490,7 +490,7 @@ index a353f3d5fa5a5f54335f73584589de3f5cb20d3e..81e699b404c3c93a2a0b50d8960c1276
              }
  
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index c8b10a039f0592d03cc4c0de90da2b62c9aeaeba..36e11bb25fce4b63b1a476ccd1b8a3a8e8aab5e8 100644
+index c8b10a039..36e11bb25 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -936,13 +936,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -625,7 +625,7 @@ index c8b10a039f0592d03cc4c0de90da2b62c9aeaeba..36e11bb25fce4b63b1a476ccd1b8a3a8
  
      public boolean getAllowNether() {
 diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index f06764973feaa29ccbb4731b65372c544dcf3032..1e6b3931a3d2781c122dfc0fef1c61dcbe28fa69 100644
+index f06764973..1e6b3931a 100644
 --- a/src/main/java/net/minecraft/server/NavigationAbstract.java
 +++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
 @@ -137,14 +137,14 @@ public abstract class NavigationAbstract {
@@ -646,7 +646,7 @@ index f06764973feaa29ccbb4731b65372c544dcf3032..1e6b3931a3d2781c122dfc0fef1c61dc
                  this.q = pathentity.k();
                  this.r = j;
 diff --git a/src/main/java/net/minecraft/server/PathfinderGoalSelector.java b/src/main/java/net/minecraft/server/PathfinderGoalSelector.java
-index 90319909e55e70dab3999534d836b64c7b5d3df8..cccdf759a4d23d9ec3e2e38e23b257d21797495d 100644
+index 90319909e..c09c5440b 100644
 --- a/src/main/java/net/minecraft/server/PathfinderGoalSelector.java
 +++ b/src/main/java/net/minecraft/server/PathfinderGoalSelector.java
 @@ -77,7 +77,7 @@ public class PathfinderGoalSelector {
@@ -654,7 +654,7 @@ index 90319909e55e70dab3999534d836b64c7b5d3df8..cccdf759a4d23d9ec3e2e38e23b257d2
  
      public void doTick() {
 -        this.e.enter("goalCleanup");
-+        //this.e.enter("goalCleanup"); // Akarin - remove caller
++        // this.e.enter("goalCleanup"); // Akarin - remove caller
          // Paper start - remove streams from pathfindergoalselector
          for (Iterator<PathfinderGoalWrapped> iterator = this.d.iterator(); iterator.hasNext();) {
              PathfinderGoalWrapped wrappedGoal = iterator.next();
@@ -664,8 +664,8 @@ index 90319909e55e70dab3999534d836b64c7b5d3df8..cccdf759a4d23d9ec3e2e38e23b257d2
          });
 -        this.e.exit();
 -        this.e.enter("goalUpdate");
-+        //this.e.exit(); // Akarin - remove caller
-+        //this.e.enter("goalUpdate"); // Akarin - remove caller
++        // this.e.exit(); // Akarin - remove caller
++        // this.e.enter("goalUpdate"); // Akarin - remove caller
          // Paper start - remove streams from pathfindergoalselector
          goal_update_loop: for (Iterator<PathfinderGoalWrapped> iterator = this.d.iterator(); iterator.hasNext();) {
              PathfinderGoalWrapped wrappedGoal = iterator.next();
@@ -675,8 +675,8 @@ index 90319909e55e70dab3999534d836b64c7b5d3df8..cccdf759a4d23d9ec3e2e38e23b257d2
          // Paper end - remove streams from pathfindergoalselector
 -        this.e.exit();
 -        this.e.enter("goalTick");
-+        //this.e.exit(); // Akarin - remove caller
-+        //this.e.enter("goalTick"); // Akarin - remove caller
++        // this.e.exit(); // Akarin - remove caller
++        // this.e.enter("goalTick"); // Akarin - remove caller
          // Paper start - remove streams from pathfindergoalselector
          for (Iterator<PathfinderGoalWrapped> iterator = this.d.iterator(); iterator.hasNext();) {
              PathfinderGoalWrapped wrappedGoal = iterator.next();
@@ -685,12 +685,404 @@ index 90319909e55e70dab3999534d836b64c7b5d3df8..cccdf759a4d23d9ec3e2e38e23b257d2
          }
          // Paper end - remove streams from pathfindergoalselector
 -        this.e.exit();
-+        //this.e.exit(); // Akarin - remove caller
++        // this.e.exit(); // Akarin - remove caller
      }
  
      public Stream<PathfinderGoalWrapped> c() {
+diff --git a/src/main/java/net/minecraft/server/PathfinderTurtle.java~Async pathfinder b/src/main/java/net/minecraft/server/PathfinderTurtle.java~Async pathfinder
+new file mode 100644
+index 000000000..1790878ae
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/PathfinderTurtle.java~Async pathfinder	
+@@ -0,0 +1,271 @@
++package net.minecraft.server;
++
++import javax.annotation.Nullable;
++
++public class PathfinderTurtle extends PathfinderNormal {
++
++    private float k;
++    private float l;
++
++    public PathfinderTurtle() {}
++
++    @Override
++    public void a(ChunkCache chunkcache, EntityInsentient entityinsentient) {
++        super.a(chunkcache, entityinsentient);
++        entityinsentient.a(PathType.WATER, 0.0F);
++        this.k = entityinsentient.a(PathType.WALKABLE);
++        entityinsentient.a(PathType.WALKABLE, 6.0F);
++        this.l = entityinsentient.a(PathType.WATER_BORDER);
++        entityinsentient.a(PathType.WATER_BORDER, 4.0F);
++    }
++
++    @Override
++    public void a() {
++        this.b.a(PathType.WALKABLE, this.k);
++        this.b.a(PathType.WATER_BORDER, this.l);
++        super.a();
++    }
++
++    @Override
++    public PathPoint b() {
++        return this.a(MathHelper.floor(this.b.getBoundingBox().minX), MathHelper.floor(this.b.getBoundingBox().minY + 0.5D), MathHelper.floor(this.b.getBoundingBox().minZ));
++    }
++
++    @Override
++    public PathDestination a(double d0, double d1, double d2) {
++        return new PathDestination(this.a(MathHelper.floor(d0), MathHelper.floor(d1 + 0.5D), MathHelper.floor(d2)));
++    }
++
++    @Override
++    public int a(PathPoint[] apathpoint, PathPoint pathpoint) {
++        int i = 0;
++        boolean flag = true;
++        BlockPosition blockposition = new BlockPosition(pathpoint.a, pathpoint.b, pathpoint.c);
++        double d0 = this.a(blockposition);
++        PathPoint pathpoint1 = this.a(pathpoint.a, pathpoint.b, pathpoint.c + 1, 1, d0);
++        PathPoint pathpoint2 = this.a(pathpoint.a - 1, pathpoint.b, pathpoint.c, 1, d0);
++        PathPoint pathpoint3 = this.a(pathpoint.a + 1, pathpoint.b, pathpoint.c, 1, d0);
++        PathPoint pathpoint4 = this.a(pathpoint.a, pathpoint.b, pathpoint.c - 1, 1, d0);
++        PathPoint pathpoint5 = this.a(pathpoint.a, pathpoint.b + 1, pathpoint.c, 0, d0);
++        PathPoint pathpoint6 = this.a(pathpoint.a, pathpoint.b - 1, pathpoint.c, 1, d0);
++
++        if (pathpoint1 != null && !pathpoint1.i) {
++            apathpoint[i++] = pathpoint1;
++        }
++
++        if (pathpoint2 != null && !pathpoint2.i) {
++            apathpoint[i++] = pathpoint2;
++        }
++
++        if (pathpoint3 != null && !pathpoint3.i) {
++            apathpoint[i++] = pathpoint3;
++        }
++
++        if (pathpoint4 != null && !pathpoint4.i) {
++            apathpoint[i++] = pathpoint4;
++        }
++
++        if (pathpoint5 != null && !pathpoint5.i) {
++            apathpoint[i++] = pathpoint5;
++        }
++
++        if (pathpoint6 != null && !pathpoint6.i) {
++            apathpoint[i++] = pathpoint6;
++        }
++
++        boolean flag1 = pathpoint4 == null || pathpoint4.l == PathType.OPEN || pathpoint4.k != 0.0F;
++        boolean flag2 = pathpoint1 == null || pathpoint1.l == PathType.OPEN || pathpoint1.k != 0.0F;
++        boolean flag3 = pathpoint3 == null || pathpoint3.l == PathType.OPEN || pathpoint3.k != 0.0F;
++        boolean flag4 = pathpoint2 == null || pathpoint2.l == PathType.OPEN || pathpoint2.k != 0.0F;
++        PathPoint pathpoint7;
++
++        if (flag1 && flag4) {
++            pathpoint7 = this.a(pathpoint.a - 1, pathpoint.b, pathpoint.c - 1, 1, d0);
++            if (pathpoint7 != null && !pathpoint7.i) {
++                apathpoint[i++] = pathpoint7;
++            }
++        }
++
++        if (flag1 && flag3) {
++            pathpoint7 = this.a(pathpoint.a + 1, pathpoint.b, pathpoint.c - 1, 1, d0);
++            if (pathpoint7 != null && !pathpoint7.i) {
++                apathpoint[i++] = pathpoint7;
++            }
++        }
++
++        if (flag2 && flag4) {
++            pathpoint7 = this.a(pathpoint.a - 1, pathpoint.b, pathpoint.c + 1, 1, d0);
++            if (pathpoint7 != null && !pathpoint7.i) {
++                apathpoint[i++] = pathpoint7;
++            }
++        }
++
++        if (flag2 && flag3) {
++            pathpoint7 = this.a(pathpoint.a + 1, pathpoint.b, pathpoint.c + 1, 1, d0);
++            if (pathpoint7 != null && !pathpoint7.i) {
++                apathpoint[i++] = pathpoint7;
++            }
++        }
++
++        return i;
++    }
++
++    private double a(BlockPosition blockposition) {
++        if (!this.b.isInWater()) {
++            BlockPosition blockposition1 = blockposition.down();
++            VoxelShape voxelshape = this.a.getType(blockposition1).getCollisionShape(this.a, blockposition1);
++
++            return (double) blockposition1.getY() + (voxelshape.isEmpty() ? 0.0D : voxelshape.c(EnumDirection.EnumAxis.Y));
++        } else {
++            return (double) blockposition.getY() + 0.5D;
++        }
++    }
++
++    @Nullable
++    private PathPoint a(int i, int j, int k, int l, double d0) {
++        PathPoint pathpoint = null;
++        BlockPosition blockposition = new BlockPosition(i, j, k);
++        double d1 = this.a(blockposition);
++
++        if (d1 - d0 > 1.125D) {
++            return null;
++        } else {
++            PathType pathtype = this.a(this.a, i, j, k, this.b, this.d, this.e, this.f, false, false);
++            float f = this.b.a(pathtype);
++            double d2 = (double) this.b.getWidth() / 2.0D;
++
++            if (f >= 0.0F) {
++                pathpoint = this.a(i, j, k);
++                pathpoint.l = pathtype;
++                pathpoint.k = Math.max(pathpoint.k, f);
++            }
++
++            if (pathtype != PathType.WATER && pathtype != PathType.WALKABLE) {
++                if (pathpoint == null && l > 0 && pathtype != PathType.FENCE && pathtype != PathType.TRAPDOOR) {
++                    pathpoint = this.a(i, j + 1, k, l - 1, d0);
++                }
++
++                if (pathtype == PathType.OPEN) {
++                    AxisAlignedBB axisalignedbb = new AxisAlignedBB((double) i - d2 + 0.5D, (double) j + 0.001D, (double) k - d2 + 0.5D, (double) i + d2 + 0.5D, (double) ((float) j + this.b.getHeight()), (double) k + d2 + 0.5D);
++
++                    if (!this.a.getCubes(this.b, axisalignedbb)) { // Akarin - use chunk cache
++                        return null;
++                    }
++
++                    PathType pathtype1 = this.a(this.a, i, j - 1, k, this.b, this.d, this.e, this.f, false, false);
++
++                    if (pathtype1 == PathType.BLOCKED) {
++                        pathpoint = this.a(i, j, k);
++                        pathpoint.l = PathType.WALKABLE;
++                        pathpoint.k = Math.max(pathpoint.k, f);
++                        return pathpoint;
++                    }
++
++                    if (pathtype1 == PathType.WATER) {
++                        pathpoint = this.a(i, j, k);
++                        pathpoint.l = PathType.WATER;
++                        pathpoint.k = Math.max(pathpoint.k, f);
++                        return pathpoint;
++                    }
++
++                    int i1 = 0;
++
++                    while (j > 0 && pathtype == PathType.OPEN) {
++                        --j;
++                        if (i1++ >= this.b.bD()) {
++                            return null;
++                        }
++
++                        pathtype = this.a(this.a, i, j, k, this.b, this.d, this.e, this.f, false, false);
++                        f = this.b.a(pathtype);
++                        if (pathtype != PathType.OPEN && f >= 0.0F) {
++                            pathpoint = this.a(i, j, k);
++                            pathpoint.l = pathtype;
++                            pathpoint.k = Math.max(pathpoint.k, f);
++                            break;
++                        }
++
++                        if (f < 0.0F) {
++                            return null;
++                        }
++                    }
++                }
++
++                return pathpoint;
++            } else {
++                if (j < this.b.world.getSeaLevel() - 10 && pathpoint != null) {
++                    ++pathpoint.k;
++                }
++
++                return pathpoint;
++            }
++        }
++    }
++
++    @Override
++    protected PathType a(IBlockAccess iblockaccess, boolean flag, boolean flag1, BlockPosition blockposition, PathType pathtype) {
++        if (pathtype == PathType.RAIL && !(iblockaccess.getType(blockposition).getBlock() instanceof BlockMinecartTrackAbstract) && !(iblockaccess.getType(blockposition.down()).getBlock() instanceof BlockMinecartTrackAbstract)) {
++            pathtype = PathType.FENCE;
++        }
++
++        if (pathtype == PathType.DOOR_OPEN || pathtype == PathType.DOOR_WOOD_CLOSED || pathtype == PathType.DOOR_IRON_CLOSED) {
++            pathtype = PathType.BLOCKED;
++        }
++
++        if (pathtype == PathType.LEAVES) {
++            pathtype = PathType.BLOCKED;
++        }
++
++        return pathtype;
++    }
++
++    @Override
++    public PathType a(IBlockAccess iblockaccess, int i, int j, int k) {
++        PathType pathtype = c(iblockaccess, i, j, k);
++
++        if (pathtype == PathType.WATER) {
++            EnumDirection[] aenumdirection = EnumDirection.values();
++            int l = aenumdirection.length;
++
++            for (int i1 = 0; i1 < l; ++i1) {
++                EnumDirection enumdirection = aenumdirection[i1];
++                PathType pathtype1 = c(iblockaccess, i + enumdirection.getAdjacentX(), j + enumdirection.getAdjacentY(), k + enumdirection.getAdjacentZ());
++
++                if (pathtype1 == PathType.BLOCKED) {
++                    return PathType.WATER_BORDER;
++                }
++            }
++
++            return PathType.WATER;
++        } else {
++            if (pathtype == PathType.OPEN && j >= 1) {
++                Block block = iblockaccess.getType(new BlockPosition(i, j - 1, k)).getBlock();
++                PathType pathtype2 = c(iblockaccess, i, j - 1, k);
++
++                if (pathtype2 != PathType.WALKABLE && pathtype2 != PathType.OPEN && pathtype2 != PathType.LAVA) {
++                    pathtype = PathType.WALKABLE;
++                } else {
++                    pathtype = PathType.OPEN;
++                }
++
++                if (pathtype2 == PathType.DAMAGE_FIRE || block == Blocks.MAGMA_BLOCK || block == Blocks.CAMPFIRE) {
++                    pathtype = PathType.DAMAGE_FIRE;
++                }
++
++                if (pathtype2 == PathType.DAMAGE_CACTUS) {
++                    pathtype = PathType.DAMAGE_CACTUS;
++                }
++
++                if (pathtype2 == PathType.DAMAGE_OTHER) {
++                    pathtype = PathType.DAMAGE_OTHER;
++                }
++            }
++
++            if (pathtype == PathType.WALKABLE) {
++                pathtype = a(iblockaccess, i, j, k, pathtype);
++            }
++
++            return pathtype;
++        }
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/PathfinderWater.java~Async pathfinder b/src/main/java/net/minecraft/server/PathfinderWater.java~Async pathfinder
+new file mode 100644
+index 000000000..a3473ddcf
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/PathfinderWater.java~Async pathfinder	
+@@ -0,0 +1,109 @@
++package net.minecraft.server;
++
++import javax.annotation.Nullable;
++
++public class PathfinderWater extends PathfinderAbstract {
++
++    private final boolean j;
++
++    public PathfinderWater(boolean flag) {
++        this.j = flag;
++    }
++
++    @Override
++    public PathPoint b() {
++        return super.a(MathHelper.floor(this.b.getBoundingBox().minX), MathHelper.floor(this.b.getBoundingBox().minY + 0.5D), MathHelper.floor(this.b.getBoundingBox().minZ));
++    }
++
++    @Override
++    public PathDestination a(double d0, double d1, double d2) {
++        return new PathDestination(super.a(MathHelper.floor(d0 - (double) (this.b.getWidth() / 2.0F)), MathHelper.floor(d1 + 0.5D), MathHelper.floor(d2 - (double) (this.b.getWidth() / 2.0F))));
++    }
++
++    @Override
++    public int a(PathPoint[] apathpoint, PathPoint pathpoint) {
++        int i = 0;
++        EnumDirection[] aenumdirection = EnumDirection.values();
++        int j = aenumdirection.length;
++
++        for (int k = 0; k < j; ++k) {
++            EnumDirection enumdirection = aenumdirection[k];
++            PathPoint pathpoint1 = this.b(pathpoint.a + enumdirection.getAdjacentX(), pathpoint.b + enumdirection.getAdjacentY(), pathpoint.c + enumdirection.getAdjacentZ());
++
++            if (pathpoint1 != null && !pathpoint1.i) {
++                apathpoint[i++] = pathpoint1;
++            }
++        }
++
++        return i;
++    }
++
++    @Override
++    public PathType a(IBlockAccess iblockaccess, int i, int j, int k, EntityInsentient entityinsentient, int l, int i1, int j1, boolean flag, boolean flag1) {
++        return this.a(iblockaccess, i, j, k);
++    }
++
++    @Override
++    public PathType a(IBlockAccess iblockaccess, int i, int j, int k) {
++        BlockPosition blockposition = new BlockPosition(i, j, k);
++        Fluid fluid = iblockaccess.getFluid(blockposition);
++        IBlockData iblockdata = iblockaccess.getType(blockposition);
++
++        return fluid.isEmpty() && iblockdata.a(iblockaccess, blockposition.down(), PathMode.WATER) && iblockdata.isAir() ? PathType.BREACH : (fluid.a(TagsFluid.WATER) && iblockdata.a(iblockaccess, blockposition, PathMode.WATER) ? PathType.WATER : PathType.BLOCKED);
++    }
++
++    @Nullable
++    private PathPoint b(int i, int j, int k) {
++        PathType pathtype = this.c(i, j, k);
++
++        return (!this.j || pathtype != PathType.BREACH) && pathtype != PathType.WATER ? null : this.a(i, j, k);
++    }
++
++    @Nullable
++    @Override
++    protected PathPoint a(int i, int j, int k) {
++        PathPoint pathpoint = null;
++        PathType pathtype = this.a(this.a, i, j, k); // Akarin - use chunk cache
++        float f = this.b.a(pathtype);
++
++        if (f >= 0.0F) {
++            pathpoint = super.a(i, j, k);
++            pathpoint.l = pathtype;
++            pathpoint.k = Math.max(pathpoint.k, f);
++            if (this.a.getFluid(new BlockPosition(i, j, k)).isEmpty()) {
++                pathpoint.k += 8.0F;
++            }
++        }
++
++        return pathtype == PathType.OPEN ? pathpoint : pathpoint;
++    }
++
++    private PathType c(int i, int j, int k) {
++        BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
++
++        for (int l = i; l < i + this.d; ++l) {
++            for (int i1 = j; i1 < j + this.e; ++i1) {
++                for (int j1 = k; j1 < k + this.f; ++j1) {
++                    Fluid fluid = this.a.getFluid(blockposition_mutableblockposition.d(l, i1, j1));
++                    IBlockData iblockdata = this.a.getType(blockposition_mutableblockposition.d(l, i1, j1));
++
++                    if (fluid.isEmpty() && iblockdata.a((IBlockAccess) this.a, blockposition_mutableblockposition.down(), PathMode.WATER) && iblockdata.isAir()) {
++                        return PathType.BREACH;
++                    }
++
++                    if (!fluid.a(TagsFluid.WATER)) {
++                        return PathType.BLOCKED;
++                    }
++                }
++            }
++        }
++
++        IBlockData iblockdata1 = this.a.getType(blockposition_mutableblockposition);
++
++        if (iblockdata1.a((IBlockAccess) this.a, blockposition_mutableblockposition, PathMode.WATER)) {
++            return PathType.WATER;
++        } else {
++            return PathType.BLOCKED;
++        }
++    }
++}
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 7929fcc800064fa23b260c3ecbed75f846bb375a..e1225d5017cc0b65a4fd5ac753a705a11679cf2b 100644
+index 7929fcc80..e1225d501 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -185,7 +185,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
@@ -712,7 +1104,7 @@ index 7929fcc800064fa23b260c3ecbed75f846bb375a..e1225d5017cc0b65a4fd5ac753a705a1
          for (int spam; (spam = this.chatThrottle) > 0 && !chatSpamField.compareAndSet(this, spam, spam - 1); ) ;
          if (tabSpamLimiter.get() > 0) tabSpamLimiter.getAndDecrement(); // Paper - split to seperate variable
 diff --git a/src/main/java/net/minecraft/server/TickListServer.java b/src/main/java/net/minecraft/server/TickListServer.java
-index 3f1aa5ced697490b5481ba992cf5af5dc98b8166..af705e6c650b529c18bdd8f0c063a71c750783f6 100644
+index 3f1aa5ced..af705e6c6 100644
 --- a/src/main/java/net/minecraft/server/TickListServer.java
 +++ b/src/main/java/net/minecraft/server/TickListServer.java
 @@ -65,7 +65,7 @@ public class TickListServer<T> implements TickList<T> {
@@ -743,7 +1135,7 @@ index 3f1aa5ced697490b5481ba992cf5af5dc98b8166..af705e6c650b529c18bdd8f0c063a71c
              this.h.clear();
              this.g.clear();
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index d554d4cf0f0a13b598c6b14d618ba463c9895f35..ef632a5f9cb480e77026f2f1123f76896f12478c 100644
+index d554d4cf0..ef632a5f9 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -375,9 +375,9 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
@@ -759,7 +1151,7 @@ index d554d4cf0f0a13b598c6b14d618ba463c9895f35..ef632a5f9cb480e77026f2f1123f7689
  
                  /*
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 84a3367b87a77cfba50c4f28a4e3e70d5b91d330..2da0cb6c963d2e1b609c79c83778f8e5e95967b5 100644
+index 84a3367b8..2da0cb6c9 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -849,7 +849,7 @@ public class WorldServer extends World {
@@ -780,3 +1172,6 @@ index 84a3367b87a77cfba50c4f28a4e3e70d5b91d330..2da0cb6c963d2e1b609c79c83778f8e5
      }
  
      @Override
+-- 
+2.25.1.windows.1
+

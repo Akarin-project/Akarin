@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+echo "[Akarin] State: Generate Imports"
+
+# For a description of this script, see updateUpstream.sh.
+
 # get base dir regardless of execution location
 basedir=$1
 
@@ -21,7 +25,7 @@ if [ ! -d ".git" ]; then
     $gitcmd init
 fi
 
-# reset dev files to spigot
+# reset dev files to raw nms in spigot naming
 rm src/net/minecraft/server/*.java
 cp $decompile/net/minecraft/server/*.java src/net/minecraft/server
 
@@ -38,7 +42,7 @@ done
 
 # push the dev project
 cd $basedir/mc-dev
-gitcmd add . -A
-gitcmd commit --allow-empty . -m "$paperVer"
-gitcmd tag -a "$paperVer" -m "$paperVer" 2>/dev/null
-gitpush . $MCDEV_REPO $paperVer
+$gitcmd add . -A
+$gitcmd commit . -m "$paperVer"
+$gitcmd tag -a "$paperVer" -m "$paperVer" 2>/dev/null
+# gitpush . $MCDEV_REPO $paperVer
