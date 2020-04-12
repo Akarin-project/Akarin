@@ -228,7 +228,7 @@ index ef632a5f9cb480e77026f2f1123f76896f12478c..9708d61fd3795e8b69f27ecea92abe00
          this.world = new CraftWorld((WorldServer) this, gen, env);
          this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index b03443f9a72a3c455f49746fea2f555c2f53e504..dbee3bed7ae77fed33fe53cdb24ef5c5aeffbf7c 100644
+index b381514d9ff59ddff515930e2e41e529c42ea206..765b865b85ba39d6446cfde4fd838d6b72bcfcdd 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -806,6 +806,7 @@ public final class CraftServer implements Server {
@@ -247,7 +247,7 @@ index b03443f9a72a3c455f49746fea2f555c2f53e504..dbee3bed7ae77fed33fe53cdb24ef5c5
          }
  
          Plugin[] pluginClone = pluginManager.getPlugins().clone(); // Paper
-@@ -2082,6 +2084,14 @@ public final class CraftServer implements Server {
+@@ -2092,6 +2094,14 @@ public final class CraftServer implements Server {
              return com.destroystokyo.paper.PaperConfig.config;
          }
  
