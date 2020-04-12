@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
 # SCRIPT HEADER start
+basedir=$1
+source "$basedir/scripts/functions.sh"
 echo "----------------------------------------"
 echo "  $(bashcolor 1 32)Task$(bashcolorend) - Update Upstream"
-echo "  This will update and patch Paper, then importing necessary sources for patching."
+echo "  This will update and patch Paper, importing necessary sources for patching."
 echo "  "
 echo "  $(bashcolor 1 32)Subtask:$(bashcolorend)"
 echo "  - Import Sources"
@@ -23,10 +25,6 @@ echo "----------------------------------------"
 # exit immediately if a command exits with a non-zero status
 set -e
 
-# get base dir regardless of execution location
-basedir=$1
-
-source "$basedir/scripts/functions.sh"
 subtasks=2
 
 echo "  $(bashcolor 1 32)(0/$subtasks)$(bashcolorend) - Update Git submodules.."
@@ -42,6 +40,7 @@ fi
 
 # patch paper
 echo "  $(bashcolor 1 32)(0/$subtasks)$(bashcolorend) - Apply patches of Paper.."
+echo "  "
 paperVer=$(gethead Paper)
 paperdir
 ./paper patch

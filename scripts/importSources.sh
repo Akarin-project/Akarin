@@ -4,22 +4,17 @@ maintask=$2
 tasktitle=maintask && "Import Sources" || "Import Sources (Subtask)"
 
 # SCRIPT HEADER start
+basedir=$1
+source "$basedir/scripts/functions.sh"
 echo "----------------------------------------"
-echo "  $(bashcolor 1 32)Task$(bashcolorend) - "
-echo "  This will import unimported sources newly added/mod by Akarin to Paper workspace"
+echo "  $(bashcolor 1 32)Task$(bashcolorend) - $tasktitle"
+echo "  This will import unimported newly added/mod sources to Paper workspace"
 echo "  "
 echo "----------------------------------------"
 # SCRIPT HEADER end
 
 # For a description of this script, see updateUpstream.sh.
-
-# get base dir regardless of execution location
-basedir=$1
-
-source "$basedir/scripts/functions.sh"
-
 paperworkdir="$basedir/Paper/work"
-
 paperserverdir="$basedir/Paper/Paper-Server"
 papersrcdir="$paperserverdir/src/main/java"
 papernmsdir="$papersrcdir/net/minecraft/server"
@@ -30,7 +25,7 @@ papernmsdir="$papersrcdir/net/minecraft/server"
         echo "$(bashcolor 1 31) Exception $(bashcolorend) - Paper sources not generated, run updateUpstream.sh to setup."
         exit 1
     fi
-}
+)
 
 minecraftversion=$(cat "$basedir"/Paper/work/BuildData/info.json | grep minecraftVersion | cut -d '"' -f 4)
 decompiledir=$paperworkdir/Minecraft/$minecraftversion/spigot

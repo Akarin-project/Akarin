@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
 
-echo "[Akarin] State: Rebuild Patches"
-
-# get base dir regardless of execution location
+# SCRIPT HEADER start
 basedir=$1
-
 source "$basedir/scripts/functions.sh"
+echo "----------------------------------------"
+echo "  $(bashcolor 1 32)Task$(bashcolorend) - Rebuild Patches"
+echo "  This will diff the sources of Akarin and Paper to build patches."
+echo "  "
+echo "  $(bashcolor 1 32)Modules:$(bashcolorend)"
+echo "  - $(bashcolor 1 32)1$(bashcolorend) : API"
+echo "  - $(bashcolor 1 32)2$(bashcolorend) : Server"
+echo "----------------------------------------"
+# SCRIPT HEADER end
+
 gitcmd="git -c commit.gpgsign=false -c core.safecrlf=false"
 
-echo "Rebuild patch files from local sources.."
 function savePatches {
+    targetname=$1
     basedir
     mkdir -p $basedir/patches/$2
     if [ -d ".git/rebase-apply" ]; then
@@ -28,13 +35,13 @@ function savePatches {
         rm -rf $basedir/patches/$2/*.patch
     fi
 
-    cd "$basedir/$1"
+    cd "$basedir/$targetname"
     $gitcmd format-patch --no-stat -N -o "$basedir/patches/$2" upstream/upstream >/dev/null
 	basedir
     $gitcmd add -A "$basedir/patches/$2"
-    echo "  Patches saved for $basedir to patches/$2"
+	echo "  $(bashcolor 1 32)($3/$4)$(bashcolorend) - Patches saved for $targetname to patches/$2"
 }
 
-savePatches ${FORK_NAME}-API api
-savePatches ${FORK_NAME}-Server server
+savePatches ${FORK_NAME}-API api 1 2
+savePatches ${FORK_NAME}-Server server 2 2
 # gitpushproject

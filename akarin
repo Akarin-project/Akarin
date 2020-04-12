@@ -3,32 +3,36 @@
 # exit immediately if a command exits with a non-zero status
 set -e
 
-basedir=$(cd "$(dirname "$0")" && pwd -P)
 source "./scripts/functions.sh"
+
+function updateAndPatch {
+    basedir
+    if [ "$1" != "skipPaper" ]; then
+        $scriptdir/updateUpstream.sh "$basedir" || exit 1
+    fi
+	$scriptdir/applyPatches.sh "$basedir" || exit 1
+}
 
 failed=0
 case "$1" in
-    "rb" | "rbp" | "rebuild")
+    "r" | "rb" | "rbp" | "rebuild")
     (
         set -e
-        cd "$basedir"
-        scripts/rebuildpatches.sh "$basedir" || exit 1
+        basedir
+        $scriptdir/rebuildPatches.sh "$basedir" || exit 1
     ) || failed=1
     ;;
-    "p" | "patch" | "apply")
+    "a" | "p" | "patch" | "apply")
     (
         set -e
-        cd "$basedir"
-        if [ "$2" != "fast" ]; then
-          scripts/upstream.sh "$basedir" || exit 1
-        fi
-        scripts/apply.sh "$basedir" || exit 1
+		updateAndPatch $2
     ) || failed=1
     ;;
     "b" | "bu" | "build")
     (
         set -e
-        cd "$basedir"
+		updateAndPatch $2
+		basedir
         mvn -N install || exit 1
         cd ${FORK_NAME}-API
         mvn -e clean install && cd ../${FORK_NAME}-Server && mvn -e clean install || exit 1
@@ -36,35 +40,30 @@ case "$1" in
     ;;
     "jar" | "paperclip")
     (
-       cd "$basedir"
-       if [ "$2" != "fast" ]; then
-          scripts/upstream.sh "$basedir"
-       fi
-       ./scripts/apply.sh "$basedir"
-       cd "$basedir"
+       basedir
        mvn -N install
        cd ${FORK_NAME}-API
        mvn -e clean install && cd ../${FORK_NAME}-Server && mvn -e clean install
-       cd "$basedir"
-       ./scripts/paperclip.sh
+       basedir
+       $scriptdir/paperclip.sh
     )
     ;;
     "d" | "de" | "deploy")
     (
-        cd "$basedir"
+        basedir
         mvn -N install
         cd ${FORK_NAME}-API
         mvn clean deploy && cd ../${FORK_NAME}-Server && mvn clean install
     )
     ;;
-    "up" | "upstream" | "update")
+    "u" | "up" | "upstream" | "update")
     (
-        cd "$basedir"
-        scripts/upstream.sh "$basedir" $2
+        basedir
+        $scriptdir/updateUpstream.sh "$basedir" $2
     )
     ;;
     "r" | "root")
-        cd "$basedir"
+        basedir
     ;;
     "a" | "api")
         cd "$basedir/Akarin-API"
@@ -75,7 +74,7 @@ case "$1" in
     "c" | "clean")
         rm -rf Akarin-API
         rm -rf Akarin-Server
-        rm -rf work
+        rm -rf Paper
         echo "Cleaned build files"
     ;;
     "e" | "edit")
@@ -85,7 +84,6 @@ case "$1" in
             cd "$basedir/Akarin-Server"
             (
                 set -e
-
                 gitstash
                 $gitcmd rebase -i upstream/upstream
                 gitunstash
@@ -96,7 +94,6 @@ case "$1" in
             cd "$basedir/Akarin-API"
             (
                 set -e
-
                 gitstash
                 $gitcmd rebase -i upstream/upstream
                 gitunstash
@@ -107,13 +104,11 @@ case "$1" in
             unset AKARIN_LAST_EDIT
             (
                 set -e
-
                 $gitcmd add .
                 $gitcmd commit --amend
                 $gitcmd rebase --continue
-
-                cd "$basedir"
-                scripts/rebuildPatches.sh "$basedir"
+                basedir
+                $scriptdir/rebuildPatches.sh "$basedir"
             )
             ;;
             *)
@@ -138,9 +133,9 @@ case "$1" in
         echo "'setup' command. View below for details. For essential building and patching, you do not need to do the setup."
         echo ""
         echo " Normal commands:"
-        echo "  * rb, rebuild  | Rebuild patches, can be called from anywhere."
+        echo "  * r, rebuild  | Rebuild patches, can be called from anywhere."
         echo "  * p, patch     | Apply all patches to top of Paper without building it. Can be run from anywhere."
-        echo "  * up, upstream | Build Paper upstream, pass arg up to update paper. Can be run from anywhere."
+        echo "  * u, upstream | Build Paper upstream, pass arg up to update paper. Can be run from anywhere."
         echo "  * b, build     | Build the API and the server project without deploying. Can be ran anywhere."
         echo "  * d, deploy    | Build and deploy jars of the API and the server project. Can be ran anywhere."
         echo ""

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 # SCRIPT HEADER start
+basedir=$1
+source "$basedir/scripts/functions.sh"
 echo "----------------------------------------"
 echo "  $(bashcolor 1 32)Task$(bashcolorend) - Apply Patches"
 echo "  This will apply all of Akarin patches on top of the Paper."
@@ -14,11 +16,7 @@ echo "  - $(bashcolor 1 32)2$(bashcolorend) : Server"
 echo "----------------------------------------"
 # SCRIPT HEADER end
 
-# get base dir regardless of execution location
-basedir=$1
-
-source "$basedir/scripts/functions.sh"
-
+needimport=$2
 gpgsign="$(git config commit.gpgsign || echo "false")"
 
 function applyPatch {
@@ -43,7 +41,7 @@ function applyPatch {
 	$gitcmd branch -D upstream >/dev/null &> /dev/null
 	$gitcmd branch -f upstream "$branch" &> /dev/null && $gitcmd checkout upstream &> /dev/null
 	
-	if [ $baseproject != "Paper/Paper-API" ]; then
+	if [ $needimport && [ $baseproject != "Paper/Paper-API" ] ]; then
 	    echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Import new introduced NMS files.."
 	    basedir && $scriptdir/importSources.sh $basedir 1
     fi
@@ -100,8 +98,6 @@ function enableCommitSigningIfNeeded {
     fi
 }
 
-    # echo "Importing MC-DEV"
-    # ./scripts/importSources.sh "$basedir" || exit 1
 (
     (applyPatch Paper/Paper-API ${FORK_NAME}-API HEAD api $API_REPO 0 2 &&
     applyPatch Paper/Paper-Server ${FORK_NAME}-Server HEAD server $SERVER_REPO 1 2) || exit 1
