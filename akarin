@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-# exit immediately if a command exits with a non-zero status
+# Exit immediately if a command exits with a non-zero status
 set -e
 
 source "./scripts/functions.sh"
+chmod +X scripts/* # For Github Action
 
 function updateAndPatch {
     basedir
