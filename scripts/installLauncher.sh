@@ -23,7 +23,8 @@ vanillajar="$paperworkdir/Minecraft/$mcver/$mcver.jar"
     cd "$paperworkdir/Paperclip"
     mvn clean package "-Dmcver=$mcver" "-Dpaperjar=$serverjar" "-Dvanillajar=$vanillajar"
 )
-cp "$paperworkdir/Paperclip/assembly/target/paperclip-${mcver}.jar" "$basedir/akarin-${mcver}-launcher.jar"
+mkdir -p "$basedir/target"
+cp "$paperworkdir/Paperclip/assembly/target/paperclip-${mcver}.jar" "$basedir/target/akarin-${mcver}-launcher.jar"
 
 echo ""
-echo "  $(bashcolor 1 32)Success$(bashcolorend) - Saved launcher jar to /akarin-${mcver}-launcher.jar"
+echo "  $(bashcolor 1 32)Success$(bashcolorend) - Saved launcher jar to target/akarin-${mcver}-launcher.jar"
