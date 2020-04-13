@@ -17,7 +17,6 @@ echo "----------------------------------------"
 # SCRIPT HEADER end
 
 needimport=$2
-gpgsign="$(git config commit.gpgsign || echo "false")"
 
 function applyPatch {
     baseproject=$1
@@ -56,11 +55,6 @@ function applyPatch {
     cd "$basedir/$target"
 	$gitcmd init > /dev/null 2>&1
 
-    # Disable GPG signing before AM, slows things down and doesn't play nicely.
-    # There is also zero rational or logical reason to do so for these sub-repo AMs.
-    # Calm down kids, it's re-enabled (if needed) immediately after, pass or fail.
-    $gitcmd config commit.gpgsign false
-
 	echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Reset $target to $basename.."
 	# Add the generated Paper project as the upstream remote of subproject
     $gitcmd remote rm upstream >/dev/null 2>&1
@@ -92,17 +86,5 @@ function applyPatch {
     fi
 }
 
-function enableCommitSigningIfNeeded {
-    if [[ "$gpgsign" == "true" ]]; then
-        git config commit.gpgsign true
-    fi
-}
-
-(
-    (applyPatch Paper/Paper-API ${FORK_NAME}-API HEAD api $API_REPO 0 2 &&
-    applyPatch Paper/Paper-Server ${FORK_NAME}-Server HEAD server $SERVER_REPO 1 2) || exit 1
-    enableCommitSigningIfNeeded
-) || (
-    enableCommitSigningIfNeeded
-    exit 1
-) || exit 1
+(applyPatch Paper/Paper-API ${FORK_NAME}-API HEAD api $API_REPO 0 2 &&
+applyPatch Paper/Paper-Server ${FORK_NAME}-Server HEAD server $SERVER_REPO 1 2) || exit 1

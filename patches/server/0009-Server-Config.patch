@@ -1,5 +1,5 @@
-From 1ff9ceb7164fc8d7536e02540db20136d8eb2f27 Mon Sep 17 00:00:00 2001
-From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 37e665c4b756f6f9d6c50dce34065dce82e70edd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 3 Apr 2020 14:59:22 +0800
 Subject: [PATCH] Server Config
@@ -282,5 +282,5 @@ index cb60310e6..04694464b 100644
                  acceptsAll(asList("server-name"), "Name of the server")
                          .withRequiredArg()
 -- 
-2.25.1.windows.1
+2.20.1
 

@@ -1,5 +1,5 @@
-From dd729a9d2c43e67dc5481fadb05c0328426c66d1 Mon Sep 17 00:00:00 2001
-From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From b1aa7c934ecf3c1f516e4dd372331689ae7952b7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:16:18 +0800
 Subject: [PATCH] Save json list async
@@ -33,5 +33,5 @@ index c97be42dd..370841cad 100644
  
      public void load() throws FileNotFoundException {
 -- 
-2.25.1.windows.1
+2.20.1
 

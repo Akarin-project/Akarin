@@ -1,5 +1,5 @@
-From a2a2cbe3ed2d3397e61c0e335ddd019834f8c1ec Mon Sep 17 00:00:00 2001
-From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 3e02c4d2280b899d65886322e2b9cdfbe5b339ee Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:35:19 +0800
 Subject: [PATCH] never drop items on command "/give"
@@ -18,5 +18,5 @@ index 81b26bb4d..1f3097c94 100644
                      itemstack.setCount(1);
                      entityitem = entityplayer.drop(itemstack, false);
 -- 
-2.25.1.windows.1
+2.20.1
 

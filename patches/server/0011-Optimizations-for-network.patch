@@ -1,5 +1,5 @@
-From 8a2e2f2278a88e99a1f122d096bb9737e71c3a2c Mon Sep 17 00:00:00 2001
-From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 02c47a67a956da42ac10039ad3c34aa2603aacbe Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 14:59:10 +0800
 Subject: [PATCH] Optimizations for network
@@ -404,5 +404,5 @@ index 6d6fbf2f5..4b549ccc4 100644
          entityplayer.getStatisticManager().c();
          entityplayer.B().a(entityplayer);
 -- 
-2.25.1.windows.1
+2.20.1
 

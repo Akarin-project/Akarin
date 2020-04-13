@@ -1,5 +1,5 @@
-From 996bc6f14593ca3bf46438e00027064d799a9eb9 Mon Sep 17 00:00:00 2001
-From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 36bbc67b32ef6030dcf4e76c72da098a00e7ded4 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:43:20 +0800
 Subject: [PATCH] Don't trigger Lootable Refresh for non player interaction
@@ -18,5 +18,5 @@ index d4cbce324..0ff6ebbf9 100644
              LootTable loottable = this.world.getMinecraftServer().getLootTableRegistry().getLootTable(this.lootTable);
  
 -- 
-2.25.1.windows.1
+2.20.1
 

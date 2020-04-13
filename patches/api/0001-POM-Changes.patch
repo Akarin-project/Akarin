@@ -1,5 +1,5 @@
-From 7c3f22c070e5d9027dace7cf295292444472579f Mon Sep 17 00:00:00 2001
-From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 0ecc29211d18fdc5025aa7d359cb5c9f2f879e72 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 14 Dec 2018 21:52:29 -0800
 Subject: [PATCH] POM Changes
@@ -35,5 +35,5 @@ index 2cb97140..d167304b 100644
  
      <properties>
 -- 
-2.25.1.windows.1
+2.20.1
 

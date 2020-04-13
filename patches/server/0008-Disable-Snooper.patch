@@ -1,5 +1,5 @@
-From e170e06ca265bf64491b3962bc333c636db669a1 Mon Sep 17 00:00:00 2001
-From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From ffaa96824f33cc0827c0db63b3c26d76e573548a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 14:03:29 +0800
 Subject: [PATCH] Disable Snooper
@@ -27,5 +27,5 @@ index 36e11bb25..4740e6e18 100644
          //this.methodProfiler.exit(); // Akarin - remove caller
          //this.methodProfiler.enter("tallying"); // Akarin - remove caller
 -- 
-2.25.1.windows.1
+2.20.1
 

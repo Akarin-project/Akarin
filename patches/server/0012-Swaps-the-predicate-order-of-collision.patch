@@ -1,5 +1,5 @@
-From 97a1a0c47a5d5ea34d3307c7f0104947f666f2c0 Mon Sep 17 00:00:00 2001
-From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From d1e9e0c8efc7fd030083b4a3d5f47fed38c991f0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 10 Apr 2020 15:47:15 +0800
 Subject: [PATCH] Swaps the predicate order of collision
@@ -77,5 +77,5 @@ index 147c5288a..6cf3eb12b 100644
      }
  
 -- 
-2.25.1.windows.1
+2.20.1
 

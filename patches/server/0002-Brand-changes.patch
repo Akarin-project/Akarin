@@ -1,5 +1,5 @@
-From 075ad41da85158264b2df37852138991654cb26e Mon Sep 17 00:00:00 2001
-From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 71c51dcb476fe96b478738a18fcc4dca8fcf9393 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Tue, 18 Dec 2018 06:27:02 -0800
 Subject: [PATCH] Brand changes
@@ -45,5 +45,5 @@ index 8cc0f66ce..b381514d9 100644
      private final String bukkitVersion = Versioning.getBukkitVersion();
      private final Logger logger = Logger.getLogger("Minecraft");
 -- 
-2.25.1.windows.1
+2.20.1
 

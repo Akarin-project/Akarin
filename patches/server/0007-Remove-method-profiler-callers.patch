@@ -1,5 +1,5 @@
-From 3ba075eaca355647259518afff4ffa3e9425d385 Mon Sep 17 00:00:00 2001
-From: =?GB2312?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+From 3ac2c508e2549da0df909ac67db4a966eb3a375a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 12:30:35 +0800
 Subject: [PATCH] Remove method profiler callers
@@ -781,5 +781,5 @@ index 84a3367b8..2da0cb6c9 100644
  
      @Override
 -- 
-2.25.1.windows.1
+2.20.1
 
