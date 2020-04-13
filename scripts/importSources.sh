@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 maintask=$2
-if [ ! $maintask ]; then
+if [ $maintask == "0" ]; then
     TASKTITLE="Import Sources"
 else
     TASKTITLE="Import Sources (Subtask)"
@@ -14,7 +14,6 @@ echo "  "
 echo "----------------------------------------"
 echo "  $(bashcolor 1 32)Task$(bashcolorend) - $TASKTITLE"
 echo "  This will import unimported newly added/mod sources to Paper workspace"
-echo "  "
 echo "----------------------------------------"
 # SCRIPT HEADER end
 
@@ -121,7 +120,7 @@ done
     echo -e "Extra dev imports of Akarin:\n\n$IMPORT_LOG" | git commit src -F - &> /dev/null
 	echo "  $(bashcolor 1 32)Succeed$(bashcolorend) - Sources have been imported to Paper/Paper-Server"
 	
-    if [ $maintask ]; then # this is magical
+    if [ $maintask != "0" ]; then # this is magical
 	    echo "----------------------------------------"
 		echo "  Subtask finished"
 		echo "----------------------------------------"
