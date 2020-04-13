@@ -3,6 +3,7 @@
 # SCRIPT HEADER start
 basedir=$1
 source "$basedir/scripts/functions.sh"
+echo "  "
 echo "----------------------------------------"
 echo "  $(bashcolor 1 32)Task$(bashcolorend) - Rebuild Patches"
 echo "  This will diff the sources of Akarin and Paper to build patches."

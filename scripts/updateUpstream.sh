@@ -6,9 +6,9 @@ source "$basedir/scripts/functions.sh"
 echo "----------------------------------------"
 echo "  $(bashcolor 1 32)Task$(bashcolorend) - Update Upstream"
 echo "  This will update and patch Paper, importing necessary sources for patching."
-echo "  "
-echo "  $(bashcolor 1 32)Subtask:$(bashcolorend)"
-echo "  - Import Sources"
+#echo "  "
+#echo "  $(bashcolor 1 32)Subtask:$(bashcolorend)"
+#echo "  - Import Sources"
 echo "  "
 echo "  $(bashcolor 1 32)Projects:$(bashcolorend)"
 echo "  - $(bashcolor 1 32)1$(bashcolorend) : Paper"
@@ -25,7 +25,7 @@ echo "----------------------------------------"
 # exit immediately if a command exits with a non-zero status
 set -e
 
-subtasks=2
+subtasks=1
 
 echo "  $(bashcolor 1 32)(0/$subtasks)$(bashcolorend) - Update Git submodules.."
 git submodule update --init --recursive
@@ -48,9 +48,9 @@ paperdir
 cd "Paper-Server"
 mcVer=$(mvn -o org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=minecraft_version | sed -n -e '/^\[.*\]/ !{ /^[0-9]/ { p; q } }')
 
-echo "  $(bashcolor 1 32)(1/$subtasks)$(bashcolorend) - Update Git submodule.."
-basedir
-"$basedir"/scripts/importSources.sh $1
+#echo "  $(bashcolor 1 32)(1/$subtasks)$(bashcolorend) - Import necessary sources.."
+#basedir
+#"$basedir"/scripts/importSources.sh $1
 
 #minecraftversion=$(cat "$basedir"/Paper/work/BuildData/info.json | grep minecraftVersion | cut -d '"' -f 4)
 #version=$(echo -e "Paper: $paperVer\nmc-dev:$importedmcdev")

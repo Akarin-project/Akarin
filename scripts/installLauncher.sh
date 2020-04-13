@@ -3,6 +3,7 @@
 # SCRIPT HEADER start
 basedir=$1
 source "$basedir/scripts/functions.sh"
+echo "  "
 echo "----------------------------------------"
 echo "  $(bashcolor 1 32)Task$(bashcolorend) - Install Launcher"
 echo "  This will build a launcher that similar to Paperclip by the server jar."

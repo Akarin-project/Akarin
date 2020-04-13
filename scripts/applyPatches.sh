@@ -3,6 +3,7 @@
 # SCRIPT HEADER start
 basedir=$1
 source "$basedir/scripts/functions.sh"
+echo "  "
 echo "----------------------------------------"
 echo "  $(bashcolor 1 32)Task$(bashcolorend) - Apply Patches"
 echo "  This will apply all of Akarin patches on top of the Paper."
@@ -42,7 +43,7 @@ function applyPatch {
 	
 	if [ $needimport ] && [ $baseproject != "Paper/Paper-API" ]; then
 	    echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Import new introduced NMS files.."
-	    basedir && $scriptdir/importSources.sh $basedir 1
+	    basedir && $scriptdir/importSources.sh $basedir 1 || exit 1
     fi
 
     basedir

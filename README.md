@@ -30,8 +30,8 @@ Get Akarin
 
 #### Recommended
 
-+ [**JosephWorks Jenkins**](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin-1.15.2/)
-+ [**Melon Jenkins**](https://ci.melon.cat/job/Akarin/) - Offline
++ [**Github Actions**](https://github.com/Akarin-project/Akarin/actions)
++ [**JosephWorks Jenkins**](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin-1.15.2)
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
@@ -54,13 +54,13 @@ Demo Servers
 * [Fair Server](https://fairserver.ru)
 * [LoyaltyMC](https://www.loyaltymc.net/)
 
-*Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
+*Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your server here*
 
 Contributing
 ---
 
-* You can checkout the `src` folder to see more. Please follow the patch style to do any change, so we are able to update between different Minecraft versions.
+* Akarin use patches to handle our changes.
 * Add your name to the [LICENSE](https://github.com/Akarin-project/Akarin/blob/master/LICENSE.md) if you want to publish your code under the [MIT License](https://github.com/Akarin-project/Akarin/blob/master/licenses/MIT.md).
-* If you want to join the [Akarin-project](https://github.com/Akarin-project) team, you can [send](mailto://kira@kira.moe) us an email with your experience and necessary information.
+* If you want to join the [Akarin-project](https://github.com/Akarin-project) team, welcome to contact us by our [Discord](https://discord.gg/fw2pJAj).
 
 ![Akarin project](https://i.loli.net/2018/05/13/5af7fbbfbcddf.png)

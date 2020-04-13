@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
 maintask=$2
-tasktitle=maintask && "Import Sources" || "Import Sources (Subtask)"
+if [ ! $maintask ]; then
+    TASKTITLE="Import Sources"
+else
+    TASKTITLE="Import Sources (Subtask)"
+fi
 
 # SCRIPT HEADER start
 basedir=$1
 source "$basedir/scripts/functions.sh"
+echo "  "
 echo "----------------------------------------"
-echo "  $(bashcolor 1 32)Task$(bashcolorend) - $tasktitle"
+echo "  $(bashcolor 1 32)Task$(bashcolorend) - $TASKTITLE"
 echo "  This will import unimported newly added/mod sources to Paper workspace"
 echo "  "
 echo "----------------------------------------"
@@ -21,8 +26,8 @@ papernmsdir="$papersrcdir/net/minecraft/server"
 
 (
     # fast-fail if Paper not set
-    if [ ! -f "$papernmsdir" ]; then
-        echo "$(bashcolor 1 31) Exception $(bashcolorend) - Paper sources not generated, run updateUpstream.sh to setup."
+    if [ ! -d "$papernmsdir" ]; then
+        echo "  $(bashcolor 1 31)Exception$(bashcolorend) - Paper sources not generated, run updateUpstream.sh to setup."
         exit 1
     fi
 )
@@ -36,7 +41,7 @@ basedir
 
 function importToPaperWorkspace {
     if [ -f "$papernmsdir/$1.java" ]; then
-        echo "$(bashcolor 1 33) Skipped $(bashcolorend) - Already imported $1.java"
+        echo "  $(bashcolor 1 33)Skipped$(bashcolorend) - Already imported $1.java"
         return 0
     fi
 
@@ -64,7 +69,7 @@ function importLibraryToPaperWorkspace {
 		
         base="$paperworkdir/Minecraft/$minecraftversion/libraries/${group}/${lib}/$file"
         if [ ! -f "$base" ]; then
-            echo "$(bashcolor 1 31) Exception $(bashcolorend) - Cannot find file $file.java of lib $lib in group $group to import, re-decomplie or remove the import."
+            echo "  $(bashcolor 1 31)Exception$(bashcolorend) - Cannot find file $file.java of lib $lib in group $group to import, re-decomplie or remove the import."
             exit 1
         fi
 		
@@ -75,6 +80,7 @@ function importLibraryToPaperWorkspace {
 }
 
 (
+    # Reset to last NORMAL commit if already have imported before
     cd "$paperserverdir"
     lastcommit=$(git log -1 --pretty=oneline --abbrev-commit)
     if [[ "$lastcommit" = *"Extra dev imports of Akarin"* ]]; then
@@ -92,8 +98,7 @@ for f in $patchedFiles; do
     if [ "$?" == "1" ]; then
         if [ ! -f "$papersrcdir/$nms/$f.java" ]; then
             if [ ! -f "$decompiledir/$nms/$f.java" ]; then
-                echo "$(bashcolor 1 31) ERROR!!! Missing NMS$(bashcolor 1 34) $f $(bashcolorend)";
-				echo "$(bashcolor 1 31) Exception $(bashcolorend) - Cannot find NMS file $f.java to import, re-decomplie or remove the import."
+				echo "  $(bashcolor 1 31)Exception$(bashcolorend) - Cannot find NMS file $f.java to import, re-decomplie or remove the import."
                 exit 1
             else
                 importToPaperWorkspace $f
@@ -114,5 +119,12 @@ done
     # rm -rf nms-patches
     git add . &> /dev/null
     echo -e "Extra dev imports of Akarin:\n\n$IMPORT_LOG" | git commit src -F - &> /dev/null
-	echo "  $(bashcolor 1 32) Succeed$(bashcolorend) - Sources have been imported to the current branch/state of Paper/Paper-Server"
+	echo "  $(bashcolor 1 32)Succeed$(bashcolorend) - Sources have been imported to Paper/Paper-Server"
+	
+    if [ $maintask ]; then # this is magical
+	    echo "----------------------------------------"
+		echo "  Subtask finished"
+		echo "----------------------------------------"
+	fi
+	echo "  "
 )

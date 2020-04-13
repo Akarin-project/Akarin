@@ -10,7 +10,7 @@ function updateAndPatch {
     if [ "$1" != "skipPaper" ]; then
         $scriptdir/updateUpstream.sh "$basedir" || exit 1
     fi
-	$scriptdir/applyPatches.sh "$basedir" || exit 1
+	$scriptdir/applyPatches.sh "$basedir" $2 || exit 1
 }
 
 failed=0
@@ -25,22 +25,22 @@ case "$1" in
     "a" | "p" | "patch" | "apply")
     (
         set -e
-		updateAndPatch $2
+		$scriptdir/applyPatches.sh "$basedir" $2 0 || exit 1
     ) || failed=1
     ;;
-    "b" | "bu" | "build")
+    "b" | "bu" | "build" | "install")
     (
         set -e
-		updateAndPatch $2
+		updateAndPatch $2 0
 		basedir
         mvn -N install || exit 1
         cd ${FORK_NAME}-API
         mvn -e clean install && cd ../${FORK_NAME}-Server && mvn -e clean install || exit 1
     ) || failed=1
     ;;
-    "jar" | "paperclip")
+    "j" | "launcher" | "jar" | "paperclip")
     (
-	   updateAndPatch $2
+	   updateAndPatch $2 0
        basedir
        mvn -N install
        cd ${FORK_NAME}-API
@@ -134,11 +134,12 @@ case "$1" in
         echo "'setup' command. View below for details. For essential building and patching, you do not need to do the setup."
         echo ""
         echo " Normal commands:"
-        echo "  * r, rebuild  | Rebuild patches, can be called from anywhere."
+        echo "  * r, rebuild   | Rebuild patches, can be called from anywhere."
         echo "  * p, patch     | Apply all patches to top of Paper without building it. Can be run from anywhere."
-        echo "  * u, upstream | Build Paper upstream, pass arg up to update paper. Can be run from anywhere."
-        echo "  * b, build     | Build the API and the server project without deploying. Can be ran anywhere."
-        echo "  * d, deploy    | Build and deploy jars of the API and the server project. Can be ran anywhere."
+        echo "  * u, update    | Update and patch the Paper submodule. Can be run from anywhere."
+        echo "  * b, build     | Build the projects, including the API and the Server. Can be ran anywhere."
+        echo "  * j, jar       | Build the projects and build the launcher jar. Can be ran anywhere."
+		echo "  * d, deploy    | Build the projects and deploy through Maven. Can be ran anywhere."
         echo ""
         echo " These commands require the setup command before use:"
         echo "  * r, root      | Change directory to the root of the project."
