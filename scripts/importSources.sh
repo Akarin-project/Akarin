@@ -117,7 +117,7 @@ done
     cd "$paperserverdir"
     # rm -rf nms-patches
     git add . &> /dev/null
-    echo -e "Extra dev imports of Akarin:\n\n$IMPORT_LOG" | git commit src -F - &> /dev/null
+    echo -e "Extra dev imports of Akarin\n\n$IMPORT_LOG" | git commit src -F - &> /dev/null
 	echo "  $(bashcolor 1 32)Succeed$(bashcolorend) - Sources have been imported to Paper/Paper-Server"
 	
     if [[ $maintask != "0" ]]; then # this is magical

@@ -7,8 +7,12 @@ source "./scripts/functions.sh"
 
 function setupUpstreamAndPatch {
     basedir
-    if [ "$1" != "skipPaper" ]; then
-        $scriptdir/updateUpstream.sh "$basedir" 0 || exit 1 # not update submodule
+    if [ "$1" == "--updatePaper" ]; then
+        $scriptdir/updateUpstream.sh "$basedir" 1 || exit 1
+	else
+	    if [ "$1" != "--skipPaper" ]; then
+            $scriptdir/updateUpstream.sh "$basedir" 0 || exit 1 # not update submodule
+        fi
     fi
 	$scriptdir/applyPatches.sh "$basedir" || exit 1
 }
@@ -91,7 +95,7 @@ case "$1" in
 	            # Create the upstream branch in Paper project with current state
                 $gitcmd checkout master # possibly already in
 	            $gitcmd branch -D upstream || true
-	            $gitcmd branch -f upstream HEAD
+                $gitcmd branch -f upstream HEAD
 				cd "$basedir/Akarin-Server"
                 $gitcmd rebase -i upstream/upstream
                 gitunstash
@@ -108,7 +112,7 @@ case "$1" in
 	            # Create the upstream branch in Paper project with current state
                 $gitcmd checkout master # possibly already in
 	            $gitcmd branch -D upstream || true
-	            $gitcmd branch -f upstream HEAD
+                $gitcmd branch -f upstream HEAD
 				cd "$basedir/Akarin-API"
                 $gitcmd rebase -i upstream/upstream
                 gitunstash

@@ -47,8 +47,8 @@ paperVer=$(gethead Paper)
 paperdir
 ./paper patch
 
-cd "Paper-Server"
-mcVer=$(mvn -o org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=minecraft_version | sed -n -e '/^\[.*\]/ !{ /^[0-9]/ { p; q } }')
+#cd "Paper-Server"
+#mcVer=$(mvn -o org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=minecraft_version | sed -n -e '/^\[.*\]/ !{ /^[0-9]/ { p; q } }')
 
 #echo "  $(bashcolor 1 32)(1/$subtasks)$(bashcolorend) - Import necessary sources.."
 #basedir
