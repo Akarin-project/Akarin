@@ -5,10 +5,10 @@ set -e
 
 source "./scripts/functions.sh"
 
-function updateAndPatch { # unused
+function setupUpstreamAndPatch {
     basedir
     if [ "$1" != "skipPaper" ]; then
-        $scriptdir/updateUpstream.sh "$basedir" || exit 1
+        $scriptdir/updateUpstream.sh "$basedir" 0 || exit 1 # not update submodule
     fi
 	$scriptdir/applyPatches.sh "$basedir" $2 || exit 1
 }
@@ -25,13 +25,13 @@ case "$1" in
     "a" | "p" | "patch" | "apply")
     (
         set -e
-		$scriptdir/applyPatches.sh "$basedir" $2 0 || exit 1
+		setupUpstreamAndPatch $2 0 || exit 1
     ) || failed=1
     ;;
     "b" | "bu" | "build" | "install")
     (
         set -e
-		$scriptdir/applyPatches.sh "$basedir" $2 || exit 1
+		setupUpstreamAndPatch $2 0 || exit 1
 		basedir
         mvn -N install || exit 1
         cd ${FORK_NAME}-API
@@ -40,7 +40,7 @@ case "$1" in
     ;;
     "j" | "launcher" | "jar" | "paperclip")
     (
-	   $scriptdir/applyPatches.sh "$basedir" $2 || exit 1
+	   setupUpstreamAndPatch $2 0 || exit 1
        basedir
        mvn -N install
        cd ${FORK_NAME}-API
@@ -60,7 +60,7 @@ case "$1" in
     "u" | "up" | "upstream" | "update")
     (
         basedir
-        $scriptdir/updateUpstream.sh "$basedir" $2
+        $scriptdir/updateUpstream.sh "$basedir" 1
     )
     ;;
     "r" | "root")
