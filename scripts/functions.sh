@@ -7,7 +7,7 @@ PAPER_API_REPO=""
 PAPER_SERVER_REPO=""
 MCDEV_REPO=""
 
-gitcmd="git -c commit.gpgsign=false -c core.quotepath=false"
+gitcmd="git -c commit.gpgsign=false -c core.quotepath=false -c core.safecrlf=false -c i18n.commit.encoding=UTF-8 -c i18n.logoutputencoding=UTF-8"
 
 # DIR configure
 # resolve shell-specifics

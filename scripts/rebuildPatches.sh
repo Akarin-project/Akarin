@@ -13,8 +13,6 @@ echo "  - $(bashcolor 1 32)2$(bashcolorend) : Server"
 echo "----------------------------------------"
 # SCRIPT HEADER end
 
-gitcmd="git -c commit.gpgsign=false -c core.safecrlf=false -c i18n.commit.encoding=UTF-8 -c i18n.logoutputencoding=UTF-8"
-
 function savePatches {
     targetname=$1
     basedir
