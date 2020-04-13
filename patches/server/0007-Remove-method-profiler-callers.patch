@@ -1,4 +1,4 @@
-From 1aaee204f4e59e7a02daad959805566a6078f7ae Mon Sep 17 00:00:00 2001
+From 02df82fb961b85bad433ed96545c0acda172a900 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 12:30:35 +0800
@@ -759,7 +759,7 @@ index d554d4cf0..ef632a5f9 100644
  
                  /*
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index f6171627d..fbb80ce38 100644
+index a0db38b58..03cfc7f0b 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -849,7 +849,7 @@ public class WorldServer extends World {
