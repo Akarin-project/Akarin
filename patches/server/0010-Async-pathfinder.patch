@@ -1,4 +1,4 @@
-From cff15a6e93606d4e28e1c11c79e877c09860be75 Mon Sep 17 00:00:00 2001
+From 236be7a5437957eb84ee7a1d4caef65f8df6dbdd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 13:01:13 +0800
@@ -32,7 +32,7 @@ index abf450917..4f7f40d5e 100644
                          if (pathtype == PathType.WATER) {
                              return false;
 diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index 1e6b3931a..9859b0c00 100644
+index b763d7f37..e1f3baa7b 100644
 --- a/src/main/java/net/minecraft/server/NavigationAbstract.java
 +++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
 @@ -22,13 +22,15 @@ public abstract class NavigationAbstract {
@@ -127,7 +127,7 @@ index 1e6b3931a..9859b0c00 100644
  
      public boolean a(double d0, double d1, double d2, double d3) {
          return this.a(this.a(d0, d1, d2, 1), d3);
-@@ -197,7 +241,7 @@ public abstract class NavigationAbstract {
+@@ -217,7 +261,7 @@ public abstract class NavigationAbstract {
          return this.c;
      }
  
@@ -136,7 +136,7 @@ index 1e6b3931a..9859b0c00 100644
          ++this.e;
          if (this.m) {
              this.j();
-@@ -226,6 +270,84 @@ public abstract class NavigationAbstract {
+@@ -246,6 +290,84 @@ public abstract class NavigationAbstract {
              }
          }
      }
@@ -221,7 +221,7 @@ index 1e6b3931a..9859b0c00 100644
  
      protected void l() {
          Vec3D vec3d = this.b();
-@@ -274,9 +396,14 @@ public abstract class NavigationAbstract {
+@@ -294,9 +416,14 @@ public abstract class NavigationAbstract {
  
      }
  
@@ -237,7 +237,7 @@ index 1e6b3931a..9859b0c00 100644
  
      public boolean n() {
          return !this.m();
-@@ -287,9 +414,9 @@ public abstract class NavigationAbstract {
+@@ -307,9 +434,9 @@ public abstract class NavigationAbstract {
          this.c = null;
      }
  
