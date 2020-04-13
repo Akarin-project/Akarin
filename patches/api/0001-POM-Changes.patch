@@ -1,4 +1,4 @@
-From 2d7b15867660a004bb8876a40dc52769e4911004 Mon Sep 17 00:00:00 2001
+From 261f37cc2108ea0d7ebc5e0e090f9904ed189419 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 14 Dec 2018 21:52:29 -0800
@@ -35,5 +35,5 @@ index 2cb97140..d167304b 100644
  
      <properties>
 -- 
-2.20.1
+2.25.1.windows.1
 

@@ -1,4 +1,4 @@
-From 47d8fb20fa43185af04fbe39fd4e250cf275b8a5 Mon Sep 17 00:00:00 2001
+From 781a4d837723ce20e1c393c6241b8ceb448e8c58 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 13:01:13 +0800
@@ -341,5 +341,5 @@ index 075b63ef5..a3473ddcf 100644
  
          if (f >= 0.0F) {
 -- 
-2.20.1
+2.25.1.windows.1
 

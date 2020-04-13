@@ -1,4 +1,4 @@
-From 02df82fb961b85bad433ed96545c0acda172a900 Mon Sep 17 00:00:00 2001
+From 1cd7a5bc5ab1cad4c1003be208514a6fb0af9da4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 12:30:35 +0800
@@ -781,5 +781,5 @@ index a0db38b58..03cfc7f0b 100644
  
      @Override
 -- 
-2.20.1
+2.25.1.windows.1
 

@@ -1,4 +1,4 @@
-From b88531c18fe094ad0e23d0028ca4bf8f3d005624 Mon Sep 17 00:00:00 2001
+From 68e577f5a3bf6dc0d11192195504283577d0766f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 3 Apr 2020 14:59:22 +0800
@@ -282,5 +282,5 @@ index cb60310e6..04694464b 100644
                  acceptsAll(asList("server-name"), "Name of the server")
                          .withRequiredArg()
 -- 
-2.20.1
+2.25.1.windows.1
 

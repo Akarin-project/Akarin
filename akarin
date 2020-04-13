@@ -5,7 +5,7 @@ set -e
 
 source "./scripts/functions.sh"
 
-function updateAndPatch {
+function updateAndPatch { # unused
     basedir
     if [ "$1" != "skipPaper" ]; then
         $scriptdir/updateUpstream.sh "$basedir" || exit 1
@@ -31,7 +31,7 @@ case "$1" in
     "b" | "bu" | "build" | "install")
     (
         set -e
-		updateAndPatch $2 0
+		$scriptdir/applyPatches.sh "$basedir" $2 || exit 1
 		basedir
         mvn -N install || exit 1
         cd ${FORK_NAME}-API
@@ -40,14 +40,14 @@ case "$1" in
     ;;
     "j" | "launcher" | "jar" | "paperclip")
     (
-	   updateAndPatch $2 0
+	   $scriptdir/applyPatches.sh "$basedir" $2 || exit 1
        basedir
        mvn -N install
        cd ${FORK_NAME}-API
        mvn -e clean install && cd ../${FORK_NAME}-Server && mvn -e clean install
        basedir
        $scriptdir/installLauncher.sh "$basedir"
-    )
+    ) || failed=1
     ;;
     "d" | "de" | "deploy")
     (

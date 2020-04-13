@@ -1,4 +1,4 @@
-From 2740be7c23a8e9c2ddb912f407aa9488aa97f437 Mon Sep 17 00:00:00 2001
+From 589352e8c977d4d5ec8892189bfc301673d6e4a0 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 14:03:29 +0800
@@ -27,5 +27,5 @@ index 7a74a0a53..c275944c0 100644
          //this.methodProfiler.exit(); // Akarin - remove caller
          //this.methodProfiler.enter("tallying"); // Akarin - remove caller
 -- 
-2.20.1
+2.25.1.windows.1
 

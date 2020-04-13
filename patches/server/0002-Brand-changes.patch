@@ -1,4 +1,4 @@
-From 11fc0efe86be79716a87770acc8f591c828d4650 Mon Sep 17 00:00:00 2001
+From ac00ba2b1be41b67c523f34168bcf4f5178e8973 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Tue, 18 Dec 2018 06:27:02 -0800
@@ -45,5 +45,5 @@ index 8cc0f66ce..b381514d9 100644
      private final String bukkitVersion = Versioning.getBukkitVersion();
      private final Logger logger = Logger.getLogger("Minecraft");
 -- 
-2.20.1
+2.25.1.windows.1
 

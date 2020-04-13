@@ -1,4 +1,4 @@
-From 762872dee25c7fc2d5bda396a7678f8a40988a24 Mon Sep 17 00:00:00 2001
+From 8415d8c17d128a51ccd5a2c74579e3f4e3475fd5 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:29:08 +0800
@@ -29,5 +29,5 @@ index 350ac42d6..65cc7b205 100644
              }
              // Spigot Start
 -- 
-2.20.1
+2.25.1.windows.1
 

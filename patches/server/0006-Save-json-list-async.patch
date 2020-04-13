@@ -1,4 +1,4 @@
-From 2b37161928e664a0b38c679f3523f64136ad30b4 Mon Sep 17 00:00:00 2001
+From 78dabf6d78ea817a476a54e560260cf54562ef3c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:16:18 +0800
@@ -33,5 +33,5 @@ index c97be42dd..370841cad 100644
  
      public void load() throws FileNotFoundException {
 -- 
-2.20.1
+2.25.1.windows.1
 

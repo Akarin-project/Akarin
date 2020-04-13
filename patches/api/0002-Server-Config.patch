@@ -1,4 +1,4 @@
-From db8ede1f1dca90680c378654d738cbf15879b838 Mon Sep 17 00:00:00 2001
+From 812349d6f9656c98d3c445b384571e9cabada79e Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 3 Apr 2020 15:18:38 +0800
@@ -39,5 +39,5 @@ index 9ceaac0e..7444b415 100644
           * Sends the component to the player
           *
 -- 
-2.20.1
+2.25.1.windows.1
 

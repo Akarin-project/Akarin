@@ -1,4 +1,4 @@
-From 4206f8c17397c0044d0c180384bc39a209ae052d Mon Sep 17 00:00:00 2001
+From 3b858296bfd1b36d8a65b39c003211948938231b Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 14 Dec 2018 21:53:58 -0800
@@ -80,5 +80,5 @@ index 674096cab..9a7235b8e 100644
  
          if (stream != null) {
 -- 
-2.20.1
+2.25.1.windows.1
 

@@ -1,4 +1,4 @@
-From d6a3f13ee6709a17eda0f1851566026dfde4d198 Mon Sep 17 00:00:00 2001
+From e818bed4db1c1fb7777e31f7400a7b6a1f47c6a0 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Mon, 13 Apr 2020 13:18:27 +0800
@@ -19,5 +19,5 @@ index e257d6b36..81f0aef68 100644
                  metrics.addCustomChart(new Metrics.SimplePie("minecraft_version", () -> {
                      String minecraftVersion = Bukkit.getVersion();
 -- 
-2.20.1
+2.25.1.windows.1
 
