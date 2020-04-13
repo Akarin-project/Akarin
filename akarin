@@ -10,7 +10,7 @@ function setupUpstreamAndPatch {
     if [ "$1" != "skipPaper" ]; then
         $scriptdir/updateUpstream.sh "$basedir" 0 || exit 1 # not update submodule
     fi
-	$scriptdir/applyPatches.sh "$basedir" $2 || exit 1
+	$scriptdir/applyPatches.sh "$basedir" || exit 1
 }
 
 failed=0
@@ -25,13 +25,13 @@ case "$1" in
     "a" | "p" | "patch" | "apply")
     (
         set -e
-		setupUpstreamAndPatch $2 "0" || exit 1
+		setupUpstreamAndPatch $2 || exit 1
     ) || failed=1
     ;;
     "b" | "bu" | "build" | "install")
     (
         set -e
-		setupUpstreamAndPatch $2 "0" || exit 1
+		setupUpstreamAndPatch $2 || exit 1
 		basedir
         mvn -N install || exit 1
         cd ${FORK_NAME}-API
@@ -40,7 +40,7 @@ case "$1" in
     ;;
     "j" | "launcher" | "jar" | "paperclip")
     (
-	   setupUpstreamAndPatch $2 "0" || exit 1
+	   setupUpstreamAndPatch $2 || exit 1
        basedir
        mvn -N install
        cd ${FORK_NAME}-API
@@ -86,6 +86,13 @@ case "$1" in
             (
                 set -e
                 gitstash
+                cd "$basedir/Paper/Paper-Server"
+                $gitcmd fetch --all
+	            # Create the upstream branch in Paper project with current state
+                $gitcmd checkout master # possibly already in
+	            $gitcmd branch -D upstream || true
+	            $gitcmd branch -f upstream HEAD
+				cd "$basedir/Akarin-Server"
                 $gitcmd rebase -i upstream/upstream
                 gitunstash
             )
@@ -96,6 +103,13 @@ case "$1" in
             (
                 set -e
                 gitstash
+                cd "$basedir/Paper/Paper-API"
+                $gitcmd fetch --all
+	            # Create the upstream branch in Paper project with current state
+                $gitcmd checkout master # possibly already in
+	            $gitcmd branch -D upstream || true
+	            $gitcmd branch -f upstream HEAD
+				cd "$basedir/Akarin-API"
                 $gitcmd rebase -i upstream/upstream
                 gitunstash
             )
