@@ -1,8 +1,8 @@
-From ed60a4bd738c6588d4a02ed01c2c4b0a35176184 Mon Sep 17 00:00:00 2001
+From 9c894a616b9cf91d563b4d56461326c02562e8aa Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:35:19 +0800
-Subject: [PATCH] never drop items on command "/give"
+Subject: [PATCH] Never drop items on command "/give"
 
 
 diff --git a/src/main/java/net/minecraft/server/CommandGive.java b/src/main/java/net/minecraft/server/CommandGive.java

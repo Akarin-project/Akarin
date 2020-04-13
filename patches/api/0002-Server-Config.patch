@@ -1,4 +1,4 @@
-From 812349d6f9656c98d3c445b384571e9cabada79e Mon Sep 17 00:00:00 2001
+From 37df93f498a1bca3f535bb44b51f84a9b2eb645d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 3 Apr 2020 15:18:38 +0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Server Config
 
 
 diff --git a/src/main/java/co/aikar/timings/TimingsExport.java b/src/main/java/co/aikar/timings/TimingsExport.java
-index 93d5a3f9..08e428bd 100644
+index 93d5a3f97..08e428bd3 100644
 --- a/src/main/java/co/aikar/timings/TimingsExport.java
 +++ b/src/main/java/co/aikar/timings/TimingsExport.java
 @@ -206,7 +206,8 @@ class TimingsExport extends Thread {
@@ -20,7 +20,7 @@ index 93d5a3f9..08e428bd 100644
  
          new TimingsExport(listeners, parent, history).start();
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 9ceaac0e..7444b415 100644
+index 9ceaac0e8..7444b4159 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -1386,6 +1386,14 @@ public interface Server extends PluginMessageRecipient {

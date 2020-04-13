@@ -1,4 +1,4 @@
-From 261f37cc2108ea0d7ebc5e0e090f9904ed189419 Mon Sep 17 00:00:00 2001
+From 797408840291c6ecfc8b9dffcea027450de59ec4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 14 Dec 2018 21:52:29 -0800
@@ -6,7 +6,7 @@ Subject: [PATCH] POM Changes
 
 
 diff --git a/pom.xml b/pom.xml
-index 2cb97140..d167304b 100644
+index 2cb971408..d167304be 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -3,18 +3,18 @@
