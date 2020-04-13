@@ -41,9 +41,11 @@ function applyPatch {
 	$gitcmd branch -D upstream >/dev/null &> /dev/null
 	$gitcmd branch -f upstream "$branch" &> /dev/null && $gitcmd checkout upstream &> /dev/null
 	
-	if [ $needimport == "0" ] && [ $baseproject != "Paper/Paper-API" ]; then
-	    echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Import new introduced NMS files.."
-	    basedir && $scriptdir/importSources.sh $basedir 1 || exit 1
+	if [ $needimport == "0" ]; then
+	    if [ $baseproject != "${FORK_NAME}-Server" ]; then
+	        echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Import new introduced NMS files.."
+	        basedir && $scriptdir/importSources.sh $basedir 1 || exit 1
+		fi
     fi
 
     basedir
