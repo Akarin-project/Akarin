@@ -1,0 +1,42 @@
+From f97c63ba1cce2deb50603da45ef23bf075c5955a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+ <tsao-chi@the-lingo.org>
+Date: Fri, 10 Apr 2020 15:47:15 +0800
+Subject: [PATCH] Swaps the predicate order of collision
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 34aac6031..ff2992f90 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -1403,22 +1403,23 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+     public void pickup(EntityHuman entityhuman) {}
+ 
+     public void collide(Entity entity) {
++        if (entity.noclip || this.noclip) return; // Akarin - Test this earlier
+         if (!this.isSameVehicle(entity)) {
+-            if (!entity.noclip && !this.noclip) {
++            if (true || !entity.noclip && !this.noclip) { // Akarin - Moved up
+                 double d0 = entity.locX() - this.locX();
+                 double d1 = entity.locZ() - this.locZ();
+                 double d2 = MathHelper.a(d0, d1);
+-
++    
+                 if (d2 >= 0.009999999776482582D) {
+                     d2 = (double) MathHelper.sqrt(d2);
+                     d0 /= d2;
+                     d1 /= d2;
+                     double d3 = 1.0D / d2;
+-
++    
+                     if (d3 > 1.0D) {
+                         d3 = 1.0D;
+                     }
+-
++    
+                     d0 *= d3;
+                     d1 *= d3;
+                     d0 *= 0.05000000074505806D;
+-- 
+2.25.1.windows.1
+

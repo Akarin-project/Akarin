@@ -1,39 +1,37 @@
-From f7988e4df29e9aa815246aa2a5196d0edf1421be Mon Sep 17 00:00:00 2001
+From e7955146fde4178be3e911e34de5c88d8a88b084 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 3 Apr 2020 15:18:38 +0800
-Subject: [PATCH] Server Config
+Subject: [PATCH] Add server configuration
 
 
 diff --git a/src/main/java/co/aikar/timings/TimingsExport.java b/src/main/java/co/aikar/timings/TimingsExport.java
-index 93d5a3f97..08e428bd3 100644
+index 93d5a3f97..dfb57b9db 100644
 --- a/src/main/java/co/aikar/timings/TimingsExport.java
 +++ b/src/main/java/co/aikar/timings/TimingsExport.java
-@@ -206,7 +206,8 @@ class TimingsExport extends Thread {
-         parent.put("config", createObject(
+@@ -207,6 +207,7 @@ class TimingsExport extends Thread {
              pair("spigot", mapAsJSON(Bukkit.spigot().getSpigotConfig(), null)),
              pair("bukkit", mapAsJSON(Bukkit.spigot().getBukkitConfig(), null)),
--            pair("paper", mapAsJSON(Bukkit.spigot().getPaperConfig(), null))
-+            pair("paper", mapAsJSON(Bukkit.spigot().getPaperConfig(), null)),
-+            pair("akarin", mapAsJSON(Bukkit.spigot().getAkarinConfig(), null)) // Akarin - Server Config
+             pair("paper", mapAsJSON(Bukkit.spigot().getPaperConfig(), null))
++            , pair("akarin", mapAsJSON(Bukkit.spigot().getAkarinConfig(), null)) // Akarin - Server config
          ));
  
          new TimingsExport(listeners, parent, history).start();
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 9ceaac0e8..7444b4159 100644
+index 9ceaac0e8..17a494b4d 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -1386,6 +1386,14 @@ public interface Server extends PluginMessageRecipient {
          }
          // Paper end
  
-+        // Akarin Start - Server Config
++        // Akarin start - Server config
 +        @NotNull
 +        public org.bukkit.configuration.file.YamlConfiguration getAkarinConfig()
 +        {
 +            throw new UnsupportedOperationException("Not supported yet.");
 +        }
-+        // Akarin End - Server Config
++        // Akarin end - Server config
 +
          /**
           * Sends the component to the player
