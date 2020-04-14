@@ -1,0 +1,67 @@
+From 96cfd7cd2b51c4ca8e39031fd654ec70dae16e53 Mon Sep 17 00:00:00 2001
+From: Sotr <i@omc.hk>
+Date: Wed, 15 Apr 2020 02:44:07 +0700
+Subject: [PATCH] Tuinity Optimise ArraySetSorted#removeIf
+
+Remove iterator allocation and ensure the call is always O(n)
+
+diff --git a/src/main/java/net/minecraft/server/ArraySetSorted.java b/src/main/java/net/minecraft/server/ArraySetSorted.java
+index 85f799a71..f23ddb9e0 100644
+--- a/src/main/java/net/minecraft/server/ArraySetSorted.java
++++ b/src/main/java/net/minecraft/server/ArraySetSorted.java
+@@ -11,7 +11,9 @@ public class ArraySetSorted<T> extends AbstractSet<T> {
+ 
+     private final Comparator<T> a;
+     private T[] b;
++    private final T[] getBackingArray() { return this.b; } // Akarin - OBFHELPER
+     private int c;
++    private final int getSize() { return this.c; } private final void setSize(int value) { this.c = value; } // Akarin - OBFHELPER
+ 
+     private ArraySetSorted(int i, Comparator<T> comparator) {
+         this.a = comparator;
+@@ -22,6 +24,42 @@ public class ArraySetSorted<T> extends AbstractSet<T> {
+         }
+     }
+ 
++    // Akarin start - backport Tuinity - optimise removeIf
++    @Override
++    public boolean removeIf(java.util.function.Predicate<? super T> filter) {
++        // prev. impl used an iterator, which could be n^2
++        int i = 0, len = this.getSize();
++        T[] backingArray = this.getBackingArray();
++
++        for (;;) {
++            if (i >= len) {
++                return false;
++            }
++            if (!filter.test(backingArray[i])) {
++                ++i;
++                continue;
++            }
++            break;
++        }
++
++        // we only want to write back to backingArray if we really need to
++
++        int lastIndex = i; // this is where new elements are shifted to
++
++        for (; i < len; ++i) {
++            T curr = backingArray[i];
++            if (!filter.test(curr)) { // if test throws we're screwed
++                backingArray[lastIndex++] = curr;
++            }
++        }
++
++        // cleanup end
++        Arrays.fill(backingArray, lastIndex, len, null);
++        this.setSize(lastIndex);
++        return true;
++    }
++    // Akarin end - backport Tuinity - optimise removeIf
++
+     public static <T extends Comparable<T>> ArraySetSorted<T> a(int i) {
+         return new ArraySetSorted<>(i, (Comparator)Comparator.naturalOrder()); // Paper - decompile fix
+     }
+-- 
+2.25.1.windows.1
+
