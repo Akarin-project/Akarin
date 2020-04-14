@@ -1,4 +1,4 @@
-From 280cabadb42781c1c3404bab602f6e9094559e2b Mon Sep 17 00:00:00 2001
+From fd678f8d15018a681bb58f8be285d6a8a14e2324 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 03:51:50 +0700
 Subject: [PATCH] Optimize door interact pathfinding
@@ -46,7 +46,7 @@ index 000000000..83bf1d4ca
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/BehaviorInteractDoor.java b/src/main/java/net/minecraft/server/BehaviorInteractDoor.java
-index 01d9c2d92..54ab0b5af 100644
+index 01d9c2d92..3db22c5f4 100644
 --- a/src/main/java/net/minecraft/server/BehaviorInteractDoor.java
 +++ b/src/main/java/net/minecraft/server/BehaviorInteractDoor.java
 @@ -1,7 +1,9 @@
@@ -142,10 +142,23 @@ index 01d9c2d92..54ab0b5af 100644
                  GlobalPos globalpos = (GlobalPos) iterator.next();
                  BlockPosition blockposition = globalpos.getBlockPosition();
 -                int j = list.indexOf(blockposition);
-+                int j = list.get(blockposition); // Akarin - List -> Map
++                int j = list.getOrDefault(blockposition, -1); // Akarin - List -> Map
  
                  if (worldserver.getWorldProvider().getDimensionManager() != globalpos.getDimensionManager()) {
                      iterator.remove();
+diff --git a/src/main/java/net/minecraft/server/BehaviorSleep.java b/src/main/java/net/minecraft/server/BehaviorSleep.java
+index dfe0f6650..46eb63308 100644
+--- a/src/main/java/net/minecraft/server/BehaviorSleep.java
++++ b/src/main/java/net/minecraft/server/BehaviorSleep.java
+@@ -57,7 +57,7 @@ public class BehaviorSleep extends Behavior<EntityLiving> {
+     protected void a(WorldServer worldserver, EntityLiving entityliving, long i) {
+         if (i > this.a) {
+             entityliving.getBehaviorController().getMemory(MemoryModuleType.OPENED_DOORS).ifPresent((set) -> {
+-                BehaviorInteractDoor.a(worldserver, (List) ImmutableList.of(), 0, entityliving, entityliving.getBehaviorController());
++                BehaviorInteractDoor.a(worldserver, com.google.common.collect.ImmutableMap.of(), 0, entityliving, entityliving.getBehaviorController()); // Akarin - List -> Map
+             });
+             entityliving.entitySleep(((GlobalPos) entityliving.getBehaviorController().getMemory(MemoryModuleType.HOME).get()).getBlockPosition());
+         }
 -- 
 2.25.1.windows.1
 
