@@ -1,4 +1,4 @@
-From d248632e777b854bcb65fd6f1c3094e6287a08ee Mon Sep 17 00:00:00 2001
+From d917bb33e2dd73efbedc3eb04e8f4a399acd29bd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 13:01:13 +0800
@@ -263,7 +263,7 @@ index dcb4e25080..265b6df4f6 100644
      }
  
 diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
-index 67c63cfe33..00bd2327f2 100644
+index 67c63cfe33..b656adc788 100644
 --- a/src/main/java/net/minecraft/server/Pathfinder.java
 +++ b/src/main/java/net/minecraft/server/Pathfinder.java
 @@ -15,9 +15,9 @@ import javax.annotation.Nullable;
@@ -286,19 +286,11 @@ index 67c63cfe33..00bd2327f2 100644
 +    public PathEntity findPaths(ChunkCache chunkcache, EntityInsentient entityinsentient, Set<BlockPosition> set, float f, int i, float f1) { return a(chunkcache, entityinsentient, set, f, i, f1); } // Akarin - OBFHELPER
      @Nullable
 -    public PathEntity a(ChunkCache chunkcache, EntityInsentient entityinsentient, Set<BlockPosition> set, float f, int i, float f1) {
-+    public synchronized PathEntity a(ChunkCache chunkcache, EntityInsentient entityinsentient, Set<BlockPosition> set, float f, int i, float f1) {
++    public synchronized PathEntity a(ChunkCache chunkcache, EntityInsentient entityinsentient, Set<BlockPosition> set, float f, int i, float f1) { // Akarin - synchronized
          this.a.a();
          this.e.a(chunkcache, entityinsentient);
          PathPoint pathpoint = this.e.b();
-@@ -40,6 +41,7 @@ public class Pathfinder {
-         return pathentity;
-     }
- 
-+    private PathEntity findPaths0(PathPoint pathpoint, Map<PathDestination, BlockPosition> map, float f, int i, float f1) { return a(pathpoint, map, f, i, f1); } // Akarin - OBFHELPER
-     @Nullable
-     private PathEntity a(PathPoint pathpoint, Map<PathDestination, BlockPosition> map, float f, int i, float f1) {
-         Set<PathDestination> set = map.keySet();
-@@ -117,6 +119,7 @@ public class Pathfinder {
+@@ -117,6 +118,7 @@ public class Pathfinder {
          }
      }
  
@@ -306,7 +298,7 @@ index 67c63cfe33..00bd2327f2 100644
      private float a(PathPoint pathpoint, Set<PathDestination> set) {
          float f = Float.MAX_VALUE;
  
-@@ -132,6 +135,7 @@ public class Pathfinder {
+@@ -132,6 +134,7 @@ public class Pathfinder {
          return f;
      }
  

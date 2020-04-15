@@ -1,11 +1,23 @@
-From 2cb5743ec13a1dae4f1c9546497b045428bea23b Mon Sep 17 00:00:00 2001
+From 7ad553948084e3dd0916bc1f498703279d82d571 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 17:49:07 +0700
-Subject: [PATCH] Remove stream and simplify op in pathfinder
+Subject: [PATCH] Remove stream and simplify operation in pathfinder
 
 
+diff --git a/src/main/java/net/minecraft/server/PathDestination.java b/src/main/java/net/minecraft/server/PathDestination.java
+index 9071d43d8b..2f33aafe34 100644
+--- a/src/main/java/net/minecraft/server/PathDestination.java
++++ b/src/main/java/net/minecraft/server/PathDestination.java
+@@ -5,6 +5,7 @@ public class PathDestination extends PathPoint {
+     private float m = Float.MAX_VALUE;
+     private PathPoint n;
+     private boolean o;
++    protected BlockPosition position; // Akarin - add BlockPosition
+ 
+     public PathDestination(PathPoint pathpoint) {
+         super(pathpoint.a, pathpoint.b, pathpoint.c);
 diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
-index 00bd2327f2..e645ee7422 100644
+index b656adc788..1ff169c345 100644
 --- a/src/main/java/net/minecraft/server/Pathfinder.java
 +++ b/src/main/java/net/minecraft/server/Pathfinder.java
 @@ -32,9 +32,20 @@ public class Pathfinder {
@@ -30,9 +42,9 @@ index 00bd2327f2..e645ee7422 100644
          PathEntity pathentity = this.a(pathpoint, map, f, i, f1);
  
          this.e.a();
-@@ -43,8 +54,8 @@ public class Pathfinder {
+@@ -42,8 +53,8 @@ public class Pathfinder {
+     }
  
-     private PathEntity findPaths0(PathPoint pathpoint, Map<PathDestination, BlockPosition> map, float f, int i, float f1) { return a(pathpoint, map, f, i, f1); } // Akarin - OBFHELPER
      @Nullable
 -    private PathEntity a(PathPoint pathpoint, Map<PathDestination, BlockPosition> map, float f, int i, float f1) {
 -        Set<PathDestination> set = map.keySet();
@@ -41,7 +53,7 @@ index 00bd2327f2..e645ee7422 100644
  
          pathpoint.e = 0.0F;
          pathpoint.f = this.a(pathpoint, set);
-@@ -100,11 +111,11 @@ public class Pathfinder {
+@@ -99,11 +110,11 @@ public class Pathfinder {
  
          if (set.stream().anyMatch(PathDestination::f)) {
              stream = set.stream().filter(PathDestination::f).map((pathdestination) -> {
