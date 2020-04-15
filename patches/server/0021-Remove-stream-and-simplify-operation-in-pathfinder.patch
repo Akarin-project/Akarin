@@ -1,4 +1,4 @@
-From 92c476dd12cb5965f1c793f37b1181460ac3dfcd Mon Sep 17 00:00:00 2001
+From 973aed2e4aaa03aa708a697a9d0339f01f5f0e98 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 17:49:07 +0700
 Subject: [PATCH] Remove stream and simplify operation in pathfinder
