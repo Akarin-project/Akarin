@@ -1,4 +1,4 @@
-From 7ad553948084e3dd0916bc1f498703279d82d571 Mon Sep 17 00:00:00 2001
+From 53d6044c5eef40fe43c288df1aaa100ac6088453 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 17:49:07 +0700
 Subject: [PATCH] Remove stream and simplify operation in pathfinder
@@ -17,10 +17,10 @@ index 9071d43d8b..2f33aafe34 100644
      public PathDestination(PathPoint pathpoint) {
          super(pathpoint.a, pathpoint.b, pathpoint.c);
 diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
-index b656adc788..1ff169c345 100644
+index 848e2fe8b8..6eb4d13f8b 100644
 --- a/src/main/java/net/minecraft/server/Pathfinder.java
 +++ b/src/main/java/net/minecraft/server/Pathfinder.java
-@@ -32,9 +32,20 @@ public class Pathfinder {
+@@ -31,9 +31,20 @@ public class Pathfinder {
          this.a.a();
          this.e.a(chunkcache, entityinsentient);
          PathPoint pathpoint = this.e.b();
@@ -42,7 +42,7 @@ index b656adc788..1ff169c345 100644
          PathEntity pathentity = this.a(pathpoint, map, f, i, f1);
  
          this.e.a();
-@@ -42,8 +53,8 @@ public class Pathfinder {
+@@ -41,8 +52,8 @@ public class Pathfinder {
      }
  
      @Nullable
@@ -53,7 +53,7 @@ index b656adc788..1ff169c345 100644
  
          pathpoint.e = 0.0F;
          pathpoint.f = this.a(pathpoint, set);
-@@ -99,11 +110,11 @@ public class Pathfinder {
+@@ -98,11 +109,11 @@ public class Pathfinder {
  
          if (set.stream().anyMatch(PathDestination::f)) {
              stream = set.stream().filter(PathDestination::f).map((pathdestination) -> {

@@ -1,4 +1,4 @@
-From d917bb33e2dd73efbedc3eb04e8f4a399acd29bd Mon Sep 17 00:00:00 2001
+From eab6cc99c967ba0a74803168baaada529e009cf4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 13:01:13 +0800
@@ -32,51 +32,42 @@ index abf450917e..4f7f40d5e7 100644
                          if (pathtype == PathType.WATER) {
                              return false;
 diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index b763d7f37e..e1f3baa7bb 100644
+index b763d7f37e..7f061ec1d8 100644
 --- a/src/main/java/net/minecraft/server/NavigationAbstract.java
 +++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
-@@ -22,13 +22,15 @@ public abstract class NavigationAbstract {
-     protected long j;
-     protected double k;
-     protected float l;
--    protected boolean m;
-+    protected boolean m; public boolean needPathfind() { return m; } // Akarin - OBFHELPER
-     protected long n;
-     protected PathfinderAbstract o;
--    private BlockPosition q;
-+    private BlockPosition q; public BlockPosition origin() { return q; } // Akarin - OBFHELPER
+@@ -29,6 +29,15 @@ public abstract class NavigationAbstract {
      private int r;
      private float s;
      private final Pathfinder t; public Pathfinder getPathfinder() { return this.t; } // Paper - OBFHELPER
-+    private long lastPathfindAsync; // Akarin - Async pathfinder
-+    private static final java.util.concurrent.ExecutorService pathfindExecutor = java.util.concurrent.Executors.newSingleThreadExecutor(new com.google.common.util.concurrent.ThreadFactoryBuilder().setDaemon(true).setNameFormat("StarLink Pathfinder - %d").build()); // Akarin - Async pathfinder
++    // Akarin start - Async pathfinder
++    private long lastPathfindAsync;
++    private static final java.util.concurrent.ExecutorService pathfindExecutor =
++        java.util.concurrent.Executors.newSingleThreadExecutor(
++            new com.google.common.util.concurrent.ThreadFactoryBuilder()
++            .setDaemon(true)
++            .setNameFormat("StarLink Pathfinder - %d")
++            .build());
++    // Akarin end
  
      public NavigationAbstract(EntityInsentient entityinsentient, World world) {
          this.g = Vec3D.a;
-@@ -65,7 +67,7 @@ public abstract class NavigationAbstract {
-         return this.m;
-     }
- 
--    public void j() {
-+    public void doPathfind() { j(); } public void j() { // Akarin - OBFHELPER
-         if (this.b.getTime() - this.n > 20L) {
-             if (this.q != null) {
-                 this.c = null;
-@@ -78,6 +80,37 @@ public abstract class NavigationAbstract {
+@@ -78,6 +87,40 @@ public abstract class NavigationAbstract {
          }
  
      }
-+    // Akarin Start - Async pathfinder
++    // Akarin start - Async pathfinder, copied from above with modification
 +    public void doPathfindAsync() {
 +        if (this.b.getTime() - this.lastPathfindAsync > 20L) {
 +            if (this.q != null) {
-+            this.lastPathfindAsync = this.b.getTime();
++                this.lastPathfindAsync = this.b.getTime();
 +
++                // Bake chunk cache
 +                float f = (float) this.p.getValue();
 +                BlockPosition blockposition = new BlockPosition(this.a);
 +                int k = (int) (f + (float) 8);
 +                ChunkCache cache = new ChunkCache(this.b, blockposition.b(-k, -k, -k), blockposition.b(k, k, k));
 +
++                // Execute directly if we already have a path entity, or compute one
 +                if (this.c != null && !this.c.b()) {
 +                    doTickAsync(this.c);
 +                    return;
@@ -93,27 +84,19 @@ index b763d7f37e..e1f3baa7bb 100644
 +                });
 +            }
 +        } else {
++            // Execute directly, keep behaviour with vanilla, see the original doTick method
 +            doTickAsync(this.c);
 +        }
 +    }
-+    // Akarin End - Async pathfinder
++    // Akarin end
  
      @Nullable
      public final PathEntity calculateDestination(double d0, double d1, double d2) { return a(d0, d1, d2, 0); } public final PathEntity a(double d0, double d1, double d2, int i) { // Paper - OBFHELPER
-@@ -106,7 +139,7 @@ public abstract class NavigationAbstract {
- 
-     @Nullable
-     // Paper start - Add target
--    protected PathEntity a(Set<BlockPosition> set, int i, boolean flag, int j) {
-+    protected PathEntity findPath(Set<BlockPosition> set, int i, boolean flag, int j) { return a(set, 1, flag, j); } protected PathEntity a(Set<BlockPosition> set, int i, boolean flag, int j) { // Akarin - OBFHELPER
-         return this.a(set, null, i, flag, j);
-     }
-     @Nullable protected PathEntity a(Set<BlockPosition> set, Entity target, int i, boolean flag, int j) {
-@@ -153,6 +186,17 @@ public abstract class NavigationAbstract {
+@@ -153,6 +196,17 @@ public abstract class NavigationAbstract {
              return pathentity;
          }
      }
-+    // Akarin Start - Async pathfinder
++    // Akarin start - Async pathfinder, copied and edited from above with only pathfinding
 +    protected PathEntity findPathAsync(ChunkCache cache, Set<BlockPosition> set, int j) {
 +        if (this.a.locY() < 0.0D) {
 +            return null;
@@ -123,189 +106,133 @@ index b763d7f37e..e1f3baa7bb 100644
 +            return this.t.a(cache, this.a, set, f, j, this.s);
 +        }
 +    }
-+    // Akarin End - Async pathfinder
++    // Akarin end
  
      public boolean a(double d0, double d1, double d2, double d3) {
          return this.a(this.a(d0, d1, d2, 1), d3);
-@@ -217,7 +261,7 @@ public abstract class NavigationAbstract {
-         return this.c;
-     }
- 
--    public void c() {
-+    public void doTick() { c(); } public void c() { // Akarin - OBFHELPER
-         ++this.e;
-         if (this.m) {
-             this.j();
-@@ -246,6 +290,84 @@ public abstract class NavigationAbstract {
+@@ -246,6 +300,37 @@ public abstract class NavigationAbstract {
              }
          }
      }
-+    // Akarin Start - Async pathfinder
++    // Akarin start - Async pathfinder, copied from above
 +    public void tickAsync() {
 +        ++this.e;
 +        this.doPathfindAsync();
 +    }
 +
++    // This was copied from above partly with param
 +    public void doTickAsync(PathEntity pathEntity) {
-+        if (shouldContinuePathfind(pathEntity)) return;
++        if (shouldContinuePathfind(pathEntity))
++          return;
 +
 +        Vec3D vec3d;
-+
 +        if (this.a()) {
-+            applyUnitAsync(pathEntity);
++            this.applyPath(pathEntity);
 +        } else if (pathEntity.f() < pathEntity.e()) {
 +            vec3d = this.b();
 +            Vec3D vec3d1 = pathEntity.a(this.a, pathEntity.f());
 +
-+            if (vec3d.y > vec3d1.y && !this.a.onGround && MathHelper.floor(vec3d.x) == MathHelper.floor(vec3d1.x) && MathHelper.floor(vec3d.z) == MathHelper.floor(vec3d1.z)) {
-+            pathEntity.c(pathEntity.f() + 1);
-+            }
++            if (vec3d.y > vec3d1.y && !this.a.onGround && MathHelper.floor(vec3d.x) == MathHelper.floor(vec3d1.x) && MathHelper.floor(vec3d.z) == MathHelper.floor(vec3d1.z))
++              pathEntity.c(pathEntity.f() + 1);
 +        }
 +
-+        // PacketDebug.a(this.b, this.a, pathEntity, this.l);
-+        if (shouldContinuePathfind(pathEntity)) return;
++        if (shouldContinuePathfind(pathEntity))
++          return;
 +
 +        vec3d = pathEntity.a((Entity) this.a);
 +        BlockPosition blockposition = new BlockPosition(vec3d);
 +
 +        this.a.getControllerMove().a(vec3d.x, this.b.getType(blockposition.down()).isAir() ? vec3d.y : PathfinderNormal.a((IBlockAccess) this.b, blockposition), vec3d.z, this.d);
 +    }
-+
-+    protected void applyUnitAsync(PathEntity pathEntity) {
-+        Vec3D vec3d = this.b();
-+
-+        this.l = this.a.getWidth() > 0.75F ? this.a.getWidth() / 2.0F : 0.75F - this.a.getWidth() / 2.0F;
-+        Vec3D vec3d1 = pathEntity.g();
-+
-+        if (Math.abs(this.a.locX() - (vec3d1.x + 0.5D)) < (double) this.l && Math.abs(this.a.locZ() - (vec3d1.z + 0.5D)) < (double) this.l && Math.abs(this.a.locY() - vec3d1.y) < 1.0D) {
-+            pathEntity.c(pathEntity.f() + 1);
-+        }
-+
-+        this.setUnitAsync(pathEntity, vec3d);
-+    }
-+
-+    protected void setUnitAsync(PathEntity pathEntity, Vec3D vec3d) {
-+        if (this.e - this.f > 100) {
-+            if (vec3d.distanceSquared(this.g) < 2.25D) {
-+                this.o();
-+            }
-+
-+            this.f = this.e;
-+            this.g = vec3d;
-+        }
-+
-+        if (!pathEntity.b()) {
-+            Vec3D vec3d1 = pathEntity.g();
-+
-+            if (vec3d1.equals(this.h)) {
-+                this.i += SystemUtils.getMonotonicMillis() - this.j;
-+            } else {
-+                this.h = vec3d1;
-+                double d0 = vec3d.f(this.h);
-+
-+                this.k = this.a.dt() > 0.0F ? d0 / (double) this.a.dt() * 1000.0D : 0.0D;
-+            }
-+
-+            if (this.k > 0.0D && (double) this.i > this.k * 3.0D) {
-+                this.h = Vec3D.a;
-+                this.i = 0L;
-+                this.k = 0.0D;
-+                this.o();
-+            }
-+
-+            this.j = SystemUtils.getMonotonicMillis();
-+        }
-+
-+    }
 +    // Akarin End - Async pathfinder
  
      protected void l() {
          Vec3D vec3d = this.b();
-@@ -294,9 +416,14 @@ public abstract class NavigationAbstract {
+@@ -259,6 +344,20 @@ public abstract class NavigationAbstract {
+ 
+         this.a(vec3d);
+     }
++    // Akarin start - Async pathfinder, copied from above with param
++    protected void applyPath(PathEntity pathEntity) {
++      Vec3D vec3d = this.b();
++
++      this.l = this.a.getWidth() > 0.75F ? this.a.getWidth() / 2.0F : 0.75F - this.a.getWidth() / 2.0F;
++      Vec3D vec3d1 = pathEntity.g();
++
++      if (Math.abs(this.a.locX() - (vec3d1.x + 0.5D)) < (double) this.l && Math.abs(this.a.locZ() - (vec3d1.z + 0.5D)) < (double) this.l && Math.abs(this.a.locY() - vec3d1.y) < 1.0D) {
++          pathEntity.c(pathEntity.f() + 1);
++      }
++
++      this.applyPath0(pathEntity, vec3d);
++    }
++    // Akarin end
+ 
+     protected void a(Vec3D vec3d) {
+         if (this.e - this.f > 100) {
+@@ -293,10 +392,50 @@ public abstract class NavigationAbstract {
+         }
  
      }
++    // Akarin start - Async pathfinder, copied from above with param
++    protected void applyPath0(PathEntity pathEntity, Vec3D vec3d) {
++      if (this.e - this.f > 100) {
++          if (vec3d.distanceSquared(this.g) < 2.25D) {
++              this.o();
++          }
++
++          this.f = this.e;
++          this.g = vec3d;
++      }
++
++      if (!pathEntity.b()) {
++          Vec3D vec3d1 = pathEntity.g();
++
++          if (vec3d1.equals(this.h)) {
++              this.i += SystemUtils.getMonotonicMillis() - this.j;
++          } else {
++              this.h = vec3d1;
++              double d0 = vec3d.f(this.h);
++
++              this.k = this.a.dt() > 0.0F ? d0 / (double) this.a.dt() * 1000.0D : 0.0D;
++          }
++
++          if (this.k > 0.0D && (double) this.i > this.k * 3.0D) {
++              this.h = Vec3D.a;
++              this.i = 0L;
++              this.k = 0.0D;
++              this.o();
++          }
++
++          this.j = SystemUtils.getMonotonicMillis();
++      }
++
++    }
++    // Akarin end
  
--    public boolean m() {
-+    public boolean shouldContinuePathfind() { return m(); } public boolean m() { // Akarin - OBFHELPER
+     public boolean m() {
          return this.c == null || this.c.b();
      }
-+    // Akarin Start - Async pathfinder
-+    public boolean shouldContinuePathfind(PathEntity pathEntity) {
++    // Akarin start - Async pathfinder, copied from above with param
++    public static boolean shouldContinuePathfind(PathEntity pathEntity) {
 +        return pathEntity == null || pathEntity.b();
 +    }
-+    // Akarin End - Async pathfinder
++    // Akarin end
  
      public boolean n() {
          return !this.m();
-@@ -307,9 +434,9 @@ public abstract class NavigationAbstract {
-         this.c = null;
-     }
- 
--    protected abstract Vec3D b();
-+    protected Vec3D getEntityPathfindUnit() { return b(); } protected abstract Vec3D b(); // Akarin - OBFHELPER
- 
--    protected abstract boolean a();
-+    protected boolean canPathfind() { return a(); } protected abstract boolean a(); // Akarin - OBFHELPER
- 
-     protected boolean p() {
-         return this.a.az() || this.a.aH();
-diff --git a/src/main/java/net/minecraft/server/PathEntity.java b/src/main/java/net/minecraft/server/PathEntity.java
-index dcb4e25080..265b6df4f6 100644
---- a/src/main/java/net/minecraft/server/PathEntity.java
-+++ b/src/main/java/net/minecraft/server/PathEntity.java
-@@ -110,7 +110,7 @@ public class PathEntity {
-         return "Path(length=" + this.a.size() + ")";
-     }
- 
--    public BlockPosition k() {
-+    public BlockPosition origin() { return k(); } public BlockPosition k() { // Akarin - OBFHELPER
-         return this.f;
-     }
- 
 diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
-index 67c63cfe33..b656adc788 100644
+index 67c63cfe33..848e2fe8b8 100644
 --- a/src/main/java/net/minecraft/server/Pathfinder.java
 +++ b/src/main/java/net/minecraft/server/Pathfinder.java
-@@ -15,9 +15,9 @@ import javax.annotation.Nullable;
- 
- public class Pathfinder {
- 
--    private final Path a = new Path();
--    private final Set<PathPoint> b = Sets.newHashSet();
--    private final PathPoint[] c = new PathPoint[32];
-+    private final Path a = new Path(); private Path nodePath() { return this.a; } // Akarin - OBFHELPER
-+    private final Set<PathPoint> b = Sets.newHashSet(); private Set<PathPoint> nodesSet() { return this.b; } // Akarin - OBFHELPER
-+    private final PathPoint[] c = new PathPoint[32]; private PathPoint[] pathNodes() { return this.c; } // Akarin - OBFHELPER
-     private final int d;
-     private final PathfinderAbstract e; public PathfinderAbstract getPathfinder() { return this.e; }  // Paper - OBFHELPER
- 
-@@ -26,8 +26,9 @@ public class Pathfinder {
-         this.d = i;
+@@ -27,7 +27,7 @@ public class Pathfinder {
      }
  
-+    public PathEntity findPaths(ChunkCache chunkcache, EntityInsentient entityinsentient, Set<BlockPosition> set, float f, int i, float f1) { return a(chunkcache, entityinsentient, set, f, i, f1); } // Akarin - OBFHELPER
      @Nullable
 -    public PathEntity a(ChunkCache chunkcache, EntityInsentient entityinsentient, Set<BlockPosition> set, float f, int i, float f1) {
 +    public synchronized PathEntity a(ChunkCache chunkcache, EntityInsentient entityinsentient, Set<BlockPosition> set, float f, int i, float f1) { // Akarin - synchronized
          this.a.a();
          this.e.a(chunkcache, entityinsentient);
          PathPoint pathpoint = this.e.b();
-@@ -117,6 +118,7 @@ public class Pathfinder {
-         }
-     }
- 
-+    private float getNearestDistance(PathPoint pathpoint, Set<PathDestination> set) { return a(pathpoint, set); } // Akarin - OBFHELPER
-     private float a(PathPoint pathpoint, Set<PathDestination> set) {
-         float f = Float.MAX_VALUE;
- 
-@@ -132,6 +134,7 @@ public class Pathfinder {
-         return f;
-     }
- 
-+    private PathEntity gatherAssociatedNodes(PathPoint pathpoint, BlockPosition blockposition, boolean flag) { return a(pathpoint, blockposition, flag); } // Akarin - OBFHELPER
-     private PathEntity a(PathPoint pathpoint, BlockPosition blockposition, boolean flag) {
-         List<PathPoint> list = Lists.newArrayList();
-         PathPoint pathpoint1 = pathpoint;
 diff --git a/src/main/java/net/minecraft/server/PathfinderTurtle.java b/src/main/java/net/minecraft/server/PathfinderTurtle.java
 index 59b1fe289c..1790878ae9 100644
 --- a/src/main/java/net/minecraft/server/PathfinderTurtle.java

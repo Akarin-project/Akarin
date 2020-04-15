@@ -1,7 +1,7 @@
-From 93e8fd577e63a60e694c018cbbc93aa71ea544b9 Mon Sep 17 00:00:00 2001
+From 9c4f314f268580548dc68c00a6f65c77a0a6d7e6 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 04:28:25 +0700
-Subject: [PATCH] Cache Hashcode for BlockPosition
+Subject: [PATCH] Cache hashcode for BlockPosition
 
 
 diff --git a/src/main/java/net/minecraft/server/BaseBlockPosition.java b/src/main/java/net/minecraft/server/BaseBlockPosition.java
