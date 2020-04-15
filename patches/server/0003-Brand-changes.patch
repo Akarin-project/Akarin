@@ -1,4 +1,4 @@
-From 06a482394f671e532d4f514c453550745b548c2e Mon Sep 17 00:00:00 2001
+From 178a508e5e92c3562aaaa3e0dbfeecb6405acbda Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Tue, 18 Dec 2018 06:27:02 -0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Brand changes
 
 
 diff --git a/src/main/java/net/minecraft/server/EULA.java b/src/main/java/net/minecraft/server/EULA.java
-index cf00f35a5..a45e63a02 100644
+index cf00f35a5b..a45e63a027 100644
 --- a/src/main/java/net/minecraft/server/EULA.java
 +++ b/src/main/java/net/minecraft/server/EULA.java
 @@ -70,7 +70,7 @@ public class EULA {
@@ -19,7 +19,7 @@ index cf00f35a5..a45e63a02 100644
                      throwable = throwable1;
                      throw throwable1;
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index a9b533751..c562c8ce7 100644
+index a9b5337512..c562c8ce7f 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1511,7 +1511,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -32,7 +32,7 @@ index a9b533751..c562c8ce7 100644
  
      public CrashReport b(CrashReport crashreport) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 8cc0f66ce..b381514d9 100644
+index 8cc0f66ce5..b381514d9f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -203,7 +203,7 @@ import javax.annotation.Nullable; // Paper

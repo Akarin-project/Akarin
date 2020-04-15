@@ -1,0 +1,60 @@
+From 2cb5743ec13a1dae4f1c9546497b045428bea23b Mon Sep 17 00:00:00 2001
+From: Sotr <i@omc.hk>
+Date: Wed, 15 Apr 2020 17:49:07 +0700
+Subject: [PATCH] Remove stream and simplify op in pathfinder
+
+
+diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
+index 00bd2327f2..e645ee7422 100644
+--- a/src/main/java/net/minecraft/server/Pathfinder.java
++++ b/src/main/java/net/minecraft/server/Pathfinder.java
+@@ -32,9 +32,20 @@ public class Pathfinder {
+         this.a.a();
+         this.e.a(chunkcache, entityinsentient);
+         PathPoint pathpoint = this.e.b();
++        // Akarin start - remove stream, add BlockPosition
++        /*
+         Map<PathDestination, BlockPosition> map = (Map) set.stream().collect(Collectors.toMap((blockposition) -> {
+-            return this.e.a((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ());
++          return this.e.a((double) blockposition.getX(), (double) blockposition.getY(), (double) blockposition.getZ());
+         }, Function.identity()));
++        */
++        Set<PathDestination> map = new java.util.HashSet<PathDestination>(set.size());
++        for (BlockPosition position : set) {
++          PathDestination dest = this.e.a((double) position.getX(), position.getY(), position.getZ());
++          dest.position = position;
++
++          map.add(dest);
++        }
++        // Akarin end
+         PathEntity pathentity = this.a(pathpoint, map, f, i, f1);
+ 
+         this.e.a();
+@@ -43,8 +54,8 @@ public class Pathfinder {
+ 
+     private PathEntity findPaths0(PathPoint pathpoint, Map<PathDestination, BlockPosition> map, float f, int i, float f1) { return a(pathpoint, map, f, i, f1); } // Akarin - OBFHELPER
+     @Nullable
+-    private PathEntity a(PathPoint pathpoint, Map<PathDestination, BlockPosition> map, float f, int i, float f1) {
+-        Set<PathDestination> set = map.keySet();
++    private PathEntity a(PathPoint pathpoint, Set<PathDestination> map, float f, int i, float f1) { // Akarin - Map -> Set
++        Set<PathDestination> set = map; // Akarin - Map -> Set
+ 
+         pathpoint.e = 0.0F;
+         pathpoint.f = this.a(pathpoint, set);
+@@ -100,11 +111,11 @@ public class Pathfinder {
+ 
+         if (set.stream().anyMatch(PathDestination::f)) {
+             stream = set.stream().filter(PathDestination::f).map((pathdestination) -> {
+-                return this.a(pathdestination.d(), (BlockPosition) map.get(pathdestination), true);
++                return this.a(pathdestination.d(), (BlockPosition) pathdestination.position, true); // Akarin - add BlockPosition
+             }).sorted(Comparator.comparingInt(PathEntity::e));
+         } else {
+             stream = set.stream().map((pathdestination) -> {
+-                return this.a(pathdestination.d(), (BlockPosition) map.get(pathdestination), false);
++                return this.a(pathdestination.d(), (BlockPosition) pathdestination.position, false); // Akarin - add BlockPosition
+             }).sorted(Comparator.comparingDouble(PathEntity::l).thenComparingInt(PathEntity::e));
+         }
+ 
+-- 
+2.25.1.windows.1
+

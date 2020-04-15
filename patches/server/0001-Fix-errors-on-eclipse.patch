@@ -1,11 +1,11 @@
-From 5f55a4f0caca2406dd04d3a39d29508508f2cdf0 Mon Sep 17 00:00:00 2001
+From e60b30372fd2b79601e8dd18b5e36ec7d608caa6 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 00:52:56 +0700
 Subject: [PATCH] Fix errors on eclipse
 
 
 diff --git a/.gitignore b/.gitignore
-index 67fb370ca..9b8966343 100644
+index 67fb370cad..9b89663438 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -2,6 +2,7 @@
@@ -17,7 +17,7 @@ index 67fb370ca..9b8966343 100644
  # netbeans
  /nbproject
 diff --git a/src/main/java/com/destroystokyo/paper/util/PlayerMobDistanceMap.java b/src/main/java/com/destroystokyo/paper/util/PlayerMobDistanceMap.java
-index 9ebd7ecb7..677ccffd0 100644
+index 9ebd7ecb7a..677ccffd00 100644
 --- a/src/main/java/com/destroystokyo/paper/util/PlayerMobDistanceMap.java
 +++ b/src/main/java/com/destroystokyo/paper/util/PlayerMobDistanceMap.java
 @@ -76,7 +76,7 @@ public final class PlayerMobDistanceMap {
@@ -30,7 +30,7 @@ index 9ebd7ecb7..677ccffd0 100644
              final PooledHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> map = entry.getValue();
  
 diff --git a/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java b/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java
-index f625da9f0..3f128565b 100644
+index f625da9f09..3f128565b4 100644
 --- a/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java
 +++ b/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java
 @@ -134,10 +134,10 @@ public abstract class AreaMap<E> {

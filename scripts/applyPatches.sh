@@ -37,12 +37,12 @@ function applyPatch {
     cd "$basedir/$baseproject"
     $gitcmd fetch --all &> /dev/null
 	# Create the upstream branch in Paper project with current state
-    $gitcmd checkout master >/dev/null # possibly already in
-	$gitcmd branch -D upstream >/dev/null &> /dev/null
+    $gitcmd checkout master >/dev/null 2>&1 # possibly already in
+	$gitcmd branch -D upstream &> /dev/null
 	$gitcmd branch -f upstream "$branch" &> /dev/null && $gitcmd checkout upstream &> /dev/null
 	
 	if [[ $needimport != "1" ]]; then
-	    if [ $baseproject != "${FORK_NAME}-API" ]; then
+	    if [ $baseproject != "Paper/Paper-API" ]; then
 	        echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Import new introduced NMS files.."
 	        basedir && $scriptdir/importSources.sh $basedir 1 || exit 1
 		fi
@@ -58,15 +58,17 @@ function applyPatch {
     cd "$basedir/$target"
 	$gitcmd init > /dev/null 2>&1
 
+    echo "  "
 	echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Reset $target to $basename.."
 	# Add the generated Paper project as the upstream remote of subproject
-    $gitcmd remote rm upstream >/dev/null 2>&1
-    $gitcmd remote add upstream "$basedir/$baseproject" >/dev/null 2>&1
+    $gitcmd remote rm upstream &> /dev/null
+    $gitcmd remote add upstream "$basedir/$baseproject" &> /dev/null
 	# Ensure that we are in the branch we want so not overriding things
-    $gitcmd checkout master 2>/dev/null || $gitcmd checkout -b master
-    $gitcmd fetch upstream >/dev/null 2>&1
+    $gitcmd checkout master &> /dev/null || $gitcmd checkout -b master &> /dev/null
+    $gitcmd fetch upstream &> /dev/null
 	# Reset our source project to Paper
-    cd "$basedir/$target" && $gitcmd reset --hard upstream/upstream
+    cd "$basedir/$target" && $gitcmd reset --hard upstream/upstream &> /dev/null
+	echo "  "
 
 	echo "  $(bashcolor 1 32)($5/$6)$(bashcolorend) - Apply patches to $target.."
 	# Abort previous applying operation

@@ -1,4 +1,4 @@
-From 92f29e4176f1a5817960c22e8f43a827c6cd0a3e Mon Sep 17 00:00:00 2001
+From d684fdf99760e63673130bea2ad607d2b5293af8 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 14:59:10 +0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Optimizations for network
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
-index a85466bc7..324af1a12 100644
+index a85466bc7e..324af1a12a 100644
 --- a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
 +++ b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
 @@ -106,7 +106,7 @@ public final class StandardPaperServerListPingEventImpl extends PaperServerListP
@@ -19,7 +19,7 @@ index a85466bc7..324af1a12 100644
  
  }
 diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index 0532f975b..e7be1074b 100644
+index 0532f975b7..e7be1074b1 100644
 --- a/src/main/java/net/minecraft/server/HandshakeListener.java
 +++ b/src/main/java/net/minecraft/server/HandshakeListener.java
 @@ -39,7 +39,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
@@ -46,7 +46,7 @@ index 0532f975b..e7be1074b 100644
                  } else {
                      this.b.setPacketListener(new LoginListener(this.a, this.b));
 diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index f1222fcb2..522cfed4c 100644
+index f1222fcb2b..522cfed4cb 100644
 --- a/src/main/java/net/minecraft/server/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/LoginListener.java
 @@ -111,6 +111,19 @@ public class LoginListener implements PacketLoginInListener {
@@ -106,7 +106,7 @@ index f1222fcb2..522cfed4c 100644
  
      protected GameProfile a(GameProfile gameprofile) {
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 96a785af2..c5e32e424 100644
+index 96a785af27..c5e32e4246 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -43,6 +43,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
@@ -221,7 +221,7 @@ index 96a785af2..c5e32e424 100644
          if (this.t++ % 20 == 0) {
              this.s = this.s * 0.75F + (float) this.q * 0.25F;
 diff --git a/src/main/java/net/minecraft/server/Packet.java b/src/main/java/net/minecraft/server/Packet.java
-index 8d0965a05..7e27cd280 100644
+index 8d0965a053..7e27cd280f 100644
 --- a/src/main/java/net/minecraft/server/Packet.java
 +++ b/src/main/java/net/minecraft/server/Packet.java
 @@ -20,4 +20,10 @@ public interface Packet<T extends PacketListener> {
@@ -236,7 +236,7 @@ index 8d0965a05..7e27cd280 100644
 +    // Akarin end
  }
 diff --git a/src/main/java/net/minecraft/server/PacketLoginOutCustomPayload.java b/src/main/java/net/minecraft/server/PacketLoginOutCustomPayload.java
-index 7eb230f1b..d01cac0bd 100644
+index 7eb230f1b2..d01cac0bd4 100644
 --- a/src/main/java/net/minecraft/server/PacketLoginOutCustomPayload.java
 +++ b/src/main/java/net/minecraft/server/PacketLoginOutCustomPayload.java
 @@ -41,4 +41,11 @@ public class PacketLoginOutCustomPayload implements Packet<PacketLoginOutListene
@@ -252,7 +252,7 @@ index 7eb230f1b..d01cac0bd 100644
 +    // Akarin end
  }
 diff --git a/src/main/java/net/minecraft/server/PacketLoginOutDisconnect.java b/src/main/java/net/minecraft/server/PacketLoginOutDisconnect.java
-index e5094f55f..a5d9b6d94 100644
+index e5094f55f1..a5d9b6d94c 100644
 --- a/src/main/java/net/minecraft/server/PacketLoginOutDisconnect.java
 +++ b/src/main/java/net/minecraft/server/PacketLoginOutDisconnect.java
 @@ -25,4 +25,11 @@ public class PacketLoginOutDisconnect implements Packet<PacketLoginOutListener>
@@ -268,7 +268,7 @@ index e5094f55f..a5d9b6d94 100644
 +    // Akarin end
  }
 diff --git a/src/main/java/net/minecraft/server/PacketLoginOutEncryptionBegin.java b/src/main/java/net/minecraft/server/PacketLoginOutEncryptionBegin.java
-index b0d6342c3..eeabb54c4 100644
+index b0d6342c31..eeabb54c44 100644
 --- a/src/main/java/net/minecraft/server/PacketLoginOutEncryptionBegin.java
 +++ b/src/main/java/net/minecraft/server/PacketLoginOutEncryptionBegin.java
 @@ -34,4 +34,11 @@ public class PacketLoginOutEncryptionBegin implements Packet<PacketLoginOutListe
@@ -284,7 +284,7 @@ index b0d6342c3..eeabb54c4 100644
 +    // Akarin end
  }
 diff --git a/src/main/java/net/minecraft/server/PacketLoginOutSetCompression.java b/src/main/java/net/minecraft/server/PacketLoginOutSetCompression.java
-index fa0653a7e..d3b5f83d5 100644
+index fa0653a7e4..d3b5f83d56 100644
 --- a/src/main/java/net/minecraft/server/PacketLoginOutSetCompression.java
 +++ b/src/main/java/net/minecraft/server/PacketLoginOutSetCompression.java
 @@ -25,4 +25,11 @@ public class PacketLoginOutSetCompression implements Packet<PacketLoginOutListen
@@ -300,7 +300,7 @@ index fa0653a7e..d3b5f83d5 100644
 +    // Akarin end
  }
 diff --git a/src/main/java/net/minecraft/server/PacketLoginOutSuccess.java b/src/main/java/net/minecraft/server/PacketLoginOutSuccess.java
-index 54c290471..75d7bc196 100644
+index 54c2904718..75d7bc1968 100644
 --- a/src/main/java/net/minecraft/server/PacketLoginOutSuccess.java
 +++ b/src/main/java/net/minecraft/server/PacketLoginOutSuccess.java
 @@ -34,4 +34,11 @@ public class PacketLoginOutSuccess implements Packet<PacketLoginOutListener> {
@@ -316,7 +316,7 @@ index 54c290471..75d7bc196 100644
 +    // Akarin end
  }
 diff --git a/src/main/java/net/minecraft/server/PacketStatusListener.java b/src/main/java/net/minecraft/server/PacketStatusListener.java
-index 4bb21c48b..06af567fc 100644
+index 4bb21c48bd..06af567fc1 100644
 --- a/src/main/java/net/minecraft/server/PacketStatusListener.java
 +++ b/src/main/java/net/minecraft/server/PacketStatusListener.java
 @@ -143,7 +143,7 @@ public class PacketStatusListener implements PacketStatusInListener {
@@ -329,7 +329,7 @@ index 4bb21c48b..06af567fc 100644
      }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketStatusOutPong.java b/src/main/java/net/minecraft/server/PacketStatusOutPong.java
-index 94a0da87d..577c6ef9c 100644
+index 94a0da87db..577c6ef9cf 100644
 --- a/src/main/java/net/minecraft/server/PacketStatusOutPong.java
 +++ b/src/main/java/net/minecraft/server/PacketStatusOutPong.java
 @@ -25,4 +25,11 @@ public class PacketStatusOutPong implements Packet<PacketStatusOutListener> {
@@ -345,7 +345,7 @@ index 94a0da87d..577c6ef9c 100644
 +    // Akarin end
  }
 diff --git a/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java b/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
-index 50d5fb62e..4da7a2c1a 100644
+index 50d5fb62ef..4da7a2c1a4 100644
 --- a/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
 +++ b/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
 @@ -28,4 +28,11 @@ public class PacketStatusOutServerInfo implements Packet<PacketStatusOutListener
@@ -361,7 +361,7 @@ index 50d5fb62e..4da7a2c1a 100644
 +    // Akarin end
  }
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index e1225d501..3d0397620 100644
+index e1225d5017..3d03976203 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -284,9 +284,9 @@ public class PlayerConnection implements PacketListenerPlayIn {
@@ -377,7 +377,7 @@ index e1225d501..3d0397620 100644
  
      @Override
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 6d6fbf2f5..4b549ccc4 100644
+index 6d6fbf2f50..4b549ccc41 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -159,13 +159,15 @@ public abstract class PlayerList {

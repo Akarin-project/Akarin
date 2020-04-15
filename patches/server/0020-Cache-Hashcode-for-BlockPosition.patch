@@ -1,11 +1,11 @@
-From 2bc88b8902b17a4ae0e22010f4591b500296e6b9 Mon Sep 17 00:00:00 2001
+From b6acf84069f78250453e7f0f609a1ce5021fe9d8 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 04:28:25 +0700
 Subject: [PATCH] Cache Hashcode for BlockPosition
 
 
 diff --git a/src/main/java/net/minecraft/server/BaseBlockPosition.java b/src/main/java/net/minecraft/server/BaseBlockPosition.java
-index c439a8d01..808f2eb6c 100644
+index c439a8d019..808f2eb6cb 100644
 --- a/src/main/java/net/minecraft/server/BaseBlockPosition.java
 +++ b/src/main/java/net/minecraft/server/BaseBlockPosition.java
 @@ -18,6 +18,7 @@ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
@@ -37,7 +37,7 @@ index c439a8d01..808f2eb6c 100644
      public int compareTo(BaseBlockPosition baseblockposition) {
          return this.getY() == baseblockposition.getY() ? (this.getZ() == baseblockposition.getZ() ? this.getX() - baseblockposition.getX() : this.getZ() - baseblockposition.getZ()) : this.getY() - baseblockposition.getY();
 diff --git a/src/main/java/net/minecraft/server/BlockPosition.java b/src/main/java/net/minecraft/server/BlockPosition.java
-index 2d07d350d..43e7e5c27 100644
+index 2d07d350d2..43e7e5c27b 100644
 --- a/src/main/java/net/minecraft/server/BlockPosition.java
 +++ b/src/main/java/net/minecraft/server/BlockPosition.java
 @@ -439,6 +439,7 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali

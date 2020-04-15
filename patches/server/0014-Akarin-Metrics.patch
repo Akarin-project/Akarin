@@ -1,4 +1,4 @@
-From ab1369b91460adfb60c4350a634a9ebfb5efb7ec Mon Sep 17 00:00:00 2001
+From 519ffa752cbbc7d21d51e138408b5709088efa09 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Mon, 13 Apr 2020 13:18:27 +0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Akarin Metrics
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/Metrics.java b/src/main/java/com/destroystokyo/paper/Metrics.java
-index e257d6b36..81f0aef68 100644
+index e257d6b36e..81f0aef68c 100644
 --- a/src/main/java/com/destroystokyo/paper/Metrics.java
 +++ b/src/main/java/com/destroystokyo/paper/Metrics.java
 @@ -578,7 +578,7 @@ public class Metrics {

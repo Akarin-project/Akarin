@@ -1,4 +1,4 @@
-From 92e94da95f2bfb8ea088edf8a59adf9fa7785d7b Mon Sep 17 00:00:00 2001
+From 4fdac6d235064f8d515fdccc14f829931e7ab959 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:29:08 +0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Avoid double I/O operation on load player file
 
 
 diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
-index 350ac42d6..65cc7b205 100644
+index 350ac42d6b..65cc7b2052 100644
 --- a/src/main/java/net/minecraft/server/WorldNBTStorage.java
 +++ b/src/main/java/net/minecraft/server/WorldNBTStorage.java
 @@ -165,7 +165,8 @@ public class WorldNBTStorage implements IPlayerFileData {

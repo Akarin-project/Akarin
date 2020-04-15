@@ -1,4 +1,4 @@
-From 703ec6b515d695de0e19a61ddc5752c9d124bb40 Mon Sep 17 00:00:00 2001
+From c5290cf9e102048ab6befd461c5ad4fb6a207a69 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 14 Dec 2018 21:53:58 -0800
@@ -6,7 +6,7 @@ Subject: [PATCH] POM Changes
 
 
 diff --git a/pom.xml b/pom.xml
-index 55679af92..19f87edb5 100644
+index 55679af926..19f87edb55 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -1,12 +1,11 @@
@@ -67,7 +67,7 @@ index 55679af92..19f87edb5 100644
                  </configuration>
                  <executions>
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
-index 674096cab..9a7235b8e 100644
+index 674096cab1..9a7235b8e5 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
 @@ -11,7 +11,7 @@ public final class Versioning {

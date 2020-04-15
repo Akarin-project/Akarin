@@ -1,4 +1,4 @@
-From 2176d6a89e597569a040ec060106ce99713f591a Mon Sep 17 00:00:00 2001
+From 4a1b791e1a4960a90fa5a44318de4c08489245c8 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 03:51:50 +0700
 Subject: [PATCH] Optimize door interact pathfinding
@@ -6,7 +6,7 @@ Subject: [PATCH] Optimize door interact pathfinding
 
 diff --git a/src/main/java/io/akarin/server/IndexedBlockPosition.java b/src/main/java/io/akarin/server/IndexedBlockPosition.java
 new file mode 100644
-index 000000000..83bf1d4ca
+index 0000000000..83bf1d4cab
 --- /dev/null
 +++ b/src/main/java/io/akarin/server/IndexedBlockPosition.java
 @@ -0,0 +1,35 @@
@@ -46,7 +46,7 @@ index 000000000..83bf1d4ca
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/BehaviorInteractDoor.java b/src/main/java/net/minecraft/server/BehaviorInteractDoor.java
-index 01d9c2d92..3db22c5f4 100644
+index 01d9c2d92c..3db22c5f4d 100644
 --- a/src/main/java/net/minecraft/server/BehaviorInteractDoor.java
 +++ b/src/main/java/net/minecraft/server/BehaviorInteractDoor.java
 @@ -1,7 +1,9 @@
@@ -147,7 +147,7 @@ index 01d9c2d92..3db22c5f4 100644
                  if (worldserver.getWorldProvider().getDimensionManager() != globalpos.getDimensionManager()) {
                      iterator.remove();
 diff --git a/src/main/java/net/minecraft/server/BehaviorSleep.java b/src/main/java/net/minecraft/server/BehaviorSleep.java
-index dfe0f6650..46eb63308 100644
+index dfe0f66500..46eb633084 100644
 --- a/src/main/java/net/minecraft/server/BehaviorSleep.java
 +++ b/src/main/java/net/minecraft/server/BehaviorSleep.java
 @@ -57,7 +57,7 @@ public class BehaviorSleep extends Behavior<EntityLiving> {

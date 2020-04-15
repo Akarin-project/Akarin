@@ -1,4 +1,4 @@
-From 903c98556da491303cedec003086dd0d754f0a5a Mon Sep 17 00:00:00 2001
+From bcc260c3234d1b19a631752753ad02b59397a01d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:16:18 +0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Save json list async
 
 
 diff --git a/src/main/java/net/minecraft/server/JsonList.java b/src/main/java/net/minecraft/server/JsonList.java
-index c97be42dd..370841cad 100644
+index c97be42dd7..370841cad0 100644
 --- a/src/main/java/net/minecraft/server/JsonList.java
 +++ b/src/main/java/net/minecraft/server/JsonList.java
 @@ -168,6 +168,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {

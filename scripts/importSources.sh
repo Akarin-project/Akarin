@@ -40,7 +40,7 @@ basedir
 
 function importToPaperWorkspace {
     if [ -f "$papernmsdir/$1.java" ]; then
-        echo "  $(bashcolor 1 33)Skipped$(bashcolorend) - Already imported $1.java"
+        # echo "  $(bashcolor 1 33)Skipped$(bashcolorend) - Already imported $1.java"
         return 0
     fi
 
@@ -92,6 +92,16 @@ patchedFiles=$(cat patches/server/* | grep "+++ b/src/main/java/net/minecraft/se
 
 patchedFilesNonNMS=$(cat patches/server/* | grep "create mode " | grep -Po "src/main/java/net/minecraft/server/(.*?).java" | sort | uniq | sed 's/src\/main\/java\/net\/minecraft\/server\///g' | sed 's/.java//g')
 
+(
+    cd "$paperserverdir"
+    $gitcmd fetch --all &> /dev/null
+	# Create the upstream branch in Paper project with current state
+    $gitcmd checkout master >/dev/null 2>&1 # possibly already in
+	$gitcmd branch -D upstream &>/dev/null
+	$gitcmd branch -f upstream HEAD && $gitcmd checkout upstream
+)
+
+basedir
 for f in $patchedFiles; do
     containsElement "$f" ${patchedFilesNonNMS[@]}
     if [ "$?" == "1" ]; then
@@ -107,7 +117,10 @@ for f in $patchedFiles; do
 done
 
 # NMS import format:
-# importToPaperWorkspace MinecraftServer.java
+# importToPaperWorkspace MinecraftServer
+
+importToPaperWorkspace CommandGive
+importToPaperWorkspace PathDestination
 
 # Library import format (multiple files are supported):
 # importLibraryToPaperWorkspace com.mojang datafixerupper com/mojang/datafixers/util Either.java
@@ -118,12 +131,11 @@ done
     # rm -rf nms-patches
     git add . &> /dev/null
     echo -e "Extra dev imports of Akarin\n\n$IMPORT_LOG" | git commit src -F - &> /dev/null
-	echo "  $(bashcolor 1 32)Succeed$(bashcolorend) - Sources have been imported to Paper/Paper-Server"
+	echo "  $(bashcolor 1 32)Succeed$(bashcolorend) - Sources have been imported to Paper/Paper-Server (branch upstream)"
 	
     if [[ $maintask != "0" ]]; then # this is magical
 	    echo "----------------------------------------"
 		echo "  Subtask finished"
 		echo "----------------------------------------"
 	fi
-	echo "  "
 )
