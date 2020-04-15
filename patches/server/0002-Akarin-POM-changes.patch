@@ -1,8 +1,8 @@
-From c3757a0b1aecc6357f67340454fcfef19b7452ad Mon Sep 17 00:00:00 2001
+From da4c94eec26121e06ae48a1341a6399b9bbc4924 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 14 Dec 2018 21:53:58 -0800
-Subject: [PATCH] POM Changes
+Subject: [PATCH] Akarin POM changes
 
 
 diff --git a/pom.xml b/pom.xml

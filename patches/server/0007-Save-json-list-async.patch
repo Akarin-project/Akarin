@@ -1,8 +1,8 @@
-From 705f02ed90347293e72adb8938a13d40216a7c1e Mon Sep 17 00:00:00 2001
+From ceddb60c64f6b387808fbddaff6ee566b54f7046 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:16:18 +0800
-Subject: [PATCH] Save json list async
+Subject: [PATCH] Save Json list asynchronously
 
 
 diff --git a/src/main/java/net/minecraft/server/JsonList.java b/src/main/java/net/minecraft/server/JsonList.java

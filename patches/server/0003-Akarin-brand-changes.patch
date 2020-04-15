@@ -1,8 +1,8 @@
-From f81de8b443e6731fda1260619087595fbe352014 Mon Sep 17 00:00:00 2001
+From e57e06602dc3b49abbcd1a655f62b1e88c635290 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Tue, 18 Dec 2018 06:27:02 -0800
-Subject: [PATCH] Brand changes
+Subject: [PATCH] Akarin brand changes
 
 
 diff --git a/src/main/java/net/minecraft/server/EULA.java b/src/main/java/net/minecraft/server/EULA.java
