@@ -1,7 +1,7 @@
-From 272a544f13387faacb64b82ea3a30a60ade2cb77 Mon Sep 17 00:00:00 2001
+From 3d244bbf77d894086740106726c99f3e7e0dcdf1 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 03:51:50 +0700
-Subject: [PATCH] Optimize door interact pathfinding
+Subject: [PATCH] Optimize door interact with pathfinding
 
 
 diff --git a/src/main/java/io/akarin/server/IndexedBlockPosition.java b/src/main/java/io/akarin/server/IndexedBlockPosition.java

@@ -1,4 +1,4 @@
-From dc519a9f410da9b8912f98bab9fd0433fc25f66c Mon Sep 17 00:00:00 2001
+From a11885fc836b82d7814b94906226ad667a277af9 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 04:28:25 +0700
 Subject: [PATCH] Cache hashcode for BlockPosition

@@ -1,8 +1,8 @@
-From e21569dd3542272523aa74111fe90fad1cf17279 Mon Sep 17 00:00:00 2001
+From f37a682eebccac39f0ce89dcb43c9f87a80affea Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 3 Apr 2020 14:59:22 +0800
-Subject: [PATCH] Server Config
+Subject: [PATCH] Akarin configuration
 
 
 diff --git a/src/main/java/io/akarin/server/Config.java b/src/main/java/io/akarin/server/Config.java

@@ -1,7 +1,7 @@
-From 0beb791a340ae1dd6d3a43babebd1e6d37ea36b9 Mon Sep 17 00:00:00 2001
+From 24a16168874efef0d75d669be78f42404b211390 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 22:18:01 +0700
-Subject: [PATCH] Remove method profiler callers
+Subject: [PATCH] Remove vanilla profiler callers
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java

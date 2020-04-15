@@ -1,4 +1,4 @@
-From b16dd9adf27b2567f14057ab25f9812e70cea75d Mon Sep 17 00:00:00 2001
+From 98d9d6f8c907c2dfbbc41f46431e7a7f641c95cf Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 02:49:56 +0700
 Subject: [PATCH] Don't run entity collision code if not needed

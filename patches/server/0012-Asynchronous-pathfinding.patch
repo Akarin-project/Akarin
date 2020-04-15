@@ -1,8 +1,8 @@
-From 21259e466a404ebf8d46ff4c24724f74b93ee50e Mon Sep 17 00:00:00 2001
+From 47d6741745087c605a3a8f9f36475e6912ef3269 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 13:01:13 +0800
-Subject: [PATCH] Async pathfinder
+Subject: [PATCH] Asynchronous pathfinding
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
