@@ -29,7 +29,7 @@ subtasks=1
 updatepaper=$2
 if [ "$updatepaper" == "1" ]; then
     echo "  $(bashcolor 1 32)(0/$subtasks)$(bashcolorend) - Update Git submodules.."
-    git submodule update --init --recursive
+    $gitcmd submodule update --init --recursive
 fi
 
 if [[ "$2" == "--resetPaper" ]]; then
