@@ -1,7 +1,6 @@
-From eb1114c0c52b64a566a0748f2079f9483760d466 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
- <tsao-chi@the-lingo.org>
-Date: Thu, 2 Apr 2020 12:30:35 +0800
+From 0beb791a340ae1dd6d3a43babebd1e6d37ea36b9 Mon Sep 17 00:00:00 2001
+From: Sotr <i@omc.hk>
+Date: Wed, 15 Apr 2020 22:18:01 +0700
 Subject: [PATCH] Remove method profiler callers
 
 
@@ -490,7 +489,7 @@ index a353f3d5fa..81e699b404 100644
              }
  
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index c562c8ce7f..7a74a0a53a 100644
+index 63865f767b..4f0cad71bd 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -937,13 +937,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -529,13 +528,13 @@ index c562c8ce7f..7a74a0a53a 100644
          //} // Paper
  
 -        this.methodProfiler.enter("snooper");
-+        //this.methodProfiler.enter("snooper"); // Akarin - remove caller
++        // this.methodProfiler.enter("snooper"); // Akarin - remove caller
+         // Akarin - Disable Snooper
+         /*
          if (((DedicatedServer) this).getDedicatedServerProperties().snooperEnabled && !this.snooper.d() && this.ticks > 100) { // Spigot
-             this.snooper.a();
+@@ -1180,8 +1180,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          }
-@@ -1177,8 +1177,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
-             this.snooper.b();
-         }
+         */
  
 -        this.methodProfiler.exit();
 -        this.methodProfiler.enter("tallying");
@@ -544,7 +543,7 @@ index c562c8ce7f..7a74a0a53a 100644
          long l = this.f[this.ticks % 100] = SystemUtils.getMonotonicNanos() - i;
  
          // Paper start
-@@ -1191,7 +1191,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1194,7 +1194,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          long i1 = SystemUtils.getMonotonicNanos();
  
          this.circularTimer.a(i1 - i);
@@ -553,7 +552,7 @@ index c562c8ce7f..7a74a0a53a 100644
          org.spigotmc.WatchdogThread.tick(); // Spigot
          this.slackActivityAccountant.tickEnded(l); // Spigot
          // Paper start - move executeAll() into full server tick timing
-@@ -1211,11 +1211,11 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1214,11 +1214,11 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          MinecraftTimings.bukkitSchedulerTimer.startTiming(); // Spigot // Paper
          this.server.getScheduler().mainThreadHeartbeat(this.ticks); // CraftBukkit
          MinecraftTimings.bukkitSchedulerTimer.stopTiming(); // Spigot // Paper
@@ -567,7 +566,7 @@ index c562c8ce7f..7a74a0a53a 100644
          Iterator iterator = this.getWorlds().iterator();
  
          // CraftBukkit start
-@@ -1259,13 +1259,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1262,13 +1262,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                  });
                  /* Drop global time updates
                  if (this.ticks % 20 == 0) {
@@ -584,7 +583,7 @@ index c562c8ce7f..7a74a0a53a 100644
  
                  try {
                      worldserver.timings.doTick.startTiming(); // Spigot
-@@ -1285,17 +1285,17 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1288,17 +1288,17 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                      throw new ReportedException(crashreport);
                  }
  
@@ -606,7 +605,7 @@ index c562c8ce7f..7a74a0a53a 100644
          MinecraftTimings.playerListTimer.startTiming(); // Spigot // Paper
          this.playerList.tick();
          MinecraftTimings.playerListTimer.stopTiming(); // Spigot // Paper
-@@ -1303,7 +1303,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1306,7 +1306,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
              GameTestHarnessTicker.a.b();
          }
  
@@ -615,7 +614,7 @@ index c562c8ce7f..7a74a0a53a 100644
  
          MinecraftTimings.tickablesTimer.startTiming(); // Spigot // Paper
          for (int i = 0; i < this.tickables.size(); ++i) {
-@@ -1311,7 +1311,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1314,7 +1314,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          }
          MinecraftTimings.tickablesTimer.stopTiming(); // Spigot // Paper
  
@@ -743,10 +742,10 @@ index 3f1aa5ced6..af705e6c65 100644
              this.h.clear();
              this.g.clear();
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index d554d4cf0f..ef632a5f9c 100644
+index 839ddb14ef..9708d61fd3 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -375,9 +375,9 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -378,9 +378,9 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
                  IBlockData iblockdata2 = this.getType(blockposition);
  
                  if (iblockdata2 != iblockdata1 && (iblockdata2.b((IBlockAccess) this, blockposition) != iblockdata1.b((IBlockAccess) this, blockposition) || iblockdata2.h() != iblockdata1.h() || iblockdata2.g() || iblockdata1.g())) {

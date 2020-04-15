@@ -1,4 +1,4 @@
-From e57e06602dc3b49abbcd1a655f62b1e88c635290 Mon Sep 17 00:00:00 2001
+From 0634db2d5b61a0fd487c86a8ae7d7b599d75a7cf Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Tue, 18 Dec 2018 06:27:02 -0800
@@ -32,7 +32,7 @@ index a9b5337512..c562c8ce7f 100644
  
      public CrashReport b(CrashReport crashreport) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 8cc0f66ce5..b381514d9f 100644
+index ed684cc0d5..765b865b85 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -203,7 +203,7 @@ import javax.annotation.Nullable; // Paper
