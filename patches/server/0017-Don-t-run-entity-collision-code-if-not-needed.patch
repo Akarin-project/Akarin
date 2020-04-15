@@ -6,7 +6,7 @@ Subject: [PATCH] Don't run entity collision code if not needed
 Will not run if max entity craming is disabled and
 the max collisions per entity is less than or equal to 0
 
-This commit was basically referenced on Tunity#7131da4.
+This commit was basically referenced on Tuinity#7131da4.
 
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
 index e93b7b2809..3beeb05b14 100644
