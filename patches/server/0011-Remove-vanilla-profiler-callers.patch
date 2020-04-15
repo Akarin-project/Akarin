@@ -1,4 +1,4 @@
-From ca5f28349f85a068161a35c7e69bb3246258b3ad Mon Sep 17 00:00:00 2001
+From ac3292dd04ee6ac5994bba66ae6f385f58c48047 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 22:18:01 +0700
 Subject: [PATCH] Remove vanilla profiler callers

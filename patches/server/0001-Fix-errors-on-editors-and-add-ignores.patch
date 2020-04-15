@@ -1,4 +1,4 @@
-From 5d8b21db725f0384be1a1c87e29d3b1d80d0c48e Mon Sep 17 00:00:00 2001
+From 8505e57f361d6996f04d62cda5d4e7abfa21c477 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 00:52:56 +0700
 Subject: [PATCH] Fix errors on editors and add ignores

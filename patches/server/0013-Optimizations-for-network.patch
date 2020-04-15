@@ -1,4 +1,4 @@
-From df50e4a222bdb9e05540ded0cd4b234bfb928346 Mon Sep 17 00:00:00 2001
+From 2586ac1cc5a0b940aa0b46721383c28e615e0dab Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 14:59:10 +0800
@@ -106,19 +106,18 @@ index f1222fcb2b..522cfed4cb 100644
  
      protected GameProfile a(GameProfile gameprofile) {
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 96a785af27..c5e32e4246 100644
+index 96a785af27..f2a31f5923 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -43,6 +43,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -43,6 +43,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
      });
      private final EnumProtocolDirection h;
      private final Queue<NetworkManager.QueuedPacket> packetQueue = Queues.newConcurrentLinkedQueue(); private final Queue<NetworkManager.QueuedPacket> getPacketQueue() { return this.packetQueue; } // Paper - OBFHELPER
-+    private boolean handled = false; // Akarin - free packet queue
 +    private EnumProtocol protocol; // Akarin - avoid map lookup
      public Channel channel;
      public SocketAddress socketAddress; public void setSpoofedRemoteAddress(SocketAddress address) { this.socketAddress = address; } // Paper - OBFHELPER
      // Spigot Start
-@@ -88,6 +90,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -88,6 +89,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
  
      public void setProtocol(EnumProtocol enumprotocol) {
          this.channel.attr(NetworkManager.c).set(enumprotocol);
@@ -126,7 +125,7 @@ index 96a785af27..c5e32e4246 100644
          this.channel.config().setAutoRead(true);
          NetworkManager.LOGGER.debug("Enabled auto read");
      }
-@@ -175,8 +178,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -175,8 +177,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
  
      private void dispatchPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericFutureListener) { this.b(packet, genericFutureListener); } // Paper - OBFHELPER
      private void b(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> genericfuturelistener) {
@@ -137,7 +136,7 @@ index 96a785af27..c5e32e4246 100644
  
          ++this.q;
          if (enumprotocol1 != enumprotocol) {
-@@ -184,7 +187,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -184,7 +186,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
              this.channel.config().setAutoRead(false);
          }
  
@@ -146,15 +145,35 @@ index 96a785af27..c5e32e4246 100644
              if (enumprotocol != enumprotocol1) {
                  this.setProtocol(enumprotocol);
              }
-@@ -223,9 +226,51 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+@@ -223,30 +225,71 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
  
      }
  
+-    // Paper start - Async-Anti-Xray - Stop dispatching further packets and return false if the peeked packet is a chunk packet which is not ready
+-    private boolean sendPacketQueue() { return this.o(); } // OBFHELPER // void -> boolean
+-    private boolean o() { // void -> boolean
+-        if (this.channel != null && this.channel.isOpen()) {
+-            Queue queue = this.packetQueue;
+-
+-            synchronized (this.packetQueue) {
+-                while (!this.packetQueue.isEmpty()) {
+-                    NetworkManager.QueuedPacket networkmanager_queuedpacket = (NetworkManager.QueuedPacket) this.getPacketQueue().peek(); // poll -> peek
+-
+-                    if (networkmanager_queuedpacket != null) { // Fix NPE (Spigot bug caused by handleDisconnection())
+-                        if (networkmanager_queuedpacket.getPacket() instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) networkmanager_queuedpacket.getPacket()).isReady()) { // Check if the peeked packet is a chunk packet which is not ready
+-                            return false; // Return false if the peeked packet is a chunk packet which is not ready
+-                        } else {
+-                            this.getPacketQueue().poll(); // poll here
+-                            this.dispatchPacket(networkmanager_queuedpacket.getPacket(), networkmanager_queuedpacket.getGenericFutureListener()); // dispatch the packet
+-                        }
+-                    }
+-                }
 +    // Akarin Start - Async Sending packets - multiple packets, copied from above
 +    public void sendPacketAsync(Packet<?> packet) {
 +        EnumProtocol enumprotocol = packet.protocol();
 +        EnumProtocol enumprotocol1 = protocol;
-+
+ 
+-            }
 +        ++this.q;
 +        if (enumprotocol1 != enumprotocol) {
 +            NetworkManager.LOGGER.debug("Disabled auto read");
@@ -175,8 +194,9 @@ index 96a785af27..c5e32e4246 100644
 +        if (protocol != enumprotocol) {
 +            NetworkManager.LOGGER.debug("Disabled auto read");
 +            this.channel.config().setAutoRead(false);
-+        }
-+
+         }
+ 
+-        return true; // Return true if all packets were dispatched
 +        this.channel.eventLoop().execute(() -> {
 +            if (enumprotocol != protocol) {
 +                this.setProtocol(enumprotocol);
@@ -191,23 +211,34 @@ index 96a785af27..c5e32e4246 100644
 +    }
 +    // Akarin End
 +
-     // Paper start - Async-Anti-Xray - Stop dispatching further packets and return false if the peeked packet is a chunk packet which is not ready
-     private boolean sendPacketQueue() { return this.o(); } // OBFHELPER // void -> boolean
-     private boolean o() { // void -> boolean
-+        if (!handled) { // Akarin  - free packet queue
-         if (this.channel != null && this.channel.isOpen()) {
-             Queue queue = this.packetQueue;
- 
-@@ -245,6 +290,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
- 
-             }
-         }
-+        handled = true; // Akarin  - free packet queue
-+        } // Akarin  - free packet queue
- 
-         return true; // Return true if all packets were dispatched
++    // Paper start - Async-Anti-Xray - Stop dispatching further packets and return false if the peeked packet is a chunk packet which is not ready
++    private boolean sendPacketQueue() { return this.o(); } // OBFHELPER // void -> boolean
++    private boolean o() { // void -> boolean
++      if (this.channel != null && this.channel.isOpen()) {
++          Queue queue = this.packetQueue;
++
++          synchronized (this.packetQueue) {
++              while (!this.packetQueue.isEmpty()) {
++                  NetworkManager.QueuedPacket networkmanager_queuedpacket = (NetworkManager.QueuedPacket) this.getPacketQueue().peek(); // poll -> peek
++
++                  if (networkmanager_queuedpacket != null) { // Fix NPE (Spigot bug caused by handleDisconnection())
++                      if (networkmanager_queuedpacket.getPacket() instanceof PacketPlayOutMapChunk && !((PacketPlayOutMapChunk) networkmanager_queuedpacket.getPacket()).isReady()) { // Check if the peeked packet is a chunk packet which is not ready
++                          return false; // Return false if the peeked packet is a chunk packet which is not ready
++                      } else {
++                          this.getPacketQueue().poll(); // poll here
++                          this.dispatchPacket(networkmanager_queuedpacket.getPacket(), networkmanager_queuedpacket.getGenericFutureListener()); // dispatch the packet
++                      }
++                  }
++              }
++
++          }
++      }
++
++      return true; // Return true if all packets were dispatched
      }
-@@ -260,9 +307,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
+     // Paper end
+ 
+@@ -260,9 +303,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
              ((PlayerConnection) this.packetListener).tick();
          }
  
