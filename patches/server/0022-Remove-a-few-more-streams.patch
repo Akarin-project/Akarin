@@ -1,0 +1,105 @@
+From 1433da3521eaebe0be0549b9d2552841686c113d Mon Sep 17 00:00:00 2001
+From: Sotr <i@omc.hk>
+Date: Wed, 15 Apr 2020 22:45:48 +0700
+Subject: [PATCH] Remove a few more streams
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkMapDistance.java b/src/main/java/net/minecraft/server/ChunkMapDistance.java
+index 13d113aee5..1890fad9ed 100644
+--- a/src/main/java/net/minecraft/server/ChunkMapDistance.java
++++ b/src/main/java/net/minecraft/server/ChunkMapDistance.java
+@@ -108,9 +108,15 @@ public abstract class ChunkMapDistance {
+                 while (longiterator.hasNext()) {
+                     long j = longiterator.nextLong();
+ 
++                    // Akarin start - remove stream
++                    ArraySetSorted<Ticket<?>> sorted = this.tickets.get(j);
++                    /*
+                     if (this.e(j).stream().anyMatch((ticket) -> {
+                         return ticket.getTicketType() == TicketType.PLAYER;
+                     })) {
++                    */
++                    Runnable runnable = () -> {
++                    // Akarin end
+                         PlayerChunk playerchunk = playerchunkmap.getUpdatingChunk(j);
+ 
+                         if (playerchunk == null) {
+@@ -126,6 +132,22 @@ public abstract class ChunkMapDistance {
+                             });
+                         });
+                     }
++                    // Akarin start - remove stream
++                    ; // end runnable
++                    
++                    if (sorted == null) {
++                      sorted = ArraySetSorted.a(4);
++                      this.tickets.put(j, sorted);
++                      
++                    } else {
++                      for (Ticket<?> ticket : sorted) {
++                        if (ticket.getTicketType() == TicketType.PLAYER) {
++                          runnable.run();
++                          break; // run for only once
++                        }
++                      }
++                    }
++                    // Akarin end
+                 }
+ 
+                 this.l.clear();
+diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
+index 9c31edade2..eb3f45d8b7 100644
+--- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
++++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
+@@ -92,12 +92,23 @@ public class EntityTNTPrimed extends Entity {
+                 PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(this);
+                 PacketPlayOutEntityTeleport positionPacket = new PacketPlayOutEntityTeleport(this);
+ 
++                // Akarin start - remove stream
++                /*
+                 ete.trackedPlayers.stream()
+                     .filter(viewer -> (viewer.locX() - this.locX()) * (viewer.locY() - this.locY()) * (viewer.locZ() - this.locZ()) < 16 * 16)
+                     .forEach(viewer -> {
+                         viewer.playerConnection.sendPacket(velocityPacket);
+                         viewer.playerConnection.sendPacket(positionPacket);
+                     });
++                */
++                
++                for (EntityPlayer viewer : ete.trackedPlayers) {
++                  if ((viewer.locX() - this.locX()) * (viewer.locY() - this.locY()) * (viewer.locZ() - this.locZ()) < 16 * 16) {
++                    viewer.playerConnection.sendPacket(velocityPacket);
++                    viewer.playerConnection.sendPacket(positionPacket);
++                  }
++                }
++                // Akarin end
+             }
+         }
+         // Paper end
+diff --git a/src/main/java/net/minecraft/server/EntityVillager.java b/src/main/java/net/minecraft/server/EntityVillager.java
+index 9d94aa135e..5fda06edbd 100644
+--- a/src/main/java/net/minecraft/server/EntityVillager.java
++++ b/src/main/java/net/minecraft/server/EntityVillager.java
+@@ -548,11 +548,20 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
+             if (optional.isPresent()) {
+                 WorldServer worldserver = (WorldServer) this.world;
+ 
++                // Akarin start - remote stream
++                /*
+                 ((List) optional.get()).stream().filter((entityliving) -> {
+                     return entityliving instanceof ReputationHandler;
+                 }).forEach((entityliving) -> {
+                     worldserver.a(ReputationEvent.d, entity, (ReputationHandler) entityliving);
+                 });
++                */
++                
++                for (EntityLiving each : optional.get()) {
++                  if (each instanceof ReputationHandler)
++                    worldserver.a(ReputationEvent.d, entity, (ReputationHandler) each);
++                }
++                // Akarin end
+             }
+         }
+     }
+-- 
+2.25.1.windows.1
+
