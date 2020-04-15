@@ -1,4 +1,4 @@
-From 1177c075f73dc22b1cf6e469943399ca82ed2043 Mon Sep 17 00:00:00 2001
+From e56809d3744900d2ce7713bd85fa27c579012fe2 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 10 Apr 2020 15:47:15 +0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Swaps the predicate order of collision
 
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 34aac60312..3de2d40a4d 100644
+index b290f64fa1..fb21da032a 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -1403,8 +1403,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke

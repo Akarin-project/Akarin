@@ -1,11 +1,11 @@
-From 29faf80a84d84dc29d1634b65ac30aa7cf5b254c Mon Sep 17 00:00:00 2001
+From 682855a87bed94aed02a2e045060798cec7d2dfe Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 04:16:44 +0700
 Subject: [PATCH] Remove stream for ender teleport
 
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 3de2d40a4d..c31bed6ac2 100644
+index fb21da032a..6b43c41a85 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -2842,7 +2842,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke

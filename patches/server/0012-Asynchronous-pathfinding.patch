@@ -1,4 +1,4 @@
-From 47d6741745087c605a3a8f9f36475e6912ef3269 Mon Sep 17 00:00:00 2001
+From 30738f8b0d7113418335b1e1cf760993ac495af1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 13:01:13 +0800
@@ -6,17 +6,17 @@ Subject: [PATCH] Asynchronous pathfinding
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index e9f00a1e13..72fa93d75f 100644
+index bb20398abc..cd8b462866 100644
 --- a/src/main/java/net/minecraft/server/EntityInsentient.java
 +++ b/src/main/java/net/minecraft/server/EntityInsentient.java
 @@ -686,7 +686,7 @@ public abstract class EntityInsentient extends EntityLiving {
          this.goalSelector.doTick();
-         //this.world.getMethodProfiler().exit(); // Akarin - remove caller
-         //this.world.getMethodProfiler().enter("navigation"); // Akarin - remove caller
+         // this.world.getMethodProfiler().exit(); // Akarin - remove caller
+         // this.world.getMethodProfiler().enter("navigation"); // Akarin - remove caller
 -        this.navigation.c();
 +        this.navigation.tickAsync(); // Akarin - Async pathfinder
-         //this.world.getMethodProfiler().exit(); // Akarin - remove caller
-         //this.world.getMethodProfiler().enter("mob tick"); // Akarin - remove caller
+         // this.world.getMethodProfiler().exit(); // Akarin - remove caller
+         // this.world.getMethodProfiler().enter("mob tick"); // Akarin - remove caller
          this.mobTick();
 diff --git a/src/main/java/net/minecraft/server/Navigation.java b/src/main/java/net/minecraft/server/Navigation.java
 index abf450917e..4f7f40d5e7 100644
@@ -32,7 +32,7 @@ index abf450917e..4f7f40d5e7 100644
                          if (pathtype == PathType.WATER) {
                              return false;
 diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index b763d7f37e..7f061ec1d8 100644
+index cd8a631d7d..c134a96080 100644
 --- a/src/main/java/net/minecraft/server/NavigationAbstract.java
 +++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
 @@ -29,6 +29,15 @@ public abstract class NavigationAbstract {

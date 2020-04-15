@@ -1,4 +1,4 @@
-From 2abe117f02389d2add1b31e7112924b4c636e36a Mon Sep 17 00:00:00 2001
+From df50e4a222bdb9e05540ded0cd4b234bfb928346 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 14:59:10 +0800
@@ -361,7 +361,7 @@ index 50d5fb62ef..4da7a2c1a4 100644
 +    // Akarin end
  }
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index e1225d5017..3d03976203 100644
+index 6dfbbc67dd..b23612817b 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -284,9 +284,9 @@ public class PlayerConnection implements PacketListenerPlayIn {

@@ -1,4 +1,4 @@
-From 1433da3521eaebe0be0549b9d2552841686c113d Mon Sep 17 00:00:00 2001
+From 6c78e211340d417d966f0ac836db8fac179b93f4 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 22:45:48 +0700
 Subject: [PATCH] Remove a few more streams
@@ -76,7 +76,7 @@ index 9c31edade2..eb3f45d8b7 100644
          }
          // Paper end
 diff --git a/src/main/java/net/minecraft/server/EntityVillager.java b/src/main/java/net/minecraft/server/EntityVillager.java
-index 9d94aa135e..5fda06edbd 100644
+index a7a07ffc43..c9f0f7787f 100644
 --- a/src/main/java/net/minecraft/server/EntityVillager.java
 +++ b/src/main/java/net/minecraft/server/EntityVillager.java
 @@ -548,11 +548,20 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
