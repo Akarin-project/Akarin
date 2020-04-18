@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+ <tsao-chi@the-lingo.org>
+Date: Sat, 18 Apr 2020 18:10:56 +0800
+Subject: [PATCH] Tuinity Log exceptions for async chunk load failures
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index bf6bf7d8c6c7e2d8572a33ed16767d8ba34156e7..1119dd5048cbb8cdd5727e18b154ed15a9a06b63 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -326,7 +326,10 @@ public class ChunkProviderServer extends IChunkProvider {
+             // either right -> failure
+ 
+             if (throwable != null) {
+-                throw new RuntimeException(throwable);
++                // Tuinity start - thank you once again completablefuture
++                MinecraftServer.LOGGER.fatal("Failed to asynchronously load chunk " + chunkPos, throwable);
++                return;
++                // Tuinity end - thank you once again completablefuture
+             }
+ 
+             this.removeTicketAtLevel(TicketType.ASYNC_LOAD, chunkPos, ticketLevel, identifier);
+@@ -336,12 +339,19 @@ public class ChunkProviderServer extends IChunkProvider {
+ 
+             if (failure.isPresent()) {
+                 // failure
+-                throw new IllegalStateException("Chunk failed to load: " + failure.get().toString());
++                // Tuinity start - thank you once again completablefuture
++                MinecraftServer.LOGGER.fatal("Failed to asynchronously load chunk " + chunkPos, new IllegalStateException("Chunk failed to load: " + failure.get().toString()));
++                return;
++                // Tuinity end - thank you once again completablefuture
+             }
+ 
+             onComplete.accept(either.left().get());
+ 
+-        }, this.serverThreadQueue);
++        }, this.serverThreadQueue).exceptionally((throwable) -> {                 // Tuinity start - thank you once again completablefuture
++            MinecraftServer.LOGGER.fatal("Failed to asynchronously load chunk " + chunkPos);
++            return null;
++        });
++        // Tuinity end - thank you once again completablefuture
+     }
+ 
+     public <T> void addTicketAtLevel(TicketType<T> ticketType, ChunkCoordIntPair chunkPos, int ticketLevel, T identifier) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index f56131e3a593f9c1344be07fe478364b344e63dd..0f3199ba4a228cc60db3abfa4ac926b92cbb4b4b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -2472,6 +2472,13 @@ public class CraftWorld implements World {
+             this.world.doIfNotEntityTicking(() -> ret.complete(chunk == null ? null : chunk.bukkitChunk));
+         });
+ 
++        // Tuinity start - thank you once again completablefuture
++        ret.exceptionally((throwable) -> {
++            net.minecraft.server.MinecraftServer.LOGGER.fatal("Failed to asynchronously load chunk (" + x + "," + z + ")", throwable);
++            return null;
++        });
++        // Tuinity end - thank you once again completablefuture
++
+         return ret;
+     }
+     // Paper end
