@@ -27,10 +27,10 @@ until after a client is sent a center section packet. This is required
 to avoid the client rejecting chunks it receives when teleporting.
 
 diff --git a/src/main/java/io/akarin/server/Config.java b/src/main/java/io/akarin/server/Config.java
-index 2ac8f02a97429f04f3e5c9206ec228edccaf24c9..be87db9f63b17114f5ca2a9e2de9f56e528d4048 100644
+index 2ac8f02a97429f04f3e5c9206ec228edccaf24c9..13608380b24a52666c8238f109d8ab507e75debf 100644
 --- a/src/main/java/io/akarin/server/Config.java
 +++ b/src/main/java/io/akarin/server/Config.java
-@@ -96,6 +96,45 @@ public final class Config {
+@@ -96,6 +96,42 @@ public final class Config {
          return Config.config.getDouble(path, dfl);
      }
  
@@ -39,10 +39,7 @@ index 2ac8f02a97429f04f3e5c9206ec228edccaf24c9..be87db9f63b17114f5ca2a9e2de9f56e
 +    public static int[] maxChunkSendsPerPlayerChoice = new int[100];
 +
 +    private static void maxChunkLoadsPerPlayer() {
-+        if (TuinityConfig.configVersion < 1) {
-+            TuinityConfig.set("max-pending-chunk-tickets-per-player", null);
-+        }
-+        maxChunkSendsPerPlayer = TuinityConfig.getDouble("target-chunk-sends-per-player-per-second", 40.0);
++        maxChunkSendsPerPlayer = Config.getDouble("target-chunk-sends-per-player-per-second", 40.0);
 +        if (maxChunkSendsPerPlayer <= -1.0) {
 +            maxChunkSendsPerPlayer = Integer.MAX_VALUE;
 +        } else if (maxChunkSendsPerPlayer <= 1.0) {
@@ -76,7 +73,7 @@ index 2ac8f02a97429f04f3e5c9206ec228edccaf24c9..be87db9f63b17114f5ca2a9e2de9f56e
      public static final class WorldConfig {
  
          public final String worldName;
-@@ -178,6 +217,14 @@ public final class Config {
+@@ -178,6 +214,14 @@ public final class Config {
              this.worldDefaults.addDefault(path, Double.valueOf(dfl));
              return this.config.getDouble(path, this.worldDefaults.getDouble(path));
          }
@@ -513,6 +510,28 @@ index 8977c3516b2ee9b970b6274a5c71982b019ac2a6..bace6cf36a9e888278a6c7a5c5866d9f
                      // Paper end
                      double deltaX = this.locX() - player.locX();
                      double deltaZ = this.locZ() - player.locZ();
+diff --git a/src/main/java/net/minecraft/server/HeightMap.java b/src/main/java/net/minecraft/server/HeightMap.java
+index 37a6da9ee9aab7acaf2f1559917e415217444747..aa73396100adbf741ed52f457284a78c73d658c3 100644
+--- a/src/main/java/net/minecraft/server/HeightMap.java
++++ b/src/main/java/net/minecraft/server/HeightMap.java
+@@ -155,7 +155,7 @@ public class HeightMap {
+         private final String g;
+         private final HeightMap.Use h;
+         private final Predicate<IBlockData> i;
+-        private static final Map<String, HeightMap.Type> j = (Map) SystemUtils.a((Object) Maps.newHashMap(), (hashmap) -> {
++        private static final Map<String, HeightMap.Type> j = SystemUtils.a(Maps.newHashMap(), (hashmap) -> { // Tuinity - decompile fix
+             HeightMap.Type[] aheightmap_type = values();
+             int i = aheightmap_type.length;
+ 
+@@ -167,7 +167,7 @@ public class HeightMap {
+ 
+         });
+ 
+-        private Type(String s, HeightMap.Use heightmap_use, Predicate predicate) {
++        private Type(String s, HeightMap.Use heightmap_use, Predicate<IBlockData> predicate) { // Tuinity - decompile fix
+             this.g = s;
+             this.h = heightmap_use;
+             this.i = predicate;
 diff --git a/src/main/java/net/minecraft/server/PlayerChunk.java b/src/main/java/net/minecraft/server/PlayerChunk.java
 index a9a2ce3d3f46894c3eb973df239fec088eb1b711..7ad1d23dfb7c9b008f72f62f632c7b613ebd77df 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunk.java
@@ -1351,18 +1370,10 @@ index 7129cb0260316e166b4b15cded0e0c0b32433b7f..804efba68124cc4e3b7acb071b3c369c
  
              if (!this.isClientSide && (i & 1) != 0) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 0f3199ba4a228cc60db3abfa4ac926b92cbb4b4b..2b15ddcaa2dbfa0721ddc18bfd6e85e5eb2bb1cb 100644
+index 0f3199ba4a228cc60db3abfa4ac926b92cbb4b4b..d2b9696ca4382e156125f96805d60f1285fca8bb 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit;
- import com.google.common.base.Preconditions;
- import com.google.common.collect.ImmutableList;
- import com.google.common.collect.ImmutableMap;
-+import com.tuinity.tuinity.util.TickThread;
- import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
- import java.io.File;
- import java.io.IOException;
-@@ -2486,10 +2487,43 @@ public class CraftWorld implements World {
+@@ -2486,10 +2486,43 @@ public class CraftWorld implements World {
      // Spigot start
      @Override
      public int getViewDistance() {
@@ -1376,7 +1387,7 @@ index 0f3199ba4a228cc60db3abfa4ac926b92cbb4b4b..2b15ddcaa2dbfa0721ddc18bfd6e85e5
 +
 +    @Override
 +    public void setViewDistance(int viewDistance) {
-+        TickThread.ensureTickThread("Cannot update view distance safely off of the main thread");
++        org.spigotmc.AsyncCatcher.catchOp("Cannot update view distance safely off of the main thread");
 +        if (viewDistance < 2 || viewDistance > 32) {
 +            throw new IllegalArgumentException("View distance " + viewDistance + " is out of range of [2, 32]");
 +        }
@@ -1393,7 +1404,7 @@ index 0f3199ba4a228cc60db3abfa4ac926b92cbb4b4b..2b15ddcaa2dbfa0721ddc18bfd6e85e5
 +
 +    @Override
 +    public void setNoTickViewDistance(int viewDistance) {
-+        TickThread.ensureTickThread("Cannot update view distance safely off of the main thread");
++        org.spigotmc.AsyncCatcher.catchOp("Cannot update view distance safely off of the main thread");
 +        if (viewDistance < 2 || viewDistance > 32) {
 +            throw new IllegalArgumentException("View distance " + viewDistance + " is out of range of [2, 32]");
 +        }
@@ -1408,18 +1419,10 @@ index 0f3199ba4a228cc60db3abfa4ac926b92cbb4b4b..2b15ddcaa2dbfa0721ddc18bfd6e85e5
      private final Spigot spigot = new Spigot()
      {
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index b76379a17ca4c1ad009acfd4407d103ecb476a4e..f0c7e5c2145f42818701c91ee6b2fcde16bd12e0 100644
+index b76379a17ca4c1ad009acfd4407d103ecb476a4e..b767da678e6392e7411c940916417192aa458f2a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.entity;
- import com.destroystokyo.paper.ClientOption.ChatVisibility;
- import com.destroystokyo.paper.PaperSkinParts;
- import com.destroystokyo.paper.ClientOption;
-+import com.tuinity.tuinity.util.TickThread; // Tuinity
- import com.destroystokyo.paper.Title;
- import com.destroystokyo.paper.profile.CraftPlayerProfile;
- import com.destroystokyo.paper.profile.PlayerProfile;
-@@ -1966,13 +1967,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1966,13 +1966,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
  
      @Override
      public int getViewDistance() {
@@ -1431,7 +1434,7 @@ index b76379a17ca4c1ad009acfd4407d103ecb476a4e..f0c7e5c2145f42818701c91ee6b2fcde
      public void setViewDistance(int viewDistance) {
 -        throw new NotImplementedException("Per-Player View Distance APIs need further understanding to properly implement"); // TODO
 +        // Tuinity start - per player view distance
-+        TickThread.ensureTickThread("Cannot update view distance safely off of the main thread");
++        org.spigotmc.AsyncCatcher.catchOp("Cannot update view distance safely off of the main thread");
 +        if ((viewDistance < 2 || viewDistance > 32) && viewDistance != -1) {
 +            throw new IllegalArgumentException("View distance " + viewDistance + " is out of range of [2, 32]");
 +        }
@@ -1449,7 +1452,7 @@ index b76379a17ca4c1ad009acfd4407d103ecb476a4e..f0c7e5c2145f42818701c91ee6b2fcde
 +
 +    @Override
 +    public void setNoTickViewDistance(int viewDistance) {
-+        TickThread.ensureTickThread("Cannot update view distance safely off of the main thread");
++        org.spigotmc.AsyncCatcher.catchOp("Cannot update view distance safely off of the main thread");
 +        if ((viewDistance < 2 || viewDistance > 32) && viewDistance != -1) {
 +            throw new IllegalArgumentException("View distance " + viewDistance + " is out of range of [2, 32]");
 +        }
