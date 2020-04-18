@@ -1,0 +1,242 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
+ <tsao-chi@the-lingo.org>
+Date: Sat, 18 Apr 2020 19:54:01 +0800
+Subject: [PATCH] Tuinity Util patch
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index 1119dd5048cbb8cdd5727e18b154ed15a9a06b63..6a2a6e671f230fd6a8adb5e6ccec22dede740f44 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -683,11 +683,10 @@ public class ChunkProviderServer extends IChunkProvider {
+             EnumCreatureType[] aenumcreaturetype = EnumCreatureType.values();
+             // Paper start - per player mob spawning
+             int[] worldMobCount;
+-            if (this.playerChunkMap.playerMobDistanceMap != null) {
++            // Tuinity start - use view distance map
++            if (this.world.paperConfig.perPlayerMobSpawns) {
+                 // update distance map
+-                this.world.timings.playerMobDistanceMapUpdate.startTiming();
+-                this.playerChunkMap.playerMobDistanceMap.update(this.world.players, this.playerChunkMap.viewDistance);
+-                this.world.timings.playerMobDistanceMapUpdate.stopTiming();
++                // Tuinity end - use view distance map
+                 // re-set mob counts
+                 for (EntityPlayer player : this.world.players) {
+                     Arrays.fill(player.mobCounts, 0);
+@@ -770,9 +769,23 @@ public class ChunkProviderServer extends IChunkProvider {
+ 
+                                     if (this.world.paperConfig.perPlayerMobSpawns) {
+                                         int minDiff = Integer.MAX_VALUE;
+-                                        for (EntityPlayer entityplayer : this.playerChunkMap.playerMobDistanceMap.getPlayersInRange(chunk.getPos())) {
++                                        // Tuinity start - use view distance map
++                                        com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> players = this.playerChunkMap.playerViewDistanceMap.getObjectsInRange(chunk.coordinateKey);
++                                        if (players != null) {
++                                            Object[] backingSet = players.getBackingSet();
++                                            for (int index = 0, len = backingSet.length; index < len; ++index) {
++                                                Object temp = backingSet[index];
++                                                if (!(temp instanceof EntityPlayer)) {
++                                                    continue;
++                                                }
++                                                EntityPlayer entityplayer = (EntityPlayer)temp;
++                                            if (entityplayer.isSpectator() || !entityplayer.affectsSpawning) {
++                                                continue;
++                                            }
++                                            // Tuinity end - use view distance map
+                                             minDiff = Math.min(limit - this.playerChunkMap.getMobCountNear(entityplayer, enumcreaturetype), minDiff);
+                                         }
++                                        } // Tuinity - use view distance map
+                                         difference = (minDiff == Integer.MAX_VALUE) ? 0 : minDiff;
+                                     }
+ 
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index b4c3dffaff5ea64d9189304c5e84c515bf40ed65..ec2f66ef0cc56229078dacad61cd6ab3a5c6cb11 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -110,6 +110,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+ 
+     public final com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> cachedSingleHashSet; // Paper
+ 
++    // Tuinity start
++    public final com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> cachedSingleHashSetTuinity;
++    // Tuinity end
++
+     public EntityPlayer(MinecraftServer minecraftserver, WorldServer worldserver, GameProfile gameprofile, PlayerInteractManager playerinteractmanager) {
+         super((World) worldserver, gameprofile);
+         playerinteractmanager.player = this;
+@@ -128,6 +132,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         this.canPickUpLoot = true;
+         this.maxHealthCache = this.getMaxHealth();
+         this.cachedSingleMobDistanceMap = new com.destroystokyo.paper.util.PooledHashSets.PooledObjectLinkedOpenHashSet<>(this); // Paper
++        // Tuinity start
++        this.cachedSingleHashSetTuinity = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<>(this);
++        // Tuinity end
+     }
+ 
+     // Yes, this doesn't match Vanilla, but it's the best we can do for now.
+diff --git a/src/main/java/net/minecraft/server/HeightMap.java b/src/main/java/net/minecraft/server/HeightMap.java
+index 29cb545a864dea09ba52b6071f5280cdddd33808..37a6da9ee9aab7acaf2f1559917e415217444747 100644
+--- a/src/main/java/net/minecraft/server/HeightMap.java
++++ b/src/main/java/net/minecraft/server/HeightMap.java
+@@ -119,6 +119,7 @@ public class HeightMap {
+         }
+     }
+ 
++    public final int get(int x, int z) { return this.a(x, z); } // Tuinity - OBFHELPER
+     public int a(int i, int j) {
+         return this.a(c(i, j));
+     }
+diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+index 7b7e1b2b45dcfe55c4052dacdcc2ca629ca4521b..2acdb72d7ee4bba043f8b083a2ed6c2ec1a5111d 100644
+--- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+@@ -81,7 +81,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+     public final Int2ObjectMap<PlayerChunkMap.EntityTracker> trackedEntities;
+     private final Queue<Runnable> z;
+     int viewDistance; // Paper - private -> package private
+-    public final com.destroystokyo.paper.util.PlayerMobDistanceMap playerMobDistanceMap; // Paper
++    //public final com.destroystokyo.paper.util.PlayerMobDistanceMap playerMobDistanceMap; // Paper // Tuinity - replaced by view distance map
+ 
+     // CraftBukkit start - recursion-safe executor for Chunk loadCallback() and unloadCallback()
+     public final CallbackExecutor callbackExecutor = new CallbackExecutor();
+@@ -136,6 +136,29 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+ 
+ 
+     // Paper end
++    // Tuinity start - distance maps
++    final com.destroystokyo.paper.util.misc.PooledLinkedHashSets<EntityPlayer> pooledEntityPlayerSets = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets<>();
++    public final com.destroystokyo.paper.util.misc.PlayerAreaMap playerViewDistanceMap;
++
++    void addPlayerToDistanceMapsTuinity(EntityPlayer player) {
++        this.updateMapsTuinity(player);
++    }
++
++    void removePlayerFromDistanceMapsTuinity(EntityPlayer player) {
++        this.playerViewDistanceMap.remove(player);
++    }
++
++    void updateDistanceMapsTuinity(EntityPlayer player) {
++        this.updateMapsTuinity(player);
++    }
++
++    private void updateMapsTuinity(EntityPlayer player) {
++        int chunkX = net.minecraft.server.MCUtil.getChunkCoordinate(player.locX());
++        int chunkZ = net.minecraft.server.MCUtil.getChunkCoordinate(player.locZ());
++
++        this.playerViewDistanceMap.update(player, chunkX, chunkZ, this.viewDistance);
++    }
++    // Tuinity end
+ 
+     // Paper start - Reduce entity tracker updates on move
+     private double trackerUpdateDistanceSquared;
+@@ -201,8 +224,12 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+         this.l = supplier;
+         this.m = new VillagePlace(new File(this.w, "poi"), datafixer, this.world); // Paper
+         this.setViewDistance(i);
+-        this.playerMobDistanceMap = this.world.paperConfig.perPlayerMobSpawns ? new com.destroystokyo.paper.util.PlayerMobDistanceMap() : null; // Paper
++        //this.playerMobDistanceMap = this.world.paperConfig.perPlayerMobSpawns ? new com.destroystokyo.paper.util.PlayerMobDistanceMap() : null; // Paper // Tuinity - distance maps
+         this.trackerUpdateDistanceSquared = Math.pow(this.world.paperConfig.trackerUpdateDistance, 2); // Paper
++        // Tuinity start - distance maps
++        com.destroystokyo.paper.util.misc.PooledLinkedHashSets<EntityPlayer> sets = this.pooledEntityPlayerSets;
++        this.playerViewDistanceMap = new com.destroystokyo.paper.util.misc.PlayerAreaMap(sets);
++        // Tuinity end - distance maps
+     }
+ 
+     public void updatePlayerMobTypeMap(Entity entity) {
+@@ -213,9 +240,23 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+         int chunkZ = (int)Math.floor(entity.locZ()) >> 4;
+         int index = entity.getEntityType().getEnumCreatureType().ordinal();
+ 
+-        for (EntityPlayer player : this.playerMobDistanceMap.getPlayersInRange(chunkX, chunkZ)) {
++        // Tuinity start - use view distance map
++        com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> players = this.playerViewDistanceMap.getObjectsInRange(chunkX, chunkZ);
++        if (players != null) {
++            Object[] backingSet = players.getBackingSet();
++        for (int i = 0, len = backingSet.length; i < len; ++i) {
++            Object temp = backingSet[i];
++            if (!(temp instanceof EntityPlayer)) {
++                continue;
++            }
++            EntityPlayer player = (EntityPlayer)temp;
++            if (player.isSpectator() || !player.affectsSpawning) {
++                continue;
++            }
++            // Tuinity end - use view distance map
+             ++player.mobCounts[index];
+         }
++        } // Tuinity - use view distance map
+     }
+ 
+     public int getMobCountNear(EntityPlayer entityPlayer, EnumCreatureType enumCreatureType) {
+@@ -1545,7 +1586,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+         }
+ 
+         this.updateMaps(entityplayer); // Paper - distance maps
+-
++        this.updateDistanceMapsTuinity(entityplayer); // Tuinity - distance maps
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 75605d44bc4c051a7afa327a8749a0a67790b165..7129cb0260316e166b4b15cded0e0c0b32433b7f 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -1214,9 +1214,11 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+         int k = MathHelper.floor((axisalignedbb.minZ - 2.0D) / 16.0D);
+         int l = MathHelper.floor((axisalignedbb.maxZ + 2.0D) / 16.0D);
+ 
++        ChunkProviderServer chunkProvider = ((ChunkProviderServer)this.chunkProvider); // Tuinity - optimize for loaded chunks
++
+         for (int i1 = i; i1 <= j; ++i1) {
+             for (int j1 = k; j1 <= l; ++j1) {
+-                Chunk chunk = (Chunk)this.getChunkIfLoadedImmediately(i1, j1); // Paper
++                Chunk chunk = chunkProvider.getChunkAtIfLoadedMainThread(i1, j1); // Paper // Tuinity - optimize for loaded chunks
+ 
+                 if (chunk != null) {
+                     chunk.a(entity, axisalignedbb, list, predicate);
+@@ -1235,9 +1237,11 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+         int l = MathHelper.f((axisalignedbb.maxZ + 2.0D) / 16.0D);
+         List<T> list = Lists.newArrayList();
+ 
++        ChunkProviderServer chunkProvider = ((ChunkProviderServer)this.chunkProvider); // Tuinity - optimize for loaded chunks
++
+         for (int i1 = i; i1 < j; ++i1) {
+             for (int j1 = k; j1 < l; ++j1) {
+-                Chunk chunk = (Chunk)this.getChunkIfLoadedImmediately(i1, j1); // Paper
++                Chunk chunk = chunkProvider.getChunkAtIfLoadedMainThread(i1, j1); // Paper // Tuinity - optimize for loaded chunks
+ 
+                 if (chunk != null) {
+                     chunk.a(entitytypes, axisalignedbb, list, predicate);
+@@ -1257,10 +1261,11 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+         int l = MathHelper.f((axisalignedbb.maxZ + 2.0D) / 16.0D);
+         List<T> list = Lists.newArrayList();
+         IChunkProvider ichunkprovider = this.getChunkProvider();
++        ChunkProviderServer chunkProvider = ((ChunkProviderServer)this.chunkProvider); // Tuinity - optimize for loaded chunks
+ 
+         for (int i1 = i; i1 < j; ++i1) {
+             for (int j1 = k; j1 < l; ++j1) {
+-                Chunk chunk = (Chunk)this.getChunkIfLoadedImmediately(i1, j1); // Paper
++                Chunk chunk = chunkProvider.getChunkAtIfLoadedMainThread(i1, j1); // Paper // Tuinity - optimize for loaded chunks
+ 
+                 if (chunk != null) {
+                     chunk.a(oclass, axisalignedbb, list, predicate);
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 78fdacdaf119b9c3fab477ee98089bbad5da2d73..4d080d74dc949ea93ce34aa1906144740b9c99f6 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -1227,6 +1227,7 @@ public class WorldServer extends World {
+ 
+         this.registerEntity(entityplayer);
+         this.getChunkProvider().playerChunkMap.addPlayerToDistanceMaps(entityplayer); // Paper - distance maps
++        this.getChunkProvider().playerChunkMap.addPlayerToDistanceMapsTuinity(entityplayer); // Tuinity - distance maps
+     }
+ 
+     // CraftBukkit start
+@@ -1438,6 +1439,7 @@ public class WorldServer extends World {
+ 
+             this.players.remove(entityplayer);
+             this.getChunkProvider().playerChunkMap.removePlayerFromDistanceMaps(entityplayer); // Paper - distance maps
++            this.getChunkProvider().playerChunkMap.removePlayerFromDistanceMapsTuinity(entityplayer); // Tuinity - distance maps
+         }
+ 
+         this.getScoreboard().a(entity);

@@ -121,6 +121,7 @@ done
 
 importToPaperWorkspace CommandGive
 importToPaperWorkspace PathDestination
+importToPaperWorkspace HeightMap
 
 # Library import format (multiple files are supported):
 # importLibraryToPaperWorkspace com.mojang datafixerupper com/mojang/datafixers/util Either.java
