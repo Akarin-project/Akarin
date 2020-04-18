@@ -1,4 +1,4 @@
-From d11cfc8c845748f4a3ffbdd4c102a1b350f532cc Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 02:44:07 +0700
 Subject: [PATCH] Tuinity Optimise ArraySetSorted#removeIf
@@ -6,7 +6,7 @@ Subject: [PATCH] Tuinity Optimise ArraySetSorted#removeIf
 Remove iterator allocation and ensure the call is always O(n)
 
 diff --git a/src/main/java/net/minecraft/server/ArraySetSorted.java b/src/main/java/net/minecraft/server/ArraySetSorted.java
-index 85f799a71..f23ddb9e0 100644
+index 85f799a713db0c822d46b689010f9f6bd43f5280..f23ddb9e0ca41eef0dacc0e6e0072b78dfdd9e44 100644
 --- a/src/main/java/net/minecraft/server/ArraySetSorted.java
 +++ b/src/main/java/net/minecraft/server/ArraySetSorted.java
 @@ -11,7 +11,9 @@ public class ArraySetSorted<T> extends AbstractSet<T> {
@@ -62,6 +62,3 @@ index 85f799a71..f23ddb9e0 100644
      public static <T extends Comparable<T>> ArraySetSorted<T> a(int i) {
          return new ArraySetSorted<>(i, (Comparator)Comparator.naturalOrder()); // Paper - decompile fix
      }
--- 
-2.20.1
-

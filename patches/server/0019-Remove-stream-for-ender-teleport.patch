@@ -1,11 +1,11 @@
-From de67219af39f3c7cbf541a6dcb46f4fce1fdaa49 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 04:16:44 +0700
 Subject: [PATCH] Remove stream for ender teleport
 
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index fb21da032..6b43c41a8 100644
+index fb21da032a222d91f7840be1426e809fbd633345..6b43c41a85061058b49207d2762c2aeabc20a2c4 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -2842,7 +2842,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -32,6 +32,3 @@ index fb21da032..6b43c41a8 100644
  
      public boolean hasSinglePlayerPassenger() {
          Set<Entity> set = Sets.newHashSet();
--- 
-2.20.1
-

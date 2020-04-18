@@ -1,11 +1,11 @@
-From f86852c95674cd7052effb5c77efb8101b073354 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 22:17:18 +0700
 Subject: [PATCH] Disable the Snooper
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index c562c8ce7..63865f767 100644
+index c562c8ce7fd260760d1b855a9feffed904e2978b..63865f767b58e71180f1d5f01dddba5e8e4a346c 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1169,6 +1169,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -25,6 +25,3 @@ index c562c8ce7..63865f767 100644
  
          this.methodProfiler.exit();
          this.methodProfiler.enter("tallying");
--- 
-2.20.1
-

@@ -1,4 +1,4 @@
-From 297ce321a17608b758c4b2d8b00f15dc2984ec6d Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 3 Apr 2020 15:18:38 +0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Add server configuration
 
 
 diff --git a/src/main/java/co/aikar/timings/TimingsExport.java b/src/main/java/co/aikar/timings/TimingsExport.java
-index 93d5a3f9..dfb57b9d 100644
+index 93d5a3f97a1b2b3a1cd2731d48e8ebd01d29aa91..dfb57b9db56b31205a581f26ff46496b95c7344b 100644
 --- a/src/main/java/co/aikar/timings/TimingsExport.java
 +++ b/src/main/java/co/aikar/timings/TimingsExport.java
 @@ -207,6 +207,7 @@ class TimingsExport extends Thread {
@@ -18,7 +18,7 @@ index 93d5a3f9..dfb57b9d 100644
  
          new TimingsExport(listeners, parent, history).start();
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 9ceaac0e..17a494b4 100644
+index 9ceaac0e859e347b07fa9f4c6507a73deb280670..17a494b4ded276ae2aa16c008e424c58b3090150 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -1386,6 +1386,14 @@ public interface Server extends PluginMessageRecipient {
@@ -36,6 +36,3 @@ index 9ceaac0e..17a494b4 100644
          /**
           * Sends the component to the player
           *
--- 
-2.20.1
-

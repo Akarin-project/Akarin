@@ -9,8 +9,6 @@ basedir=$1
 
 source "$basedir/scripts/functions.sh"
 
-paperVer=$(cat current-paper)
-
 paperworkdir="$basedir/Paper/work"
 minecraftversion=$(cat $paperworkdir/BuildData/info.json | grep minecraftVersion | cut -d '"' -f 4)
 decompile="$paperworkdir/Minecraft/$minecraftversion/spigot"
@@ -43,6 +41,6 @@ done
 # push the dev project
 cd $basedir/mc-dev
 $gitcmd add . -A
-$gitcmd commit . -m "$paperVer"
-$gitcmd tag -a "$paperVer" -m "$paperVer" 2>/dev/null
+$gitcmd commit . -m "akarin-base"
+$gitcmd tag -a "akarin-base" -m "akarin-base" 2>/dev/null
 # gitpush . $MCDEV_REPO $paperVer

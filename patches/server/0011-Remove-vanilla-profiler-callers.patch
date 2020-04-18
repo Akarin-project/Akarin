@@ -1,11 +1,11 @@
-From addfa3784039c4fe1b0dee826172a608a4e1e21a Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 22:18:01 +0700
 Subject: [PATCH] Remove vanilla profiler callers
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/server/ticklist/PaperTickList.java b/src/main/java/com/destroystokyo/paper/server/ticklist/PaperTickList.java
-index ce653f6b4..21e28b98b 100644
+index ce653f6b4be3ab6c6d35cb3e9222e7f8c8759e25..21e28b98b4efc792dc187d77cde262ea3077f14c 100644
 --- a/src/main/java/com/destroystokyo/paper/server/ticklist/PaperTickList.java
 +++ b/src/main/java/com/destroystokyo/paper/server/ticklist/PaperTickList.java
 @@ -271,7 +271,7 @@ public final class PaperTickList<T> extends TickListServer<T> { // extend to avo
@@ -36,7 +36,7 @@ index ce653f6b4..21e28b98b 100644
  
          // finished ticking, actual cleanup time
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index f741a034e..04ffecd06 100644
+index f741a034e8eae0a250aa16b26e56f173c88a9769..04ffecd0615b85e080a828d32db7821c022dff69 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
 @@ -368,9 +368,9 @@ public class ChunkProviderServer extends IChunkProvider {
@@ -206,7 +206,7 @@ index f741a034e..04ffecd06 100644
          }
  
 diff --git a/src/main/java/net/minecraft/server/CommandDispatcher.java b/src/main/java/net/minecraft/server/CommandDispatcher.java
-index 2414b0a55..1b0a878d2 100644
+index 2414b0a552e5d6fb449bca163add7a9bac39e943..1b0a878d2a186bceba11b08ef28c1c040d4d78ce 100644
 --- a/src/main/java/net/minecraft/server/CommandDispatcher.java
 +++ b/src/main/java/net/minecraft/server/CommandDispatcher.java
 @@ -168,7 +168,7 @@ public class CommandDispatcher {
@@ -228,7 +228,7 @@ index 2414b0a55..1b0a878d2 100644
  
          return b0;
 diff --git a/src/main/java/net/minecraft/server/CustomFunctionData.java b/src/main/java/net/minecraft/server/CustomFunctionData.java
-index ee42e1dfa..68dc7cdfb 100644
+index ee42e1dfa493c3d7f5af8cc7b8e17e80fcb32b71..68dc7cdfbca341234245d0b8c1643f56a1beac06 100644
 --- a/src/main/java/net/minecraft/server/CustomFunctionData.java
 +++ b/src/main/java/net/minecraft/server/CustomFunctionData.java
 @@ -58,10 +58,10 @@ public class CustomFunctionData implements IResourcePackListener {
@@ -290,7 +290,7 @@ index ee42e1dfa..68dc7cdfb 100644
  
                      ++k;
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 9cb4e5a1e..b290f64fa 100644
+index 9cb4e5a1e6eca84955948f474f92467c0681968c..b290f64fa13c2ff4c8555370c57c38667ba09c26 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -395,7 +395,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -408,7 +408,7 @@ index 9cb4e5a1e..b290f64fa 100644
          } else {
              return null;
 diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index 1991cee43..bb20398ab 100644
+index 1991cee43d429574f2c0889f807e7cd090f7d7dd..bb20398abc65d3f7e54867bdf930480af0941ada 100644
 --- a/src/main/java/net/minecraft/server/EntityInsentient.java
 +++ b/src/main/java/net/minecraft/server/EntityInsentient.java
 @@ -223,13 +223,13 @@ public abstract class EntityInsentient extends EntityLiving {
@@ -493,7 +493,7 @@ index 1991cee43..bb20398ab 100644
      }
  
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index ad474500e..284826897 100644
+index ad474500e2f6fd6ad6db7bf2436b74c2d9d6136a..284826897995c278c0b76a4114fad4e60309a1f9 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
 +++ b/src/main/java/net/minecraft/server/EntityLiving.java
 @@ -242,7 +242,7 @@ public abstract class EntityLiving extends Entity {
@@ -592,7 +592,7 @@ index ad474500e..284826897 100644
  
      private void n() {
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index cd8df622f..4f0ae1bc4 100644
+index cd8df622f02051ad997664c670447b225361bbc3..4f0ae1bc453e44b65dba50273913cf0c91c13017 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -825,7 +825,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -625,7 +625,7 @@ index cd8df622f..4f0ae1bc4 100644
              PlayerTeleportEvent tpEvent = new PlayerTeleportEvent(this.getBukkitEntity(), enter, exit, cause);
              Bukkit.getServer().getPluginManager().callEvent(tpEvent);
 diff --git a/src/main/java/net/minecraft/server/EntityVillager.java b/src/main/java/net/minecraft/server/EntityVillager.java
-index 6e0020ae0..a7a07ffc4 100644
+index 6e0020ae0b4d2f2597843129b83fff0d194de337..a7a07ffc43d4e95af59da1194ae90394580bb242 100644
 --- a/src/main/java/net/minecraft/server/EntityVillager.java
 +++ b/src/main/java/net/minecraft/server/EntityVillager.java
 @@ -144,9 +144,9 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
@@ -641,7 +641,7 @@ index 6e0020ae0..a7a07ffc4 100644
              --this.bB;
              if (this.bB <= 0) {
 diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
-index a353f3d5f..5f976a17c 100644
+index a353f3d5fa5a5f54335f73584589de3f5cb20d3e..5f976a17c7aa36286ee1132597e480f591749a45 100644
 --- a/src/main/java/net/minecraft/server/Explosion.java
 +++ b/src/main/java/net/minecraft/server/Explosion.java
 @@ -285,7 +285,7 @@ public class Explosion {
@@ -663,7 +663,7 @@ index a353f3d5f..5f976a17c 100644
              }
  
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 63865f767..82aa50bf8 100644
+index 63865f767b58e71180f1d5f01dddba5e8e4a346c..82aa50bf85b18599cf72ca1fbe59eceeebc1dc61 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -933,18 +933,18 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -821,7 +821,7 @@ index 63865f767..82aa50bf8 100644
  
      public boolean getAllowNether() {
 diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index dc32107ec..cd8a631d7 100644
+index dc32107ec320fa54487f24c9d68ff8e5a6dea1bb..cd8a631d7d3c6fbdd2470635173659f0eddddae2 100644
 --- a/src/main/java/net/minecraft/server/NavigationAbstract.java
 +++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
 @@ -137,14 +137,14 @@ public abstract class NavigationAbstract {
@@ -842,7 +842,7 @@ index dc32107ec..cd8a631d7 100644
                  this.q = pathentity.k();
                  this.r = j;
 diff --git a/src/main/java/net/minecraft/server/PathfinderGoalSelector.java b/src/main/java/net/minecraft/server/PathfinderGoalSelector.java
-index 90319909e..c09c5440b 100644
+index 90319909e55e70dab3999534d836b64c7b5d3df8..c09c5440b3b7ddccf93b131c8b8fc625240c5ba7 100644
 --- a/src/main/java/net/minecraft/server/PathfinderGoalSelector.java
 +++ b/src/main/java/net/minecraft/server/PathfinderGoalSelector.java
 @@ -77,7 +77,7 @@ public class PathfinderGoalSelector {
@@ -886,7 +886,7 @@ index 90319909e..c09c5440b 100644
  
      public Stream<PathfinderGoalWrapped> c() {
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index c38d31faf..e23008762 100644
+index c38d31fafee81904ecfa43b90f75a6c8f5fd2ede..e230087620c23f87d16cd021875ad9edc3e0982e 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -537,20 +537,20 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
@@ -947,7 +947,7 @@ index c38d31faf..e23008762 100644
                  try (co.aikar.timings.Timing ignored1 = this.world.timings.chunkSaveDataSerialization.startTiming()) { // Paper
                  nbttagcompound = ChunkRegionLoader.saveChunk(this.world, ichunkaccess);
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 7929fcc80..6dfbbc67d 100644
+index 7929fcc800064fa23b260c3ecbed75f846bb375a..6dfbbc67dd9cc60355dcf5ef751cd1a5b259be6b 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -185,7 +185,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
@@ -969,7 +969,7 @@ index 7929fcc80..6dfbbc67d 100644
          for (int spam; (spam = this.chatThrottle) > 0 && !chatSpamField.compareAndSet(this, spam, spam - 1); ) ;
          if (tabSpamLimiter.get() > 0) tabSpamLimiter.getAndDecrement(); // Paper - split to seperate variable
 diff --git a/src/main/java/net/minecraft/server/TickListServer.java b/src/main/java/net/minecraft/server/TickListServer.java
-index 3f1aa5ced..a7f2dee2c 100644
+index 3f1aa5ced697490b5481ba992cf5af5dc98b8166..a7f2dee2c424b5da66a7c86319f6fa3a6a619087 100644
 --- a/src/main/java/net/minecraft/server/TickListServer.java
 +++ b/src/main/java/net/minecraft/server/TickListServer.java
 @@ -65,7 +65,7 @@ public class TickListServer<T> implements TickList<T> {
@@ -1000,7 +1000,7 @@ index 3f1aa5ced..a7f2dee2c 100644
              this.h.clear();
              this.g.clear();
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 839ddb14e..11629c4ce 100644
+index 839ddb14efe621c0fdd4d43c03084a9d49683997..11629c4ce8b7e3924ae7cd44a3c03e1898142de9 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -378,9 +378,9 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
@@ -1105,7 +1105,7 @@ index 839ddb14e..11629c4ce 100644
          int j = MathHelper.f((axisalignedbb.maxX + 2.0D) / 16.0D);
          int k = MathHelper.floor((axisalignedbb.minZ - 2.0D) / 16.0D);
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index a0db38b58..78fdacdaf 100644
+index a0db38b5880c849514b89f8b47648de0e5b1273f..78fdacdaf119b9c3fab477ee98089bbad5da2d73 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -274,12 +274,12 @@ public class WorldServer extends World {
@@ -1356,6 +1356,3 @@ index a0db38b58..78fdacdaf 100644
      }
  
      @Override
--- 
-2.20.1
-

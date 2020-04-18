@@ -1,4 +1,4 @@
-From c5a951c9c8105d4a990a4fb09d7486379216297e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Sun, 5 Apr 2020 13:01:13 +0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Asynchronous pathfinding
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index bb20398ab..cd8b46286 100644
+index bb20398abc65d3f7e54867bdf930480af0941ada..cd8b462866f3f89405aabad692466483da64b49b 100644
 --- a/src/main/java/net/minecraft/server/EntityInsentient.java
 +++ b/src/main/java/net/minecraft/server/EntityInsentient.java
 @@ -686,7 +686,7 @@ public abstract class EntityInsentient extends EntityLiving {
@@ -19,7 +19,7 @@ index bb20398ab..cd8b46286 100644
          // this.world.getMethodProfiler().enter("mob tick"); // Akarin - remove caller
          this.mobTick();
 diff --git a/src/main/java/net/minecraft/server/Navigation.java b/src/main/java/net/minecraft/server/Navigation.java
-index abf450917..4f7f40d5e 100644
+index abf450917e605972d84cb603b966feb013ae0002..4f7f40d5e7050d9b2da29c6e6efe7c5bef560d55 100644
 --- a/src/main/java/net/minecraft/server/Navigation.java
 +++ b/src/main/java/net/minecraft/server/Navigation.java
 @@ -183,7 +183,7 @@ public class Navigation extends NavigationAbstract {
@@ -32,7 +32,7 @@ index abf450917..4f7f40d5e 100644
                          if (pathtype == PathType.WATER) {
                              return false;
 diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index cd8a631d7..c134a9608 100644
+index cd8a631d7d3c6fbdd2470635173659f0eddddae2..c134a96080b3826342f54db41e8d80981db8c101 100644
 --- a/src/main/java/net/minecraft/server/NavigationAbstract.java
 +++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
 @@ -29,6 +29,15 @@ public abstract class NavigationAbstract {
@@ -221,7 +221,7 @@ index cd8a631d7..c134a9608 100644
      public boolean n() {
          return !this.m();
 diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
-index 67c63cfe3..848e2fe8b 100644
+index 67c63cfe333e328cbd00ada970bd81efebfe30b6..848e2fe8b84bfec5be332fd051512eda3838c108 100644
 --- a/src/main/java/net/minecraft/server/Pathfinder.java
 +++ b/src/main/java/net/minecraft/server/Pathfinder.java
 @@ -27,7 +27,7 @@ public class Pathfinder {
@@ -234,7 +234,7 @@ index 67c63cfe3..848e2fe8b 100644
          this.e.a(chunkcache, entityinsentient);
          PathPoint pathpoint = this.e.b();
 diff --git a/src/main/java/net/minecraft/server/PathfinderTurtle.java b/src/main/java/net/minecraft/server/PathfinderTurtle.java
-index 59b1fe289..1790878ae 100644
+index 59b1fe289c57b9e9f21b74c26cc1836255dad78b..1790878ae9ac33be86bed0b962b8171bf666d119 100644
 --- a/src/main/java/net/minecraft/server/PathfinderTurtle.java
 +++ b/src/main/java/net/minecraft/server/PathfinderTurtle.java
 @@ -148,7 +148,7 @@ public class PathfinderTurtle extends PathfinderNormal {
@@ -247,7 +247,7 @@ index 59b1fe289..1790878ae 100644
                      }
  
 diff --git a/src/main/java/net/minecraft/server/PathfinderWater.java b/src/main/java/net/minecraft/server/PathfinderWater.java
-index 075b63ef5..a3473ddcf 100644
+index 075b63ef57a1528118f03a00c7156b3cb7744969..a3473ddcfe15d329eba78bbd60c00541cb1b88bb 100644
 --- a/src/main/java/net/minecraft/server/PathfinderWater.java
 +++ b/src/main/java/net/minecraft/server/PathfinderWater.java
 @@ -63,7 +63,7 @@ public class PathfinderWater extends PathfinderAbstract {
@@ -259,6 +259,3 @@ index 075b63ef5..a3473ddcf 100644
          float f = this.b.a(pathtype);
  
          if (f >= 0.0F) {
--- 
-2.20.1
-

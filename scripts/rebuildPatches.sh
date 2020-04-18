@@ -35,7 +35,7 @@ function savePatches {
     fi
 
     cd "$basedir/$targetname"
-    $gitcmd format-patch --no-stat -N -o "$basedir/patches/$2" upstream/upstream >/dev/null
+    $gitcmd format-patch --no-signature --zero-commit --full-index --no-stat -N -o "$basedir/patches/$2" upstream/upstream >/dev/null
 	basedir
     $gitcmd add -A "$basedir/patches/$2"
 	echo "  $(bashcolor 1 32)($3/$4)$(bashcolorend) - Patches saved for $targetname to patches/$2"

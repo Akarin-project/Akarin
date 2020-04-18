@@ -1,11 +1,11 @@
-From f2d1556bf8e5f431debcc65ab9f0065caea2d284 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 17:49:07 +0700
 Subject: [PATCH] Remove stream and simplify operation in pathfinder
 
 
 diff --git a/src/main/java/net/minecraft/server/PathDestination.java b/src/main/java/net/minecraft/server/PathDestination.java
-index 9071d43d8..2f33aafe3 100644
+index 9071d43d8b85a64a11566b2b535c3f6db65028f8..2f33aafe34d9cfd664abf006f8dbdf5cb981b692 100644
 --- a/src/main/java/net/minecraft/server/PathDestination.java
 +++ b/src/main/java/net/minecraft/server/PathDestination.java
 @@ -5,6 +5,7 @@ public class PathDestination extends PathPoint {
@@ -17,7 +17,7 @@ index 9071d43d8..2f33aafe3 100644
      public PathDestination(PathPoint pathpoint) {
          super(pathpoint.a, pathpoint.b, pathpoint.c);
 diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
-index 848e2fe8b..379ee96b0 100644
+index 848e2fe8b84bfec5be332fd051512eda3838c108..379ee96b0801faaffc83c9f1b7473bc4b493bb6f 100644
 --- a/src/main/java/net/minecraft/server/Pathfinder.java
 +++ b/src/main/java/net/minecraft/server/Pathfinder.java
 @@ -2,7 +2,9 @@ package net.minecraft.server;
@@ -149,6 +149,3 @@ index 848e2fe8b..379ee96b0 100644
      private PathEntity a(PathPoint pathpoint, BlockPosition blockposition, boolean flag) {
          List<PathPoint> list = Lists.newArrayList();
          PathPoint pathpoint1 = pathpoint;
--- 
-2.20.1
-

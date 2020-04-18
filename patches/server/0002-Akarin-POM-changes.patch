@@ -1,4 +1,4 @@
-From 9ef8c6991bb852a356245afb1ed1e6977e8c34ce Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 14 Dec 2018 21:53:58 -0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Akarin POM changes
 
 
 diff --git a/pom.xml b/pom.xml
-index 55679af92..19f87edb5 100644
+index 55679af926485eca6bb0b9ed368a4c91c8a7e37e..19f87edb55a48b151f81f899cedbc573aec66405 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -1,12 +1,11 @@
@@ -67,7 +67,7 @@ index 55679af92..19f87edb5 100644
                  </configuration>
                  <executions>
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
-index 674096cab..9a7235b8e 100644
+index 674096cab190d62622f9947853b056f57d43a2a5..9a7235b8e525fbc52ff7ce53156816f9bbdb5d6f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
 @@ -11,7 +11,7 @@ public final class Versioning {
@@ -79,6 +79,3 @@ index 674096cab..9a7235b8e 100644
          Properties properties = new Properties();
  
          if (stream != null) {
--- 
-2.20.1
-
