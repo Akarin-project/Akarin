@@ -1,4 +1,4 @@
-From 88c462e64d3468d0ad87e6f8271e4e434a8f06d1 Mon Sep 17 00:00:00 2001
+From ef19a5cdf803c60b840540c9c61accca961fe8eb Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Fri, 14 Dec 2018 21:52:29 -0800
@@ -6,7 +6,7 @@ Subject: [PATCH] POM Changes
 
 
 diff --git a/pom.xml b/pom.xml
-index 2cb971408..d167304be 100644
+index 2cb97140..d167304b 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -3,18 +3,18 @@
@@ -35,5 +35,5 @@ index 2cb971408..d167304be 100644
  
      <properties>
 -- 
-2.25.1.windows.1
+2.20.1
 

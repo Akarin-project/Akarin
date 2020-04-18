@@ -1,4 +1,4 @@
-From 58097b8b6c20d860e27b7a159fceb52de55462aa Mon Sep 17 00:00:00 2001
+From 8bb733f7e5a75ca89b0fdf2dda187b923ca07432 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 02:49:56 +0700
 Subject: [PATCH] Don't run entity collision code if not needed
@@ -9,7 +9,7 @@ the max collisions per entity is less than or equal to 0
 This commit was basically referenced on Tuinity#7131da4.
 
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 2848268979..c1c7e7dca3 100644
+index 284826897..c1c7e7dca 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
 +++ b/src/main/java/net/minecraft/server/EntityLiving.java
 @@ -2663,10 +2663,16 @@ public abstract class EntityLiving extends Entity {
@@ -31,5 +31,5 @@ index 2848268979..c1c7e7dca3 100644
  
              if (i > 0 && list.size() > i - 1 && this.random.nextInt(4) == 0) {
 -- 
-2.25.1.windows.1
+2.20.1
 

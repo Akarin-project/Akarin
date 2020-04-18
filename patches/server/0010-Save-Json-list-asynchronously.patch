@@ -1,4 +1,4 @@
-From 9858a4f599533da9ebc2befca0d03d07f888f072 Mon Sep 17 00:00:00 2001
+From 123a20482feb2e8fbf59c007b729a4eb18d9984a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:16:18 +0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Save Json list asynchronously
 
 
 diff --git a/src/main/java/net/minecraft/server/JsonList.java b/src/main/java/net/minecraft/server/JsonList.java
-index c97be42dd7..370841cad0 100644
+index c97be42dd..370841cad 100644
 --- a/src/main/java/net/minecraft/server/JsonList.java
 +++ b/src/main/java/net/minecraft/server/JsonList.java
 @@ -168,6 +168,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
@@ -33,5 +33,5 @@ index c97be42dd7..370841cad0 100644
  
      public void load() throws FileNotFoundException {
 -- 
-2.25.1.windows.1
+2.20.1
 

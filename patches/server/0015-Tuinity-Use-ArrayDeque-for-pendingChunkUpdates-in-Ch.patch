@@ -1,4 +1,4 @@
-From 310f33996722b048faa9bf70c4beaca783de989b Mon Sep 17 00:00:00 2001
+From f79355679035b382e7d6ba970e77102160d02939 Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 02:39:12 +0700
 Subject: [PATCH] Tuinity Use ArrayDeque for pendingChunkUpdates in
@@ -6,7 +6,7 @@ Subject: [PATCH] Tuinity Use ArrayDeque for pendingChunkUpdates in
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkMapDistance.java b/src/main/java/net/minecraft/server/ChunkMapDistance.java
-index 0244768f76..13d113aee5 100644
+index 0244768f7..13d113aee 100644
 --- a/src/main/java/net/minecraft/server/ChunkMapDistance.java
 +++ b/src/main/java/net/minecraft/server/ChunkMapDistance.java
 @@ -33,7 +33,7 @@ public abstract class ChunkMapDistance {
@@ -19,5 +19,5 @@ index 0244768f76..13d113aee5 100644
      private final Mailbox<ChunkTaskQueueSorter.a<Runnable>> j;
      private final Mailbox<ChunkTaskQueueSorter.b> k;
 -- 
-2.25.1.windows.1
+2.20.1
 

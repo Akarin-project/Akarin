@@ -1,4 +1,4 @@
-From 248e7b359bcf81957b4310939b177307b74e2e49 Mon Sep 17 00:00:00 2001
+From 9e10846ad746cc3625232c6e808b671d338c56e3 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E3=84=97=E3=84=A0=CB=8B=20=E3=84=91=E3=84=A7=CB=8A?=
  <tsao-chi@the-lingo.org>
 Date: Thu, 2 Apr 2020 11:35:19 +0800
@@ -6,7 +6,7 @@ Subject: [PATCH] Never drop items on command "/give"
 
 
 diff --git a/src/main/java/net/minecraft/server/CommandGive.java b/src/main/java/net/minecraft/server/CommandGive.java
-index 81b26bb4d0..1f3097c945 100644
+index 81b26bb4d..1f3097c94 100644
 --- a/src/main/java/net/minecraft/server/CommandGive.java
 +++ b/src/main/java/net/minecraft/server/CommandGive.java
 @@ -36,6 +36,7 @@ public class CommandGive {
@@ -18,5 +18,5 @@ index 81b26bb4d0..1f3097c945 100644
                      itemstack.setCount(1);
                      entityitem = entityplayer.drop(itemstack, false);
 -- 
-2.25.1.windows.1
+2.20.1
 

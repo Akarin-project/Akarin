@@ -1,11 +1,11 @@
-From c9cdd49decdb2cf080feaef08f76a0dbbd2d72bf Mon Sep 17 00:00:00 2001
+From b95f268f3afd58685ccb76b4800b81eb36030eac Mon Sep 17 00:00:00 2001
 From: Sotr <i@omc.hk>
 Date: Wed, 15 Apr 2020 22:45:48 +0700
 Subject: [PATCH] Remove a few more streams
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkMapDistance.java b/src/main/java/net/minecraft/server/ChunkMapDistance.java
-index 13d113aee5..1890fad9ed 100644
+index 13d113aee..1890fad9e 100644
 --- a/src/main/java/net/minecraft/server/ChunkMapDistance.java
 +++ b/src/main/java/net/minecraft/server/ChunkMapDistance.java
 @@ -108,9 +108,15 @@ public abstract class ChunkMapDistance {
@@ -48,7 +48,7 @@ index 13d113aee5..1890fad9ed 100644
  
                  this.l.clear();
 diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-index 9c31edade2..eb3f45d8b7 100644
+index 9c31edade..eb3f45d8b 100644
 --- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
 +++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
 @@ -92,12 +92,23 @@ public class EntityTNTPrimed extends Entity {
@@ -76,7 +76,7 @@ index 9c31edade2..eb3f45d8b7 100644
          }
          // Paper end
 diff --git a/src/main/java/net/minecraft/server/EntityVillager.java b/src/main/java/net/minecraft/server/EntityVillager.java
-index a7a07ffc43..c9f0f7787f 100644
+index a7a07ffc4..c9f0f7787 100644
 --- a/src/main/java/net/minecraft/server/EntityVillager.java
 +++ b/src/main/java/net/minecraft/server/EntityVillager.java
 @@ -548,11 +548,20 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
@@ -101,5 +101,5 @@ index a7a07ffc43..c9f0f7787f 100644
          }
      }
 -- 
-2.25.1.windows.1
+2.20.1
 
