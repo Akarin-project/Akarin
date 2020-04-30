@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+# Akarin Build Script
+
+############################################################################
+# Multicore building                                                       #
+# By JosephWorks                                                           #
+# -------------------------------------------------------------------------#
+# To use multicore building, add "-T ${BUILD_CORES}" after all mvn commands#
+# 20-50% speed improvement is quite common.                                #
+############################################################################
+
 # Exit immediately if a command exits with a non-zero status
 set -e
 
@@ -38,18 +48,18 @@ case "$1" in
         set -e
 		setupUpstreamAndPatch $2 || exit 1
 		basedir
-        mvn -N install || exit 1
+        mvn -T ${BUILD_CORES} -N install || exit 1
         cd ${FORK_NAME}-API
-        mvn -e clean install && cd ../${FORK_NAME}-Server && mvn -e clean install || exit 1
+        mvn -T ${BUILD_CORES} -e clean install && cd ../${FORK_NAME}-Server && mvn -T ${BUILD_CORES} -e clean install || exit 1
     ) || failed=1
     ;;
     "j" | "launcher" | "jar" | "paperclip")
     (
 	   setupUpstreamAndPatch $2 || exit 1
        basedir
-       mvn -N install
+       mvn -T ${BUILD_CORES} -N install
        cd ${FORK_NAME}-API
-       mvn -e clean install && cd ../${FORK_NAME}-Server && mvn -e clean install
+       mvn -T ${BUILD_CORES} -e clean install && cd ../${FORK_NAME}-Server && mvn -T ${BUILD_CORES} -e clean install
        basedir
        $scriptdir/installLauncher.sh "$basedir"
     ) || failed=1
@@ -57,9 +67,9 @@ case "$1" in
     "d" | "de" | "deploy")
     (
         basedir
-        mvn -N install
+        mvn -T ${BUILD_CORES} -N install
         cd ${FORK_NAME}-API
-        mvn clean deploy && cd ../${FORK_NAME}-Server && mvn clean install
+        mvn -T ${BUILD_CORES} clean deploy && cd ../${FORK_NAME}-Server && mvn -T ${BUILD_CORES} clean install
     )
     ;;
     "u" | "up" | "upstream" | "update")
