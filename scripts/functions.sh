@@ -9,7 +9,7 @@ MCDEV_REPO=""
 
 # Added Multithreading to builds
 # By JosephWorks
-BUILD_CORES="$(nproc --all)"
+mvncmd="mvn -T 1.5C"
 
 gitcmd="git -c commit.gpgsign=false -c core.quotepath=false -c core.safecrlf=false -c i18n.commit.encoding=UTF-8 -c i18n.logoutputencoding=UTF-8"
 

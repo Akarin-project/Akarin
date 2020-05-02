@@ -6,7 +6,7 @@
 # Multicore building                                                       #
 # By JosephWorks                                                           #
 # -------------------------------------------------------------------------#
-# To use multicore building, add "-T ${BUILD_CORES}" after all mvn commands#
+# To use multicore building, use "$mvncmd" instead of "maven"              #
 # 20-50% speed improvement is quite common.                                #
 ############################################################################
 
@@ -48,18 +48,18 @@ case "$1" in
         set -e
 		setupUpstreamAndPatch $2 || exit 1
 		basedir
-        mvn -T ${BUILD_CORES} -N install || exit 1
+        $mvncmd -N install || exit 1
         cd ${FORK_NAME}-API
-        mvn -T ${BUILD_CORES} -e clean install && cd ../${FORK_NAME}-Server && mvn -T ${BUILD_CORES} -e clean install || exit 1
+        $mvncmd -e clean install && cd ../${FORK_NAME}-Server && $mvncmd -e clean install || exit 1
     ) || failed=1
     ;;
     "j" | "launcher" | "jar" | "paperclip")
     (
 	   setupUpstreamAndPatch $2 || exit 1
        basedir
-       mvn -T ${BUILD_CORES} -N install
+       $mvncmd -N install
        cd ${FORK_NAME}-API
-       mvn -T ${BUILD_CORES} -e clean install && cd ../${FORK_NAME}-Server && mvn -T ${BUILD_CORES} -e clean install
+       $mvncmd -e clean install && cd ../${FORK_NAME}-Server && $mvncmd -e clean install
        basedir
        $scriptdir/installLauncher.sh "$basedir"
     ) || failed=1
@@ -67,9 +67,9 @@ case "$1" in
     "d" | "de" | "deploy")
     (
         basedir
-        mvn -T ${BUILD_CORES} -N install
+        $mvncmd -N install
         cd ${FORK_NAME}-API
-        mvn -T ${BUILD_CORES} clean deploy && cd ../${FORK_NAME}-Server && mvn -T ${BUILD_CORES} clean install
+        $mvncmd clean deploy && cd ../${FORK_NAME}-Server && $mvncmd clean install
     )
     ;;
     "u" | "up" | "upstream" | "update")
