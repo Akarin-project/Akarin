@@ -6,12 +6,12 @@ Subject: [PATCH] Tuinity Use ArrayDeque for pendingChunkUpdates in
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkMapDistance.java b/src/main/java/net/minecraft/server/ChunkMapDistance.java
-index 0244768f76d83af427a07bd235c9bcec8ad5429e..13d113aee5e174fc4558173a19a0cda23166c5e9 100644
+index 942efe62fe5cefd6373ea568c7a62c524d536771..014a4142427cc6adfec2ed13d95aebcede1f1e96 100644
 --- a/src/main/java/net/minecraft/server/ChunkMapDistance.java
 +++ b/src/main/java/net/minecraft/server/ChunkMapDistance.java
 @@ -33,7 +33,7 @@ public abstract class ChunkMapDistance {
      private final ChunkMapDistance.a e = new ChunkMapDistance.a();
-     private final ChunkMapDistance.b f = new ChunkMapDistance.b(8);
+     public static final int MOB_SPAWN_RANGE = 8; //private final ChunkMapDistance.b f = new ChunkMapDistance.b(8); // Paper - no longer used
      private final ChunkMapDistance.c g = new ChunkMapDistance.c(33);
 -    private final java.util.Queue<PlayerChunk> pendingChunkUpdates = new java.util.LinkedList<>(); // PAIL pendingChunkUpdates // Paper - use a queue
 +    private final java.util.Queue<PlayerChunk> pendingChunkUpdates = new java.util.ArrayDeque<>(); // PAIL pendingChunkUpdates // Paper - use a queue // Akarin - backport Tuinity - use a better queue

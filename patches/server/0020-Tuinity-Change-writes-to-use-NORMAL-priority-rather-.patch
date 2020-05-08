@@ -8,10 +8,10 @@ Should limit build up of I/O tasks, or at least properly
 indicate to server owners that I/O is falling behind
 
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index f8ad08cccf25ef26759231c3d26b71d33d010eb8..7b7e1b2b45dcfe55c4052dacdcc2ca629ca4521b 100644
+index 81bb26abc520f49de2e916cf2757ac4c710d02cd..7808dcd7e1e9a30adb441c2eb47a4410b5afa059 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -599,7 +599,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -789,7 +789,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          }
  
          com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(this.world, chunkPos.x, chunkPos.z,
@@ -20,7 +20,7 @@ index f8ad08cccf25ef26759231c3d26b71d33d010eb8..7b7e1b2b45dcfe55c4052dacdcc2ca62
  
          if (!chunk.isNeedsSaving()) {
              return;
-@@ -633,7 +633,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -823,7 +823,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
              asyncSaveData = ChunkRegionLoader.getAsyncSaveData(this.world, chunk);
          }
  
@@ -29,7 +29,7 @@ index f8ad08cccf25ef26759231c3d26b71d33d010eb8..7b7e1b2b45dcfe55c4052dacdcc2ca62
              asyncSaveData, chunk);
  
          chunk.setLastSaved(this.world.getTime());
-@@ -1045,7 +1045,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1232,7 +1232,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      // Paper start - async chunk io
      private boolean writeDataAsync(ChunkCoordIntPair chunkPos, NBTTagCompound poiData, NBTTagCompound chunkData, boolean async) {
          com.destroystokyo.paper.io.PaperFileIOThread.Holder.INSTANCE.scheduleSave(this.world, chunkPos.x, chunkPos.z,

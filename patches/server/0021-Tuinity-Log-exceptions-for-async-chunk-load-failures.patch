@@ -6,10 +6,10 @@ Subject: [PATCH] Tuinity Log exceptions for async chunk load failures
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index bf6bf7d8c6c7e2d8572a33ed16767d8ba34156e7..1119dd5048cbb8cdd5727e18b154ed15a9a06b63 100644
+index d6f4daeec90149ef402c2746a4a054c44f7eb21f..f3943532dca289d4ffd1dc1dc645ca1e41949958 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-@@ -326,7 +326,10 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -407,7 +407,10 @@ public class ChunkProviderServer extends IChunkProvider {
              // either right -> failure
  
              if (throwable != null) {
@@ -21,7 +21,7 @@ index bf6bf7d8c6c7e2d8572a33ed16767d8ba34156e7..1119dd5048cbb8cdd5727e18b154ed15
              }
  
              this.removeTicketAtLevel(TicketType.ASYNC_LOAD, chunkPos, ticketLevel, identifier);
-@@ -336,12 +339,19 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -417,12 +420,19 @@ public class ChunkProviderServer extends IChunkProvider {
  
              if (failure.isPresent()) {
                  // failure
@@ -44,10 +44,10 @@ index bf6bf7d8c6c7e2d8572a33ed16767d8ba34156e7..1119dd5048cbb8cdd5727e18b154ed15
  
      public <T> void addTicketAtLevel(TicketType<T> ticketType, ChunkCoordIntPair chunkPos, int ticketLevel, T identifier) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index f56131e3a593f9c1344be07fe478364b344e63dd..0f3199ba4a228cc60db3abfa4ac926b92cbb4b4b 100644
+index 4aafad0762df44990ed9d610a59f3862bd3fe3b0..5583e26fb62d0a0e4ca8e995f609c474a6f0c4c9 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-@@ -2472,6 +2472,13 @@ public class CraftWorld implements World {
+@@ -2476,6 +2476,13 @@ public class CraftWorld implements World {
              this.world.doIfNotEntityTicking(() -> ret.complete(chunk == null ? null : chunk.bukkitChunk));
          });
  

@@ -30,10 +30,10 @@ index 9ebd7ecb7a0ac73ccacf34c097056598bb5d26e8..677ccffd00e44eff74fa588a1af0c3e5
              final PooledHashSets.PooledObjectLinkedOpenHashSet<EntityPlayer> map = entry.getValue();
  
 diff --git a/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java b/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java
-index f625da9f0968b6f41e302b628c4439198eb4ed64..3f128565b4d47ab768c9b31a57b338b5cd9c86a7 100644
+index c71ed11834557f71504de5038d3bb593824f6f95..1b943cff539df8486e639118f6bc97c9e31f57c2 100644
 --- a/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java
 +++ b/src/main/java/com/destroystokyo/paper/util/misc/AreaMap.java
-@@ -134,10 +134,10 @@ public abstract class AreaMap<E> {
+@@ -164,10 +164,10 @@ public abstract class AreaMap<E> {
          final int centerX = MCUtil.getCoordinateX(currPosition);
          final int centerZ = MCUtil.getCoordinateZ(currPosition);
  

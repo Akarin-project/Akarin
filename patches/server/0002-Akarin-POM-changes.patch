@@ -6,7 +6,7 @@ Subject: [PATCH] Akarin POM changes
 
 
 diff --git a/pom.xml b/pom.xml
-index 55679af926485eca6bb0b9ed368a4c91c8a7e37e..19f87edb55a48b151f81f899cedbc573aec66405 100644
+index 0c0051f7f2a58d63b851e80b442acbb47ca75dfa..725edb29f55276596ff5ee9240ce3432a47cc40b 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -1,12 +1,11 @@
@@ -26,7 +26,7 @@ index 55679af926485eca6bb0b9ed368a4c91c8a7e37e..19f87edb55a48b151f81f899cedbc573
      <properties>
          <!-- <skipTests>true</skipTests> Paper - This [was] not going to end well -->
          <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-@@ -21,16 +20,16 @@
+@@ -18,16 +17,16 @@
      </properties>
  
      <parent>
@@ -47,7 +47,7 @@ index 55679af926485eca6bb0b9ed368a4c91c8a7e37e..19f87edb55a48b151f81f899cedbc573
              <version>${project.version}</version>
              <scope>compile</scope>
          </dependency>
-@@ -143,15 +142,15 @@
+@@ -153,15 +152,15 @@
  
      <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
      <build>
