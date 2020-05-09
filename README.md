@@ -1,10 +1,13 @@
-# <img src="https://i.loli.net/2018/05/17/5afd869c443ef.png" alt="Akarin Face" align="right">Akarin
+<img src="https://i.loli.net/2018/05/17/5afd869c443ef.png" alt="Akarin Face" align="right">
+<div align="center">
+# Akarin
 
 [![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.app/)
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
 [![bStats](https://img.shields.io/badge/bStats-Akarin-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Akarin)
 [![Build Status](http://josephworks.ddns.net:8080/buildStatus/icon?job=Akarin-project%2FAkarin-1.15.2)](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin/)
 [![Patreon](https://img.shields.io/badge/Patreon-Donate-yellow.svg?style=flat)](https://www.patreon.com/akarinproject)
+</div>
 
 Akarin is currently **under heavy development** and contributions are welcome!
 
