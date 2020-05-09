@@ -23,8 +23,6 @@ Our project has a few key goals:
 * **Bedrock** - Make the server more safe and stable.
 * **Fast** - Simplify the logic and implement multi-threaded computing.
 
-*Issues and Pull Requests will be labeled accordingly*
-
 Get Akarin
 ---
 
