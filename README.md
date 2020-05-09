@@ -9,14 +9,14 @@
 [![Patreon](https://img.shields.io/badge/Patreon-Donate-yellow.svg?style=flat)](https://www.patreon.com/akarinproject)
 </div>
 
-Akarin is currently **under heavy development** and contributions are welcome!
-
 Introduction
 ---
 
 > Akarin is a powerful server software from the 'new dimension', formerly known as Torch.
 
 As a [Paper](https://github.com/PaperMC/Paper) fork, it should support almost all plugins that work on [Spigot](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse).
+
+Akarin is currently **under heavy development** and contributions are welcome!
 
 Our project has a few key goals:
 
