@@ -59,7 +59,7 @@ Demo Servers
 Contributing
 ---
 
-* Akarin use patches to handle our changes.
+* Akarin uses patches to handle code changes.
 * Add your name to the [LICENSE](https://github.com/Akarin-project/Akarin/blob/master/LICENSE.md) if you want to publish your code under the [MIT License](https://github.com/Akarin-project/Akarin/blob/master/licenses/MIT.md).
 * If you want to join the [Akarin-project](https://github.com/Akarin-project) team, welcome to contact us by our [Discord](https://discord.gg/fw2pJAj).
 
