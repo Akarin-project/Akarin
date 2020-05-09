@@ -1,6 +1,7 @@
 <img src="https://i.loli.net/2018/05/17/5afd869c443ef.png" alt="Akarin Face" align="right">
 <div align="center">
   <h1>Akarin</h1>
+  <h3>Formerly known as torch, A powerful Minecraft Server Software</h3>
 
 [![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.app/)
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
@@ -11,8 +12,6 @@
 
 Introduction
 ---
-
-> Akarin is a powerful server software from the 'new dimension', formerly known as Torch.
 
 As a [Paper](https://github.com/PaperMC/Paper) fork, it should support almost all plugins that work on [Spigot](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse).
 
