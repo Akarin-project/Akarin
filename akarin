@@ -50,7 +50,7 @@ case "$1" in
 		basedir
         $mvncmd -N install || exit 1
         cd ${FORK_NAME}-API
-        $mvncmd -e clean install && cd ../${FORK_NAME}-Server && $mvncmd -e clean install || exit 1
+        $mvncmd -e clean install && (cd ../Paper/Paper-MojangAPI && $mvncmd -e clean install) && cd ../${FORK_NAME}-Server && $mvncmd -e clean install || exit 1
     ) || failed=1
     ;;
     "j" | "launcher" | "jar" | "paperclip")
@@ -59,7 +59,7 @@ case "$1" in
        basedir
        $mvncmd -N install
        cd ${FORK_NAME}-API
-       $mvncmd -e clean install && cd ../${FORK_NAME}-Server && $mvncmd -e clean install
+       $mvncmd -e clean install && (cd ../Paper/Paper-MojangAPI && $mvncmd -e clean install) && cd ../${FORK_NAME}-Server && $mvncmd -e clean install
        basedir
        $scriptdir/installLauncher.sh "$basedir"
     ) || failed=1
@@ -69,7 +69,7 @@ case "$1" in
         basedir
         $mvncmd -N install
         cd ${FORK_NAME}-API
-        $mvncmd clean deploy && cd ../${FORK_NAME}-Server && $mvncmd clean install
+        $mvncmd clean deploy && (cd ../Paper/Paper-MojangAPI && $mvncmd -e clean install) && cd ../${FORK_NAME}-Server && $mvncmd clean install
     )
     ;;
     "u" | "up" | "upstream" | "update")
