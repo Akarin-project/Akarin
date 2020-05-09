@@ -19,4 +19,5 @@ should submit a Pull Request to this project and add their name.
 ```text
 Sotr <kira@kira.moe>
 MatrixTunnel <https://github.com/MatrixTunnel>
+JosephWorks <https://github.com/josephworks>
 ```
