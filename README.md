@@ -2,6 +2,7 @@
 <div align="center">
   <h1>Akarin</h1>
   <h3>Formerly known as torch, A powerful Minecraft Server Software</h3>
+  <h4>Akarin is **under heavy development** and contributions are welcome!</h4>
 
 [![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.app/)
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
@@ -13,13 +14,10 @@
 Introduction
 ---
 
-As a [Paper](https://github.com/PaperMC/Paper) fork, it should support almost all plugins that work on [Spigot](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse).
-
-Akarin is currently **under heavy development** and contributions are welcome!
-
 Our project has a few key goals:
 
 * **Open Access** - Make more game mechanics configurable.
+* **Compatible** - Support all plugins that work on [Spigot](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse).
 * **Bedrock** - Make the server more safe and stable.
 * **Fast** - Simplify the logic and implement multi-threaded computing.
 
