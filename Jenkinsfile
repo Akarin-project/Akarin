@@ -9,7 +9,8 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh './akarin jar'
+        sh 'bash ./scripts/build.sh'
+        sh 'bash ./scripts/inst.sh --setup --fast'
       }
     }
 
