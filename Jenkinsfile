@@ -1,9 +1,11 @@
 pipeline {
   agent any
   stages {
-    stage('Init Submodules') {
+    stage('Initialize') {
       steps {
-        sh 'git submodule update --init --recursive'
+        sh '''git fetch origin
+git reset --hard origin/1.15.2
+git submodule update --init --recursive'''
       }
     }
 
