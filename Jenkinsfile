@@ -17,7 +17,7 @@ git submodule update --init --recursive'''
 
     stage('Archive') {
       steps {
-        archiveArtifacts(artifacts: '*.jar', fingerprint: true)
+        archiveArtifacts(artifacts: 'target/*.jar', fingerprint: true)
       }
     }
 
