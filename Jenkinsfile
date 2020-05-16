@@ -3,6 +3,7 @@ pipeline {
   agent any
   environment {
         DISCORD_WEBHOOK_URL = credentials('3e8105ad-8e03-4550-bc66-a27438ec6fb3')
+        CHANGES = getChanges(currentBuild)
   }
   stages {
     stage('Initialize') {
@@ -28,7 +29,7 @@ git submodule update --init --recursive'''
     stage('Report') {
       steps {
         discordSend(
-          description: "**Build:** [${currentBuild.id}](${env.BUILD_URL})\n**Status:** [${currentBuild.currentResult}](${env.BUILD_URL})\n\n**Changes:**```\n' + getChanges(currentBuild) + '\n```",
+          description: "**Build:** [${currentBuild.id}](${env.BUILD_URL})\n**Status:** [${currentBuild.currentResult}](${env.BUILD_URL})\n\n**Changes:**\n```\n' $CHANGES '\n```",
           footer: "JosephWorks Jenkins Server", 
           link: env.BUILD_URL, 
           result: currentBuild.currentResult, 
