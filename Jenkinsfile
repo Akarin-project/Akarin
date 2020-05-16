@@ -26,26 +26,22 @@ git submodule update --init --recursive'''
 
     stage('Report') {
       steps {
-        discordSend "$DISCORD_WEBHOOK_URL"
-      }
-    }
-
-  }
-  post {
-        always {
-            script {
-              withCredentials([string(credentialsId: '3e8105ad-8e03-4550-bc66-a27438ec6fb3', variable: 'discordWebhook')]) {
-                    discordSend(
+        discordSend(
                             title: "Finished ${currentBuild.currentResult}",
                             description: '```\n' + getChanges(currentBuild) + '\n```',
                             successful: currentBuild.resultIsBetterOrEqualTo("SUCCESS"),
                             result: currentBuild.currentResult,
                             thumbnail: "https://img.hexeption.co.uk/Magma_Block.png",
-                            webhookURL: "${discordWebhook}"
+                            webhookURL: "$DISCORD_WEBHOOK_URL"
                     )
-                }
-                //cleanWs()
-            }
-        }
+      }
     }
+
+  }
+  //post {
+  //      always {
+  //              cleanWs()
+  //          }
+  //      }
+  //  }
 }
