@@ -21,5 +21,11 @@ git submodule update --init --recursive'''
       }
     }
 
+    stage('Report') {
+      steps {
+        discordSend 'https://discordapp.com/api/webhooks/695027453122445433/rijjbFyNPhgvTmgXHCCdMExGwR3vHBveH4PjYi0ScsP9d7rSdGbKMhId36WAypZjUj5h'
+      }
+    }
+
   }
 }
