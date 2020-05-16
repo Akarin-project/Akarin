@@ -28,11 +28,11 @@ git submodule update --init --recursive'''
     stage('Report') {
       steps {
         discordSend(
-          description: '```\n' + getChanges(currentBuild) + '\n```',
-          footer: "Footer Text", 
+          description: "**Build:** [${currentBuild.id}](${env.BUILD_URL})\n**Status:** [${currentBuild.currentResult}](${env.BUILD_URL})",
+          footer: "**JosephWorks Jenkins Server**", 
           link: env.BUILD_URL, 
           result: currentBuild.currentResult, 
-          title: JOB_NAME, 
+          title: "${env.JOB_NAME} #${currentBuild.id}",
           webhookURL: "$DISCORD_WEBHOOK_URL"
           )
       }
