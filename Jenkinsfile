@@ -26,7 +26,7 @@ git submodule update --init --recursive'''
 
     stage('Report') {
       steps {
-        discordSend $DISCORD_WEBHOOK_URL
+        discordSend '$DISCORD_WEBHOOK_URL'
       }
     }
 
