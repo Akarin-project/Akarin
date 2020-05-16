@@ -35,6 +35,14 @@ git submodule update --init --recursive'''
                             thumbnail: "https://img.hexeption.co.uk/Magma_Block.png",
                             webhookURL: "$DISCORD_WEBHOOK_URL"
                     )
+        discordSend(
+          discordSend description: "Jenkins Pipeline Build", 
+          footer: "Footer Text", 
+          link: env.BUILD_URL, 
+          result: currentBuild.currentResult, 
+          title: JOB_NAME, 
+          webhookURL: "$DISCORD_WEBHOOK_URL"
+          )
       }
     }
 
