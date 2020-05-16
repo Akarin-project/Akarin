@@ -36,7 +36,7 @@ git submodule update --init --recursive'''
                             webhookURL: "$DISCORD_WEBHOOK_URL"
                     )
         discordSend(
-          discordSend description: "Jenkins Pipeline Build", 
+          description: "Jenkins Pipeline Build", 
           footer: "Footer Text", 
           link: env.BUILD_URL, 
           result: currentBuild.currentResult, 
