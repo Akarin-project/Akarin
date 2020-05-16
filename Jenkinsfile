@@ -28,15 +28,7 @@ git submodule update --init --recursive'''
     stage('Report') {
       steps {
         discordSend(
-                            title: "Finished ${currentBuild.currentResult}",
-                            description: '```\n' + getChanges(currentBuild) + '\n```',
-                            successful: currentBuild.resultIsBetterOrEqualTo("SUCCESS"),
-                            result: currentBuild.currentResult,
-                            thumbnail: "https://img.hexeption.co.uk/Magma_Block.png",
-                            webhookURL: "$DISCORD_WEBHOOK_URL"
-                    )
-        discordSend(
-          description: "Jenkins Pipeline Build", 
+          description: '```\n' + getChanges(currentBuild) + '\n```',
           footer: "Footer Text", 
           link: env.BUILD_URL, 
           result: currentBuild.currentResult, 
