@@ -30,7 +30,7 @@ git submodule update --init --recursive'''
     stage('Report') {
       steps {
         discordSend(
-          description: "**Build:** [${currentBuild.id}](${env.BUILD_URL})\n**Status:** [${currentBuild.currentResult}](${env.BUILD_URL})\n\n**Changes:**\n```\n $CHANGES \n```\n**Artifacts:**\n - $ARTIFACT",
+          description: "**Build:** [${currentBuild.id}](${env.BUILD_URL})\n**Status:** [${currentBuild.currentResult}](${env.BUILD_URL})\n\n**Changes:**\n```$CHANGES```\n**Artifacts:**\n - $ARTIFACT",
           footer: "JosephWorks Jenkins Server", 
           link: env.BUILD_URL, 
           result: currentBuild.currentResult, 
