@@ -1,5 +1,8 @@
 pipeline {
   agent any
+  environment {
+        DiscordWebhookURL= credentials('3e8105ad-8e03-4550-bc66-a27438ec6fb3')
+    }
   stages {
     stage('Initialize') {
       steps {
@@ -23,7 +26,7 @@ git submodule update --init --recursive'''
 
     stage('Report') {
       steps {
-        discordSend 'https://discordapp.com/api/webhooks/695027453122445433/rijjbFyNPhgvTmgXHCCdMExGwR3vHBveH4PjYi0ScsP9d7rSdGbKMhId36WAypZjUj5h-rip'
+        discordSend $DiscordWebhookURL
       }
     }
 
