@@ -29,7 +29,7 @@ git submodule update --init --recursive'''
       steps {
         discordSend(
           description: "**Build:** [${currentBuild.id}](${env.BUILD_URL})\n**Status:** [${currentBuild.currentResult}](${env.BUILD_URL})",
-          footer: "**JosephWorks Jenkins Server**", 
+          footer: "JosephWorks Jenkins Server", 
           link: env.BUILD_URL, 
           result: currentBuild.currentResult, 
           title: "${env.JOB_NAME} #${currentBuild.id}",
