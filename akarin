@@ -57,9 +57,9 @@ case "$1" in
     (
 	   setupUpstreamAndPatch $2 || exit 1
        basedir
-       $mvncmd -N install
+       $mvncmd -N install surefire-report:report
        cd ${FORK_NAME}-API
-       $mvncmd -e clean install && (cd ../Paper/Paper-MojangAPI && $mvncmd -e clean install) && cd ../${FORK_NAME}-Server && $mvncmd -e clean install
+       $mvncmd -e clean install && (cd ../Paper/Paper-MojangAPI && $mvncmd -e clean install) && cd ../${FORK_NAME}-Server && $mvncmd -e clean install surefire-report:report
        basedir
        $scriptdir/installLauncher.sh "$basedir"
     ) || failed=1
