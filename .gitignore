@@ -36,7 +36,6 @@ target/
 
 # Gradle
 gradle-app.setting
-!gradle-wrapper.jar
 .gradletasknamecache
 
 # Package Files #
