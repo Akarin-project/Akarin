@@ -4,7 +4,6 @@ Akarin-API
 mc-dev
 testserver
 run
-gradle
 *.jar
 
 # Compiled class file
@@ -37,6 +36,7 @@ target/
 # Gradle
 gradle-app.setting
 .gradletasknamecache
+.gradle
 
 # Package Files #
 *.jar
