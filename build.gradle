@@ -14,19 +14,35 @@ subprojects {
     repositories {
         mavenLocal()
         maven {
-            url = 'https://repo1.maven.org/maven2'
+            url = uri('https://repo1.maven.org/maven2')
         }
 
         maven {
-            url = 'https://maven.pkg.github.com/Akarin-project/Akarin'
+            url = uri('https://maven.pkg.github.com/OWNER/REPOSITORY')
         }
 
         maven {
-            url = 'https://hub.spigotmc.org/nexus/content/groups/public/'
+            url = uri('https://hub.spigotmc.org/nexus/content/groups/public/')
         }
 
         maven {
-            url = 'https://oss.sonatype.org/content/groups/public/'
+            url = uri('https://oss.sonatype.org/content/groups/public/')
+        }
+
+        maven {
+            url = uri('https://libraries.minecraft.net')
+        }
+
+        maven {
+            url = uri('https://repo.md-5.net/content/repositories/releases/')
+        }
+
+        maven {
+            url = uri('https://repo.aikar.co/content/groups/aikar/')
+        }
+
+        maven {
+            url = uri('https://papermc.io/repo/repository/maven-public/')
         }
     }
 
