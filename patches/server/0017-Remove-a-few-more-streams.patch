@@ -5,10 +5,10 @@ Subject: [PATCH] Remove a few more streams
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkMapDistance.java b/src/main/java/net/minecraft/server/ChunkMapDistance.java
-index 014a4142427cc6adfec2ed13d95aebcede1f1e96..c278906d795ab2c2c233dc23eb331328c089fef4 100644
+index d1c2f2bbfc05137727db49b41ace1cb9e25b9b62..5b63792d0e27c8801de3ca1658baf736f61473f7 100644
 --- a/src/main/java/net/minecraft/server/ChunkMapDistance.java
 +++ b/src/main/java/net/minecraft/server/ChunkMapDistance.java
-@@ -110,9 +110,15 @@ public abstract class ChunkMapDistance {
+@@ -188,9 +188,15 @@ public abstract class ChunkMapDistance {
                  while (longiterator.hasNext()) {
                      long j = longiterator.nextLong();
  
@@ -24,7 +24,7 @@ index 014a4142427cc6adfec2ed13d95aebcede1f1e96..c278906d795ab2c2c233dc23eb331328
                          PlayerChunk playerchunk = playerchunkmap.getUpdatingChunk(j);
  
                          if (playerchunk == null) {
-@@ -128,6 +134,22 @@ public abstract class ChunkMapDistance {
+@@ -206,6 +212,22 @@ public abstract class ChunkMapDistance {
                              });
                          });
                      }
@@ -76,7 +76,7 @@ index 9c31edade247baac6811ef3ec98e88a332bcffba..eb3f45d8b707002ebeca20a6857ed414
          }
          // Paper end
 diff --git a/src/main/java/net/minecraft/server/EntityVillager.java b/src/main/java/net/minecraft/server/EntityVillager.java
-index 1094324d004a1841a3b67cf9de07ec1795524607..1e7be8cbac5b35cd05bf45fc3b19c7f6736c649f 100644
+index 82662753b2659a71462dcb26250b11ada0527ad1..97448cb46df42ec4bcfea28c36a3050e8ff96a83 100644
 --- a/src/main/java/net/minecraft/server/EntityVillager.java
 +++ b/src/main/java/net/minecraft/server/EntityVillager.java
 @@ -548,11 +548,20 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation

@@ -15,7 +15,7 @@ echo "----------------------------------------"
 # License from Paper applies to this file
 
 set -e
-paperworkdir="$basedir/Paper/work"
+paperworkdir="$basedir/Tuinity/Paper/work"
 mcver=$(cat "$paperworkdir/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
 serverjar="$basedir/Akarin-Server/target/akarin-$mcver.jar"
 vanillajar="$paperworkdir/Minecraft/$mcver/$mcver.jar"

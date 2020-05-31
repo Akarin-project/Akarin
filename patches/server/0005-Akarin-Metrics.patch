@@ -6,10 +6,10 @@ Subject: [PATCH] Akarin Metrics
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/Metrics.java b/src/main/java/com/destroystokyo/paper/Metrics.java
-index e257d6b36e0e78dac5b8320017d92776171e1bb0..81f0aef68c97263560839ef4bcb3df9647f5df06 100644
+index 24641501aeae0f2c2c5ce877775c7b971fb051bf..8e2db5d4cd066e2e85d1df54729faacabf73da66 100644
 --- a/src/main/java/com/destroystokyo/paper/Metrics.java
 +++ b/src/main/java/com/destroystokyo/paper/Metrics.java
-@@ -578,7 +578,7 @@ public class Metrics {
+@@ -581,7 +581,7 @@ public class Metrics {
              boolean logFailedRequests = config.getBoolean("logFailedRequests", false);
              // Only start Metrics, if it's enabled in the config
              if (config.getBoolean("enabled", true)) {

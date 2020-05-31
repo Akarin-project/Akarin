@@ -43,7 +43,7 @@ function basedir {
 }
 
 function paperdir {
-    cd "$basedir/Paper"
+    cd "$basedir/Tuinity"
 }
 
 gitcmd() {

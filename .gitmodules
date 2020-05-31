@@ -1,4 +1,3 @@
-[submodule "Paper"]
-	path = Paper
-	url = https://github.com/PaperMC/Paper.git
-	branch = master
+[submodule "Tuinity"]
+	path = Tuinity
+	url = https://github.com/Spottedleaf/Tuinity.git

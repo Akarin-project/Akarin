@@ -5,10 +5,10 @@ Subject: [PATCH] Cache hashcode for BlockPosition
 
 
 diff --git a/src/main/java/net/minecraft/server/BaseBlockPosition.java b/src/main/java/net/minecraft/server/BaseBlockPosition.java
-index c439a8d0191c8667c881b2111b8c640ca13e5e7c..cc18560431d65f13f28b45025a702afe13c86cdd 100644
+index 8f47b6c9e70d10c444ab328dc3bf3a46499b14d5..a03f3b43d99da10c2228c58daea27925821b4168 100644
 --- a/src/main/java/net/minecraft/server/BaseBlockPosition.java
 +++ b/src/main/java/net/minecraft/server/BaseBlockPosition.java
-@@ -18,6 +18,7 @@ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
+@@ -19,6 +19,7 @@ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
          return y < 0 || y >= 256;
      }
      // Paper end
@@ -16,22 +16,22 @@ index c439a8d0191c8667c881b2111b8c640ca13e5e7c..cc18560431d65f13f28b45025a702afe
  
      public BaseBlockPosition(int i, int j, int k) {
          this.x = i;
-@@ -42,8 +43,20 @@ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
+@@ -43,8 +44,20 @@ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
      }
  
-     public int hashCode() {
--        return (this.getY() + this.getZ() * 31) * 31 + this.getX();
+     public final int hashCode() { // Paper
+-        return (this.y + this.z * 31) * 31 + this.x; // Paper
 +        // Akarin start - cache hashcode
 +        int result = hash; // Make the situation not too bad when it is modified by multiple threads
 +        if (result == 0) {
-+          result = (this.getY() + this.getZ() * 31) * 31 + this.getX();
++          result = (this.y + this.z * 31) * 31 + this.x; // Paper
 +          hash = result;
 +        }
 +        return result;
 +        // return (this.getY() + this.getZ() * 31) * 31 + this.getX();
 +    }
 +
-+    public void recalcHashCode() {
++    public final void recalcHashCode() {
 +      hash = 0;
      }
 +    // Akarin end
@@ -39,10 +39,10 @@ index c439a8d0191c8667c881b2111b8c640ca13e5e7c..cc18560431d65f13f28b45025a702afe
      public int compareTo(BaseBlockPosition baseblockposition) {
          return this.getY() == baseblockposition.getY() ? (this.getZ() == baseblockposition.getZ() ? this.getX() - baseblockposition.getX() : this.getZ() - baseblockposition.getZ()) : this.getY() - baseblockposition.getY();
 diff --git a/src/main/java/net/minecraft/server/BlockPosition.java b/src/main/java/net/minecraft/server/BlockPosition.java
-index 07813c55cdc85e08697d4126973f829ae564cf41..52b810da6af78a8df0f960d8d871fb0c22eccc4c 100644
+index 3bf17ccdaef21322b787db538d569e0bc614ef22..349cd6b2b11f1ff28cfa5504cd14fe23583d4b56 100644
 --- a/src/main/java/net/minecraft/server/BlockPosition.java
 +++ b/src/main/java/net/minecraft/server/BlockPosition.java
-@@ -440,6 +440,7 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
+@@ -441,6 +441,7 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
              this.y = j;
              this.z = k;
              // Paper end
@@ -50,7 +50,7 @@ index 07813c55cdc85e08697d4126973f829ae564cf41..52b810da6af78a8df0f960d8d871fb0c
              return this;
          }
  
-@@ -480,16 +481,19 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
+@@ -481,16 +482,19 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
          public final void setX(final int x) { this.o(x); } // Paper - OBFHELPER
          public void o(int i) {
              this.x = i; // Paper change to x

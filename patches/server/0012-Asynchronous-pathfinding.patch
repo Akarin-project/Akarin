@@ -6,17 +6,17 @@ Subject: [PATCH] Asynchronous pathfinding
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index 5aca7a9131787415fb2edba1ebec9601e8a56d3a..7a0f18a8f7d7cdeca9a45485f5b22353e726aae8 100644
+index f01a305083bd755369d1efe6d41832639eb6040d..2afa9d7385c2b74dada9636dcc79beb8f7f54a64 100644
 --- a/src/main/java/net/minecraft/server/EntityInsentient.java
 +++ b/src/main/java/net/minecraft/server/EntityInsentient.java
 @@ -686,7 +686,7 @@ public abstract class EntityInsentient extends EntityLiving {
          this.goalSelector.doTick();
-         this.world.getMethodProfiler().exit();
-         this.world.getMethodProfiler().enter("navigation");
+         //this.world.getMethodProfiler().exit(); // Akarin - remove caller
+         //this.world.getMethodProfiler().enter("navigation"); // Akarin - remove caller
 -        this.navigation.c();
 +        this.navigation.tickAsync(); // Akarin - Async pathfinder
-         this.world.getMethodProfiler().exit();
-         this.world.getMethodProfiler().enter("mob tick");
+         //this.world.getMethodProfiler().exit(); // Akarin - remove caller
+         //this.world.getMethodProfiler().enter("mob tick"); // Akarin - remove caller
          this.mobTick();
 diff --git a/src/main/java/net/minecraft/server/Navigation.java b/src/main/java/net/minecraft/server/Navigation.java
 index abf450917e605972d84cb603b966feb013ae0002..4f7f40d5e7050d9b2da29c6e6efe7c5bef560d55 100644
@@ -32,7 +32,7 @@ index abf450917e605972d84cb603b966feb013ae0002..4f7f40d5e7050d9b2da29c6e6efe7c5b
                          if (pathtype == PathType.WATER) {
                              return false;
 diff --git a/src/main/java/net/minecraft/server/NavigationAbstract.java b/src/main/java/net/minecraft/server/NavigationAbstract.java
-index dc32107ec320fa54487f24c9d68ff8e5a6dea1bb..f7ea00d6ffa2000c4d0d74b5856ba66bba165d5a 100644
+index b763d7f37eb7c9ff1326ef27c478454f3dd574d4..7f061ec1d809337c697794f2f08a06f1ebcaa39f 100644
 --- a/src/main/java/net/minecraft/server/NavigationAbstract.java
 +++ b/src/main/java/net/minecraft/server/NavigationAbstract.java
 @@ -29,6 +29,15 @@ public abstract class NavigationAbstract {
@@ -221,7 +221,7 @@ index dc32107ec320fa54487f24c9d68ff8e5a6dea1bb..f7ea00d6ffa2000c4d0d74b5856ba66b
      public boolean n() {
          return !this.m();
 diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
-index 67c63cfe333e328cbd00ada970bd81efebfe30b6..848e2fe8b84bfec5be332fd051512eda3838c108 100644
+index 71b96943d865105f279dda613b7ac6b3ffed793b..5313f00d33349d5aa712f2da02033a247415d7bd 100644
 --- a/src/main/java/net/minecraft/server/Pathfinder.java
 +++ b/src/main/java/net/minecraft/server/Pathfinder.java
 @@ -27,7 +27,7 @@ public class Pathfinder {

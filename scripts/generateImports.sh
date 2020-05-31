@@ -9,7 +9,7 @@ basedir=$1
 
 source "$basedir/scripts/functions.sh"
 
-paperworkdir="$basedir/Paper/work"
+paperworkdir="$basedir/Tuinity/Paper/work"
 minecraftversion=$(cat $paperworkdir/BuildData/info.json | grep minecraftVersion | cut -d '"' -f 4)
 decompile="$paperworkdir/Minecraft/$minecraftversion/spigot"
 
@@ -28,7 +28,7 @@ rm src/net/minecraft/server/*.java
 cp $decompile/net/minecraft/server/*.java src/net/minecraft/server
 
 # diff and only preserve new added files
-paperserver="$basedir/Paper/Paper-Server/src/main/java/net/minecraft/server"
+paperserver="$basedir/Tuinity/Tuinity-Server/src/main/java/net/minecraft/server"
 cd $basedir/mc-dev/src/net/minecraft/server/
 
 for file in $(/bin/ls $paperserver)
