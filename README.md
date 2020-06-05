@@ -51,6 +51,7 @@ Demo Servers
 
 * [Fair Server](https://fairserver.ru)
 * [LoyaltyMC](https://www.loyaltymc.net/)
+* [Wolfx](https://wolfx.jp/)
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your server here*
 
