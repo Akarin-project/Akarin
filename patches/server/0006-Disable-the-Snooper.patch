@@ -5,7 +5,7 @@ Subject: [PATCH] Disable the Snooper
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 4dcc9a5950042b540bac25a73fa27af4fac54741..8dc535e0606f7261899bd1f43950711508fbb261 100644
+index ead3e43e8c0970835e11a2ce7ee48d4702395b63..accd147272a531abeac28eb02cd054dcc9e03a88 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1272,6 +1272,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas

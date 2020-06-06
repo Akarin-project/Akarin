@@ -5,18 +5,6 @@ Date: Fri, 3 Apr 2020 15:18:38 +0800
 Subject: [PATCH] Add server configuration
 
 
-diff --git a/src/main/java/co/aikar/timings/TimingsExport.java b/src/main/java/co/aikar/timings/TimingsExport.java
-index cb92d7b2167fbc775d7a044ecc6c319d0b96765e..1aa20c95c7fc6ff4fee9bc7ec83f8a5d5e887524 100644
---- a/src/main/java/co/aikar/timings/TimingsExport.java
-+++ b/src/main/java/co/aikar/timings/TimingsExport.java
-@@ -208,6 +208,7 @@ class TimingsExport extends Thread {
-             pair("bukkit", mapAsJSON(Bukkit.spigot().getBukkitConfig(), null)),
-             pair("paper", mapAsJSON(Bukkit.spigot().getPaperConfig(), null)), // Tuinity - add config to timings report
-             pair("tuinity", mapAsJSON(Bukkit.spigot().getTuinityConfig(), null)) // Tuinity - add config to timings report
-+            , pair("akarin", mapAsJSON(Bukkit.spigot().getAkarinConfig(), null)) // Akarin - Server config
-         ));
- 
-         new TimingsExport(listeners, parent, history).start();
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
 index cf20e75419b011e819c63fc8453f250b849cb2c7..c90456e198afdacc21b6980c415c3048fdc7f7a2 100644
 --- a/src/main/java/org/bukkit/Server.java

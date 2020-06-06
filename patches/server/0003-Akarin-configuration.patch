@@ -5,6 +5,18 @@ Date: Fri, 3 Apr 2020 14:59:22 +0800
 Subject: [PATCH] Akarin configuration
 
 
+diff --git a/src/main/java/co/aikar/timings/TimingsExport.java b/src/main/java/co/aikar/timings/TimingsExport.java
+index b09981e9bd2d24a0f0e291fabfbbbf0b3887a80b..501dacb4584412dd84e36421e113a1f068693e47 100644
+--- a/src/main/java/co/aikar/timings/TimingsExport.java
++++ b/src/main/java/co/aikar/timings/TimingsExport.java
+@@ -231,6 +231,7 @@ public class TimingsExport extends Thread {
+             pair("bukkit", mapAsJSON(Bukkit.spigot().getBukkitConfig(), null)),
+             pair("paper", mapAsJSON(Bukkit.spigot().getPaperConfig(), null)), // Tuinity - add config to timings report
+             pair("tuinity", mapAsJSON(Bukkit.spigot().getTuinityConfig(), null)) // Tuinity - add config to timings report
++            , pair("akarin", mapAsJSON(Bukkit.spigot().getAkarinConfig(), null)) // Akarin - Server config
+         ));
+ 
+         new TimingsExport(listeners, parent, history).start();
 diff --git a/src/main/java/io/akarin/server/Config.java b/src/main/java/io/akarin/server/Config.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..2ac8f02a97429f04f3e5c9206ec228edccaf24c9
@@ -207,7 +219,7 @@ index c33e13bcf15757abff8b6b74437def37e3860ddf..b415028b00b316531128bacc9689fae1
          this.setSpawnAnimals(dedicatedserverproperties.spawnAnimals);
          this.setSpawnNPCs(dedicatedserverproperties.spawnNpcs);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 7fd88b7932da9f8694ebbe32146ef1507cbc68c2..aa69af321e708d321a00fa6cc4ccdc17eb52b3be 100644
+index 04fd08537eaa0d8c9f5cfe88c02e9e9d445f5048..4a43653cdee98a73a4e36710588df2ad205ef3d4 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -89,6 +89,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
@@ -224,7 +236,7 @@ index 7fd88b7932da9f8694ebbe32146ef1507cbc68c2..aa69af321e708d321a00fa6cc4ccdc17
          this.tuinityConfig = new com.tuinity.tuinity.config.TuinityConfig.WorldConfig(worlddata.getName()); // Tuinity - Server Config
 +        this.akarinConfig = new io.akarin.server.Config.WorldConfig(worlddata.getName()); // Akarin - Server Config
          this.generator = gen;
-         dimensionmanager.world = (WorldServer) this; // Paper
+         if (dimensionmanager.world == null) dimensionmanager.world = (WorldServer) this; // Paper
          this.world = new CraftWorld((WorldServer) this, gen, env);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 index 0f97cf2b418646fe136e4a23b8ec00cb7f77a823..9ea75a4ff35fd0abec7cd7f3321ba219de970fc2 100644

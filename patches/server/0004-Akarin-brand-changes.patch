@@ -6,10 +6,10 @@ Subject: [PATCH] Akarin brand changes
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index a2ab9d5d4a7458be6155acde5131ad0618c53213..4dcc9a5950042b540bac25a73fa27af4fac54741 100644
+index 533caec8c07edd36e0be70488fe174bc5f3ad285..ead3e43e8c0970835e11a2ce7ee48d4702395b63 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1624,7 +1624,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1626,7 +1626,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      }
  
      public String getServerModName() {

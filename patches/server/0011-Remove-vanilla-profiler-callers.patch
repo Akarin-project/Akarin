@@ -5,7 +5,7 @@ Subject: [PATCH] Remove vanilla profiler callers
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index bf32ddcef1cde19b6befd78599955866255e7d8b..4c461cc4b731f34815e10f04b186689181615bc9 100644
+index 3bb4e478bfd6c3096d0280509d6f6fff221c7da9..448758cc81f7672d9b2b3ea24d8006c44874a4cf 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
 @@ -618,9 +618,9 @@ public class ChunkProviderServer extends IChunkProvider {
@@ -45,7 +45,7 @@ index bf32ddcef1cde19b6befd78599955866255e7d8b..4c461cc4b731f34815e10f04b1866891
                  if (this.a(playerchunk, l)) {
                      throw (IllegalStateException) SystemUtils.c(new IllegalStateException("No chunk holder after ticket has been added"));
                  }
-@@ -865,33 +865,33 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -864,33 +864,33 @@ public class ChunkProviderServer extends IChunkProvider {
  
      // CraftBukkit start - modelled on below
      public void purgeUnload() {
@@ -86,7 +86,7 @@ index bf32ddcef1cde19b6befd78599955866255e7d8b..4c461cc4b731f34815e10f04b1866891
          this.clearCache();
      }
  
-@@ -945,7 +945,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -944,7 +944,7 @@ public class ChunkProviderServer extends IChunkProvider {
                  player.lastEntitySpawnRadiusSquared = (double)((range << 4) * (range << 4)); // used in isOutsideRange
              }
              // Paper end - optimize isOutisdeRange
@@ -95,7 +95,7 @@ index bf32ddcef1cde19b6befd78599955866255e7d8b..4c461cc4b731f34815e10f04b1866891
              int k = this.world.getGameRules().getInt(GameRules.RANDOM_TICK_SPEED);
              BlockPosition blockposition = this.world.getSpawn();
              // CraftBukkit start - Other mob type spawn tick rate
-@@ -956,7 +956,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -955,7 +955,7 @@ public class ChunkProviderServer extends IChunkProvider {
              boolean flag2 = spawnAnimalThisTick;
              // CraftBukkit end
  
@@ -104,16 +104,16 @@ index bf32ddcef1cde19b6befd78599955866255e7d8b..4c461cc4b731f34815e10f04b1866891
              this.world.timings.countNaturalMobs.startTiming(); // Paper - timings
              int l = this.chunkMapDistance.b();
              EnumCreatureType[] aenumcreaturetype = EnumCreatureType.values();
-@@ -978,7 +978,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -977,7 +977,7 @@ public class ChunkProviderServer extends IChunkProvider {
              // Paper end
  
              this.world.timings.countNaturalMobs.stopTiming(); // Paper - timings
 -            this.world.getMethodProfiler().exit();
 +            //this.world.getMethodProfiler().exit(); // Akarin - remove caller
              // Paper - replaced by above
-             final long time = world.getTime(); // Paper
              // Tuinity start - optimise chunk tick iteration
-@@ -988,18 +988,18 @@ public class ChunkProviderServer extends IChunkProvider {
+             this.isTickingChunks = true;
+@@ -986,18 +986,18 @@ public class ChunkProviderServer extends IChunkProvider {
                  if (playerchunk != null) { // make sure load event has been called along with the load logic we put there
                      // Tuinity end - optimise chunk tick iteration
  
@@ -135,7 +135,7 @@ index bf32ddcef1cde19b6befd78599955866255e7d8b..4c461cc4b731f34815e10f04b1866891
                              this.world.timings.mobSpawn.startTiming(); // Spigot
                              EnumCreatureType[] aenumcreaturetype1 = aenumcreaturetype;
                              int i1 = aenumcreaturetype.length;
-@@ -1059,7 +1059,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -1057,7 +1057,7 @@ public class ChunkProviderServer extends IChunkProvider {
                              }
  
                              this.world.timings.mobSpawn.stopTiming(); // Spigot
@@ -144,7 +144,7 @@ index bf32ddcef1cde19b6befd78599955866255e7d8b..4c461cc4b731f34815e10f04b1866891
                          }
  
                          this.world.timings.chunkTicks.startTiming(); // Spigot // Paper
-@@ -1085,15 +1085,15 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -1083,15 +1083,15 @@ public class ChunkProviderServer extends IChunkProvider {
                  }
              }
              // Tuinity end - optimise chunk tick iteration
@@ -163,7 +163,7 @@ index bf32ddcef1cde19b6befd78599955866255e7d8b..4c461cc4b731f34815e10f04b1866891
          }
  
          // Tuinity start - controlled flush for entity tracker packets
-@@ -1268,7 +1268,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -1235,7 +1235,7 @@ public class ChunkProviderServer extends IChunkProvider {
  
          @Override
          protected void executeTask(Runnable runnable) {
@@ -559,10 +559,10 @@ index a245cfab67835d7978b310d510d029d713460a3b..85c3dc662653c7aa7aba5913864f5f74
  
      private void n() {
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index d60f659b368500e3a8c3305f99e60ffc643e2fbd..4be5fa6f1aaff308d71027815c9eb63ea994013f 100644
+index c88177b77607519453bb349a8e960d22d73e9f8e..35e1dad15a58ddc0b06283bdc89bce9cc1ccbbad 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -830,7 +830,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -839,7 +839,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
              double d3 = 8.0D;
              float f2 = f1;
  
@@ -571,7 +571,7 @@ index d60f659b368500e3a8c3305f99e60ffc643e2fbd..4be5fa6f1aaff308d71027815c9eb63e
              if (worldserver1 == null) { } else // CraftBukkit - empty to fall through to null to event
              if (dimensionmanager1 == DimensionManager.OVERWORLD && dimensionmanager == DimensionManager.NETHER) {
                  this.cr = this.getPositionVector();
-@@ -871,8 +871,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -880,8 +880,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
              // CraftBukkit end
  
              // this.setPositionRotation(d0, d1, d2, f1, f); // CraftBukkit - PlayerTeleportEvent handles position changes
@@ -582,7 +582,7 @@ index d60f659b368500e3a8c3305f99e60ffc643e2fbd..4be5fa6f1aaff308d71027815c9eb63e
              // Spigot start - SPIGOT-5677, MC-114796: Fix portals generating outside world border
              double d4 = Math.max(-2.9999872E7D, worldserver1.getWorldBorder().c() + 16.0D);
              double d5 = Math.max(-2.9999872E7D, worldserver1.getWorldBorder().d() + 16.0D);
-@@ -945,7 +945,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -954,7 +954,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                  // CraftBukkit end
              }
  
@@ -592,16 +592,16 @@ index d60f659b368500e3a8c3305f99e60ffc643e2fbd..4be5fa6f1aaff308d71027815c9eb63e
              PlayerTeleportEvent tpEvent = new PlayerTeleportEvent(this.getBukkitEntity(), enter, exit, cause);
              Bukkit.getServer().getPluginManager().callEvent(tpEvent);
 diff --git a/src/main/java/net/minecraft/server/EntityVillager.java b/src/main/java/net/minecraft/server/EntityVillager.java
-index 1094324d004a1841a3b67cf9de07ec1795524607..82662753b2659a71462dcb26250b11ada0527ad1 100644
+index 7da267d287eb338d32a8cace82bacc4ce2c47182..b5ee8da43ccb7630c8b333824d7ca24788b45322 100644
 --- a/src/main/java/net/minecraft/server/EntityVillager.java
 +++ b/src/main/java/net/minecraft/server/EntityVillager.java
-@@ -144,9 +144,9 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
- 
-     @Override
-     protected void mobTick() {
+@@ -157,9 +157,9 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
+     protected void mobTick() { mobTick(false); }
+     protected void mobTick(boolean inactive) {
+         // Paper end
 -        this.world.getMethodProfiler().enter("brain");
 +        //this.world.getMethodProfiler().enter("brain"); // Akarin - remove caller
-         this.getBehaviorController().a((WorldServer) this.world, this); // CraftBukkit - decompile error
+         if (!inactive) this.getBehaviorController().a((WorldServer) this.world, this); // CraftBukkit - decompile error // Paper
 -        this.world.getMethodProfiler().exit();
 +        //this.world.getMethodProfiler().exit(); // Akarin - remove caller
          if (!this.et() && this.bB > 0) {
@@ -630,7 +630,7 @@ index 2552f860ff7a25f74e9a0600e58cefe064fac484..00b70d7447e0db11c09f3b751e089ea0
              }
  
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 8dc535e0606f7261899bd1f43950711508fbb261..4579823da56addad70205eaaabc2d83b98c43ec4 100644
+index accd147272a531abeac28eb02cd054dcc9e03a88..7c157199c74b8da503e0cd99bc90ca93d8f25632 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -962,15 +962,15 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -857,10 +857,10 @@ index a68fc11ec668576d1453459666caeacf5fbc49b8..f49fc9c8f24e0b1f0dc11a213605a3e9
  
      public Stream<PathfinderGoalWrapped> getExecutingGoals() {return c();} // Paper - OBFHELPER
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 39a8397673f6a56ee3079ef4fa53bf5365bdf140..61b47f1e328ba5974d8106ebad7c950c456670bd 100644
+index be09053fa162ffadf758728d1fecdc3e34a0e957..fc98a006276e4510d7f3991edb517dd747a24340 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -848,20 +848,20 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -873,20 +873,20 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
      private static final double UNLOAD_QUEUE_RESIZE_FACTOR = 0.90; // Spigot // Paper - unload more
  
      protected void unloadChunks(BooleanSupplier booleansupplier) {
@@ -885,7 +885,7 @@ index 39a8397673f6a56ee3079ef4fa53bf5365bdf140..61b47f1e328ba5974d8106ebad7c950c
      }
  
      private void b(BooleanSupplier booleansupplier) {
-@@ -1076,7 +1076,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1099,7 +1099,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
          // Paper start - Async chunk io
          final java.util.function.BiFunction<ChunkRegionLoader.InProgressChunkHolder, Throwable, Either<IChunkAccess, PlayerChunk.Failure>> syncLoadComplete = (chunkHolder, ioThrowable) -> {
              try (Timing ignored = this.world.timings.chunkLoad.startTimingIfSync()) { // Paper
@@ -894,17 +894,17 @@ index 39a8397673f6a56ee3079ef4fa53bf5365bdf140..61b47f1e328ba5974d8106ebad7c950c
                  if (ioThrowable != null) {
                      com.destroystokyo.paper.io.IOUtil.rethrow(ioThrowable);
                  }
-@@ -1414,7 +1414,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
-                     }
+@@ -1412,7 +1412,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                  }
  
+                 } // Paper
 -                this.world.getMethodProfiler().c("chunkSave");
 +                //this.world.getMethodProfiler().c("chunkSave"); // Akarin - remove caller
-                 } // Paper
                  try (co.aikar.timings.Timing ignored1 = this.world.timings.chunkSaveDataSerialization.startTiming()) { // Paper
                  nbttagcompound = ChunkRegionLoader.saveChunk(this.world, ichunkaccess);
+                 } // Paper
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index ecf7a8c6d9c2dba0c2463e6d4f3183756921263d..7fda15e427b15c8eb750c7bcb1506708152acfaa 100644
+index 455dd1de07cf4ed2b7f41b45e0dec0c86092bc69..beaa3b104856cdf5dd71e7e151728bfa06035612 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -195,7 +195,7 @@ public class PlayerConnection implements PacketListenerPlayIn {
@@ -957,7 +957,7 @@ index 3f1aa5ced697490b5481ba992cf5af5dc98b8166..af705e6c650b529c18bdd8f0c063a71c
              this.h.clear();
              this.g.clear();
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index aa69af321e708d321a00fa6cc4ccdc17eb52b3be..88d6a4f7f42aeacdad9621d883bda66627a87066 100644
+index 4a43653cdee98a73a4e36710588df2ad205ef3d4..b061134322600315b71a3fbf8f57a51d395c9b23 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -392,9 +392,9 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
@@ -1059,10 +1059,10 @@ index aa69af321e708d321a00fa6cc4ccdc17eb52b3be..88d6a4f7f42aeacdad9621d883bda666
          int j = MathHelper.f((axisalignedbb.maxX + 2.0D) / 16.0D);
          int k = MathHelper.floor((axisalignedbb.minZ - 2.0D) / 16.0D);
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7b5a5f2d9 100644
+index 9338e090cbad73f3a72ab5e1d26026bbb334e2fe..7958393a9c4c934ba36dc4b3cd55eecbe8dd9851 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -729,12 +729,12 @@ public class WorldServer extends World {
+@@ -726,12 +726,12 @@ public class WorldServer extends World {
      }
  
      public void doTick(BooleanSupplier booleansupplier) {
@@ -1078,7 +1078,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
          boolean flag = this.isRaining();
          int i;
  
-@@ -873,11 +873,11 @@ public class WorldServer extends World {
+@@ -870,11 +870,11 @@ public class WorldServer extends World {
  
          this.N();
          this.a();
@@ -1092,7 +1092,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
          timings.scheduledBlocks.startTiming(); // Spigot
          if (this.worldData.getType() != WorldType.DEBUG_ALL_BLOCK_STATES) {
              this.nextTickListBlock.b();
-@@ -886,7 +886,7 @@ public class WorldServer extends World {
+@@ -883,7 +883,7 @@ public class WorldServer extends World {
          timings.scheduledBlocks.stopTiming(); // Spigot
  
          // Tuinity - replace logic
@@ -1101,7 +1101,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
          this.timings.raids.startTiming(); // Paper - timings
          this.persistentRaid.a();
          if (this.mobSpawnerTrader != null) {
-@@ -894,13 +894,13 @@ public class WorldServer extends World {
+@@ -891,13 +891,13 @@ public class WorldServer extends World {
          }
          this.timings.raids.stopTiming(); // Paper - timings
  
@@ -1117,7 +1117,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
          boolean flag3 = true || !this.players.isEmpty() || !this.getForceLoadedChunks().isEmpty(); // CraftBukkit - this prevents entity cleanup, other issues on servers with no players
  
          if (flag3) {
-@@ -910,7 +910,7 @@ public class WorldServer extends World {
+@@ -907,7 +907,7 @@ public class WorldServer extends World {
          if (flag3 || this.emptyTime++ < 300) {
              timings.tickEntities.startTiming(); // Spigot
              this.worldProvider.j();
@@ -1126,7 +1126,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
  
              Entity entity;
  
-@@ -930,7 +930,7 @@ public class WorldServer extends World {
+@@ -927,7 +927,7 @@ public class WorldServer extends World {
                  }
              }
  
@@ -1135,7 +1135,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
              this.tickingEntities = true;
              ObjectIterator objectiterator = this.entitiesById.int2ObjectEntrySet().iterator();
  
-@@ -952,12 +952,12 @@ public class WorldServer extends World {
+@@ -949,12 +949,12 @@ public class WorldServer extends World {
                  }
                  // CraftBukkit end */
  
@@ -1150,7 +1150,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
                  if (entity2 != null) {
                      if (!entity2.dead && entity2.w(entity1)) {
                          continue;
-@@ -966,20 +966,20 @@ public class WorldServer extends World {
+@@ -963,20 +963,20 @@ public class WorldServer extends World {
                      entity1.stopRiding();
                  }
  
@@ -1175,7 +1175,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
              }
              timings.entityTick.stopTiming(); // Spigot
  
-@@ -1003,13 +1003,13 @@ public class WorldServer extends World {
+@@ -1000,13 +1000,13 @@ public class WorldServer extends World {
              }
              } // Paper - timings
  
@@ -1191,7 +1191,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
      }
  
      private void wakeupPlayers() {
-@@ -1028,9 +1028,9 @@ public class WorldServer extends World {
+@@ -1025,9 +1025,9 @@ public class WorldServer extends World {
          boolean flag = this.isRaining();
          int j = chunkcoordintpair.d();
          int k = chunkcoordintpair.e();
@@ -1203,7 +1203,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
          final BlockPosition.MutableBlockPosition blockposition = this.chunkTickMutablePosition; // Paper - use mutable to reduce allocation rate, final to force compile fail on change
  
          if (!this.paperConfig.disableThunder && flag && this.U() && this.randomTickRandom.nextInt(100000) == 0) { // Paper - Disable thunder // Paper - optimise random ticking
-@@ -1052,7 +1052,7 @@ public class WorldServer extends World {
+@@ -1049,7 +1049,7 @@ public class WorldServer extends World {
              }
          }
  
@@ -1212,7 +1212,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
          if (!this.paperConfig.disableIceAndSnow && this.randomTickRandom.nextInt(16) == 0) { // Paper - Disable ice and snow // Paper - optimise random ticking
              // Paper start - optimise chunk ticking
              this.getRandomBlockPosition(j, 0, k, 15, blockposition);
-@@ -1083,9 +1083,9 @@ public class WorldServer extends World {
+@@ -1080,9 +1080,9 @@ public class WorldServer extends World {
          }
  
          // Paper start - optimise random block ticking
@@ -1224,7 +1224,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
              timings.chunkTicksBlocks.startTiming(); // Paper
  
              ChunkSection[] sections = chunk.getSections();
-@@ -1122,7 +1122,7 @@ public class WorldServer extends World {
+@@ -1119,7 +1119,7 @@ public class WorldServer extends World {
                      // TODO CHECK ON UPDATE
                  }
              }
@@ -1233,7 +1233,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
              timings.chunkTicksBlocks.stopTiming(); // Paper
              // Paper end
          }
-@@ -1256,15 +1256,13 @@ public class WorldServer extends World {
+@@ -1253,15 +1253,13 @@ public class WorldServer extends World {
              entity.lastPitch = entity.pitch;
              if (entity.inChunk) {
                  ++entity.ticksLived;
@@ -1253,7 +1253,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
              }
  
              this.chunkCheck(entity);
-@@ -1297,14 +1295,12 @@ public class WorldServer extends World {
+@@ -1294,14 +1292,12 @@ public class WorldServer extends World {
                  entity1.lastPitch = entity1.pitch;
                  if (entity1.inChunk) {
                      ++entity1.ticksLived;
@@ -1272,7 +1272,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
                  }
  
                  this.chunkCheck(entity1);
-@@ -1325,7 +1321,7 @@ public class WorldServer extends World {
+@@ -1322,7 +1318,7 @@ public class WorldServer extends World {
      }
  
      public void chunkCheck(Entity entity) {
@@ -1281,7 +1281,7 @@ index 30adf52951575e24bbd868e1c896b942639196b7..32365c4fbda6fb2cabeee7bca4f00ea7
          int i = MathHelper.floor(entity.locX() / 16.0D);
          int j =  Math.min(15, Math.max(0, MathHelper.floor(entity.locY() / 16.0D))); // Paper - stay consistent with chunk add/remove behavior;
          int k = MathHelper.floor(entity.locZ() / 16.0D);
-@@ -1345,7 +1341,7 @@ public class WorldServer extends World {
+@@ -1342,7 +1338,7 @@ public class WorldServer extends World {
              }
          }
  

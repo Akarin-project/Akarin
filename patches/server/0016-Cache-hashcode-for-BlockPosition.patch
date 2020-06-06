@@ -5,7 +5,7 @@ Subject: [PATCH] Cache hashcode for BlockPosition
 
 
 diff --git a/src/main/java/net/minecraft/server/BaseBlockPosition.java b/src/main/java/net/minecraft/server/BaseBlockPosition.java
-index 8f47b6c9e70d10c444ab328dc3bf3a46499b14d5..a03f3b43d99da10c2228c58daea27925821b4168 100644
+index a0450a7ddf21659c5636b3f298e6bf4f0a93fc4d..c4227ff056f906c6ea1fec0330d2db84409a6482 100644
 --- a/src/main/java/net/minecraft/server/BaseBlockPosition.java
 +++ b/src/main/java/net/minecraft/server/BaseBlockPosition.java
 @@ -19,6 +19,7 @@ public class BaseBlockPosition implements Comparable<BaseBlockPosition> {
