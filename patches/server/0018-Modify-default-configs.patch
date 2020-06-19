@@ -19,10 +19,10 @@ index f0284e81db3ab7c45018de2b446f2d8296df15c3..931060b9a7261b3aa4725136141ed9b4
          TimingsManager.privacy = getBoolean("timings.server-name-privacy", false);
          TimingsManager.hiddenConfigs = getList("timings.hidden-config-entries", Lists.newArrayList("database", "settings.bungeecord-addresses"));
 diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index 5c8a946d5c895fc2622c7df656cc462c58104cf7..8f500bd8749a2cf86c0529568181f2ea2357a4fa 100644
+index ecacb72b922927f06883b75e7d2cc1f904eb9f03..bb97ecbb687acbe155890e0f866efddfb172c098 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -650,7 +650,7 @@ public class PaperWorldConfig {
+@@ -648,7 +648,7 @@ public class PaperWorldConfig {
      }
  
      public boolean cooldownHopperWhenFull = true;

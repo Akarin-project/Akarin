@@ -14,7 +14,7 @@ paper=$(changeLog Tuinity)
 updated=""
 logsuffix=""
 if [ ! -z "$paper" ]; then
-    logsuffix="$logsuffix\n\Tuinity Changes:\n$paper"
+    logsuffix="$logsuffix\nTuinity Changes:\n$paper"
     if [ -z "$updated" ]; then updated="Tuinity"; else updated="$updated/Tuinity"; fi
 fi
 disclaimer="Upstream has released updates that appears to apply and compile correctly"

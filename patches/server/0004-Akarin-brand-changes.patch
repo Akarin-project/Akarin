@@ -6,10 +6,10 @@ Subject: [PATCH] Akarin brand changes
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 533caec8c07edd36e0be70488fe174bc5f3ad285..ead3e43e8c0970835e11a2ce7ee48d4702395b63 100644
+index 3c9392077ca0deed8ee4ffa12fa9c615786d1aca..e71e00b087f9e20ab5d3758b2ea901636ebb7fec 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1626,7 +1626,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1630,7 +1630,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
      }
  
      public String getServerModName() {
@@ -19,7 +19,7 @@ index 533caec8c07edd36e0be70488fe174bc5f3ad285..ead3e43e8c0970835e11a2ce7ee48d47
  
      public CrashReport b(CrashReport crashreport) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 9ea75a4ff35fd0abec7cd7f3321ba219de970fc2..074cf1260c3755e537894f6dd86836fe3fda7f74 100644
+index 8863a778a8c34513bc02e42376ebce295d515393..7f952a860c524aafea7094048a102478d8c2beec 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -205,7 +205,7 @@ import javax.annotation.Nullable; // Paper
