@@ -6,7 +6,7 @@ Subject: [PATCH] Akarin Metrics
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/Metrics.java b/src/main/java/com/destroystokyo/paper/Metrics.java
-index 24641501aeae0f2c2c5ce877775c7b971fb051bf..8e2db5d4cd066e2e85d1df54729faacabf73da66 100644
+index 24641501aeae0f2c2c5ce877775c7b971fb051bf..246696a0862c9a57329a7ea6a9eb7da00adb60b0 100644
 --- a/src/main/java/com/destroystokyo/paper/Metrics.java
 +++ b/src/main/java/com/destroystokyo/paper/Metrics.java
 @@ -581,7 +581,7 @@ public class Metrics {
@@ -14,7 +14,7 @@ index 24641501aeae0f2c2c5ce877775c7b971fb051bf..8e2db5d4cd066e2e85d1df54729faaca
              // Only start Metrics, if it's enabled in the config
              if (config.getBoolean("enabled", true)) {
 -                Metrics metrics = new Metrics("Paper", serverUUID, logFailedRequests, Bukkit.getLogger());
-+                Metrics metrics = new Metrics("Akarin", serverUUID, logFailedRequests, Bukkit.getLogger()); // Akarin
++                Metrics metrics = new Metrics("Torch", serverUUID, logFailedRequests, Bukkit.getLogger()); // Akarin
  
                  metrics.addCustomChart(new Metrics.SimplePie("minecraft_version", () -> {
                      String minecraftVersion = Bukkit.getVersion();
