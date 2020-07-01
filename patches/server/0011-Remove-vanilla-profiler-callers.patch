@@ -661,33 +661,6 @@ index 2552f860ff7a25f74e9a0600e58cefe064fac484..00b70d7447e0db11c09f3b751e089ea0
                  }
              }
  
-diff --git a/src/main/java/net/minecraft/server/JsonList.java b/src/main/java/net/minecraft/server/JsonList.java
-index 370841cad06121651d0c981c23f3a5e268dc3f59..c97be42dd7b4c6ea2cadcc97f47185c7f02e2cce 100644
---- a/src/main/java/net/minecraft/server/JsonList.java
-+++ b/src/main/java/net/minecraft/server/JsonList.java
-@@ -168,7 +168,6 @@ public class JsonList<K, V extends JsonListEntry<K>> {
-     }
- 
-     public void save() throws IOException {
--        Runnable runnable = () -> { // Akarin - Save json list async
-         this.removeStaleEntries(); // Paper - remove expired values before saving
-         Collection<V> collection = this.d.values();
-         String s = this.b.toJson(collection);
-@@ -177,13 +176,10 @@ public class JsonList<K, V extends JsonListEntry<K>> {
-         try {
-             bufferedwriter = Files.newWriter(this.c, StandardCharsets.UTF_8);
-             bufferedwriter.write(s);
--        } catch (IOException e) { // Akarin - Save json list async
--            JsonList.LOGGER.warn("Failed to save " + this.c, e); // Akarin - Save json list async
-         } finally {
-             IOUtils.closeQuietly(bufferedwriter);
-         }
--        }; // Akarin - Save json list async
--        MCUtil.scheduleAsyncTask(runnable); // Akarin - Save json list async
-+
-     }
- 
-     public void load() throws FileNotFoundException {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
 index 2cb12e02e836f34ed80e93d4426bd994146e26c8..06e1f6a0d7ee6b4119a4801ae298baaee1d2da3b 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
