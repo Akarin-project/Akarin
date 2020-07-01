@@ -6,6 +6,7 @@ The checked versions below are supported by us.
 
 | Version | Supported          | Notes          |
 | ------- | ------------------ | -------------- |
+| 1.16.1  | :white_check_mark: | Latest Build   |
 | 1.15.2  | :white_check_mark: | Latest Build   |
 | 1.14.4  | :x:                | No Support     |
 | 1.13.2  | :x:                | No Support     |
