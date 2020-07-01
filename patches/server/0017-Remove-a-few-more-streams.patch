@@ -5,7 +5,7 @@ Subject: [PATCH] Remove a few more streams
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkMapDistance.java b/src/main/java/net/minecraft/server/ChunkMapDistance.java
-index 1270d88138c7d6a88614f2df2802722a93ff27a6..570c6a1af1acafc53af8fe3e85e195e47f1986ef 100644
+index e0378f486c5d191d55114701d4d519e0d0af5726..e70f4928f81a06d3c15862fc7bdc43dc5fba928e 100644
 --- a/src/main/java/net/minecraft/server/ChunkMapDistance.java
 +++ b/src/main/java/net/minecraft/server/ChunkMapDistance.java
 @@ -188,9 +188,15 @@ public abstract class ChunkMapDistance {

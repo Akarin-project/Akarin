@@ -6,7 +6,7 @@ Subject: [PATCH] Modify default configs
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-index f0284e81db3ab7c45018de2b446f2d8296df15c3..931060b9a7261b3aa4725136141ed9b4fd71bc94 100644
+index 8444819f071b13e98ba07032520016a664b7b9bc..a349f56548ece94ec591933e13f77ed3b9f20fb7 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperConfig.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
 @@ -202,7 +202,7 @@ public class PaperConfig {

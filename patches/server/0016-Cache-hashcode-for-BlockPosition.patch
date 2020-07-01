@@ -39,10 +39,10 @@ index a0450a7ddf21659c5636b3f298e6bf4f0a93fc4d..c4227ff056f906c6ea1fec0330d2db84
      public int compareTo(BaseBlockPosition baseblockposition) {
          return this.getY() == baseblockposition.getY() ? (this.getZ() == baseblockposition.getZ() ? this.getX() - baseblockposition.getX() : this.getZ() - baseblockposition.getZ()) : this.getY() - baseblockposition.getY();
 diff --git a/src/main/java/net/minecraft/server/BlockPosition.java b/src/main/java/net/minecraft/server/BlockPosition.java
-index 4c64798fbc50f4d8b08502ba865c5fde5c968e62..ba6d9c838bf7cd16ad300029521f089d48f19547 100644
+index 7e69f9fb7a1865003c1d09a7ee05c17e1e5d4445..fccd966e627e3d706b4ed12fc101545ac4d13266 100644
 --- a/src/main/java/net/minecraft/server/BlockPosition.java
 +++ b/src/main/java/net/minecraft/server/BlockPosition.java
-@@ -437,6 +437,7 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
+@@ -443,6 +443,7 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
              this.y = j;
              this.z = k;
              // Paper end
@@ -50,7 +50,7 @@ index 4c64798fbc50f4d8b08502ba865c5fde5c968e62..ba6d9c838bf7cd16ad300029521f089d
              return this;
          }
  
-@@ -477,16 +478,19 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
+@@ -483,16 +484,19 @@ public class BlockPosition extends BaseBlockPosition implements MinecraftSeriali
          public final void setX(final int x) { this.o(x); } // Paper - OBFHELPER
          public void o(int i) {
              this.x = i; // Paper change to x
