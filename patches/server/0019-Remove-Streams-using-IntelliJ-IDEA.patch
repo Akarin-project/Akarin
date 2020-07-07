@@ -1491,7 +1491,7 @@ index 973bdd25ca45ee6a11803e3abb8c0ff22d658554..b20a4a0edb5f5958361cc4c12bee0584
  
      private MCUtil() {}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 06e1f6a0d7ee6b4119a4801ae298baaee1d2da3b..7831f1d87df7cc19e1cc428a894dbee43c0e3208 100644
+index 5b8092be7540362bc8c893f314ea230d333e46e7..eb47c17a50841d07eadb41eeb21b6bc23f143d18 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -473,7 +473,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -1600,7 +1600,7 @@ index d3c2e1bedfde39c19fe293941036641ea72c1bcd..aacc2f0052629169be551e44c3ef474f
          if (minecraftserver.getOnlineMode()
                  || (com.destroystokyo.paper.PaperConfig.isProxyOnlineMode())) { // Spigot: bungee = online mode, for now.  // Paper - Handle via setting
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 5578818a0a3b10fa04ad9937bb3602350782df48..6ddf807dfe448301bfa1152b9019899acd8c30f3 100644
+index 5b20eb32cbd70d3c2befd0fcaea5b9f3faf087d5..84e0ec2c194648da0a9c1e62f2e21d242ad2398b 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -442,12 +442,12 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
@@ -1665,7 +1665,7 @@ index 44d6f2debc767cb0576b17ed3e0711baa4361001..e7bfefafb70df7cca594db433a83e73e
          // Paper end
          this.oldTicketLevel = this.ticketLevel;
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 4affa47c290d68d755759d2b96b46eb716515169..89e510c3fa06d33bfae457988d4f4f9b4b9a6c9e 100644
+index 0b2209551ff369e8e189e0b017b4ac55091e87d8..3140ac452e7acda8a21fee9d000e43cbd19dd4a7 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -474,53 +474,53 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
@@ -2352,7 +2352,7 @@ index 2f1be1995d1a188da5be792abd7ac6f126332f49..bae3f216d056cb64fde49e4ca592631e
          private boolean shouldUseVanillaMap() {
              return mapView.getRenderers().size() == 1 && mapView.getRenderers().get(0).getClass() == org.bukkit.craftbukkit.map.CraftMapRenderer.class;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 1a6fa98a79910c74f121ca844424b3df0ab2e20a..cbfe1550c701c457628470cb9d46864763ccb5e9 100644
+index 9b4c77eff1e0a98c709591f45a24fc02837cf9bd..096590141fe3f162c9d5fe53b71ec53abff1d4e6 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -22,15 +22,7 @@ import java.io.BufferedWriter;

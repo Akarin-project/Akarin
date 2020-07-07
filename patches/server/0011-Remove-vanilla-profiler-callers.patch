@@ -36,15 +36,12 @@ index a08bfb4b3b02e998d3a6f519107e522fc58496eb..bed9730542ae7c5bb010b31d587c3cc6
  
          // finished ticking, actual cleanup time
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index e8bf60507bacad9b333d4f074fbb62decf974c45..73545d70c2b576c22e8e6f67553d7ad07cdebdc2 100644
+index e8bf60507bacad9b333d4f074fbb62decf974c45..8895d1e7d360864fd4c7758ae24fb5ee2ab8db20 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-@@ -636,9 +636,9 @@ public class ChunkProviderServer extends IChunkProvider {
-                 return ifLoaded;
-             }
+@@ -638,7 +638,7 @@ public class ChunkProviderServer extends IChunkProvider {
              // Paper end
--            GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
-+            //GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler(); // Akarin - remove caller
+             GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
  
 -            gameprofilerfiller.c("getChunk");
 +            //gameprofilerfiller.c("getChunk"); // Akarin - remove caller
@@ -60,12 +57,9 @@ index e8bf60507bacad9b333d4f074fbb62decf974c45..73545d70c2b576c22e8e6f67553d7ad0
              CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = this.getChunkFutureMainThread(i, j, chunkstatus, flag, true); // Paper
  
              if (!completablefuture.isDone()) { // Paper
-@@ -728,13 +728,13 @@ public class ChunkProviderServer extends IChunkProvider {
-             this.chunkMapDistance.addTicketAtLevel(TicketType.REQUIRED_LOAD, chunkcoordintpair, l, identifier); // Tuinity - prevent plugin unloads from removing our ticket
-             if (isUrgent) this.chunkMapDistance.markUrgent(chunkcoordintpair); // Paper
+@@ -730,11 +730,11 @@ public class ChunkProviderServer extends IChunkProvider {
              if (this.a(playerchunk, l)) {
--                GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
-+                //GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler(); // Akarin - remove caller
+                 GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
  
 -                gameprofilerfiller.enter("chunkLoad");
 +                //gameprofilerfiller.enter("chunkLoad"); // Akarin - remove caller
@@ -227,15 +221,11 @@ index 2d512aa4f9ab74dfadff748ba6dd72631eda9fe5..98c8f90a00d27cdb24e2fd972c3e75e4
  
          return b0;
 diff --git a/src/main/java/net/minecraft/server/CustomFunctionData.java b/src/main/java/net/minecraft/server/CustomFunctionData.java
-index ee42e1dfa493c3d7f5af8cc7b8e17e80fcb32b71..ccc9440947fd9e0d01daa92cf03f24c2ed865005 100644
+index ee42e1dfa493c3d7f5af8cc7b8e17e80fcb32b71..f7492750726351f2f2e313f1f3bcce9e3bd4e121 100644
 --- a/src/main/java/net/minecraft/server/CustomFunctionData.java
 +++ b/src/main/java/net/minecraft/server/CustomFunctionData.java
-@@ -58,10 +58,10 @@ public class CustomFunctionData implements IResourcePackListener {
-     }
- 
-     public void tick() {
--        GameProfiler gameprofiler = this.server.getMethodProfiler();
-+        //GameProfiler gameprofiler = this.server.getMethodProfiler(); // Akarin - remove caller
+@@ -61,7 +61,7 @@ public class CustomFunctionData implements IResourcePackListener {
+         GameProfiler gameprofiler = this.server.getMethodProfiler();
          MinecraftKey minecraftkey = CustomFunctionData.d;
  
 -        gameprofiler.a(minecraftkey::toString);
@@ -253,8 +243,7 @@ index ee42e1dfa493c3d7f5af8cc7b8e17e80fcb32b71..ccc9440947fd9e0d01daa92cf03f24c2
              this.m = false;
              Collection<CustomFunction> collection = this.h().b(CustomFunctionData.e).a();
  
--            gameprofiler = this.server.getMethodProfiler();
-+            //gameprofiler = this.server.getMethodProfiler(); // Akarin - remove caller
+             gameprofiler = this.server.getMethodProfiler();
              minecraftkey = CustomFunctionData.e;
 -            gameprofiler.a(minecraftkey::toString);
 +            //gameprofiler.a(minecraftkey::toString); // Akarin - remove caller
@@ -662,7 +651,7 @@ index 2552f860ff7a25f74e9a0600e58cefe064fac484..00b70d7447e0db11c09f3b751e089ea0
              }
  
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 2cb12e02e836f34ed80e93d4426bd994146e26c8..06e1f6a0d7ee6b4119a4801ae298baaee1d2da3b 100644
+index 2cb12e02e836f34ed80e93d4426bd994146e26c8..5b8092be7540362bc8c893f314ea230d333e46e7 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -965,15 +965,15 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -760,13 +749,7 @@ index 2cb12e02e836f34ed80e93d4426bd994146e26c8..06e1f6a0d7ee6b4119a4801ae298baae
          Iterator iterator = this.getWorlds().iterator();
  
          // CraftBukkit start
-@@ -1371,18 +1371,18 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
-             worldserver.hasPhysicsEvent =  org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // Paper
-             TileEntityHopper.skipHopperEvents = worldserver.paperConfig.disableHopperMoveEvents || org.bukkit.event.inventory.InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0; // Paper
-             if (true || worldserver.worldProvider.getDimensionManager() == DimensionManager.OVERWORLD || this.getAllowNether()) { // CraftBukkit
--                this.methodProfiler.a(() -> {
-+                java.util.function.Supplier<Object> pleaseRemoveMe = (() -> { // Akarin - remove caller
-                     return worldserver.getWorldData().getName() + " " + IRegistry.DIMENSION_TYPE.getKey(worldserver.worldProvider.getDimensionManager());
+@@ -1376,13 +1376,13 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                  });
                  /* Drop global time updates
                  if (this.ticks % 20 == 0) {
@@ -889,15 +872,11 @@ index a68fc11ec668576d1453459666caeacf5fbc49b8..f49fc9c8f24e0b1f0dc11a213605a3e9
  
      public Stream<PathfinderGoalWrapped> getExecutingGoals() {return c();} // Paper - OBFHELPER
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 34ec3b9d702fd865cf733c5608f11c927b3d6c68..4affa47c290d68d755759d2b96b46eb716515169 100644
+index 34ec3b9d702fd865cf733c5608f11c927b3d6c68..0b2209551ff369e8e189e0b017b4ac55091e87d8 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -891,20 +891,20 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
-     private static final double UNLOAD_QUEUE_RESIZE_FACTOR = 0.90; // Spigot // Paper - unload more
- 
-     protected void unloadChunks(BooleanSupplier booleansupplier) {
--        GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
-+        //GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler(); // Akarin - remove caller
+@@ -894,17 +894,17 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+         GameProfilerFiller gameprofilerfiller = this.world.getMethodProfiler();
  
          try (Timing ignored = this.world.timings.poiUnload.startTiming()) { // Paper
 -        gameprofilerfiller.enter("poi");
@@ -989,7 +968,7 @@ index 3f1aa5ced697490b5481ba992cf5af5dc98b8166..af705e6c650b529c18bdd8f0c063a71c
              this.h.clear();
              this.g.clear();
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 655e0b5e52e22a1ac1ff3718ad5ab3ab61ef7e41..665e7352d7b1f495f0d7cc4b3892382238b78ad7 100644
+index 655e0b5e52e22a1ac1ff3718ad5ab3ab61ef7e41..ec57cd1811bad25dec43515509d6a97f286d55b3 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -411,9 +411,9 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
@@ -1004,27 +983,15 @@ index 655e0b5e52e22a1ac1ff3718ad5ab3ab61ef7e41..665e7352d7b1f495f0d7cc4b38923822
                  }
  
                  /*
-@@ -781,9 +781,9 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
-     }
- 
+@@ -783,7 +783,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
      public void tickBlockEntities() {
--        GameProfilerFiller gameprofilerfiller = this.getMethodProfiler();
-+        //GameProfilerFiller gameprofilerfiller = this.getMethodProfiler(); // Akarin - remove caller
+         GameProfilerFiller gameprofilerfiller = this.getMethodProfiler();
  
 -        gameprofilerfiller.enter("blockEntities");
 +        //gameprofilerfiller.enter("blockEntities"); // Akarin - remove caller
          timings.tileEntityTick.startTiming(); // Spigot
          if (!this.tileEntityListUnload.isEmpty()) {
              // Paper start - Use alternate implementation with faster contains
-@@ -816,7 +816,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
- 
-                 if (this.chunkProvider.a(blockposition) && this.getWorldBorder().a(blockposition)) {
-                     try {
--                        gameprofilerfiller.a(() -> {
-+                        /*gameprofilerfiller.a*/java.util.function.Supplier<Object> pleaseRemoveMe = (() -> { // Akarin - remove caller
-                             return String.valueOf(TileEntityTypes.a(tileentity.getTileType()));
-                         });
-                         tileentity.tickTimer.startTiming(); // Spigot
 @@ -826,7 +826,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
                              tileentity.v();
                          }
@@ -1089,15 +1056,11 @@ index 655e0b5e52e22a1ac1ff3718ad5ab3ab61ef7e41..665e7352d7b1f495f0d7cc4b38923822
          int j = MathHelper.f((axisalignedbb.maxX + 2.0D) / 16.0D);
          int k = MathHelper.floor((axisalignedbb.minZ - 2.0D) / 16.0D);
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 24cd10c960a5460aef769d2937d02e7921dec9ce..1a6fa98a79910c74f121ca844424b3df0ab2e20a 100644
+index 24cd10c960a5460aef769d2937d02e7921dec9ce..9b4c77eff1e0a98c709591f45a24fc02837cf9bd 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -727,12 +727,12 @@ public class WorldServer extends World {
-     }
- 
-     public void doTick(BooleanSupplier booleansupplier) {
--        GameProfilerFiller gameprofilerfiller = this.getMethodProfiler();
-+        //GameProfilerFiller gameprofilerfiller = this.getMethodProfiler(); // Akarin - remove caller
+@@ -730,9 +730,9 @@ public class WorldServer extends World {
+         GameProfilerFiller gameprofilerfiller = this.getMethodProfiler();
  
          this.ticking = true;
 -        gameprofilerfiller.enter("world border");
@@ -1221,12 +1184,9 @@ index 24cd10c960a5460aef769d2937d02e7921dec9ce..1a6fa98a79910c74f121ca844424b3df
      }
  
      private void wakeupPlayers() {
-@@ -1026,9 +1026,9 @@ public class WorldServer extends World {
-         boolean flag = this.isRaining();
-         int j = chunkcoordintpair.d();
+@@ -1028,7 +1028,7 @@ public class WorldServer extends World {
          int k = chunkcoordintpair.e();
--        GameProfilerFiller gameprofilerfiller = this.getMethodProfiler();
-+        //GameProfilerFiller gameprofilerfiller = this.getMethodProfiler(); // Akarin - remove caller
+         GameProfilerFiller gameprofilerfiller = this.getMethodProfiler();
  
 -        gameprofilerfiller.enter("thunder");
 +        //gameprofilerfiller.enter("thunder"); // Akarin - remove caller
@@ -1263,15 +1223,8 @@ index 24cd10c960a5460aef769d2937d02e7921dec9ce..1a6fa98a79910c74f121ca844424b3df
              timings.chunkTicksBlocks.stopTiming(); // Paper
              getChunkProvider().getLightEngine().queueUpdate(); // Paper
              // Paper end
-@@ -1255,15 +1255,15 @@ public class WorldServer extends World {
-             entity.lastPitch = entity.pitch;
-             if (entity.inChunk) {
-                 ++entity.ticksLived;
--                GameProfilerFiller gameprofilerfiller = this.getMethodProfiler();
-+                //GameProfilerFiller gameprofilerfiller = this.getMethodProfiler(); // Akarin - remove caller
- 
--                gameprofilerfiller.a(() -> {
-+                /*gameprofilerfiller.a*/java.util.function.Supplier<Object> pleaseRemoveMe = (() -> { // Akarin - remove caller
+@@ -1260,10 +1260,10 @@ public class WorldServer extends World {
+                 gameprofilerfiller.a(() -> {
                      return IRegistry.ENTITY_TYPE.getKey(entity.getEntityType()).toString();
                  });
 -                gameprofilerfiller.c("tickNonPassenger");
@@ -1283,15 +1236,8 @@ index 24cd10c960a5460aef769d2937d02e7921dec9ce..1a6fa98a79910c74f121ca844424b3df
              }
  
              this.chunkCheck(entity);
-@@ -1296,14 +1296,14 @@ public class WorldServer extends World {
-                 entity1.lastPitch = entity1.pitch;
-                 if (entity1.inChunk) {
-                     ++entity1.ticksLived;
--                    GameProfilerFiller gameprofilerfiller = this.getMethodProfiler();
-+                    //GameProfilerFiller gameprofilerfiller = this.getMethodProfiler(); // Akarin - remove caller
- 
--                    gameprofilerfiller.a(() -> {
-+                    /*gameprofilerfiller.a*/java.util.function.Supplier<Object> pleaseRemoveMe = (() -> { // Akarin - remove caller
+@@ -1301,9 +1301,9 @@ public class WorldServer extends World {
+                     gameprofilerfiller.a(() -> {
                          return IRegistry.ENTITY_TYPE.getKey(entity1.getEntityType()).toString();
                      });
 -                    gameprofilerfiller.c("tickPassenger");
