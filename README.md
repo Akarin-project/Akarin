@@ -64,3 +64,5 @@ Contributing
 * If you want to join the [Akarin-project](https://github.com/Akarin-project) team, welcome to contact us by our [Discord](https://discord.gg/fw2pJAj).
 
 ![Akarin project](https://i.loli.net/2018/05/13/5af7fbbfbcddf.png)
+
+[fork me daddy](https://www.amazon.com/s?k=fork)
