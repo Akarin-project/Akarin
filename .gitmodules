@@ -1,3 +1,4 @@
 [submodule "Tuinity"]
 	path = Tuinity
 	url = https://github.com/tsao-chi/Tuinity-autoupstreamupdate.git
+	branch = ver/1.15.2
