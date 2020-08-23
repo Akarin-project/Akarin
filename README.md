@@ -16,9 +16,11 @@ Introduction
 
 Our project has a few key goals:
 
+### note: this is not a mc bedrock software
+
 * **Open Access** - Make more game mechanics configurable.
 * **Compatible** - Support all plugins that work on [Spigot](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse).
-* **Bedrock** - Make the server more safe and stable.
+* **Stability** - Make the server more safe and stable.
 * **Fast** - Simplify the logic and implement multi-threaded computing.
 
 Get Akarin
@@ -51,7 +53,6 @@ Demo Servers
 ---
 
 * [Fair Server](https://fairserver.ru)
-* [LoyaltyMC](https://www.loyaltymc.net/)
 * [Wolfx](https://wolfx.jp/)
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your server here*
