@@ -54,6 +54,7 @@ Demo Servers
 
 * [Fair Server](https://fairserver.ru)
 * [Wolfx](https://wolfx.jp/)
+* [Pioneercraft](https://www.pioneercraft.pw/)
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your server here*
 
