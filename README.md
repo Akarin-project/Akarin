@@ -30,8 +30,8 @@ Get Akarin
 
 #### Recommended
 
++ [**JosephWorks Jenkins**](http://ci.josephworks.net/job/Akarin-project/job/Akarin-1.15.2)
 + [**Github Actions**](https://github.com/Akarin-project/Akarin/actions)
-+ [**JosephWorks Jenkins**](http://josephworks.ddns.net:8080/job/Akarin-project/job/Akarin-1.15.2)
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
