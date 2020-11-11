@@ -24,7 +24,7 @@ Get Akarin
 ---
 ### Download
 #### Recommended
-+ [**Jenkins**](https://jenkins.bennydoesstuff.me/view/Akarin/) - Kudos to [BennyDoesStuff](https://github.com/BennyDoesTheStuff)
++ [**Jenkins**](http://ci.josephworks.net/job/Akarin/job/ver%252F1.12.2/) - Kudos to [JosephWorks](https://github.com/josephworks)
 + [**Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/ver/1.12.2) - Checkout the 'Artifacts' tab of the latest build
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
