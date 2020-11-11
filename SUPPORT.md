@@ -6,12 +6,15 @@ The checked versions below are supported by us.
 
 | Version | Supported          | Notes          |
 | ------- | ------------------ | -------------- |
-| 1.16.2  | :white_check_mark: | Latest Build   |
-| 1.16.1  | :white_check_mark: | Latest Build   |
-| 1.15.2  | :white_check_mark: | Latest Build   |
+| 1.16.3  | :white_check_mark: | Latest Build   |
+| 1.16.2  | :x:                | No Support     |
+| 1.16.1  | :x:                | No Support     |
+| 1.15.2  | :white_check_mark: | Newer Build    |
 | 1.14.4  | :x:                | No Support     |
 | 1.13.2  | :x:                | No Support     |
 | 1.12.2  | :white_check_mark: | LTS Build only |
+
+Latest Build - You need the latest build in order to be provided support.
 
 Newer Build - Up to 20 commits behind or 5 jenkins builds.
 
