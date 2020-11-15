@@ -16,7 +16,7 @@
         <buildtag.suffix></buildtag.suffix>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.target>1.8</maven.compiler.target> akarin
     </properties>
     
     <parent>
@@ -170,6 +170,10 @@
             <id>nallar-repo</id>
             <url>http://repo.nallar.me/</url>
         </repository>
+      <repository>
+         <id>papermc</id>
+         <url>https://papermc.io/repo/repository/maven-public/</url>
+   </repository>
     </repositories>
 
     <pluginRepositories>
