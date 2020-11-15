@@ -22,7 +22,7 @@ if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 	)
 fi
 
-apt install curl
+sudo -u admin apt install curl
 echo "[Akarin] Ready to build"
 (
 	echo "[Akarin] Touch sources.."
