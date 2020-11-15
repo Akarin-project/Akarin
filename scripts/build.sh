@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 (
 set -e
 basedir="$(cd "$1" && pwd -P)"
@@ -23,6 +22,7 @@ if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 	)
 fi
 
+sudo apt install curl
 echo "[Akarin] Ready to build"
 (
 	echo "[Akarin] Touch sources.."
