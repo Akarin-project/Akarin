@@ -172,7 +172,7 @@
         </repository>
       <repository>
          <id>papermc</id>
-         <url>https:https://repo.songoda.com/artifactory/public/com/destroystokyo/paper/paper/1.12.2//</url>
+         <url>https://papermc.io/repo/repository/maven-public/</url>
    </repository>
     </repositories>
 
