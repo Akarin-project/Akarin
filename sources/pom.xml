@@ -154,10 +154,10 @@
     </dependencies>
 
     <repositories>
-        <repository>
-            <id>akarin-repo</id>
-            <url>https://raw.githubusercontent.com/Akarin-project/akarin-repo/master/repository</url>
-        </repository>
+    <repository>
+        <id>spigot-repo</id>
+        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+      </repository>
         <repository>
             <id>spigotmc-public</id>
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
@@ -172,7 +172,7 @@
         </repository>
       <repository>
          <id>papermc</id>
-         <url>https://papermc.io/repo/repository/maven-public/</url>
+         <url>https:https://repo.songoda.com/artifactory/public/com/destroystokyo/paper/paper/1.12.2//</url>
    </repository>
     </repositories>
 
