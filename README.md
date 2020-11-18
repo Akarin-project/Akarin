@@ -4,7 +4,7 @@
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
 [![Circle CI](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg)](https://circleci.com/gh/Akarin-project/Akarin/tree/ver/1.12.2)
 
-Akarin is currently **under heavy development** and contributions are welcome!
+Akarin is currently **under heavy development** and contributions are welcome! 
 
 Introduction
 ---
