@@ -158,18 +158,23 @@
             <id>spigotmc-public</id>
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
+        <!-- Akarin -->
+        <repository>
+            <id>nallar-repo</id>
+            <url>https://repo.nallar.me/</url>
+        </repository>
         <repository>
             <id>spongepowered-repo</id>
             <url>https://repo.spongepowered.org/maven/</url>
         </repository>
         <repository>
-            <id>nallar-repo</id>
-            <url>http://repo.nallar.me/</url>
+            <id>sonatype-nexusg</id>
+            <url>https://oss.sonatype.org/content/repositories</url>
         </repository>
-      <repository>
-         <id>papermc</id>
-         <url>https://papermc.io/repo/repository/maven-public/</url>
-   </repository>
+        <repository>
+            <id>tu-darmstadt</id>
+            <url>https://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-releases/</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -178,7 +183,7 @@
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </pluginRepository>
     </pluginRepositories>
-
+	
     <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
     <build>
         <finalName>akarin-${minecraft.version}</finalName>
