@@ -156,10 +156,6 @@
     </dependencies>
 
     <repositories>
-        <repository>
-            <id>spigotmc-public</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
-        </repository>
         <!-- Akarin -->
         <repository>
             <id>nallar-repo</id>
@@ -177,10 +173,10 @@
             <id>tu-darmstadt</id>
             <url>https://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-releases/</url>
         </repository>
-     <repository>
-       <id>papermc</id>
-       <url>https://papermc.io/repo/repository/maven-public/</url>
-    </repository>
+       <repository>
+           <id>papermc</id>
+           <url>https://papermc.io/repo/repository/maven-public/</url>
+       </repository>
         <repository>
             <id>akarin-repo</id>
             <url>https://github.com/LegacyGamerHD/LegacyLauncher/releases/download/1/LegacyLauncher-2.1.jar</url>
