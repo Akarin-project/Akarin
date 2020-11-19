@@ -4,13 +4,13 @@ pipeline {
   environment {
         DISCORD_WEBHOOK_URL = credentials('3e8105ad-8e03-4550-bc66-a27438ec6fb3')
         CHANGES = getChanges(currentBuild)
-        ARTIFACT = "http://ci.josephworks.net/job/Akarin/job/1.15.2/${currentBuild.id}/artifact/target/akarin-1.15.2-launcher.jar"
+        ARTIFACT = "http://ci.josephworks.net/job/Akarin/job/1.16.3/${currentBuild.id}/artifact/target/akarin-1.16.3-launcher.jar"
   }
   stages {
     stage('Initialize') {
       steps {
         sh '''git fetch origin
-git reset --hard origin/1.15.2
+git reset --hard origin/1.16.3
 git submodule update --init --recursive'''
       }
     }
