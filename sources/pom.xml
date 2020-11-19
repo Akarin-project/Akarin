@@ -177,10 +177,10 @@
            <id>papermc</id>
            <url>https://papermc.io/repo/repository/maven-public/</url>
        </repository>
-        <repository>
-            <id>akarin-repo</id>
-            <url>https://github.com/LegacyGamerHD/LegacyLauncher/releases/download/1/LegacyLauncher-2.1.jar</url>
-        </repository>
+     <repository>
+         <id>akarin-repo</id>
+         <url>https://raw.githubusercontent.com/Akarin-project/akarin-repo/master/repository</url>
+      </repository>
     </repositories>
 
     <pluginRepositories>
