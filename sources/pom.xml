@@ -39,10 +39,17 @@
             <version>${api.version}</version>
             <scope>compile</scope>
         </dependency>
+        <!--Bukkit API -->
         <dependency>
-            <groupId>com.destroystokyo.paper</groupId>
-            <artifactId>paper</artifactId>
-            <version>${minecraft.version}-R0.1-SNAPSHOT</version>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>1.12.2-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot</artifactId>
+            <version>1.12.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
