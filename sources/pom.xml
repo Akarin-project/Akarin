@@ -182,7 +182,7 @@
         <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
      </repository>
      <repository>
-         <id>destroystokyo-repo</id>
+         <id>songsoda-repo</id>
          <url>https://repo.songoda.com/artifactory/public/</url>
      </repository>
       <repository>
