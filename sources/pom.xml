@@ -40,8 +40,8 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
+            <groupId>com.destroystokyo.paper</groupId>
+            <artifactId>paper</artifactId>
             <version>${minecraft.version}-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -182,6 +182,10 @@
      <repository>
         <id>spigot-repo</id>
         <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+     </repository>
+     <repository>
+         <id>destroystokyo-repo</id>
+         <url>https://repo.songoda.com/artifactory/public/</url>
      </repository>
     </repositories>
 
