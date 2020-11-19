@@ -1,4 +1,4 @@
 [submodule "work/Paper"]
 	path = work/Paper
-	url = https://github.com/Akarin-project/Paper.git
+	url = https://github.com/PaperMC/Paper.git
 	branch = ver/1.12.2

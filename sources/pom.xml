@@ -166,10 +166,6 @@
             <url>https://repo.spongepowered.org/maven/</url>
         </repository>
         <repository>
-            <id>sonatype-nexusg</id>
-            <url>https://oss.sonatype.org/content/repositories</url>
-        </repository>
-        <repository>
             <id>tu-darmstadt</id>
             <url>https://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-releases/</url>
         </repository>
@@ -189,6 +185,14 @@
          <id>destroystokyo-repo</id>
          <url>https://repo.songoda.com/artifactory/public/</url>
      </repository>
+      <repository>
+         <id>sonatype</id>
+         <url>https://oss.sonatype.org/content/groups/public/</url>
+      </repository>
+        <repository>
+            <id>destroystokyo-repo</id>
+            <url>https://destroystokyo.com/repo/repository/maven-public/</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
