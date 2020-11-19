@@ -179,6 +179,10 @@
          <id>akarin-repo</id>
          <url>https://raw.githubusercontent.com/Akarin-project/akarin-repo/master/repository</url>
       </repository>
+     <repository>
+        <id>spigot-repo</id>
+        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+     </repository>
     </repositories>
 
     <pluginRepositories>
