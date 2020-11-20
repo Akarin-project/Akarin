@@ -32,7 +32,7 @@ import org.bukkit.event.weather.LightningStrikeEvent;
  * 1) Expose private members (core, safety issue)
  * 2) Removed hardcore difficulty codes (slack service, feature)
  */
-public class WorldServer extends World implements IAsyncTaskHandler {//DEBUG_ENTITIES
+public class WorldServer extends World implements IAsyncTaskHandler {
 
     private static final Logger a = LogManager.getLogger();
     boolean stopPhysicsEvent = false; // Paper
@@ -53,7 +53,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {//DEBUG_ENT
     private final List<NextTickListEntry> W = Lists.newArrayList();
 
     // CraftBukkit start
- //   private static final boolean DEBUG_ENTITIES = Boolean.getBoolean("debug.entities"); // Paper
+    private static final boolean DEBUG_ENTITIES = Boolean.getBoolean("debug.entities"); // Paper
     private static Throwable getAddToWorldStackTrace(Entity entity) {
         return new Throwable(entity + " Added to world at " + new Date());
     }
@@ -1182,7 +1182,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {//DEBUG_ENT
         }
 
     }
-/*
+
     private boolean j(Entity entity) {
         if (entity.dead) {
             WorldServer.a.warn("Tried to add entity {} but it was marked as removed already", EntityTypes.a(entity)); // CraftBukkit // Paper
@@ -1258,7 +1258,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {//DEBUG_ENT
         }
 
     }
-*/
+
     @Override
     protected void c(Entity entity) {
         if (!entity.valid) return; // Paper - Already removed, dont fire twice - this looks like it can happen even without our changes
