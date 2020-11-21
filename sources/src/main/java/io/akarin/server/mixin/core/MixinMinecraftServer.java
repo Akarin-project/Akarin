@@ -65,7 +65,7 @@ public abstract class MixinMinecraftServer {
         
         for (int i = 0; i < worlds.size(); ++i) {
             WorldServer world = worlds.get(i);
-            TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
+            //TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
         }
         AkarinSlackScheduler.get().boot();
     }
