@@ -1,3 +1,4 @@
+  
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -16,7 +17,7 @@
         <buildtag.suffix></buildtag.suffix>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.target>1.8</maven.compiler.target> akarin
     </properties>
     
     <parent>
@@ -134,7 +135,7 @@
         <dependency>
             <groupId>io.akarin</groupId>
             <artifactId>legacylauncher</artifactId>
-            <version>2.1</version>
+            <version>1.26</version>
         </dependency>
         <dependency>
             <groupId>org.spongepowered</groupId>
@@ -154,42 +155,21 @@
     </dependencies>
 
     <repositories>
-        <!-- Akarin -->
         <repository>
-            <id>nallar-repo</id>
-            <url>https://repo.nallar.me/</url>
+            <id>akarin-repo</id>
+            <url>https://raw.githubusercontent.com/Akarin-project/akarin-repo/master/repository</url>
+        </repository>
+        <repository>
+            <id>spigotmc-public</id>
+            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
         <repository>
             <id>spongepowered-repo</id>
             <url>https://repo.spongepowered.org/maven/</url>
         </repository>
         <repository>
-            <id>tu-darmstadt</id>
-            <url>https://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-releases/</url>
-        </repository>
-       <repository>
-           <id>papermc</id>
-           <url>https://papermc.io/repo/repository/maven-public/</url>
-       </repository>
-     <repository>
-         <id>akarin-repo</id>
-         <url>https://raw.githubusercontent.com/Akarin-project/akarin-repo/master/repository</url>
-      </repository>
-     <repository>
-        <id>spigot-repo</id>
-        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-     </repository>
-     <repository>
-         <id>songsoda-repo</id>
-         <url>https://repo.songoda.com/artifactory/public/</url>
-     </repository>
-      <repository>
-         <id>sonatype</id>
-         <url>https://oss.sonatype.org/content/groups/public/</url>
-      </repository>
-        <repository>
-            <id>destroystokyo-repo</id>
-            <url>https://destroystokyo.com/repo/repository/maven-public/</url>
+            <id>nallar-repo</id>
+            <url>http://repo.nallar.me/</url>
         </repository>
     </repositories>
 
@@ -199,7 +179,7 @@
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </pluginRepository>
     </pluginRepositories>
-	
+
     <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
     <build>
         <finalName>akarin-${minecraft.version}</finalName>
