@@ -141,6 +141,7 @@
             <groupId>org.spongepowered</groupId>
             <artifactId>mixin</artifactId>
             <version>0.8.2</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.googlecode.concurrent-locks</groupId>
