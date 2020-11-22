@@ -33,8 +33,8 @@ echo "[Akarin] Ready to build"
 		echo "[Akarin] Test and repatch has been skipped"
 		#\cp -rf "$basedir/api/src/main" "$paperbasedir/Paper-API/src/"
 		#\cp -rf "$basedir/api/pom.xml" "$paperbasedir/Paper-API/"
-		\cp -rf "$basedir/src" "$paperbasedir/Paper-Server/"
-		\cp -rf "$basedir/pom.xml" "$paperbasedir/Paper-Server/"
+		\cp -rf "$basedir/sources/src" "$paperbasedir/Paper-Server/"
+		\cp -rf "$basedir/sources/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install -DskipTests
 	else
 		rm -rf Paper-API/src
@@ -42,8 +42,8 @@ echo "[Akarin] Ready to build"
 		./paper patch
 		#\cp -rf "$basedir/api/src/main" "$paperbasedir/Paper-API/src/"
 		#\cp -rf "$basedir/api/pom.xml" "$paperbasedir/Paper-API/"
-		\cp -rf "$basedir/src" "$paperbasedir/Paper-Server/"
-		\cp -rf "$basedir/pom.xml" "$paperbasedir/Paper-Server/"
+		\cp -rf "$basedir/sources/src" "$paperbasedir/Paper-Server/"
+		\cp -rf "$basedir/sources/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install -DskipTests
 	fi
 	
