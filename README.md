@@ -2,7 +2,6 @@
 [![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.io)
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
-[![Circle CI](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg)](https://circleci.com/gh/Akarin-project/Akarin/tree/ver/1.12.2)
 
 Akarin is currently **under heavy development** and contributions are welcome! 
 
@@ -25,7 +24,6 @@ Get Akarin
 ### Download
 #### Recommended
 + [**Jenkins**](http://ci.josephworks.net/job/Akarin/job/ver%252F1.12.2/) - Kudos to [JosephWorks](https://github.com/josephworks)
-+ [**Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/ver/1.12.2) - Checkout the 'Artifacts' tab of the latest build
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
