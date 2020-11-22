@@ -50,8 +50,8 @@ echo "[Akarin] Ready to build"
 	minecraftversion=$(cat "$paperworkdir/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
 	rawjar="$paperbasedir/Paper-Server/target/akarin-$minecraftversion.jar"
 	\cp -rf "$rawjar" "$basedir/akarin-$minecraftversion.jar"
-	rawapi="$paperbasedir/Paper-API/target/paper-api-1.12.2-R0.1-SNAPSHOT.jar"
-	\cp -rf "$rawapi" "$basedir/paper-api-1.12.2-R0.1-SNAPSHOT.jar"
+	#rawapi="$paperbasedir/Paper-API/target/paper-api-1.12.2-R0.1-SNAPSHOT.jar"
+	#\cp -rf "$rawapi" "$basedir/paper-api-1.12.2-R0.1-SNAPSHOT.jar"
 	
 	echo ""
 	echo "[Akarin] Build successful"
