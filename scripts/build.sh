@@ -31,8 +31,8 @@ echo "[Akarin] Ready to build"
 	cd "$paperbasedir"
 	if [ "$2" == "--fast" ] || [ "$3" == "--fast" ] || [ "$4" == "--fast" ]; then
 		echo "[Akarin] Test and repatch has been skipped"
-		#\cp -rf "$basedir/api/src/main" "$paperbasedir/Paper-API/src/"
-		#\cp -rf "$basedir/api/pom.xml" "$paperbasedir/Paper-API/"
+		\cp -rf "$basedir/api/src/main" "$paperbasedir/Paper-API/src/"
+		\cp -rf "$basedir/api/pom.xml" "$paperbasedir/Paper-API/"
 		\cp -rf "$basedir/src" "$paperbasedir/Paper-Server/"
 		\cp -rf "$basedir/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install -DskipTests
@@ -40,8 +40,8 @@ echo "[Akarin] Ready to build"
 		rm -rf Paper-API/src
 		rm -rf Paper-Server/src
 		./paper patch
-		#\cp -rf "$basedir/api/src/main" "$paperbasedir/Paper-API/src/"
-		#\cp -rf "$basedir/api/pom.xml" "$paperbasedir/Paper-API/"
+		\cp -rf "$basedir/api/src/main" "$paperbasedir/Paper-API/src/"
+		\cp -rf "$basedir/api/pom.xml" "$paperbasedir/Paper-API/"
 		\cp -rf "$basedir/src" "$paperbasedir/Paper-Server/"
 		\cp -rf "$basedir/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install -DskipTests
@@ -50,8 +50,8 @@ echo "[Akarin] Ready to build"
 	minecraftversion=$(cat "$paperworkdir/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
 	rawjar="$paperbasedir/Paper-Server/target/akarin-$minecraftversion.jar"
 	\cp -rf "$rawjar" "$basedir/akarin-$minecraftversion.jar"
-	#rawapi="$paperbasedir/Paper-API/target/paper-api-1.12.2-R0.1-SNAPSHOT.jar"
-	#\cp -rf "$rawapi" "$basedir/paper-api-1.12.2-R0.1-SNAPSHOT.jar"
+	rawapi="$paperbasedir/Paper-API/target/paper-api-1.12.2-R0.1-SNAPSHOT.jar"
+	\cp -rf "$rawapi" "$basedir/paper-api-1.12.2-R0.1-SNAPSHOT.jar"
 	
 	echo ""
 	echo "[Akarin] Build successful"
