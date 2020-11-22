@@ -14,7 +14,7 @@ if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 			if [ -d "Minecraft" ]; then
 				rm Minecraft/ -r
 			fi
-			git clone https://github.com/Akarin-project/Minecraft.git
+			git clone https://github.com/LegacyGamerHD/Minecraft.git
 		fi
 		
 		cd "$paperbasedir"
