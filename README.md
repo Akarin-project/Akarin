@@ -20,7 +20,7 @@ Our project has a few key goals:
 *Issues and Pull Requests will be labeled accordingly*
 
 Get Akarin
----
+--- 
 ### Download
 #### Recommended
 + [**Jenkins**](http://ci.josephworks.net/job/Akarin/job/ver%252F1.12.2/) - Kudos to [JosephWorks](https://github.com/josephworks)
