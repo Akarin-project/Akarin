@@ -38,7 +38,7 @@ Get Akarin
 ```
 
 **Notes**
-* You must use `--setup` at least once to deploy necessary dependencies otherwise some imports cannot be organized.
+* You must use `--setup` at least once to deploy necessary dependencies otherwise some imports cannot be organized. 
 * For non-modified projects, it is recommended to add the `--fast` option to skip any tests.
 * If your machine has insufficient memory, you may want to add the `--remote` option to avoid decompiling locally.
 
