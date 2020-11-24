@@ -10,7 +10,7 @@ pipeline {
     stage('Build') {
       steps {
         sh 'bash ./scripts/build.sh'
-        sh 'bash ./scripts/inst.sh --setup --fast --remote'
+    //    sh 'bash ./scripts/inst.sh --setup --fast --remote'
       }
     }
 
