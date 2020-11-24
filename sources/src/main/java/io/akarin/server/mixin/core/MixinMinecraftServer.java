@@ -60,14 +60,14 @@ public abstract class MixinMinecraftServer {
     ))
     private void prerun(CallbackInfo info) {
         primaryThread.setPriority(AkarinGlobalConfig.primaryThreadPriority < Thread.NORM_PRIORITY ? Thread.NORM_PRIORITY :
-            (AkarinGlobalConfig.primaryThreadPriority > Thread.MAX_PRIORITY ? 10 : AkarinGlobalConfig.primaryThreadPriority));
+        (AkarinGlobalConfig.primaryThreadPriority > Thread.MAX_PRIORITY ? 10 : AkarinGlobalConfig.primaryThreadPriority));
         Akari.resizeTickExecutors((cachedWorldSize = worlds.size()));
         
-        for (int i = 0; i < worlds.size(); ++i) {
-            WorldServer world = worlds.get(i);
-            TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
-        }
-        AkarinSlackScheduler.get().boot();
+     //  for (int i = 0; i < worlds.size(); ++i) {
+        //    WorldServer world = worlds.get(i);
+        //    TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
+       // }
+     //   AkarinSlackScheduler.get().boot();
     }
     
     @Overwrite
