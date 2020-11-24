@@ -63,11 +63,11 @@ public abstract class MixinMinecraftServer {
         (AkarinGlobalConfig.primaryThreadPriority > Thread.MAX_PRIORITY ? 10 : AkarinGlobalConfig.primaryThreadPriority));
         Akari.resizeTickExecutors((cachedWorldSize = worlds.size()));
         
-     //  for (int i = 0; i < worlds.size(); ++i) {
-        //    WorldServer world = worlds.get(i);
+       for (int i = 0; i < worlds.size(); ++i) {
+            WorldServer world = worlds.get(i);
         //    TileEntityHopper.skipHopperEvents = world.paperConfig.disableHopperMoveEvents || InventoryMoveItemEvent.getHandlerList().getRegisteredListeners().length == 0;
-       // }
-     //   AkarinSlackScheduler.get().boot();
+        }
+        AkarinSlackScheduler.get().boot();
     }
     
     @Overwrite
