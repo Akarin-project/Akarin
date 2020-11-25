@@ -9,9 +9,7 @@ pipeline {
   stages {
     stage('Initialize') {
       steps {
-        sh '''git fetch origin
-git reset --hard origin/1.16.3
-git submodule update --init --recursive'''
+        sh '''git submodule update --init --recursive'''
       }
     }
 
@@ -41,10 +39,10 @@ git submodule update --init --recursive'''
     }
 
   }
-  //post {
-  //      always {
-  //              cleanWs()
-  //          }
-  //      }
-  //  }
+  post {
+        always {
+                cleanWs()
+            }
+        }
+    }
 }
