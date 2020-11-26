@@ -9,7 +9,7 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh 'bash ./scripts/build.sh'
+        sh 'bash ./scripts/build.sh --setup --fast'
     //    sh 'bash ./scripts/inst.sh --setup --fast --remote'
       }
     }
