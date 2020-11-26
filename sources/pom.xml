@@ -143,9 +143,9 @@
             <version>1.26</version>
         </dependency>
         <dependency>
-            <groupId>org.spongepowered</groupId>
-            <artifactId>mixin</artifactId>
-            <version>0.7.11-SNAPSHOT</version>
+           <groupId>org.spongepowered</groupId>
+           <artifactId>mixin</artifactId>
+           <version>0.4.4</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.concurrent-locks</groupId>
@@ -263,8 +263,8 @@
                                 <!--<relocation>-->
                                     <!--<pattern>joptsimple</pattern>-->
                                     <!--<shadedPattern>org.bukkit.craftbukkit.libs.joptsimple</shadedPattern>-->
-                                <!--</relocation>-->
-                                <relocation>
+                               <!--</relocation>-->
+                                 <!--<relocation>
                                     <pattern>jline</pattern>
                                     <shadedPattern>org.bukkit.craftbukkit.libs.jline</shadedPattern>
                                 </relocation>
@@ -272,7 +272,7 @@
                                 <!--<relocation>-->
                                     <!--<pattern>it.unimi</pattern>-->
                                     <!--<shadedPattern>org.bukkit.craftbukkit.libs.it.unimi</shadedPattern>-->
-                                <!--</relocation>-->
+                                <!--</relocation>
                                 <relocation>
                                     <pattern>org.bukkit.craftbukkit</pattern>
                                     <shadedPattern>org.bukkit.craftbukkit.v${minecraft_version}</shadedPattern>
@@ -283,7 +283,7 @@
                                 <relocation>
                                     <pattern>net.minecraft.server</pattern>
                                     <shadedPattern>net.minecraft.server.v${minecraft_version}</shadedPattern>
-                                </relocation>
+                                </relocation> -->
                             </relocations>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
