@@ -168,20 +168,12 @@
     <repositories>
         <!-- Akarin -->
         <repository>
-            <id>nallar-repo</id>
-            <url>https://repo.nallar.me/</url>
-        </repository>
-        <repository>
-            <id>spongepowered-repo</id>
-            <url>https://repo.spongepowered.org/maven/</url>
+            <id>josephworks</id>
+            <url>http://repo.josephworks.net/repository/maven-public/</url>
         </repository>
         <repository>
             <id>sonatype-nexusg</id>
             <url>https://oss.sonatype.org/content/repositories</url>
-        </repository>
-        <repository>
-            <id>tu-darmstadt</id>
-            <url>https://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-releases/</url>
         </repository>
         <repository>
             <id>papermc</id>
@@ -194,10 +186,6 @@
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-        </repository>
-        <repository>
-            <id>destroystokyo-repo</id>
-            <url>https://repo.songoda.com/artifactory/public/</url>
         </repository>
     </repositories>
 
