@@ -46,7 +46,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.destroystokyo.paper</groupId>
+            <groupId>co.aikar</groupId>
             <artifactId>paper</artifactId>
             <version>${minecraft.version}-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
