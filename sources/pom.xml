@@ -137,7 +137,7 @@
             <scope>test</scope>
         </dependency>
         
-        <!-- Akarin -->
+<!--  Akarin -->
         <dependency>
             <groupId>io.akarin</groupId>
             <artifactId>legacylauncher</artifactId>
@@ -158,12 +158,12 @@
             <artifactId>caffeine</artifactId>
             <version>2.6.3-SNAPSHOT</version>
         </dependency>
-        <dependency>
+      <!--<dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>minecraft-server</artifactId>
             <version>${minecraft.version}-SNAPSHOT</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency> -->
     </dependencies>
 
     <repositories>
