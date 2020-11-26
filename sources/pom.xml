@@ -25,7 +25,7 @@
         <version>dev-SNAPSHOT</version>
     </parent>
 
-    <dependencies>
+     dependencies>
         <!-- bugfixes (netty#6607) -->
         <dependency>
             <groupId>io.netty</groupId>
@@ -75,7 +75,26 @@
             <version>3.0.3</version>
             <scope>compile</scope>
         </dependency>
-
+        <dependency>
+            <groupId>io.akarin</groupId>
+            <artifactId>legacylauncher</artifactId>
+            <version>1.26</version>
+        </dependency>
+        <dependency>
+           <groupId>org.spongepowered</groupId>
+           <artifactId>mixin</artifactId>
+           <version>0.4.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.concurrent-locks</groupId>
+            <artifactId>concurrent-locks</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.6.3-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>net.minecrell</groupId>
             <artifactId>terminalconsoleappender</artifactId>
@@ -87,7 +106,6 @@
             <version>4.5.2</version>
             <scope>runtime</scope>
         </dependency>
-
         <!--
           Required to add the missing Log4j2Plugins.dat file from log4j-core
           which has been removed by Mojang. Without it, log4j has to classload
@@ -100,7 +118,6 @@
             <version>2.8.1</version>
             <scope>compile</scope>
         </dependency>
-
         <!-- Paper - Add additional Log4J dependencies -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -113,7 +130,6 @@
             <artifactId>log4j-iostreams</artifactId>
             <version>2.8.1</version>
         </dependency>
-        
         <!-- Paper - Async loggers -->
         <dependency>
             <groupId>com.lmax</groupId>
@@ -135,29 +151,7 @@
             <version>1.3</version>
             <scope>test</scope>
         </dependency>
-        
-        <!-- Akarin -->
-        <dependency>
-            <groupId>io.akarin</groupId>
-            <artifactId>legacylauncher</artifactId>
-            <version>1.26</version>
-        </dependency>
-        <dependency>
-           <groupId>org.spongepowered</groupId>
-           <artifactId>mixin</artifactId>
-           <version>0.4.4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.concurrent-locks</groupId>
-            <artifactId>concurrent-locks</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
-            <version>2.6.3-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
+    <dependencies>
 
     <repositories>
         <repository>
@@ -169,8 +163,9 @@
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
         <repository>
-            <id>spongepowered-repo</id>
-            <url>https://repo.spongepowered.org/maven/</url>
+           <id>sponge-repo</id>
+            <name>Sponge Maven Repository</name>
+           <url>https://repo.spongepowered.org/maven</url>
         </repository>
         <repository>
             <id>nallar-repo</id>
