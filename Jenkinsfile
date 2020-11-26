@@ -3,8 +3,8 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'chmod +x scripts/inst.sh'
-        sh 'sh ./scripts/inst.sh --setup'
+        sh 'chmod +x scripts/build.sh'
+        sh 'sh ./scripts/build.sh'
       }
     }
 
