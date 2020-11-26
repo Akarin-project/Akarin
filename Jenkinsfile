@@ -4,7 +4,7 @@ pipeline {
     stage('Build') {
       steps {
         sh 'chmod +x scripts/inst.sh'
-        sh 'sh ./scripts/inst.sh --setup --remote'
+        sh 'sh ./scripts/inst.sh --setup'
       }
     }
 
