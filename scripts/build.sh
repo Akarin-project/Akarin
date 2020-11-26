@@ -19,7 +19,7 @@ if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 		fi
 		
 		cd "$paperbasedir"
-		./paper jar
+		./paper patch
 	)
 fi
 
