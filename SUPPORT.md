@@ -12,7 +12,7 @@ The checked versions below are supported by us.
 | 1.15.2  | :white_check_mark: | Newer Build    |
 | 1.14.4  | :x:                | No Support     |
 | 1.13.2  | :x:                | No Support     |
-| 1.12.2  | :white_check_mark: | LTS Build only |
+| 1.12.2  | :white_check_mark: | Newer Build    |
 
 Latest Build - You need the latest build in order to be provided support.
 
