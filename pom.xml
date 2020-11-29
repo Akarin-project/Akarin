@@ -211,7 +211,7 @@
         <!-- Akarin -->
         <repository>
             <id>josephworks</id>
-            <url>http://192.168.0.11:8081/repository/maven-public/</url>
+            <url>http://repo.josephworks.net/repository/maven-public/</url>
         </repository>
         <repository>
             <id>papermc</id>
