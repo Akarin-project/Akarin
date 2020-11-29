@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>akarin</artifactId>
@@ -210,8 +210,8 @@
         </repository>
         <!-- Akarin -->
         <repository>
-            <id>nallar-repo</id>
-            <url>https://repo.nallar.me/</url>
+            <id>josephworks</id>
+            <url>http://repo.josephworks.net/repository/maven-public/</url>
         </repository>
         <repository>
             <id>spongepowered-repo</id>
@@ -220,10 +220,6 @@
         <repository>
             <id>sonatype-nexusg</id>
             <url>https://oss.sonatype.org/content/repositories</url>
-        </repository>
-        <repository>
-            <id>tu-darmstadt</id>
-            <url>https://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-releases/</url>
         </repository>
     </repositories>
 
@@ -307,7 +303,8 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation> <!-- Paper -->
+                            <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml
+                            </dependencyReducedPomLocation> <!-- Paper -->
                             <createSourcesJar>${shadeSourcesJar}</createSourcesJar>
                             <relocations>
                                 <!-- Cannot be relocated as it breaks translation property keys -->
@@ -323,8 +320,8 @@
                                 </relocation>
                                 <!-- Paper - Don't relocate fastutil in order to prevent api breakage -->
                                 <!--<relocation>-->
-                                    <!--<pattern>it.unimi</pattern>-->
-                                    <!--<shadedPattern>org.bukkit.craftbukkit.libs.it.unimi</shadedPattern>-->
+                                <!--<pattern>it.unimi</pattern>-->
+                                <!--<shadedPattern>org.bukkit.craftbukkit.libs.it.unimi</shadedPattern>-->
                                 <!--</relocation>-->
                                 <relocation>
                                     <pattern>org.bukkit.craftbukkit</pattern>
@@ -339,10 +336,12 @@
                                 </relocation>
                             </relocations>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/services/java.sql.Driver</resource>
                                 </transformer>
-                                <transformer implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer" />
+                                <transformer
+                                        implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>
