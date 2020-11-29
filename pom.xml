@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>akarin</artifactId>
@@ -209,13 +209,13 @@
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
         <!-- Akarin -->
-		<repository>
-			<id>papermc</id>
-			<url>https://papermc.io/repo/repository/maven-public/</url>
-		</repository>
         <repository>
-            <id>piratescode</id>
-            <url>https://nexus.piratescode.co.uk/</url>
+            <id>josephworks</id>
+            <url>http://192.168.0.11:8081/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>papermc</id>
+            <url>https://papermc.io/repo/repository/maven-public/</url>
         </repository>
         <repository>
             <id>spongepowered-repo</id>
@@ -224,10 +224,6 @@
         <repository>
             <id>sonatype-nexusg</id>
             <url>https://oss.sonatype.org/content/repositories</url>
-        </repository>
-        <repository>
-            <id>tu-darmstadt</id>
-            <url>https://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-releases/</url>
         </repository>
     </repositories>
 
@@ -303,7 +299,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.2.3</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -311,7 +307,8 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation> <!-- Paper -->
+                            <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml
+                            </dependencyReducedPomLocation> <!-- Paper -->
                             <createSourcesJar>${shadeSourcesJar}</createSourcesJar>
                             <relocations>
                                 <!-- Cannot be relocated as it breaks translation property keys -->
@@ -327,8 +324,8 @@
                                 </relocation>
                                 <!-- Paper - Don't relocate fastutil in order to prevent api breakage -->
                                 <!--<relocation>-->
-                                    <!--<pattern>it.unimi</pattern>-->
-                                    <!--<shadedPattern>org.bukkit.craftbukkit.libs.it.unimi</shadedPattern>-->
+                                <!--<pattern>it.unimi</pattern>-->
+                                <!--<shadedPattern>org.bukkit.craftbukkit.libs.it.unimi</shadedPattern>-->
                                 <!--</relocation>-->
                                 <relocation>
                                     <pattern>org.bukkit.craftbukkit</pattern>
@@ -343,10 +340,12 @@
                                 </relocation>
                             </relocations>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/services/java.sql.Driver</resource>
                                 </transformer>
-                                <transformer implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer" />
+                                <transformer
+                                        implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>
@@ -362,7 +361,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>3.8.1</version>
                 <dependencies>
                     <!-- we need our custom version as it fixes some bugs on case sensitive file systems -->
                     <dependency>
