@@ -31,7 +31,6 @@ Get Akarin
 #### Recommended
 
 + [**JosephWorks Jenkins**](http://ci.josephworks.net/job/Akarin/)
-+ [**Github Actions**](https://github.com/Akarin-project/Akarin/actions)
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
