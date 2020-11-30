@@ -2,9 +2,8 @@
 [![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.io)
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
-[![Build Status](https://ci.melon.cat/job/Akarin/badge/icon?subject=Jenkins)](https://ci.melon.cat/job/Akarin/)
+![Jenkins](https://img.shields.io/jenkins/build?jobUrl=http%3A%2F%2Fci.josephworks.net%2Fjob%2FAkarin%2Fjob%2Fver%25252F1.13.2%2F)
 [![Patreon](https://img.shields.io/badge/Patreon-donate_us-yellow.svg?style=flat)](https://www.patreon.com/akarinproject)
-[![Circle CI](https://circleci.com/gh/Akarin-project/Akarin/tree/master.svg?style=svg)](https://circleci.com/gh/Akarin-project/Akarin)
 
 Akarin is currently **under heavy development** and contributions are welcome!
 
@@ -26,8 +25,7 @@ Get Akarin
 ---
 ### Download
 #### Recommended
-+ [**Circle CI**](https://circleci.com/gh/Akarin-project/Akarin/tree/ver/master) - Checkout the 'Artifacts' tab of the latest build *Login required*
-+ [**Melon Jenkins**](https://ci.melon.cat/job/Akarin/)
++ [**JosephWorks Jenkins**](http://ci.josephworks.net/job/Akarin)
 
 *Open an [Issue](https://github.com/Akarin-project/Akarin/issues) or a [Pull Request](https://github.com/Akarin-project/Akarin/pulls) if you want to add your website here*
 
