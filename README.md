@@ -7,7 +7,7 @@
 [![Powered by](https://img.shields.io/badge/Powered_by-Akarin_project-ee6aa7.svg?style=flat)](https://akarin.app/)
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch)
-![Jenkins Status](https://img.shields.io/jenkins/build?jobUrl=http%3A%2F%2Fci.josephworks.net%2Fjob%2FAkarin%2Fjob%2Fver/1.15.2)
+![Jenkins](https://img.shields.io/jenkins/build?jobUrl=http%3A%2F%2Fci.josephworks.net%2Fjob%2FAkarin%2Fjob%2Fver%25252F1.15.2%2F)
 [![Patreon](https://img.shields.io/badge/Patreon-Donate-yellow.svg?style=flat)](https://www.patreon.com/akarinproject)
 </div>
 
