@@ -18,16 +18,3 @@ index 8444819f071b13e98ba07032520016a664b7b9bc..a349f56548ece94ec591933e13f77ed3
          boolean verboseTimings = getBoolean("timings.verbose", true);
          TimingsManager.privacy = getBoolean("timings.server-name-privacy", false);
          TimingsManager.hiddenConfigs = getList("timings.hidden-config-entries", Lists.newArrayList("database", "settings.bungeecord-addresses"));
-diff --git a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-index ecacb72b922927f06883b75e7d2cc1f904eb9f03..bb97ecbb687acbe155890e0f866efddfb172c098 100644
---- a/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-+++ b/src/main/java/com/destroystokyo/paper/PaperWorldConfig.java
-@@ -648,7 +648,7 @@ public class PaperWorldConfig {
-     }
- 
-     public boolean cooldownHopperWhenFull = true;
--    public boolean disableHopperMoveEvents = false;
-+    public boolean disableHopperMoveEvents = true; // Akarin disable by default
-     private void hopperOptimizations() {
-         cooldownHopperWhenFull = getBoolean("hopper.cooldown-when-full", cooldownHopperWhenFull);
-         log("Cooldown Hoppers when Full: " + (cooldownHopperWhenFull ? "enabled" : "disabled"));
