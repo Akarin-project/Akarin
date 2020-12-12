@@ -27,6 +27,12 @@
     </parent>
 
     <dependencies>
+<!-- https://mvnrepository.com/artifact/org.spongepowered/spongeforge -->
+     <dependency>
+        <groupId>org.spongepowered</groupId>
+        <artifactId>spongeforge</artifactId>
+        <version>1.12.2-2838-7.3.0</version>
+    </dependency>
     <dependency>
         <groupId>org.spongepowered</groupId>
         <artifactId>spongeapi</artifactId>
@@ -139,7 +145,7 @@
         <dependency>
             <groupId>org.spongepowered</groupId>
             <artifactId>mixin</artifactId>
-            <version>0.8.2</version>
+            <version>0.7.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.concurrent-locks</groupId>
