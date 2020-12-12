@@ -27,6 +27,13 @@
     </parent>
 
     <dependencies>
+    <dependency>
+        <groupId>org.spongepowered</groupId>
+        <artifactId>spongeapi</artifactId>
+        <version>7.2.0</version>
+        <type>jar</type>
+        <scope>provided</scope>
+       </dependency>
         <dependency>
             <groupId>com.destroystokyo.paper</groupId>
             <artifactId>paper-api</artifactId>
@@ -132,7 +139,7 @@
         <dependency>
             <groupId>org.spongepowered</groupId>
             <artifactId>mixin</artifactId>
-            <version>0.7.11-SNAPSHOT</version>
+            <version>0.8.2</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.concurrent-locks</groupId>
