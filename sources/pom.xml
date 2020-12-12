@@ -26,16 +26,6 @@
     </parent>
 
     <dependencies>
-     <dependency>
-        <groupId>org.spongepowered</groupId>
-        <artifactId>spongeforge</artifactId>
-        <version>1.12.2-2838-7.3.0</version>
-    </dependency>
-    <dependency>
-        <groupId>org.spongepowered</groupId>
-        <artifactId>spongeapi</artifactId>
-        <version>7.2.0</version>
-       </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
