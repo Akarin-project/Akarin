@@ -142,9 +142,9 @@
             <version>1.26</version>
         </dependency>
         <dependency>
-            <groupId>org.spongepowered</groupId>
-            <artifactId>mixin</artifactId>
-            <version>0.7.11-SNAPSHOT</version>
+	    <groupId>com.github.SpongePowered</groupId>
+	    <artifactId>Mixin</artifactId>
+	    <version>releases~0.8.2</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.concurrent-locks</groupId>
@@ -180,6 +180,10 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+	   <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+       </repository>
     </repositories>
 
     <pluginRepositories>
