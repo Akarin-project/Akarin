@@ -193,7 +193,7 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
+     <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
     <build>
         <finalName>akarin-${minecraft.version}</finalName>
         <defaultGoal>clean install</defaultGoal> <!-- Paper -->
@@ -265,13 +265,12 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml
-                            </dependencyReducedPomLocation> <!-- Paper -->
+                            <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation> <!-- Paper -->
                             <relocations>
                                 <!-- Paper - Workaround for hardcoded path lookup in dependency, easier than forking it - GH-189 -->
                                 <!--<relocation>-->
-                                <!--<pattern>joptsimple</pattern>-->
-                                <!--<shadedPattern>org.bukkit.craftbukkit.libs.joptsimple</shadedPattern>-->
+                                    <!--<pattern>joptsimple</pattern>-->
+                                    <!--<shadedPattern>org.bukkit.craftbukkit.libs.joptsimple</shadedPattern>-->
                                 <!--</relocation>-->
                                 <relocation>
                                     <pattern>jline</pattern>
@@ -279,8 +278,8 @@
                                 </relocation>
                                 <!-- Paper - Don't relocate fastutil in order to prevent api breakage -->
                                 <!--<relocation>-->
-                                <!--<pattern>it.unimi</pattern>-->
-                                <!--<shadedPattern>org.bukkit.craftbukkit.libs.it.unimi</shadedPattern>-->
+                                    <!--<pattern>it.unimi</pattern>-->
+                                    <!--<shadedPattern>org.bukkit.craftbukkit.libs.it.unimi</shadedPattern>-->
                                 <!--</relocation>-->
                                 <relocation>
                                     <pattern>org.bukkit.craftbukkit</pattern>
@@ -295,22 +294,20 @@
                                 </relocation>
                             </relocations>
                             <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/services/java.sql.Driver</resource>
                                 </transformer>
-                                <transformer
-                                        implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer"/>
+                                <transformer implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer" />
                             </transformers>
                             <!-- Akarin - Avoid signature failure -->
                             <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
+                                    <filter>
+									    <artifact>*:*</artifact>
+									    <excludes>
+										    <exclude>META-INF/*.SF</exclude>
+										    <exclude>META-INF/*.DSA</exclude>
+										    <exclude>META-INF/*.RSA</exclude>
+									    </excludes>
                                 </filter>
                             </filters>
                         </configuration>
