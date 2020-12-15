@@ -160,8 +160,8 @@
     <repositories>
         <!-- Akarin -->
         <repository>
-            <id>josephworks</id>
-            <url>http://repo.josephworks.net/repository/maven-public/</url>
+            <id>akarin-repo</id>
+            <url>https://raw.githubusercontent.com/Akarin-project/akarin-repo/master/repository</url>
         </repository>
         <repository>
             <id>sonatype-nexusg</id>
