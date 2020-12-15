@@ -15,11 +15,11 @@ if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 			if [ -d "Minecraft" ]; then
 				rm Minecraft/ -r
 			fi
-			git clone https://github.com/LegacyGamerHD/Minecraft-1.12.2.git
+			git clone https://github.com/Akarin-project/Minecraft.git
 		fi
 		
 		cd "$paperbasedir"
-		./paper jar
+		./paper patch
 	)
 fi
 
