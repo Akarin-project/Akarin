@@ -12,8 +12,8 @@ if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 	(
 		if [ "$2" == "--remote" ] || [ "$3" == "--remote" ] || [ "$4" == "--remote" ]; then
 			cd "$paperworkdir"
-			if [ -d "Minecraft" ]; then
-				rm Minecraft/ -r
+			if [ -d "Minecraft-1.12.2" ]; then
+				rm Minecraft-1.12.2/ -r
 			fi
 			git clone https://github.com/LegacyGamerHD/Minecraft-1.12.2.git
 		fi
