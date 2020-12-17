@@ -51,6 +51,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>minecraft-server</artifactId>
+            <version>${minecraft.version}-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>net.sf.jopt-simple</groupId>
             <artifactId>jopt-simple</artifactId>
             <version>5.0.4</version>
@@ -176,7 +182,7 @@
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
         <repository>
-	   <id>jitpack.io</id>
+	        <id>jitpack.io</id>
             <url>https://jitpack.io</url>
        </repository>
     </repositories>
