@@ -20,7 +20,7 @@ if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 		
 		cd "$paperbasedir"
 		./paper patch
-        git am --skip instead
+        git am --skip
 	)
 fi
 
