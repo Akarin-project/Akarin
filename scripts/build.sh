@@ -36,7 +36,7 @@ echo "[Akarin] Ready to build"
 	else
 		rm -rf Paper-API/src
 		rm -rf Paper-Server/src
-		./paper jar
+		./paper patch
 		\cp -rf "$basedir/sources/src" "$paperbasedir/Paper-Server/"
 		\cp -rf "$basedir/sources/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install
