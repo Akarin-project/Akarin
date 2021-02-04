@@ -19,7 +19,8 @@ if [ "$2" == "--setup" ] || [ "$3" == "--setup" ] || [ "$4" == "--setup" ]; then
 		fi
 		
 		cd "$paperbasedir"
-		./paper jar && $gitcmd git am --skip
+		$gitcmd git am --skip
+		./paper jar 
 	)
 fi
 
@@ -36,7 +37,8 @@ echo "[Akarin] Ready to build"
 	else
 		rm -rf Paper-API/src
 		rm -rf Paper-Server/src
-		./paper patch && $gitcmd git am --skip
+		$gitcmd git am --skip
+		./paper patch
 		\cp -rf "$basedir/sources/src" "$paperbasedir/Paper-Server/"
 		\cp -rf "$basedir/sources/pom.xml" "$paperbasedir/Paper-Server/"
 		mvn clean install
