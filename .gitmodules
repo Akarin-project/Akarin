@@ -1,4 +1,4 @@
 [submodule "Tuinity"]
 	path = Tuinity
 	url = https://github.com/Spottedleaf/Tuinity
-	branch = ver/1.15.2
+	branch = master
