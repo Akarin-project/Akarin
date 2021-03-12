@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Sotr <i@omc.hk>
+Date: Wed, 15 Apr 2020 04:16:44 +0700
+Subject: [PATCH] Remove stream for ender teleport
+
+
+diff --git a/src/main/java/io/akarin/server/IndexedBlockPosition.java b/src/main/java/io/akarin/server/IndexedBlockPosition.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..83bf1d4cab653a9edcc8352609433a8fd12bd1b3
+--- /dev/null
++++ b/src/main/java/io/akarin/server/IndexedBlockPosition.java
+@@ -0,0 +1,35 @@
++package io.akarin.server;
++
++import net.minecraft.server.BlockPosition;
++
++public class IndexedBlockPosition {
++    private final int index;
++    private final BlockPosition position;
++    
++    public IndexedBlockPosition(int index, BlockPosition position) {
++      this.index = index;
++      this.position = position;
++    }
++    
++    public static IndexedBlockPosition of(int index, BlockPosition position) {
++      return new IndexedBlockPosition(index, position);
++    }
++    
++    public int index() {
++      return index;
++    }
++    
++    public BlockPosition get() {
++      return position;
++    }
++    
++    @Override
++    public int hashCode() {
++      return position.hashCode();
++    }
++    
++    @Override
++    public boolean equals(Object obj) {
++      return position.equals(obj);
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/BehaviorInteractDoor.java b/src/main/java/net/minecraft/server/BehaviorInteractDoor.java
+index 685351f11497a33ef4ba99055fa7da3a8de18af2..979c75e5b91a9e4f3f85664a60cc0aa82314a136 100644
+--- a/src/main/java/net/minecraft/server/BehaviorInteractDoor.java
++++ b/src/main/java/net/minecraft/server/BehaviorInteractDoor.java
+@@ -1,7 +1,9 @@
+ package net.minecraft.server;
+ 
+ import com.google.common.collect.ImmutableMap;
++import com.google.common.collect.Lists;
+ import com.google.common.collect.Sets;
++import io.akarin.server.IndexedBlockPosition;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Objects;
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index da9761e2cf0b1d77758f023824768c2279ec5983..94b44a44ca71c43215953d4ac8ca49733959246b 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -3095,7 +3095,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+             WorldServer worldserver = (WorldServer) this.world;
+ 
+             this.setPositionRotation(d0, d1, d2, this.yaw, this.pitch);
+-            this.recursiveStream().forEach((entity) -> {
++            this.collectPassengers().forEach((entity) -> {
+                 worldserver.chunkCheck(entity);
+                 entity.az = true;
+                 Iterator iterator = new java.util.ArrayList<>(entity.passengers).iterator(); // Tuinity - copy list to guard against CME
+@@ -3342,6 +3342,14 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+     public Stream<Entity> recursiveStream() {
+         return Stream.concat(Stream.of(this), com.google.common.collect.ImmutableList.copyOf(this.passengers).stream().flatMap(Entity::recursiveStream)); // Paper
+     }
++    // Akarin start - non-stream version
++    public List<Entity> collectPassengers() {
++      List<Entity> result = Lists.newArrayList(this);
++      for (Entity passenger : this.passengers)
++        result.addAll(passenger.collectPassengers());
++      return result;
++    }
++    // Akarin end
+ 
+     public boolean hasSinglePlayerPassenger() {
+         Set<Entity> set = Sets.newHashSet();

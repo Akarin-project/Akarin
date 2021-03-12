@@ -6,29 +6,40 @@ Subject: [PATCH] Save Json list asynchronously
 
 
 diff --git a/src/main/java/net/minecraft/server/JsonList.java b/src/main/java/net/minecraft/server/JsonList.java
-index c97be42dd7b4c6ea2cadcc97f47185c7f02e2cce..370841cad06121651d0c981c23f3a5e268dc3f59 100644
+index 8da5f976109accc84b26ec4045776aa8a9799f3d..8d00a54ed22dd974dadc7159c7c3d7265ec42649 100644
 --- a/src/main/java/net/minecraft/server/JsonList.java
 +++ b/src/main/java/net/minecraft/server/JsonList.java
-@@ -168,6 +168,7 @@ public class JsonList<K, V extends JsonListEntry<K>> {
+@@ -146,6 +146,7 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
      }
  
      public void save() throws IOException {
 +        Runnable runnable = () -> { // Akarin - Save json list async
          this.removeStaleEntries(); // Paper - remove expired values before saving
-         Collection<V> collection = this.d.values();
-         String s = this.b.toJson(collection);
-@@ -176,10 +177,13 @@ public class JsonList<K, V extends JsonListEntry<K>> {
+         JsonArray jsonarray = new JsonArray();
+ 
+@@ -155,11 +156,13 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
+             jsonlistentry.getClass();
+             return (JsonObject) SystemUtils.a(jsonobject, jsonlistentry::a); // CraftBukkit - decompile error
+         }).forEach(jsonarray::add);
++        try {
+         BufferedWriter bufferedwriter = Files.newWriter(this.c, StandardCharsets.UTF_8);
+         Throwable throwable = null;
+ 
          try {
-             bufferedwriter = Files.newWriter(this.c, StandardCharsets.UTF_8);
-             bufferedwriter.write(s);
+             JsonList.b.toJson(jsonarray, bufferedwriter);
++
+         } catch (Throwable throwable1) {
+             throwable = throwable1;
+             throw throwable1;
+@@ -177,6 +180,11 @@ public abstract class JsonList<K, V extends JsonListEntry<K>> {
+             }
+ 
+         }
 +        } catch (IOException e) { // Akarin - Save json list async
 +            JsonList.LOGGER.warn("Failed to save " + this.c, e); // Akarin - Save json list async
-         } finally {
-             IOUtils.closeQuietly(bufferedwriter);
-         }
--
++        }
 +        }; // Akarin - Save json list async
 +        MCUtil.scheduleAsyncTask(runnable); // Akarin - Save json list async
+ 
      }
  
-     public void load() throws FileNotFoundException {

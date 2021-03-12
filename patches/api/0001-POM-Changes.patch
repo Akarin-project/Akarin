@@ -6,7 +6,7 @@ Subject: [PATCH] POM Changes
 
 
 diff --git a/pom.xml b/pom.xml
-index a2387a667efba33135197d40efe879fc9f635d2f..13d0bb7355a8f6c1a33feb3be60f61aa60dd5f9c 100644
+index 821df3413345c613eccff158f8081cf9ba848a14..ea2fecb9a8bbc5fbd6c2fec6fbdf4a630ed828aa 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -3,18 +3,18 @@
@@ -23,7 +23,7 @@ index a2387a667efba33135197d40efe879fc9f635d2f..13d0bb7355a8f6c1a33feb3be60f61aa
  
 -    <artifactId>tuinity-api</artifactId>
 +    <artifactId>akarin-api</artifactId>
-     <version>1.15.2-R0.1-SNAPSHOT</version>
+     <version>1.16.5-R0.1-SNAPSHOT</version>
      <packaging>jar</packaging>
  
 -    <name>Tuinity-API</name>

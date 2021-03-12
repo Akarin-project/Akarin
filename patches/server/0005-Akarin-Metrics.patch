@@ -6,14 +6,14 @@ Subject: [PATCH] Akarin Metrics
 
 
 diff --git a/src/main/java/com/destroystokyo/paper/Metrics.java b/src/main/java/com/destroystokyo/paper/Metrics.java
-index 24641501aeae0f2c2c5ce877775c7b971fb051bf..246696a0862c9a57329a7ea6a9eb7da00adb60b0 100644
+index 52c0ab1ce46e1f3233ef746d9bc699356fa9fae4..0bc9847c8a7ad894f82ed2f00aa18b62efffaecf 100644
 --- a/src/main/java/com/destroystokyo/paper/Metrics.java
 +++ b/src/main/java/com/destroystokyo/paper/Metrics.java
-@@ -581,7 +581,7 @@ public class Metrics {
+@@ -593,7 +593,7 @@ public class Metrics {
              boolean logFailedRequests = config.getBoolean("logFailedRequests", false);
              // Only start Metrics, if it's enabled in the config
              if (config.getBoolean("enabled", true)) {
--                Metrics metrics = new Metrics("Paper", serverUUID, logFailedRequests, Bukkit.getLogger());
+-                Metrics metrics = new Metrics("Tuinity", serverUUID, logFailedRequests, Bukkit.getLogger()); // Tuinity - we have our own bstats page
 +                Metrics metrics = new Metrics("Torch", serverUUID, logFailedRequests, Bukkit.getLogger()); // Akarin
  
                  metrics.addCustomChart(new Metrics.SimplePie("minecraft_version", () -> {

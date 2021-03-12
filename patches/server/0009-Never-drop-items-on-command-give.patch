@@ -6,10 +6,10 @@ Subject: [PATCH] Never drop items on command "/give"
 
 
 diff --git a/src/main/java/net/minecraft/server/CommandGive.java b/src/main/java/net/minecraft/server/CommandGive.java
-index 81b26bb4d094f8aede9d5432671936ab3ee42c84..1f3097c9450b5903c35d3b36fd642ddd131786d7 100644
+index 1d22c45af884a917e77e02c272fcbae74794200c..7c55c48610c5629c2cfd2ca537c4de82cd3c8137 100644
 --- a/src/main/java/net/minecraft/server/CommandGive.java
 +++ b/src/main/java/net/minecraft/server/CommandGive.java
-@@ -36,6 +36,7 @@ public class CommandGive {
+@@ -35,6 +35,7 @@ public class CommandGive {
                  boolean flag = entityplayer.inventory.pickup(itemstack);
                  EntityItem entityitem;
  
