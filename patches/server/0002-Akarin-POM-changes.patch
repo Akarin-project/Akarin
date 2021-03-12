@@ -6,7 +6,7 @@ Subject: [PATCH] Akarin POM changes
 
 
 diff --git a/pom.xml b/pom.xml
-index e83e4241a56fe131a75fe21cc1518992c089da2c..65ba3e9312323848f8058c3bd3debc3b231462b1 100644
+index e83e4241a56fe131a75fe21cc1518992c089da2c..a65381073fc6d4546280e36bb18a0b2dd54cfa93 100644
 --- a/pom.xml
 +++ b/pom.xml
 @@ -1,11 +1,11 @@
@@ -45,7 +45,18 @@ index e83e4241a56fe131a75fe21cc1518992c089da2c..65ba3e9312323848f8058c3bd3debc3b
              <version>${project.version}</version>
              <scope>compile</scope>
          </dependency>
-@@ -183,7 +183,7 @@
+@@ -172,6 +172,10 @@
+             <id>spigotmc-public</id>
+             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+         </repository>
++        <repository>
++            <id>velocity</id>
++            <url>https://repo.velocitypowered.com/snapshots/</url>
++        </repository>
+     </repositories>
+ 
+     <pluginRepositories>
+@@ -183,7 +187,7 @@
  
      <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
      <build>
@@ -54,7 +65,7 @@ index e83e4241a56fe131a75fe21cc1518992c089da2c..65ba3e9312323848f8058c3bd3debc3b
          <defaultGoal>install</defaultGoal> <!-- Paper -->
          <plugins>
              <plugin>
-@@ -191,7 +191,7 @@
+@@ -191,7 +195,7 @@
                  <artifactId>gitdescribe-maven-plugin</artifactId>
                  <version>1.3</version>
                  <configuration>
