@@ -6,10 +6,10 @@ Subject: [PATCH] Add server configuration
 
 
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index cf20e75419b011e819c63fc8453f250b849cb2c7..c90456e198afdacc21b6980c415c3048fdc7f7a2 100644
+index b3e7b2a8eaa3980e34bc74a846320b7871dc6e4b..216148af0c136a5243ac7e5f10133df59651e9fe 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -1404,6 +1404,14 @@ public interface Server extends PluginMessageRecipient {
+@@ -1603,6 +1603,14 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
          }
          // Tuinity end - add config to timings report
  

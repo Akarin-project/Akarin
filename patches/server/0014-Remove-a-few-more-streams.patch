@@ -5,10 +5,10 @@ Subject: [PATCH] Remove a few more streams
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkMapDistance.java b/src/main/java/net/minecraft/server/ChunkMapDistance.java
-index e0378f486c5d191d55114701d4d519e0d0af5726..e70f4928f81a06d3c15862fc7bdc43dc5fba928e 100644
+index 7f3887b0894aca0f972922f434382646a6ad6174..4f74922bf0b364bf1ab84460f2a01302a1ea596c 100644
 --- a/src/main/java/net/minecraft/server/ChunkMapDistance.java
 +++ b/src/main/java/net/minecraft/server/ChunkMapDistance.java
-@@ -188,9 +188,15 @@ public abstract class ChunkMapDistance {
+@@ -192,9 +192,15 @@ public abstract class ChunkMapDistance {
                  while (longiterator.hasNext()) {
                      long j = longiterator.nextLong();
  
@@ -24,7 +24,7 @@ index e0378f486c5d191d55114701d4d519e0d0af5726..e70f4928f81a06d3c15862fc7bdc43dc
                          PlayerChunk playerchunk = playerchunkmap.getUpdatingChunk(j);
  
                          if (playerchunk == null) {
-@@ -206,6 +212,22 @@ public abstract class ChunkMapDistance {
+@@ -210,6 +216,22 @@ public abstract class ChunkMapDistance {
                              });
                          });
                      }
@@ -48,10 +48,10 @@ index e0378f486c5d191d55114701d4d519e0d0af5726..e70f4928f81a06d3c15862fc7bdc43dc
  
                  this.l.clear();
 diff --git a/src/main/java/net/minecraft/server/EntityTNTPrimed.java b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-index 9c31edade247baac6811ef3ec98e88a332bcffba..eb3f45d8b707002ebeca20a6857ed41473cdeb3e 100644
+index 6e77dc89f5441f0f483571fee9aa9f34b6d1dd1c..33097f23326a033bc82a64315e296c8990b28b7f 100644
 --- a/src/main/java/net/minecraft/server/EntityTNTPrimed.java
 +++ b/src/main/java/net/minecraft/server/EntityTNTPrimed.java
-@@ -92,12 +92,23 @@ public class EntityTNTPrimed extends Entity {
+@@ -93,12 +93,23 @@ public class EntityTNTPrimed extends Entity {
                  PacketPlayOutEntityVelocity velocityPacket = new PacketPlayOutEntityVelocity(this);
                  PacketPlayOutEntityTeleport positionPacket = new PacketPlayOutEntityTeleport(this);
  
@@ -76,10 +76,10 @@ index 9c31edade247baac6811ef3ec98e88a332bcffba..eb3f45d8b707002ebeca20a6857ed414
          }
          // Paper end
 diff --git a/src/main/java/net/minecraft/server/EntityVillager.java b/src/main/java/net/minecraft/server/EntityVillager.java
-index b5ee8da43ccb7630c8b333824d7ca24788b45322..a904434211ac6c4645b996294e5018945d266a1f 100644
+index bf9732058c7e55e8f1ed38b3b5e8831e6b21706c..ab6dcc3a19f4a1de86fe36802c13fc484cbb2e88 100644
 --- a/src/main/java/net/minecraft/server/EntityVillager.java
 +++ b/src/main/java/net/minecraft/server/EntityVillager.java
-@@ -562,11 +562,20 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
+@@ -589,11 +589,20 @@ public class EntityVillager extends EntityVillagerAbstract implements Reputation
              if (optional.isPresent()) {
                  WorldServer worldserver = (WorldServer) this.world;
  

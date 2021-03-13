@@ -6,10 +6,10 @@ Subject: [PATCH] Remove Streams using IntelliJ IDEA
 
 
 diff --git a/src/main/java/co/aikar/timings/TimingsReportListener.java b/src/main/java/co/aikar/timings/TimingsReportListener.java
-index bf3e059fe06aae361b2ded451914ed19b5e970c5..8c49d67e2656dcac0758c0908897736b49435bf8 100644
+index ecd149157d4fb80444f34bf5633d74bcdb63dec5..966287589d7cbf4d626dcdf162ed8cea53cb0b34 100644
 --- a/src/main/java/co/aikar/timings/TimingsReportListener.java
 +++ b/src/main/java/co/aikar/timings/TimingsReportListener.java
-@@ -58,7 +58,9 @@ public class TimingsReportListener implements MessageCommandSender {
+@@ -60,7 +60,9 @@ public class TimingsReportListener implements net.kyori.adventure.audience.Forwa
  
      @Override
      public void sendMessage(@NotNull String message) {
@@ -20,11 +20,94 @@ index bf3e059fe06aae361b2ded451914ed19b5e970c5..8c49d67e2656dcac0758c0908897736b
      }
  
      public void addConsoleIfNeeded() {
+diff --git a/src/main/java/co/aikar/timings/TimingsReportListener.java.orig b/src/main/java/co/aikar/timings/TimingsReportListener.java.orig
+new file mode 100644
+index 0000000000000000000000000000000000000000..ef58a6c00f444bd498a2d8fc4e457236f393954f
+--- /dev/null
++++ b/src/main/java/co/aikar/timings/TimingsReportListener.java.orig
+@@ -0,0 +1,77 @@
++package co.aikar.timings;
++
++import com.google.common.collect.Lists;
++import org.apache.commons.lang.Validate;
++import org.bukkit.Bukkit;
++import org.bukkit.command.CommandSender;
++import org.bukkit.command.ConsoleCommandSender;
++import org.bukkit.command.MessageCommandSender;
++import org.bukkit.command.RemoteConsoleCommandSender;
++
++import java.util.List;
++import java.util.UUID;
++
++import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
++
++@SuppressWarnings("WeakerAccess")
++public class TimingsReportListener implements MessageCommandSender {
++    private final List<CommandSender> senders;
++    private final Runnable onDone;
++    private String timingsURL;
++
++    public TimingsReportListener(@NotNull CommandSender senders) {
++        this(senders, null);
++    }
++    public TimingsReportListener(@NotNull CommandSender sender, @Nullable Runnable onDone) {
++        this(Lists.newArrayList(sender), onDone);
++    }
++    public TimingsReportListener(@NotNull List<CommandSender> senders) {
++        this(senders, null);
++    }
++    public TimingsReportListener(@NotNull List<CommandSender> senders, @Nullable Runnable onDone) {
++        Validate.notNull(senders);
++        Validate.notEmpty(senders);
++
++        this.senders = Lists.newArrayList(senders);
++        this.onDone = onDone;
++    }
++
++    @Nullable
++    public String getTimingsURL() {
++        return timingsURL;
++    }
++
++    public void done() {
++        done(null);
++    }
++
++    public void done(@Nullable String url) {
++        this.timingsURL = url;
++        if (onDone != null) {
++            onDone.run();
++        }
++        for (CommandSender sender : senders) {
++            if (sender instanceof TimingsReportListener) {
++                ((TimingsReportListener) sender).done();
++            }
++        }
++    }
++
++    @Override
++    public void sendMessage(@NotNull String message) {
++        senders.forEach((sender) -> sender.sendMessage(message));
++    }
++
++    public void addConsoleIfNeeded() {
++        boolean hasConsole = false;
++        for (CommandSender sender : this.senders) {
++            if (sender instanceof ConsoleCommandSender || sender instanceof RemoteConsoleCommandSender) {
++                hasConsole = true;
++            }
++        }
++        if (!hasConsole) {
++            this.senders.add(Bukkit.getConsoleSender());
++        }
++    }
++}
 diff --git a/src/main/java/com/destroystokyo/paper/MaterialSetTag.java b/src/main/java/com/destroystokyo/paper/MaterialSetTag.java
-index c91ea2a0679a7f3a5627b5a008e0b39df3332889..53c36e30e8f500c9bf58e6b12585d44cc5c9e9e2 100644
+index a02a02aa0c87e0f0ed9e509e4dcab01565b3d92a..0c3fef0b4fd7f0ba4e37600e5acc886838e1db13 100644
 --- a/src/main/java/com/destroystokyo/paper/MaterialSetTag.java
 +++ b/src/main/java/com/destroystokyo/paper/MaterialSetTag.java
-@@ -14,7 +14,9 @@ import org.bukkit.block.BlockState;
+@@ -13,7 +13,9 @@ import org.bukkit.block.BlockState;
  import org.bukkit.block.data.BlockData;
  import org.bukkit.inventory.ItemStack;
  
@@ -34,54 +117,69 @@ index c91ea2a0679a7f3a5627b5a008e0b39df3332889..53c36e30e8f500c9bf58e6b12585d44c
  import java.util.Set;
  import java.util.function.Predicate;
  import java.util.stream.Collectors;
-@@ -115,7 +117,16 @@ public class MaterialSetTag implements Tag<Material> {
-     }
+diff --git a/src/main/java/io/papermc/paper/tag/BaseTag.java b/src/main/java/io/papermc/paper/tag/BaseTag.java
+index 4b8552e4e4c07b197fa9431fa911535b0222561e..09276e7fd18c4d82c77d19550ace1c6000f21cb7 100644
+--- a/src/main/java/io/papermc/paper/tag/BaseTag.java
++++ b/src/main/java/io/papermc/paper/tag/BaseTag.java
+@@ -2,6 +2,7 @@ package io.papermc.paper.tag;
+ 
+ import com.google.common.collect.Lists;
+ import org.bukkit.Keyed;
++import org.bukkit.Material;
+ import org.bukkit.NamespacedKey;
+ import org.bukkit.Tag;
+ import org.jetbrains.annotations.NotNull;
+@@ -84,7 +85,17 @@ public abstract class BaseTag<T extends Keyed, C extends BaseTag<T, C>> implemen
+ 
      @NotNull
-     public MaterialSetTag add(@NotNull Predicate<Material> filter) {
--        add(Stream.of(Material.values()).filter(((Predicate<Material>) Material::isLegacy).negate()).filter(filter).collect(Collectors.toList()));
-+        List<Material> list = new ArrayList<>();
-+        Predicate<Material> predicate = ((Predicate<Material>) Material::isLegacy).negate();
-+        for (Material material : Material.values()) {
-+            if (predicate.test(material)) {
-+                if (filter.test(material)) {
-+                    list.add(material);
+     public C add(@NotNull Predicate<T> filter) {
+-        return add(getAllPossibleValues().stream().filter(globalPredicates.stream().reduce(Predicate::or).orElse(t -> true)).filter(filter).collect(Collectors.toSet()));
++        Set<T> set = new HashSet<>();
++        for (T material : getAllPossibleValues()) {
++            for(Predicate<T> tPredicate : globalPredicates) {
++                if (tPredicate.test(material)) {
++                    if (filter.test(material)) {
++                        set.add(material);
++                    }
 +                }
 +            }
 +        }
-+        add(list);
-         return this;
++        return add(set);
      }
  
-@@ -139,7 +150,16 @@ public class MaterialSetTag implements Tag<Material> {
+     @NotNull
+@@ -124,7 +135,17 @@ public abstract class BaseTag<T extends Keyed, C extends BaseTag<T, C>> implemen
  
      @NotNull
-     public MaterialSetTag not(@NotNull Predicate<Material> filter) {
--        not(Stream.of(Material.values()).filter(((Predicate<Material>) Material::isLegacy).negate()).filter(filter).collect(Collectors.toList()));
-+        List<Material> list = new ArrayList<>();
-+        Predicate<Material> predicate = ((Predicate<Material>) Material::isLegacy).negate();
-+        for (Material material : Material.values()) {
-+            if (predicate.test(material)) {
-+                if (filter.test(material)) {
-+                    list.add(material);
+     public C not(@NotNull Predicate<T> filter) {
+-        not(getAllPossibleValues().stream().filter(globalPredicates.stream().reduce(Predicate::or).orElse(t -> true)).filter(filter).collect(Collectors.toSet()));
++        Set<T> set = new HashSet<>();
++        for (T material : getAllPossibleValues()) {
++            for(Predicate<T> tPredicate : globalPredicates) {
++                if (tPredicate.test(material)) {
++                    if (filter.test(material)) {
++                        set.add(material);
++                    }
 +                }
 +            }
 +        }
-+        not(list);
-         return this;
++        not(set);
+         return (C) this;
      }
  
-@@ -181,7 +201,13 @@ public class MaterialSetTag implements Tag<Material> {
+@@ -145,7 +166,14 @@ public abstract class BaseTag<T extends Keyed, C extends BaseTag<T, C>> implemen
  
      @NotNull
-     public MaterialSetTag ensureSize(@NotNull String label, int size) {
--        long actual = this.materials.stream().filter(((Predicate<Material>) Material::isLegacy).negate()).count();
+     public C ensureSize(@NotNull String label, int size) {
+-        long actual = this.tagged.stream().filter(globalPredicates.stream().reduce(Predicate::or).orElse(t -> true)).count();
 +        long actual = 0L;
-+        Predicate<Material> predicate = ((Predicate<Material>) Material::isLegacy).negate();
-+        for (Material material : this.materials) {
-+            if (predicate.test(material)) {
-+                actual++;
++        for (T material : this.tagged) {
++            for(Predicate<T> tPredicate : globalPredicates) {
++                if (tPredicate.test(material)) {
++                    actual++;
++                }
 +            }
 +        }
          if (size != actual) {
-             throw new IllegalStateException(label + " - Expected " + size + " materials, got " + actual);
+             throw new IllegalStateException(key.toString() + ": " + label + " - Expected " + size + " values, got " + actual);
          }

@@ -6,10 +6,10 @@ Subject: [PATCH] Avoid double I/O operation on load player file
 
 
 diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
-index 350ac42d6b45a1023f6254de7706818775b7957b..65cc7b2052fcb6f349dad9177ba975d75d720462 100644
+index b5cf60495b85c6ae6c32ee8a1c65d80e59fdce3d..1f77b251d7e7b0f023793cbf0876fc067caa75c1 100644
 --- a/src/main/java/net/minecraft/server/WorldNBTStorage.java
 +++ b/src/main/java/net/minecraft/server/WorldNBTStorage.java
-@@ -165,7 +165,8 @@ public class WorldNBTStorage implements IPlayerFileData {
+@@ -49,7 +49,8 @@ public class WorldNBTStorage {
              File file = new File(this.playerDir, entityhuman.getUniqueIDString() + ".dat");
              // Spigot Start
              boolean usingWrongFile = false;
@@ -17,14 +17,14 @@ index 350ac42d6b45a1023f6254de7706818775b7957b..65cc7b2052fcb6f349dad9177ba975d7
 +            boolean normalFile = file.exists() && file.isFile(); // Akarin - ensures normal file
 +            if ( org.bukkit.Bukkit.getOnlineMode() && !normalFile ) // Paper - Check online mode first // Akarin - ensures normal file
              {
-                 file = new File( this.playerDir, UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
+                 file = new File( this.playerDir, java.util.UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
                  if ( file.exists() )
-@@ -176,7 +177,7 @@ public class WorldNBTStorage implements IPlayerFileData {
+@@ -60,7 +61,7 @@ public class WorldNBTStorage {
              }
              // Spigot End
  
 -            if (file.exists() && file.isFile()) {
 +            if (normalFile) { // Akarin - avoid double I/O operation
-                 nbttagcompound = NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file)));
+                 nbttagcompound = NBTCompressedStreamTools.a(file);
              }
              // Spigot Start

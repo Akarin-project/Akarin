@@ -6,10 +6,10 @@ Subject: [PATCH] Swaps the predicate order of collision
 
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 5c9d5682100a627f1e494449bc0cdb884d136494..f5b8ada739afc9f8c0246e98947fe188b1231438 100644
+index 2ec48858be8eb2c522c9685b43bd36b3b581cf8b..da9761e2cf0b1d77758f023824768c2279ec5983 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -1641,8 +1641,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -1618,8 +1618,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
      public void pickup(EntityHuman entityhuman) {}
  
      public void collide(Entity entity) {
@@ -17,6 +17,6 @@ index 5c9d5682100a627f1e494449bc0cdb884d136494..f5b8ada739afc9f8c0246e98947fe188
          if (!this.isSameVehicle(entity)) {
 -            if (!entity.noclip && !this.noclip) {
 +            if (true || !entity.noclip && !this.noclip) { // Akarin - Moved up
+                 if (this.world.paperConfig.onlyPlayersCollide && !(entity instanceof EntityPlayer || this instanceof EntityPlayer)) return; // Paper
                  double d0 = entity.locX() - this.locX();
                  double d1 = entity.locZ() - this.locZ();
-                 double d2 = MathHelper.a(d0, d1);
