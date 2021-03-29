@@ -174,6 +174,26 @@
             <id>dmulloy2-repo</id>
             <url>https://repo.dmulloy2.net/repository/public/</url>
         </repository>
+        <repository>
+            <id>josephworks</id>
+            <url>http://repo.josephworks.net/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>sonatype-nexusg</id>
+            <url>https://oss.sonatype.org/content/repositories</url>
+        </repository>
+        <repository>
+            <id>papermc</id>
+            <url>https://papermc.io/repo/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+	    <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+       </repository>
     </repositories>
 
     <pluginRepositories>
