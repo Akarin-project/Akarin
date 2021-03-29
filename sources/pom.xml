@@ -39,6 +39,7 @@
             <version>${api.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
             <groupId>com.destroystokyo.paper</groupId>
             <artifactId>paper</artifactId>
             <version>${minecraft.version}-R0.1-SNAPSHOT</version>
@@ -74,7 +75,6 @@
             <version>3.0.3</version>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>net.minecrell</groupId>
             <artifactId>terminalconsoleappender</artifactId>
