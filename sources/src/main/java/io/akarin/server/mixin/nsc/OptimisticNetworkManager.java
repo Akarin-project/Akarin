@@ -19,6 +19,12 @@ import net.minecraft.server.PacketPlayOutMapChunk;
 
 @Mixin(value = NetworkManager.class, remap = false)
 public abstract class OptimisticNetworkManager {
+	
+/**
+ * todo need to be fixed in near future
+ */
+ 
+/*
     @Shadow public Channel channel;
     @Shadow(aliases = "i") @Final private Queue<NetworkManager.QueuedPacket> packets;
     @Shadow(aliases = "j") @Final private ReentrantReadWriteUpdateLock queueLock;
@@ -57,6 +63,7 @@ public abstract class OptimisticNetworkManager {
             
         }
         return true; // Return true if all packets were dispatched
+		*/
     }
     
 }

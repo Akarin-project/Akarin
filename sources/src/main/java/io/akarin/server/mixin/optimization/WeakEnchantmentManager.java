@@ -39,57 +39,62 @@ import net.minecraft.server.ItemStack;
 /**
  * Fixes MC-128547(https://bugs.mojang.com/browse/MC-128547)
  */
-@Mixin(value = EnchantmentManager.class, remap = false)
+@Mixin(value = EnchantmentManager.class, remap = false) 
 public abstract class WeakEnchantmentManager {
-    @Shadow(aliases = "a") @Final private static EnchantmentManager.EnchantmentModifierProtection protection;
-    @Shadow(aliases = "c") @Final private static EnchantmentManager.EnchantmentModifierThorns thorns;
-    @Shadow(aliases = "d") @Final private static EnchantmentManager.EnchantmentModifierArthropods arthropods;
-    
-    @Shadow private static void a(EnchantmentManager.EnchantmentModifier modifier, Iterable<ItemStack> iterable) {}
-    @Shadow private static void a(EnchantmentManager.EnchantmentModifier modifier, ItemStack itemstack) {}
-    
-    @Overwrite
-    public static int a(Iterable<ItemStack> iterable, DamageSource damageSource) {
-        protection.a = 0; // OBFHELPER: damageModifier
-        protection.b = damageSource;
-        a(protection, iterable); // OBFHELPER: applyEnchantmentModifierArray
-        protection.b = null; // Akarin - Remove reference to Damagesource
-        return protection.a;
-    }
-    
-    @Overwrite
-    public static void a(EntityLiving user, Entity attacker) { // OBFHELPER: applyThornEnchantments
-        thorns.b = attacker;
-        thorns.a = user;
-        if (user != null) {
-            a(thorns, user.aQ()); // OBFHELPER: applyEnchantmentModifierArray - getEquipmentAndArmor
-        }
-        
-        if (attacker instanceof EntityHuman) {
-            a(thorns, user.getItemInMainHand()); // OBFHELPER: applyEnchantmentModifier
-        }
-        
-        // Akarin Start - remove references to entity objects to avoid memory leaks
-        thorns.b = null;
-        thorns.a = null;
-        // Akarin end
-    }
 
-    @Overwrite
-    public static void b(EntityLiving user, Entity target) { // OBFHELPER: applyArthropodEnchantments
-        arthropods.a = user;
-        arthropods.b = target;
-        if (user != null) {
-            a(arthropods, user.aQ()); // OBFHELPER: applyEnchantmentModifierArray - getEquipmentAndArmor
-        }
+/**
+ * todo need to be fixed in near future
+ */
+ 
+ //   @Shadow(aliases = "a") @Final private static EnchantmentManager.EnchantmentModifierProtection protection;
+  //  @Shadow(aliases = "c") @Final private static EnchantmentManager.EnchantmentModifierThorns thorns;
+  //  @Shadow(aliases = "d") @Final private static EnchantmentManager.EnchantmentModifierArthropods arthropods;
+    
+ //   @Shadow private static void a(EnchantmentManager.EnchantmentModifier modifier, Iterable<ItemStack> iterable) {}
+ //   @Shadow private static void a(EnchantmentManager.EnchantmentModifier modifier, ItemStack itemstack) {}
+    
+  //  @Overwrite
+  //  public static int a(Iterable<ItemStack> iterable, DamageSource damageSource) {
+    //    protection.a = 0; // OBFHELPER: damageModifier
+     //   protection.b = damageSource;
+     //   a(protection, iterable); // OBFHELPER: applyEnchantmentModifierArray
+      //  protection.b = null; // Akarin - Remove reference to Damagesource
+       // return protection.a;
+   // }
+    
+   // @Overwrite
+   // public static void a(EntityLiving user, Entity attacker) { // OBFHELPER: applyThornEnchantments
+     //   thorns.b = attacker;
+      //  thorns.a = user;
+       // if (user != null) {
+       //     a(thorns, user.aQ()); // OBFHELPER: applyEnchantmentModifierArray - getEquipmentAndArmor
+       // }
         
-        if (user instanceof EntityHuman) {
-            a(arthropods, user.getItemInMainHand()); // OBFHELPER: applyEnchantmentModifier
-        }
+       // if (attacker instanceof EntityHuman) {
+        //    a(thorns, user.getItemInMainHand()); // OBFHELPER: applyEnchantmentModifier
+      //  }
         
         // Akarin Start - remove references to entity objects to avoid memory leaks
-        arthropods.a = null;
-        arthropods.b = null;
+      //  thorns.b = null;
+      //  thorns.a = null;
+        // Akarin end
+    //}
+
+   // @Overwrite
+   /// public static void b(EntityLiving user, Entity target) { // OBFHELPER: applyArthropodEnchantments
+      ///  arthropods.a = user;
+      //  arthropods.b = target;
+      //  if (user != null) {
+       //     a(arthropods, user.aQ()); // OBFHELPER: applyEnchantmentModifierArray - getEquipmentAndArmor
+       // }
+        
+       // if (user instanceof EntityHuman) {
+       //     a(arthropods, user.getItemInMainHand()); // OBFHELPER: applyEnchantmentModifier
+       // }
+        
+        // Akarin Start - remove references to entity objects to avoid memory leaks
+       // arthropods.a = null;
+      //  arthropods.b = null;
         // Akarin end
     }
 }
