@@ -9,7 +9,8 @@ pipeline {
     
     stage('Build') {
       steps {
-        sh 'bash ./scripts/inst.sh --setup'
+	    sh 'chmod +x scripts/inst.sh'
+        sh './scripts/inst.sh --setup'
       }
     }
 
