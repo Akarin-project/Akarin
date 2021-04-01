@@ -1,3 +1,4 @@
 [submodule "work/Paper"]
 	path = work/Paper
-	url = https://github.com/LegacyGamerHD/Paper.git
+	url = https://github.com/Akarin-project/Paper.git
+	branch = test1
