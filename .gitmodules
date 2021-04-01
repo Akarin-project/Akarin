@@ -1,0 +1,3 @@
+[submodule "work/Paper"]
+	path = work/Paper
+	url = https://github.com/Akarin-project/Paper.git
