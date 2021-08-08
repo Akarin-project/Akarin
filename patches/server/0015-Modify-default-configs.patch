@@ -18,4 +18,3 @@ index c56e7fb18f9a56c8025eb70a524f028b5942da37..4163fcf06f0c4bb448dd186d0756e02e
          boolean verboseTimings = getBoolean("timings.verbose", true);
          TimingsManager.privacy = getBoolean("timings.server-name-privacy", false);
          TimingsManager.hiddenConfigs = getList("timings.hidden-config-entries", Lists.newArrayList("database", "settings.bungeecord-addresses", "settings.velocity-support.secret"));
-         
