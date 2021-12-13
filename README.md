@@ -3,7 +3,7 @@
 [![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/fw2pJAj)
 [![bStats](https://img.shields.io/badge/bStats-Torch-0099ff.svg?style=flat)](https://bstats.org/plugin/bukkit/Torch) 
 
-Akarin is currently **under heavy development** and contributions are welcome! 
+Akarin is currently **under heavy development** and contributions are welcome!
 
 Introduction
 ---
