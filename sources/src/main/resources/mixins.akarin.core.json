@@ -24,7 +24,6 @@
         "core.MixinCommandBanIp",
         "core.MixinChunkSection",
         "core.MixinAsyncCatcher",
-        "core.MixinTimingHandler",
         "core.MixinVersionCommand",
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
