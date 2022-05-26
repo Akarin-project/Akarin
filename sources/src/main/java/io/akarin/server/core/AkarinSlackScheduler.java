@@ -98,9 +98,10 @@ public class AkarinSlackScheduler extends Thread {
             }
             
             try {
-                Thread.sleep(100 - (System.currentTimeMillis() - startProcessTiming));
+                long sleepFixed = 100 - (System.currentTimeMillis() - startProcessTiming);
+                if (sleepFixed > 0) Thread.sleep(sleepFixed);
             } catch (InterruptedException interrupted) {
-                ;
+                continue;
             }
         }
     }
