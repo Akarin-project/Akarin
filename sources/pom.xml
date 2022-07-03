@@ -134,7 +134,7 @@
             <version>1.3</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- Akarin -->
         <dependency>
             <groupId>io.akarin</groupId>
@@ -286,6 +286,14 @@
                                         <exclude>org/apache/logging/log4j/**</exclude>
                                     </excludes>
                                 </filter>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
                             </filters>
                             
                             <relocations>
@@ -321,17 +329,6 @@
                                 </transformer>
                                 <transformer implementation="io.github.edwgiz.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer" />
                             </transformers>
-                            <!-- Akarin - Avoid signature failure -->
-                            <filters>
-                                    <filter>
-									    <artifact>*:*</artifact>
-									    <excludes>
-										    <exclude>META-INF/*.SF</exclude>
-										    <exclude>META-INF/*.DSA</exclude>
-										    <exclude>META-INF/*.RSA</exclude>
-									    </excludes>
-                                </filter>
-                            </filters>
                         </configuration>
                     </execution>
                 </executions>
