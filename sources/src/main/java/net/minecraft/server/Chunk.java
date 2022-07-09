@@ -1000,7 +1000,6 @@ public class Chunk {
 
         for (int k = i; k <= j; ++k) {
             if (!this.entitySlices[k].isEmpty()) {
-                Iterator iterator = this.entitySlices[k].iterator();
 
                 // Paper start - Don't search for inventories if we have none, and that is all we want
                 /*
@@ -1011,6 +1010,7 @@ public class Chunk {
                 */
                 if (predicate == IEntitySelector.c && inventoryEntityCounts[k] <= 0) continue;
                 // Paper end
+                Iterator iterator = this.entitySlices[k].iterator();
                 while (iterator.hasNext()) {
                     Entity entity1 = (Entity) iterator.next();
 
