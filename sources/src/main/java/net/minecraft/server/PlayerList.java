@@ -79,8 +79,20 @@ public abstract class PlayerList {
     private int v;
 
     // CraftBukkit start
-    private CraftServer cserver;
-    private final Map<String,EntityPlayer> playersByName = new org.spigotmc.CaseInsensitiveMap<EntityPlayer>();
+    private final CraftServer cserver;
+    private final Map<String,EntityPlayer> playersByName = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap<String, EntityPlayer>(
+        new it.unimi.dsi.fastutil.Hash.Strategy<String>() {
+            @Override
+            public int hashCode(String o) {
+                return o.toLowerCase().hashCode();
+            }
+
+            @Override
+            public boolean equals(String a, String b) {
+                return a.equalsIgnoreCase(b);
+            }
+        }
+    );
     @Nullable String collideRuleTeamName; // Paper - Team name used for collideRule
 
     public PlayerList(MinecraftServer minecraftserver) {
