@@ -281,7 +281,7 @@ public class Explosion {
         // Check if this ray is still strong enough to break blocks, and if so, add this position to the set
         // of positions to destroy
         float reducedStrength = strength - totalResistance;
-        if (reducedStrength > 0.0F && (this.explodeAirBlocks() || iblockdata.getMaterial() != Material.AIR)) {
+        if (reducedStrength > 0.0F && (this.a || iblockdata.getMaterial() != Material.AIR)) {
             if ((this.source == null || this.source.a(this, this.world, cachedPos, iblockdata, reducedStrength)) && cachedPos.getY() < 256 && cachedPos.getY() >= 0) {
                 touched.add(cachedPos.asLong());
             }
