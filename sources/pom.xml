@@ -283,6 +283,7 @@
                                 <filter>
                                     <artifact>org.spigotmc:minecraft-server:**</artifact>
                                     <excludes>
+                                        <exclude>io/netty/**</exclude>
                                         <exclude>org/apache/logging/log4j/**</exclude>
                                     </excludes>
                                 </filter>
