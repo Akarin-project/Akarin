@@ -225,7 +225,7 @@ public class Explosion {
      * @return The resistance of the current block space to the ray
      */
     private float traverseBlock(float strength, int blockX, int blockY, int blockZ, LongOpenHashSet touched) {
-        cachedPos.setValues(blockX, blockY, blockZ);
+        cachedPos.c(blockX, blockY, blockZ);
         IBlockData iblockdata = this.world.getType(cachedPos);
 
         // Early-exit if the y-coordinate is out of bounds.
@@ -261,7 +261,7 @@ public class Explosion {
             ChunkSection section = chunk.getSections()[blockY >> 4];
 
             // If the section doesn't exist or it's empty, assume that the block is air
-            if (section != null && !section.isEmpty()) {
+            if (section != null && !section.a()) {
                 // Retrieve the block state from the chunk section directly to avoid associated overhead
                 IBlockData blockState = section.getType(blockX & 15, blockY & 15, blockZ & 15);
 
