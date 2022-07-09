@@ -6,8 +6,8 @@ import java.util.UUID;
 public class MathHelper {
 	
     public static final float a = c(2.0F);
-	private static final int[] SINE_TABLE_INT = new int[16384 + 1];
-	private static final float SINE_TABLE_MIDPOINT;
+    private static final int[] SINE_TABLE_INT = new int[16384 + 1];
+    private static final float SINE_TABLE_MIDPOINT;
     private static final Random c = new Random();
     private static final int[] d;
     private static final double e;
