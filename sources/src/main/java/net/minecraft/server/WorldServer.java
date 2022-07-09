@@ -424,33 +424,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         }
         // CraftBukkit end
     }
-
+    // Dionysus
+    // Fixes MC-47080 and simplifies the logic
     public boolean everyoneDeeplySleeping() {
-        if (this.Q && !this.isClientSide) {
-            Iterator iterator = this.players.iterator();
-
-            // CraftBukkit - This allows us to assume that some people are in bed but not really, allowing time to pass in spite of AFKers
-            boolean foundActualSleepers = false;
-
-            EntityHuman entityhuman;
-
-            do {
-                if (!iterator.hasNext()) {
-                    return foundActualSleepers;
-                }
-
-                entityhuman = (EntityHuman) iterator.next();
-
-                // CraftBukkit start
-                if (entityhuman.isDeeplySleeping()) {
-                    foundActualSleepers = true;
-                }
-            } while (!entityhuman.isSpectator() || entityhuman.isDeeplySleeping() || entityhuman.fauxSleeping);
-            // CraftBukkit end
-
+        if (this.players.size() == 0 || this.isClientSide || !this.Q) {
             return false;
         } else {
-            return false;
+            return this.players.stream().allMatch(p -> p.isSpectator() || p.isDeeplySleeping() || p.fauxSleeping);
         }
     }
 
