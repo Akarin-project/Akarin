@@ -2,13 +2,11 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
 import javax.annotation.Nullable;
+import java.util.*;
+import java.util.function.Predicate;
 
 // CraftBukkit start
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -31,6 +29,18 @@ public class Explosion {
     private final List<BlockPosition> blocks = Lists.newArrayList();
     private final Map<EntityHuman, Vec3D> k = Maps.newHashMap();
     public boolean wasCanceled = false; // CraftBukkit - add field
+	
+    // Dionysus start
+    private final BlockPosition.MutableBlockPosition cachedPos = new BlockPosition.MutableBlockPosition();
+    // The chunk coordinate of the most recently stepped through block.
+    private int prevChunkX = Integer.MIN_VALUE;
+    private int prevChunkZ = Integer.MIN_VALUE;
+
+    // The chunk belonging to prevChunkPos.
+    private Chunk prevChunk;
+
+    private static final com.google.common.base.Predicate<Entity> hitPredicate = entity -> IEntitySelector.d.apply(entity) && !entity.dead; // Dionysus - Paper - don't hit dead entities
+    // Dionysus end
 
     public Explosion(World world, Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1) {
         this.world = world;
@@ -49,73 +59,59 @@ public class Explosion {
             return;
         }
         // CraftBukkit end
-        HashSet hashset = Sets.newHashSet();
-        boolean flag = true;
+        // Dionysus start - optimize memory usage from explosions
+        // CaffeineMC optimized raytracing loop
+        // @author JellySquid
+        // @author nopjmp
+        // https://github.com/CaffeineMC/lithium-fabric
+        // Using integer encoding for the block positions provides a massive speedup and prevents us from needing to
+        // allocate a block position for every step we make along each ray, eliminating essentially all the memory
+        // allocations of this function. The overhead of packing block positions into integer format is negligible
+        // compared to a memory allocation and associated overhead of hashing real objects in a set.
+        final LongOpenHashSet touched = new LongOpenHashSet(0);
+        final Random random = this.world.random;
+        for (int rayX = 0; rayX < 16; ++rayX) {
+            boolean xPlane = rayX == 0 || rayX == 15;
+            double vecX = (((float) rayX / 15.0F) * 2.0F) - 1.0F;
 
-        int i;
-        int j;
+            for (int rayY = 0; rayY < 16; ++rayY) {
+                boolean yPlane = rayY == 0 || rayY == 15;
+                double vecY = (((float) rayY / 15.0F) * 2.0F) - 1.0F;
 
-        for (int k = 0; k < 16; ++k) {
-            for (i = 0; i < 16; ++i) {
-                for (j = 0; j < 16; ++j) {
-                    if (k == 0 || k == 15 || i == 0 || i == 15 || j == 0 || j == 15) {
-                        double d0 = (double) ((float) k / 15.0F * 2.0F - 1.0F);
-                        double d1 = (double) ((float) i / 15.0F * 2.0F - 1.0F);
-                        double d2 = (double) ((float) j / 15.0F * 2.0F - 1.0F);
-                        double d3 = Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2);
+                for (int rayZ = 0; rayZ < 16; ++rayZ) {
+                    boolean zPlane = rayZ == 0 || rayZ == 15;
 
-                        d0 /= d3;
-                        d1 /= d3;
-                        d2 /= d3;
-                        float f = this.size * (0.7F + this.world.random.nextFloat() * 0.6F);
-                        double d4 = this.posX;
-                        double d5 = this.posY;
-                        double d6 = this.posZ;
+                    // We only fire rays from the surface of our origin volume
+                    if (xPlane || yPlane || zPlane) {
+                        double vecZ = (((float) rayZ / 15.0F) * 2.0F) - 1.0F;
 
-                        for (float f1 = 0.3F; f > 0.0F; f -= 0.22500001F) {
-                            BlockPosition blockposition = new BlockPosition(d4, d5, d6);
-                            IBlockData iblockdata = this.world.getType(blockposition);
-
-                            if (iblockdata.getMaterial() != Material.AIR) {
-                                float f2 = this.source != null ? this.source.a(this, this.world, blockposition, iblockdata) : iblockdata.getBlock().a((Entity) null);
-
-                                f -= (f2 + 0.3F) * 0.3F;
-                            }
-
-                            if (f > 0.0F && (this.source == null || this.source.a(this, this.world, blockposition, iblockdata, f)) && blockposition.getY() < 256 && blockposition.getY() >= 0) { // CraftBukkit - don't wrap explosions
-                                hashset.add(blockposition);
-                            }
-
-                            d4 += d0 * 0.30000001192092896D;
-                            d5 += d1 * 0.30000001192092896D;
-                            d6 += d2 * 0.30000001192092896D;
-                        }
+                        this.performRayCast(random, vecX, vecY, vecZ, touched);
                     }
                 }
             }
         }
 
-        this.blocks.addAll(hashset);
+        // We can now iterate back over the set of positions we modified and re-build BlockPos objects from them
+        // This will only allocate as many objects as there are in the set, where otherwise we would allocate them
+        // each step of a every ray.
+        blocks.ensureCapacity(touched.size());
+        for (Long longPos : touched) {
+            blocks.add(BlockPosition.fromLong(longPos));
+        }
         float f3 = this.size * 2.0F;
 
-        i = MathHelper.floor(this.posX - (double) f3 - 1.0D);
-        j = MathHelper.floor(this.posX + (double) f3 + 1.0D);
+        int i = MathHelper.floor(this.posX - (double) f3 - 1.0D);
+        int j = MathHelper.floor(this.posX + (double) f3 + 1.0D);
         int l = MathHelper.floor(this.posY - (double) f3 - 1.0D);
         int i1 = MathHelper.floor(this.posY + (double) f3 + 1.0D);
         int j1 = MathHelper.floor(this.posZ - (double) f3 - 1.0D);
         int k1 = MathHelper.floor(this.posZ + (double) f3 + 1.0D);
         // Paper start - Fix lag from explosions processing dead entities
-        List list = this.world.getEntities(this.source, new AxisAlignedBB((double) i, (double) l, (double) j1, (double) j, (double) i1, (double) k1), new com.google.common.base.Predicate<Entity>() {
-            @Override
-            public boolean apply(Entity entity) {
-                return IEntitySelector.d.apply(entity) && !entity.dead;
-            }
-        });
+        List<Entity> list = this.world.getEntities(this.source, new AxisAlignedBB(i, l, j1, j, i1, k1), hitPredicate);
         // Paper end
         Vec3D vec3d = new Vec3D(this.posX, this.posY, this.posZ);
 
-        for (int l1 = 0; l1 < list.size(); ++l1) {
-            Entity entity = (Entity) list.get(l1);
+        for (Entity entity : list) {
 
             if (!entity.bB()) {
                 double d7 = entity.e(this.posX, this.posY, this.posZ) / (double) f3;
@@ -124,7 +120,7 @@ public class Explosion {
                     double d8 = entity.locX - this.posX;
                     double d9 = entity.locY + (double) entity.getHeadHeight() - this.posY;
                     double d10 = entity.locZ - this.posZ;
-                    double d11 = (double) MathHelper.sqrt(d8 * d8 + d9 * d9 + d10 * d10);
+                    double d11 = MathHelper.sqrt(d8 * d8 + d9 * d9 + d10 * d10);
 
                     if (d11 != 0.0D) {
                         d8 /= d11;
@@ -165,13 +161,143 @@ public class Explosion {
         }
 
     }
+	
+    private void performRayCast(Random random, double vecX, double vecY, double vecZ, LongOpenHashSet touched) {
+        double dist = Math.sqrt((vecX * vecX) + (vecY * vecY) + (vecZ * vecZ));
+
+        double normX = (vecX / dist) * 0.3D;
+        double normY = (vecY / dist) * 0.3D;
+        double normZ = (vecZ / dist) * 0.3D;
+
+        float strength = this.size * (0.7F + (random.nextFloat() * 0.6F));
+
+        double stepX = this.posX;
+        double stepY = this.posY;
+        double stepZ = this.posZ;
+
+        int prevX = Integer.MIN_VALUE;
+        int prevY = Integer.MIN_VALUE;
+        int prevZ = Integer.MIN_VALUE;
+
+        float prevResistance = 0.0F;
+
+        // Step through the ray until it is finally stopped
+        while (strength > 0.0F) {
+            int blockX = MathHelper.floor(stepX);
+            int blockY = MathHelper.floor(stepY);
+            int blockZ = MathHelper.floor(stepZ);
+
+            float resistance;
+
+            // Check whether or not we have actually moved into a new block this step. Due to how rays are stepped through,
+            // over-sampling of the same block positions will occur. Changing this behaviour would introduce differences in
+            // aliasing and sampling, which is unacceptable for our purposes. As a band-aid, we can simply re-use the
+            // previous result and get a decent boost.
+            if (prevX != blockX || prevY != blockY || prevZ != blockZ) {
+                resistance = this.traverseBlock(strength, blockX, blockY, blockZ, touched);
+
+                prevX = blockX;
+                prevY = blockY;
+                prevZ = blockZ;
+
+                prevResistance = resistance;
+            } else {
+                resistance = prevResistance;
+            }
+
+            strength -= resistance;
+            // Apply a constant fall-off
+            strength -= 0.22500001F;
+
+            stepX += normX;
+            stepY += normY;
+            stepZ += normZ;
+        }
+    }
+
+    /**
+     * Called for every step made by a ray being cast by an explosion.
+     *
+     * @param strength The strength of the ray during this step
+     * @param blockX   The x-coordinate of the block the ray is inside of
+     * @param blockY   The y-coordinate of the block the ray is inside of
+     * @param blockZ   The z-coordinate of the block the ray is inside of
+     * @return The resistance of the current block space to the ray
+     */
+    private float traverseBlock(float strength, int blockX, int blockY, int blockZ, LongOpenHashSet touched) {
+        cachedPos.setValues(blockX, blockY, blockZ);
+        IBlockData iblockdata = this.world.getType(cachedPos);
+
+        // Early-exit if the y-coordinate is out of bounds.
+        if (cachedPos.isInvalidYLocation()) {
+            if (iblockdata.getMaterial() != Material.AIR) {
+                float blastResistance = this.source != null ? this.source.a(this, this.world, cachedPos, iblockdata) : iblockdata.getBlock().a((Entity) null);
+                return (blastResistance + 0.3F) * 0.3F;
+            }
+            return 0.0F;
+        }
+
+
+        int chunkX = blockX >> 4;
+        int chunkZ = blockZ >> 4;
+
+        // Avoid calling into the chunk manager as much as possible through managing chunks locally
+        if (this.prevChunkX != chunkX || this.prevChunkZ != chunkZ) {
+            this.prevChunk = this.world.getChunkAt(chunkX, chunkZ);
+
+            this.prevChunkX = chunkX;
+            this.prevChunkZ = chunkZ;
+        }
+
+        final Chunk chunk = this.prevChunk;
+
+        float totalResistance = 0.0F;
+        Optional<Float> blastResistance = Optional.empty();
+
+        // If the chunk is missing or out of bounds, assume that it is air
+        if (chunk != null) {
+            // We operate directly on chunk sections to avoid interacting with BlockPos and to squeeze out as much
+            // performance as possible here
+            ChunkSection section = chunk.getSections()[blockY >> 4];
+
+            // If the section doesn't exist or it's empty, assume that the block is air
+            if (section != null && !section.isEmpty()) {
+                // Retrieve the block state from the chunk section directly to avoid associated overhead
+                IBlockData blockState = section.getType(blockX & 15, blockY & 15, blockZ & 15);
+
+                // If the block state is air, it cannot have fluid or any kind of resistance, so just leave
+                if (blockState.getBlock() != Blocks.AIR) {
+                    // Get the explosion resistance like vanilla
+                    blastResistance = Optional.of(this.source != null ? this.source.a(this, this.world, cachedPos, iblockdata) : iblockdata.getBlock().a((Entity) null));
+                }
+            }
+        }
+        
+        // Calculate how much this block will resist an explosion's ray
+        if (blastResistance.isPresent()) {
+            totalResistance = (blastResistance.get() + 0.3F) * 0.3F;
+        }
+
+        // Check if this ray is still strong enough to break blocks, and if so, add this position to the set
+        // of positions to destroy
+        float reducedStrength = strength - totalResistance;
+        if (reducedStrength > 0.0F && (this.explodeAirBlocks() || iblockdata.getMaterial() != Material.AIR)) {
+            if ((this.source == null || this.source.a(this, this.world, cachedPos, iblockdata, reducedStrength)) && cachedPos.getY() < 256 && cachedPos.getY() >= 0) {
+                touched.add(cachedPos.asLong());
+            }
+        }
+
+        return totalResistance;
+    }
+    // Dionysus end
+
 
     public void a(boolean flag) {
         this.world.a((EntityHuman) null, this.posX, this.posY, this.posZ, SoundEffects.bV, SoundCategory.BLOCKS, 4.0F, (1.0F + (this.world.random.nextFloat() - this.world.random.nextFloat()) * 0.2F) * 0.7F);
         if (this.size >= 2.0F && this.b) {
-            this.world.addParticle(EnumParticle.EXPLOSION_HUGE, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D, new int[0]);
+            this.world.addParticle(EnumParticle.EXPLOSION_HUGE, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D);
         } else {
-            this.world.addParticle(EnumParticle.EXPLOSION_LARGE, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D, new int[0]);
+            this.world.addParticle(EnumParticle.EXPLOSION_LARGE, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D);
         }
 
         Iterator iterator;
@@ -212,6 +338,7 @@ public class Explosion {
 
             this.blocks.clear();
 
+            this.blocks.ensureCapacity(bukkitBlocks.size());
             for (org.bukkit.block.Block bblock : bukkitBlocks) {
                 BlockPosition coords = new BlockPosition(bblock.getX(), bblock.getY(), bblock.getZ());
                 blocks.add(coords);
@@ -248,8 +375,8 @@ public class Explosion {
                     d3 *= d7;
                     d4 *= d7;
                     d5 *= d7;
-                    this.world.addParticle(EnumParticle.EXPLOSION_NORMAL, (d0 + this.posX) / 2.0D, (d1 + this.posY) / 2.0D, (d2 + this.posZ) / 2.0D, d3, d4, d5, new int[0]);
-                    this.world.addParticle(EnumParticle.SMOKE_NORMAL, d0, d1, d2, d3, d4, d5, new int[0]);
+                    this.world.addParticle(EnumParticle.EXPLOSION_NORMAL, (d0 + this.posX) / 2.0D, (d1 + this.posY) / 2.0D, (d2 + this.posZ) / 2.0D, d3, d4, d5);
+                    this.world.addParticle(EnumParticle.SMOKE_NORMAL, d0, d1, d2, d3, d4, d5);
                 }
 
                 if (iblockdata.getMaterial() != Material.AIR) {
@@ -271,7 +398,7 @@ public class Explosion {
                 blockposition = (BlockPosition) iterator.next();
                 if (this.world.getType(blockposition).getMaterial() == Material.AIR && this.world.getType(blockposition.down()).b() && this.c.nextInt(3) == 0) {
                     // CraftBukkit start - Ignition by explosion
-                    if (!org.bukkit.craftbukkit.event.CraftEventFactory.callBlockIgniteEvent(this.world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this).isCancelled()) {
+                    if (!CraftEventFactory.callBlockIgniteEvent(this.world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this).isCancelled()) {
                         this.world.setTypeUpdate(blockposition, Blocks.FIRE.getBlockData());
                     }
                     // CraftBukkit end
@@ -306,13 +433,7 @@ public class Explosion {
             return this.world.a(vec3d, aabb);
         }
         CacheKey key = new CacheKey(this, aabb);
-        Float blockDensity = this.world.explosionDensityCache.get(key);
-        if (blockDensity == null) {
-            blockDensity = this.world.a(vec3d, aabb);
-            this.world.explosionDensityCache.put(key, blockDensity);
-        }
-
-        return blockDensity;
+        return this.world.explosionDensityCache.computeIfAbsent(key, k1 -> this.world.a(vec3d, aabb));
     }
 
     static class CacheKey {
