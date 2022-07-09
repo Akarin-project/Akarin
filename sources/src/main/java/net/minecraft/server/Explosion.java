@@ -26,7 +26,7 @@ public class Explosion {
     private final double posZ;
     public final Entity source;
     private final float size;
-    private final List<BlockPosition> blocks = Lists.newArrayList();
+    private final ArrayList<BlockPosition> blocks = Lists.newArrayList();
     private final Map<EntityHuman, Vec3D> k = Maps.newHashMap();
     public boolean wasCanceled = false; // CraftBukkit - add field
 	
