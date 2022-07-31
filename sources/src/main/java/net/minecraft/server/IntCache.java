@@ -110,7 +110,6 @@ public class IntCache {
             }
         }
         return numberOfCaches + " IntCaches. In Total => cache: " + cache + ", tcache: " + tcache + ", allocated: " + allocated + ", tallocated: " + tallocated;
-     }
-// NeonPaper end
     }
+// NeonPaper end
 }
