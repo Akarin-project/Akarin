@@ -1156,6 +1156,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.getDataWatcher().set(EntityPlayer.br, entityplayer.getDataWatcher().get(EntityPlayer.br));
         this.lastSentExp = -1;
         this.lastHealthSent = -1.0F;
+		setSneaking(false); // NeonPaper - fix MC-10657
         this.ch = -1;
         // this.cr.a((RecipeBook) entityplayer.cr); // CraftBukkit
         // Paper start - Optimize remove queue
