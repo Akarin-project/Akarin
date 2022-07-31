@@ -1891,7 +1891,7 @@ public abstract class World implements IBlockAccess {
         for (int i = 0; i < list.size(); ++i) {
             Entity entity1 = (Entity) list.get(i);
 
-            if (!entity1.dead && entity1.i && entity1 != entity && (entity == null || entity1.x(entity))) {
+            if (!entity1.dead && entity1.i && entity1 != entity && (entity == null || !entity1.x(entity))) { // Reaper - Fix MC-103516
                 return false;
             }
         }
