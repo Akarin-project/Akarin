@@ -1488,11 +1488,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public int getNoDamageTicks() {
-        if (getHandle().invulnerableTicks > 0) {
-            return Math.max(getHandle().invulnerableTicks, getHandle().noDamageTicks);
-        } else {
-            return getHandle().noDamageTicks;
-        }
+        // TacoSpigot start - fix incorrect calculation of getNoDamageTicks
+        /*
+         if (getHandle().invulnerableTicks > 0) {
+             return Math.max(getHandle().invulnerableTicks, getHandle().noDamageTicks);
+         } else {
+             return getHandle().noDamageTicks;
+         }
+        */
+        return Math.max(getHandle().invulnerableTicks, Math.max(0, getHandle().noDamageTicks - (getHandle().maxNoDamageTicks >> 1)));
+        // TacoSpigot end
     }
 
     @Override
