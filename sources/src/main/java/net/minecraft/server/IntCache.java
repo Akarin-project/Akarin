@@ -8,8 +8,6 @@ import java.util.List;
 // NeonPaper end
 
 public class IntCache {
-
-    private static int a = 256;
     // NeonPaper start - Refactored IntCache to be thread local instead of static
     private static final ThreadLocal<IntCache> caches = new ThreadLocal<IntCache>() {
         @Override
