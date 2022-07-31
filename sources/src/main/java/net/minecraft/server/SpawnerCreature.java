@@ -92,7 +92,7 @@ public final class SpawnerCreature {
                             long chunkCoords = LongHash.toLong(chunkcoordintpair.x, chunkcoordintpair.z);
                             if (!this.b.contains(chunkCoords)) {
                                 ++i;
-                                if (!flag4 && worldserver.isChunkLoaded(x, z, true) && worldserver.getWorldBorder().isInBounds(chunkcoordintpair)) {
+                                if (!flag4 && worldserver.isChunkLoaded(chunkcoordintpair.x, chunkcoordintpair.z, true) && worldserver.getWorldBorder().isInBounds(chunkcoordintpair)) {
                                     PlayerChunk playerchunk = worldserver.getPlayerChunkMap().getChunk(chunkcoordintpair.x, chunkcoordintpair.z);
 
                                     if (playerchunk != null && playerchunk.e()) {
