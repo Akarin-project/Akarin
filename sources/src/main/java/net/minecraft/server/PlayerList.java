@@ -558,9 +558,10 @@ public abstract class PlayerList {
         Player player = entity.getBukkitEntity();
         PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, ((java.net.InetSocketAddress) socketaddress).getAddress(), ((java.net.InetSocketAddress) loginlistener.networkManager.getRawAddress()).getAddress());
         String s;
-
-        if (getProfileBans().isBanned(gameprofile) && !getProfileBans().get(gameprofile).hasExpired()) {
-            GameProfileBanEntry gameprofilebanentry = this.k.get(gameprofile);
+        // NeonPaper start - Fix MC-158900
+        GameProfileBanEntry gameprofilebanentry;
+        if (getProfileBans().isBanned(gameprofile) && (gameprofilebanentry = getProfileBans().get(gameprofile)) != null) {
+        // NeonPaper end
 
             s = LocaleI18n.a(AkarinGlobalConfig.messageBan,
                     gameprofilebanentry.getReason().equals(Akari.EMPTY_STRING) ? Akari.EMPTY_STRING : AkarinGlobalConfig.messageBanReason + gameprofilebanentry.getReason(),
