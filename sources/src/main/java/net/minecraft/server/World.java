@@ -587,7 +587,9 @@ public abstract class World implements IBlockAccess {
 
     public void a(BlockPosition blockposition, final Block block, BlockPosition blockposition1) {
         if (!this.isClientSide) {
-            IBlockData iblockdata = this.getType(blockposition);
+            //IBlockData iblockdata = this.getType(blockposition);
+            IBlockData iblockdata = this.getTypeIfLoaded(blockposition); // NeonPaper Don't load chunks for physics
+            if (iblockdata == null) return; // NeonPaper Don't load chunks for physics
 
             try {
                 // CraftBukkit start
