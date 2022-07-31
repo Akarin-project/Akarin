@@ -784,7 +784,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     protected void a(double d0, boolean flag, IBlockData iblockdata, BlockPosition blockposition) {}
 
     protected void b(BlockPosition blockposition) {
-        if (!this.isSpectator()) {
+        if (valid && (!this.isSpectator() || this.world.isLoaded(new BlockPosition(this)))) { // Dionysus - don't tick dead players that are not in the world currently (pending respawn)
             super.b(blockposition);
         }
 
