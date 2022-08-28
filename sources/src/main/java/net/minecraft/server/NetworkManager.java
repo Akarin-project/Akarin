@@ -365,7 +365,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelhandlercontext, Packet object) throws Exception { // CraftBukkit - fix decompile error
-        this.a(channelhandlercontext, object);
+        // FlamePaper - Check if channel is opened before reading packet
+        if (isConnected()) {
+            this.a(channelhandlercontext, object);
+        }
     }
 
     public static class QueuedPacket { // Akarin - default -> public

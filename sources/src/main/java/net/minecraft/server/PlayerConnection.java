@@ -916,6 +916,11 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         case START_DESTROY_BLOCK:
         case ABORT_DESTROY_BLOCK:
         case STOP_DESTROY_BLOCK:
+            // NeonPaper start - Don't allow digging in unloaded chunks
+            if (!worldserver.isChunkLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4, true)) {
+                 return;
+            }
+            // NeonPaper end - Don't allow digging in unloaded chunks
             double d0 = this.player.locX - ((double) blockposition.getX() + 0.5D);
             double d1 = this.player.locY - ((double) blockposition.getY() + 0.5D) + 1.5D;
             double d2 = this.player.locZ - ((double) blockposition.getZ() + 0.5D);

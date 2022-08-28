@@ -587,7 +587,9 @@ public abstract class World implements IBlockAccess {
 
     public void a(BlockPosition blockposition, final Block block, BlockPosition blockposition1) {
         if (!this.isClientSide) {
-            IBlockData iblockdata = this.getType(blockposition);
+            //IBlockData iblockdata = this.getType(blockposition);
+            IBlockData iblockdata = this.getTypeIfLoaded(blockposition); // NeonPaper Don't load chunks for physics
+            if (iblockdata == null) return; // NeonPaper Don't load chunks for physics
 
             try {
                 // CraftBukkit start
@@ -697,7 +699,7 @@ public abstract class World implements IBlockAccess {
             if (blockposition.getY() >= 256) {
                 blockposition = new BlockPosition(blockposition.getX(), 255, blockposition.getZ());
             }
-
+            if (!this.isLoaded(blockposition)) return 0; // Paper
             return this.getChunkAtWorldCoords(blockposition).a(blockposition, 0);
         }
     }
@@ -1891,7 +1893,7 @@ public abstract class World implements IBlockAccess {
         for (int i = 0; i < list.size(); ++i) {
             Entity entity1 = (Entity) list.get(i);
 
-            if (!entity1.dead && entity1.i && entity1 != entity && (entity == null || entity1.x(entity))) {
+            if (!entity1.dead && entity1.i && entity1 != entity && (entity == null || !entity1.x(entity))) { // Reaper - Fix MC-103516
                 return false;
             }
         }

@@ -118,6 +118,7 @@ public class EnchantmentManager {
         EnchantmentManager.a.a = 0;
         EnchantmentManager.a.b = damagesource;
         a(EnchantmentManager.a, iterable);
+		EnchantmentManager.a.b = null; // Reaper - Fix MC-128547
         return EnchantmentManager.a.a;
     }
 
@@ -144,6 +145,11 @@ public class EnchantmentManager {
         if (entity instanceof EntityHuman) {
             a(EnchantmentManager.c, entityliving.getItemInMainHand());
         }
+		
+        // Reaper start - Fix MC-128547
+        EnchantmentManager.c.b = null;
+        EnchantmentManager.c.a = null;
+        // Reaper end
 
     }
 
@@ -157,7 +163,10 @@ public class EnchantmentManager {
         if (entityliving instanceof EntityHuman) {
             a(EnchantmentManager.d, entityliving.getItemInMainHand());
         }
-
+        // Reaper start - Fix MC-128547
+        EnchantmentManager.d.b = null;
+        EnchantmentManager.d.a = null;
+        // Reaper end
     }
 
     public static int a(Enchantment enchantment, EntityLiving entityliving) {

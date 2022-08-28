@@ -45,6 +45,10 @@ import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.plugin.PluginManager;
 // CraftBukkit end
 
+// Dionysus start
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+// Dionysus end
+
 /**
  * Akarin Changes Note
  * 1) Random -> LightRandom (performance)
@@ -91,7 +95,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     private static int entityCount = 1; // Paper - MC-111480 - ID 0 is treated as special for DataWatchers, start 1
     private int id;
     public boolean i; public boolean blocksEntitySpawning() { return i; } // Paper - OBFHELPER
-    public final List<Entity> passengers;
+    public final ObjectArrayList<Entity> passengers; // Dionysus
     protected int j;
     private Entity au;public void setVehicle(Entity entity) { this.au = entity; } // Paper // OBFHELPER
     public boolean attachedToPlayer;
@@ -205,7 +209,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
 
     public Entity(World world) {
         this.id = Entity.entityCount++;
-        this.passengers = Lists.newArrayList();
+        this.passengers = new ObjectArrayList<>(); // Dionysus
         this.boundingBox = Entity.c;
         this.width = 0.6F;
         this.length = 1.8F;
@@ -1383,37 +1387,33 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     public void d(EntityHuman entityhuman) {}
 
     public void collide(Entity entity) {
-        if (!this.x(entity)) {
-            if (!entity.noclip && !this.noclip) {
-                double d0 = entity.locX - this.locX;
-                double d1 = entity.locZ - this.locZ;
-                double d2 = MathHelper.a(d0, d1);
+		if (entity.noclip || this.noclip || this.x(entity)) return; // NeonPaper - Test this earlier
+        double d0 = entity.locX - this.locX;
+        double d1 = entity.locZ - this.locZ;
+        double d2 = MathHelper.a(d0, d1);
 
-                if (d2 >= 0.009999999776482582D) {
-                    d2 = (double) MathHelper.sqrt(d2);
-                    d0 /= d2;
-                    d1 /= d2;
-                    double d3 = 1.0D / d2;
+        if (d2 >= 0.009999999776482582D) {
+            d2 = (double) MathHelper.sqrt(d2);
+            d0 /= d2;
+            d1 /= d2;
+            double d3 = 1.0D / d2;
 
-                    if (d3 > 1.0D) {
-                        d3 = 1.0D;
-                    }
+            if (d3 > 1.0D) {
+                d3 = 1.0D;
+            }
 
-                    d0 *= d3;
-                    d1 *= d3;
-                    d0 *= 0.05000000074505806D;
-                    d1 *= 0.05000000074505806D;
-                    d0 *= (double) (1.0F - this.R);
-                    d1 *= (double) (1.0F - this.R);
-                    if (!this.isVehicle()) {
-                        this.f(-d0, 0.0D, -d1);
-                    }
+            d0 *= d3;
+            d1 *= d3;
+            d0 *= 0.05000000074505806D;
+            d1 *= 0.05000000074505806D;
+            d0 *= (double) (1.0F - this.R);
+            d1 *= (double) (1.0F - this.R);
+            if (!this.isVehicle()) {
+                this.f(-d0, 0.0D, -d1);
+            }
 
-                    if (!entity.isVehicle()) {
-                        entity.f(d0, 0.0D, d1);
-                    }
-                }
-
+            if (!entity.isVehicle()) {
+                entity.f(d0, 0.0D, d1);
             }
         }
     }
@@ -2881,7 +2881,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     }
 
     public List<Entity> bF() {
-        return (List) (this.passengers.isEmpty() ? Collections.emptyList() : Lists.newArrayList(this.passengers));
+        return (List) (this.passengers.isEmpty() ? Collections.emptyList() : new ObjectArrayList<>(this.passengers)); // Dionysus
     }
 
     public boolean w(Entity entity) {
