@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock;
+import io.akarin.api.internal.utils.CheckedConcurrentLinkedQueue
 
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
