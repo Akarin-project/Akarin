@@ -355,6 +355,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 }
                 speed *= 2f; // TODO: Get the speed of the vehicle instead of the player
 
+                // Paper start - Prevent moving into unloaded chunks
+                if (player.world.paperConfig.preventMovingIntoUnloadedChunks && !worldserver.isChunkLoaded((int) Math.floor(packetplayinvehiclemove.getX()) >> 4, (int) Math.floor(packetplayinvehiclemove.getZ()) >> 4, false)) {
+                    this.networkManager.sendPacket(new PacketPlayOutVehicleMove(entity));
+                    return;
+                }
+                // Paper end
+
                 if (d10 - d9 > Math.max(100.0D, Math.pow((double) (org.spigotmc.SpigotConfig.movedTooQuicklyMultiplier * (float) i * speed), 2)) && (!this.minecraftServer.R() || !this.minecraftServer.Q().equals(entity.getName()))) { // Spigot
                 // CraftBukkit end
                     PlayerConnection.LOGGER.warn("{} (vehicle of {}) moved too quickly! {},{},{}", entity.getName(), this.player.getName(), Double.valueOf(d6), Double.valueOf(d7), Double.valueOf(d8));
@@ -386,13 +393,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 }
 
                 entity.setLocation(d3, d4, d5, f, f1);
-                Location curPos = getPlayer().getLocation(); // Paper
+				Location curPos = getPlayer().getLocation(); // Paper
                 player.setLocation(d3, d4, d5, f, f1); // Paper
                 boolean flag2 = worldserver.getCubes(entity, entity.getBoundingBox().shrink(0.0625D)).isEmpty();
 
                 if (flag && (flag1 || !flag2)) {
                     entity.setLocation(d0, d1, d2, f, f1);
-                    player.setLocation(d0, d1, d2, f, f1); // Paper
+					player.setLocation(d0, d1, d2, f, f1); // Paper
                     this.networkManager.sendPacket(new PacketPlayOutVehicleMove(entity));
                     return;
                 }
@@ -552,9 +559,9 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                         double d1 = this.player.locY;
                         double d2 = this.player.locZ;
                         double d3 = this.player.locY;
-                        double d4 = packetplayinflying.a(this.player.locX);
+                        double d4 = packetplayinflying.a(this.player.locX); double toX = d4; // Paper - OBFHELPER
                         double d5 = packetplayinflying.b(this.player.locY);
-                        double d6 = packetplayinflying.c(this.player.locZ);
+                        double d6 = packetplayinflying.c(this.player.locZ); double toZ = d6; // Paper - OBFHELPER
                         float f = packetplayinflying.a(this.player.yaw);
                         float f1 = packetplayinflying.b(this.player.pitch);
                         double d7 = d4 - this.l;
@@ -593,6 +600,13 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                             } else {
                                 speed = player.abilities.walkSpeed * 10f;
                             }
+
+                            // Paper start - Prevent moving into unloaded chunks
+                            if (player.world.paperConfig.preventMovingIntoUnloadedChunks && (this.player.locX != toX || this.player.locZ != toZ) && !worldserver.isChunkLoaded((int) Math.floor(toX) >> 4, (int) Math.floor(toZ) >> 4, false)) {
+                                this.internalTeleport(this.player.locX, this.player.locY, this.player.locZ, this.player.yaw, this.player.pitch, Collections.emptySet());
+                                return;
+                            }
+                            // Paper end
 
                             if (!this.player.L() && (!this.player.x().getGameRules().getBoolean("disableElytraMovementCheck") || !this.player.cP())) {
                                 float f2 = this.player.cP() ? 300.0F : 100.0F;
@@ -1695,7 +1709,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
                     if (event.isCancelled() || this.player.inventory.getItemInHand() == null || this.player.inventory.getItemInHand().getItem() != origItem) {
                         // Refresh the current entity metadata
-                        this.sendPacket(new PacketPlayOutEntityMetadata(entity.getId(), entity.datawatcher, true));
+                        entity.tracker.broadcast(new PacketPlayOutEntityMetadata(entity.getId(), entity.datawatcher, true)); // Paper - update entity for all players
                     }
 
                     if (event.isCancelled()) {
@@ -2232,7 +2246,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
             TileEntitySign tileentitysign = (TileEntitySign) tileentity;
 
-            if (!tileentitysign.a() || tileentitysign.e() != this.player) {
+            if (!tileentitysign.a() || tileentitysign.signEditor == null || !tileentitysign.signEditor.equals(this.player.getUniqueID())) { // Paper
                 this.minecraftServer.warning("Player " + this.player.getName() + " just tried to change non-editable sign");
                 this.sendPacket(tileentity.getUpdatePacket()); // CraftBukkit
                 return;
@@ -2248,6 +2262,14 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             String[] lines = new String[4];
 
             for (int i = 0; i < astring.length; ++i) {
+                // Paper start - cap line length - modified clients can send longer data than normal
+                if (astring[i].length() > TileEntitySign.MAX_SIGN_LINE_LENGTH && TileEntitySign.MAX_SIGN_LINE_LENGTH > 0) {
+                    int offset = astring[i].codePoints().limit(TileEntitySign.MAX_SIGN_LINE_LENGTH).map(Character::charCount).sum();
+                    if (offset > astring.length) {
+                        astring[i] = astring[i].substring(0, offset);
+                    }
+                }
+                // Paper end
                 lines[i] = SharedConstants.a(astring[i]); //Paper - Replaced with anvil color stripping method to stop exploits that allow colored signs to be created.
             }
             SignChangeEvent event = new SignChangeEvent((org.bukkit.craftbukkit.block.CraftBlock) player.getWorld().getBlockAt(x, y, z), this.server.getPlayer(this.player), lines);
@@ -2350,6 +2372,45 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
         this.player.a(packetplayinsettings);
     }
 
+    // Paper start
+    private boolean validateBook(ItemStack testStack) {
+        NBTTagList pageList = testStack.getTag().getList("pages", 8);
+        long byteTotal = 0;
+        int maxBookPageSize = com.destroystokyo.paper.PaperConfig.maxBookPageSize;
+        double multiplier = Math.max(0.3D, Math.min(1D, com.destroystokyo.paper.PaperConfig.maxBookTotalSizeMultiplier));
+        long byteAllowed = maxBookPageSize;
+        for (int i = 0; i < pageList.size(); ++i) {
+            String testString = pageList.getString(i);
+            int byteLength = testString.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+            byteTotal += byteLength;
+
+            int length = testString.length();
+            int multibytes = 0;
+            if (length != byteLength) {
+                for (char c : testString.toCharArray()) {
+                    if (c > 127) {
+                        multibytes++;
+                    }
+                }
+            }
+            byteAllowed += (maxBookPageSize * Math.min(1, Math.max(0.1D, (double) length / 255D))) * multiplier;
+
+            if (multibytes > 1) {
+                // penalize MB
+                byteAllowed -= multibytes;
+            }
+        }
+
+        if (byteTotal > byteAllowed) {
+            PlayerConnection.LOGGER.warn(this.player.getName() + " tried to send too large of a book. Book Size: " + byteTotal + " - Allowed:  "+ byteAllowed + " - Pages: " + pageList.size());
+            minecraftServer.postToMainThread(() -> this.disconnect("Book too large!"));
+            return false;
+        }
+
+        return true;
+    }
+    // Paper end
+
     public void a(PacketPlayInCustomPayload packetplayincustompayload) {
         PlayerConnectionUtils.ensureMainThread(packetplayincustompayload, this, this.player.x());
         String s = packetplayincustompayload.a();
@@ -2383,6 +2444,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                 }
 
                 if (itemstack.getItem() == Items.WRITABLE_BOOK && itemstack.getItem() == itemstack1.getItem()) {
+                    if (!validateBook(itemstack)) return; // Paper
                     itemstack1.a("pages", (NBTBase) itemstack.getTag().getList("pages", 8));
                     CraftEventFactory.handleEditBookEvent(player, itemstack1); // CraftBukkit
                 }
@@ -2418,6 +2480,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
                     }
 
                     if (itemstack.getItem() == Items.WRITABLE_BOOK && itemstack1.getItem() == Items.WRITABLE_BOOK) {
+                        if (!validateBook(itemstack)) return; // Paper
                         ItemStack itemstack2 = new ItemStack(Items.WRITTEN_BOOK);
 
                         itemstack2.a("author", (NBTBase) (new NBTTagString(this.player.getName())));
