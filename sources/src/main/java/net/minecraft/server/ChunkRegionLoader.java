@@ -1,11 +1,16 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Maps;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 import java.util.concurrent.ConcurrentLinkedQueue; // Paper
 import org.apache.logging.log4j.LogManager;
@@ -89,8 +94,22 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         return nbttagcompound != null ? true : RegionFileCache.chunkExists(this.d, i, j);
     }
 
+    // Paper start
+    private static final int CURRENT_DATA_VERSION = 1343; // Paper
+    private static final boolean JUST_CORRUPT_IT = Boolean.valueOf("Paper.ignoreWorldDataVersion");
+    // Paper end
+
     @Nullable
     protected Object[] a(World world, int i, int j, NBTTagCompound nbttagcompound) { // CraftBukkit - return Chunk -> Object[]
+        // Paper start - Do NOT attempt to load chunks saved with newer versions
+        if (nbttagcompound.hasKeyOfType("DataVersion", 3)) {
+            int dataVersion = nbttagcompound.getInt("DataVersion");
+            if (!JUST_CORRUPT_IT && dataVersion > CURRENT_DATA_VERSION) {
+                new RuntimeException("Server attempted to load chunk saved with newer version of minecraft! " + dataVersion + " > " + CURRENT_DATA_VERSION).printStackTrace();
+                System.exit(1);
+            }
+        }
+        // Paper end
         if (!nbttagcompound.hasKeyOfType("Level", 10)) {
             ChunkRegionLoader.a.error("Chunk file at {},{} is missing level data, skipping", Integer.valueOf(i), Integer.valueOf(j));
             return null;
