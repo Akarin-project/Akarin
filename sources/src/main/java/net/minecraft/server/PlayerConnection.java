@@ -394,12 +394,12 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
                 entity.setLocation(d3, d4, d5, f, f1);
 				Location curPos = getPlayer().getLocation(); // Paper
-                player.setLocation(d3, d4, d5, f, f1); // Paper
+                player.setLocation(d3, d4, d5, player.yaw, player.pitch); // CraftBukkit // Paper
                 boolean flag2 = worldserver.getCubes(entity, entity.getBoundingBox().shrink(0.0625D)).isEmpty();
 
                 if (flag && (flag1 || !flag2)) {
                     entity.setLocation(d0, d1, d2, f, f1);
-					player.setLocation(d0, d1, d2, f, f1); // Paper
+					player.setLocation(d3, d4, d5, player.yaw, player.pitch); // CraftBukkit // Paper
                     this.networkManager.sendPacket(new PacketPlayOutVehicleMove(entity));
                     return;
                 }
