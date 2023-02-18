@@ -71,7 +71,7 @@ public abstract class PlayerList {
     // private final Map<UUID, AdvancementDataPlayer> p;
     // CraftBukkit end
     public IPlayerFileData playerFileData;
-    private boolean hasWhitelist;
+    //private boolean hasWhitelist; // Paper - moved to whitelist object so not duplicated
     protected int maxPlayers;
     private int s;
     private EnumGamemode t;
@@ -1241,9 +1241,9 @@ public abstract class PlayerList {
     }
     public boolean isWhitelisted(GameProfile gameprofile, org.bukkit.event.player.PlayerLoginEvent loginEvent) {
         boolean isOp = this.operators.d(gameprofile);
-        boolean isWhitelisted = !this.hasWhitelist || isOp || this.whitelist.d(gameprofile);
+        boolean isWhitelisted = !this.getHasWhitelist() || isOp || this.whitelist.d(gameprofile);
         final com.destroystokyo.paper.event.profile.ProfileWhitelistVerifyEvent event;
-        event = new com.destroystokyo.paper.event.profile.ProfileWhitelistVerifyEvent(MCUtil.toBukkit(gameprofile), this.hasWhitelist, isWhitelisted, isOp, org.spigotmc.SpigotConfig.whitelistMessage);
+        event = new com.destroystokyo.paper.event.profile.ProfileWhitelistVerifyEvent(MCUtil.toBukkit(gameprofile), this.getHasWhitelist(), isWhitelisted, isOp, org.spigotmc.SpigotConfig.whitelistMessage);
         event.callEvent();
         if (!event.isWhitelisted()) {
             if (loginEvent != null) {
@@ -1392,11 +1392,11 @@ public abstract class PlayerList {
     }
 
     public boolean getHasWhitelist() {
-        return this.hasWhitelist;
+        return this.whitelist.isEnabled(); // Paper
     }
 
     public void setHasWhitelist(boolean flag) {
-        this.hasWhitelist = flag;
+        this.whitelist.setEnabled(flag); // Paper
     }
 
     public List<EntityPlayer> b(String s) {
