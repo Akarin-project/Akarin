@@ -337,7 +337,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         this.methodProfiler.c("village");
         timings.doVillages.startTiming(); // Spigot
         this.villages.tick();
-        this.siegeManager.a();
+        if (paperConfig.villageSiegesEnabled) { this.siegeManager.a(); } // Paper - Allow disabling village sieges
         timings.doVillages.stopTiming(); // Spigot
         this.methodProfiler.c("portalForcer");
         timings.doPortalForcer.startTiming(); // Spigot
