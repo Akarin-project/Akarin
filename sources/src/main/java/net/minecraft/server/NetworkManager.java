@@ -1,9 +1,10 @@
 package net.minecraft.server;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.googlecode.concurentlocks.ReentrantReadWriteUpdateLock;
-
 import io.akarin.api.internal.utils.CheckedConcurrentLinkedQueue;
+
+import com.google.common.collect.Queues;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -18,9 +19,9 @@ import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-
 import java.net.SocketAddress;
 import java.util.Queue;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import org.apache.commons.lang3.ArrayUtils;
@@ -29,7 +30,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
-
 /**
  * Akarin Changes Note
  * 2) Expose private members (nsc)
@@ -47,7 +47,6 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
             return new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Client IO #%d").setDaemon(true).build());
         }
 
-        @Override
         protected Object init() {
             return this.a();
         }
@@ -57,7 +56,6 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
             return new EpollEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Epoll Client IO #%d").setDaemon(true).build());
         }
 
-        @Override
         protected Object init() {
             return this.a();
         }
@@ -67,7 +65,6 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
             return new LocalEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Local Client IO #%d").setDaemon(true).build());
         }
 
-        @Override
         protected Object init() {
             return this.a();
         }
@@ -96,7 +93,6 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         this.h = enumprotocoldirection;
     }
 
-    @Override
     public void channelActive(ChannelHandlerContext channelhandlercontext) throws Exception {
         super.channelActive(channelhandlercontext);
         this.channel = channelhandlercontext.channel();
@@ -119,13 +115,20 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         NetworkManager.g.debug("Enabled auto read");
     }
 
-    @Override
     public void channelInactive(ChannelHandlerContext channelhandlercontext) throws Exception {
         this.close(new ChatMessage("disconnect.endOfStream", new Object[0]));
     }
 
-    @Override
     public void exceptionCaught(ChannelHandlerContext channelhandlercontext, Throwable throwable) throws Exception {
+        // Paper start
+        if (throwable instanceof io.netty.handler.codec.EncoderException && throwable.getCause() instanceof PacketEncoder.PacketTooLargeException) {
+            if (((PacketEncoder.PacketTooLargeException) throwable.getCause()).getPacket().packetTooLarge(this)) {
+                return;
+            } else {
+                throwable = throwable.getCause();
+            }
+        }
+        // Paper end
         ChatMessage chatmessage;
 
         if (throwable instanceof TimeoutException) {
@@ -212,7 +215,6 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
             channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         } else {
             this.channel.eventLoop().execute(new Runnable() {
-                @Override
                 public void run() {
                     if (enumprotocol != enumprotocol1) {
                         NetworkManager.this.setProtocol(enumprotocol);
@@ -228,6 +230,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
                 }
             });
         }
+
+        // Paper start
+        java.util.List<Packet> extraPackets = packet.getExtraPackets();
+        if (extraPackets != null && !extraPackets.isEmpty()) {
+            for (Packet extraPacket : extraPackets) {
+                this.dispatchPacket(extraPacket, agenericfuturelistener);
+            }
+        }
+        // Paper end
 
     }
 
@@ -363,7 +374,6 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet<?>> {
         }
     }
 
-    @Override
     protected void channelRead0(ChannelHandlerContext channelhandlercontext, Packet object) throws Exception { // CraftBukkit - fix decompile error
         // FlamePaper - Check if channel is opened before reading packet
         if (isConnected()) {

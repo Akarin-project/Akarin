@@ -2965,7 +2965,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
         return entity instanceof EntityHuman ? ((EntityHuman) entity).cZ() : !this.world.isClientSide;
     }
 
-    @Nullable
+    @Nullable Entity getVehicleDirect() { return this.bJ(); } // Paper - OBFHELPER
     public Entity bJ() {
         return this.au;
     }

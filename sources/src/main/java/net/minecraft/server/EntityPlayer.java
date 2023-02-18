@@ -1096,6 +1096,13 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void s() {
         this.cu = true;
         this.ejectPassengers();
+		
+        // Paper start - "Fixes" an issue where the vehicle doesn't track the passenger disconnection dismount.
+        if (this.isPassenger() && this.getVehicleDirect() instanceof EntityLiving) {
+            this.stopRiding();
+        }
+        // Paper end
+
         if (this.sleeping) {
             this.a(true, false, false);
         }

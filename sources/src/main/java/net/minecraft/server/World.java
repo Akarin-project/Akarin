@@ -936,7 +936,8 @@ public abstract class World implements IBlockAccess {
                 int i1 = MathHelper.floor(vec3d.y);
                 int j1 = MathHelper.floor(vec3d.z);
                 BlockPosition blockposition = new BlockPosition(l, i1, j1);
-                IBlockData iblockdata = this.getType(blockposition);
+                IBlockData iblockdata = this.getTypeIfLoaded(blockposition); // Paper
+				if (iblockdata == null) return null; // Paper
                 Block block = iblockdata.getBlock();
 
                 if ((!flag1 || iblockdata.d(this, blockposition) != Block.k) && block.a(iblockdata, flag)) {
@@ -1038,7 +1039,8 @@ public abstract class World implements IBlockAccess {
                     i1 = MathHelper.floor(vec3d.y) - (enumdirection == EnumDirection.UP ? 1 : 0);
                     j1 = MathHelper.floor(vec3d.z) - (enumdirection == EnumDirection.SOUTH ? 1 : 0);
                     blockposition = new BlockPosition(l, i1, j1);
-                    IBlockData iblockdata1 = this.getType(blockposition);
+                    IBlockData iblockdata1 = this.getTypeIfLoaded(blockposition); // Paper
+					if (iblockdata1 == null) return null; // Paper
                     Block block1 = iblockdata1.getBlock();
 
                     if (!flag1 || iblockdata1.getMaterial() == Material.PORTAL || iblockdata1.d(this, blockposition) != Block.k) {
