@@ -42,6 +42,8 @@
         "optimization.MixinBlockChest",
         "optimization.MixinEntityMushroomCow",
         "optimization.MixinContainerHorse",
-        "optimization.MixinExplosion"
+        "optimization.MixinExplosion",
+        "optimization.MixinMathHelper",
+        "optimization.MixinBlockStationary"
     ]
 }
