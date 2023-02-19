@@ -38,6 +38,10 @@
         "optimization.MixinEntityHorseAbstract",
         "optimization.MixinEntityTameableAnimal",
         "optimization.MixinPersistentCollection",
-        "optimization.MixinTileEntityEnchantTable"
+        "optimization.MixinTileEntityEnchantTable",
+        "optimization.MixinBlockChest",
+        "optimization.MixinEntityMushroomCow",
+        "optimization.MixinContainerHorse",
+        "optimization.MixinExplosion"
     ]
 }

@@ -1,58 +1,68 @@
-package net.minecraft.server;
+package io.akarin.server.mixin.optimization;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+
+import org.bukkit.Location;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.server.AxisAlignedBB;
+import net.minecraft.server.Block;
+import net.minecraft.server.BlockPosition;
+import net.minecraft.server.Blocks;
+import net.minecraft.server.Chunk;
+import net.minecraft.server.ChunkSection;
+import net.minecraft.server.DamageSource;
+import net.minecraft.server.EnchantmentProtection;
+import net.minecraft.server.Entity;
+import net.minecraft.server.EntityFallingBlock;
+import net.minecraft.server.EntityHuman;
+import net.minecraft.server.EntityLiving;
+import net.minecraft.server.EntityTNTPrimed;
+import net.minecraft.server.EnumParticle;
+import net.minecraft.server.Explosion;
+import net.minecraft.server.IBlockData;
+import net.minecraft.server.Material;
+import net.minecraft.server.MathHelper;
+import net.minecraft.server.SoundCategory;
+import net.minecraft.server.SoundEffects;
+import net.minecraft.server.Vec3D;
+import net.minecraft.server.World;
+import net.minecraft.server.IEntitySelector;
 
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.Predicate;
-
-// CraftBukkit start
-import org.bukkit.craftbukkit.event.CraftEventFactory;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.Location;
-import org.bukkit.event.block.BlockExplodeEvent;
-// CraftBukkit end
-
-public class Explosion {
-
-    private final boolean a;
-    private final boolean b;
-    private final Random c = new Random();
-    private final World world;
-    private final double posX;
-    private final double posY;
-    private final double posZ;
-    public final Entity source;
-    private final float size;
-    private final ArrayList<BlockPosition> blocks = Lists.newArrayList();
-    private final Map<EntityHuman, Vec3D> k = Maps.newHashMap();
-    public boolean wasCanceled = false; // CraftBukkit - add field
-	
-    // Dionysus start
+@Mixin(value = Explosion.class, remap = false)
+public abstract class MixinExplosion {
+	@Shadow private boolean a;
+	@Shadow private boolean b;
+	@Shadow private Random c = new Random();
+	@Shadow private World world;
+	@Shadow private double posX;
+	@Shadow private double posY;
+	@Shadow private double posZ;
+	@Shadow public Entity source;
+	@Shadow private float size;
+	@Shadow private Map<EntityHuman, Vec3D> k;
+	@Shadow public boolean wasCanceled = false; // CraftBukkit - add field
+	@Shadow private List<BlockPosition> blocks;
     private final BlockPosition.MutableBlockPosition cachedPos = new BlockPosition.MutableBlockPosition();
-    // The chunk coordinate of the most recently stepped through block.
     private int prevChunkX = Integer.MIN_VALUE;
     private int prevChunkZ = Integer.MIN_VALUE;
-
-    // The chunk belonging to prevChunkPos.
     private Chunk prevChunk;
-
     private static final com.google.common.base.Predicate<Entity> hitPredicate = entity -> IEntitySelector.d.apply(entity) && !entity.dead; // Dionysus - Paper - don't hit dead entities
-    // Dionysus end
-
-    public Explosion(World world, Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1) {
-        this.world = world;
-        this.source = entity;
-        this.size = (float) Math.max(f, 0.0); // CraftBukkit - clamp bad values
-        this.posX = d0;
-        this.posY = d1;
-        this.posZ = d2;
-        this.a = flag;
-        this.b = flag1;
-    }
-
+    
+    @Overwrite
     public void a() {
         // CraftBukkit start
         if (this.size < 0.1F) {
@@ -94,9 +104,9 @@ public class Explosion {
         // We can now iterate back over the set of positions we modified and re-build BlockPos objects from them
         // This will only allocate as many objects as there are in the set, where otherwise we would allocate them
         // each step of a every ray.
-        blocks.ensureCapacity(touched.size());
+        ((ArrayList<BlockPosition>)this.blocks).ensureCapacity(touched.size());
         for (Long longPos : touched) {
-            blocks.add(BlockPosition.fromLong(longPos));
+        	this.blocks.add(BlockPosition.fromLong(longPos));
         }
         float f3 = this.size * 2.0F;
 
@@ -133,7 +143,7 @@ public class Explosion {
                         // entity.damageEntity(DamageSource.explosion(this), (float) ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * (double) f3 + 1.0D)));
                         CraftEventFactory.entityDamage = source;
                         entity.forceExplosionKnockback = false;
-                        boolean wasDamaged = entity.damageEntity(DamageSource.explosion(this), (float) ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * (double) f3 + 1.0D)));
+                        boolean wasDamaged = entity.damageEntity(DamageSource.explosion((Explosion)(Object)this), (float) ((int) ((d13 * d13 + d13) / 2.0D * 7.0D * (double) f3 + 1.0D)));
                         CraftEventFactory.entityDamage = null;
                         if (!wasDamaged && !(entity instanceof EntityTNTPrimed || entity instanceof EntityFallingBlock) && !entity.forceExplosionKnockback) {
                             continue;
@@ -161,7 +171,6 @@ public class Explosion {
         }
 
     }
-	
     private void performRayCast(Random random, double vecX, double vecY, double vecZ, LongOpenHashSet touched) {
         double dist = Math.sqrt((vecX * vecX) + (vecY * vecY) + (vecZ * vecZ));
 
@@ -214,7 +223,6 @@ public class Explosion {
             stepZ += normZ;
         }
     }
-
     /**
      * Called for every step made by a ray being cast by an explosion.
      *
@@ -231,7 +239,7 @@ public class Explosion {
         // Early-exit if the y-coordinate is out of bounds.
         if (cachedPos.isInvalidYLocation()) {
             if (iblockdata.getMaterial() != Material.AIR) {
-                float blastResistance = this.source != null ? this.source.a(this, this.world, cachedPos, iblockdata) : iblockdata.getBlock().a((Entity) null);
+                float blastResistance = this.source != null ? this.source.a((Explosion)(Object)this, this.world, cachedPos, iblockdata) : iblockdata.getBlock().a((Entity) null);
                 return (blastResistance + 0.3F) * 0.3F;
             }
             return 0.0F;
@@ -268,7 +276,7 @@ public class Explosion {
                 // If the block state is air, it cannot have fluid or any kind of resistance, so just leave
                 if (blockState.getBlock() != Blocks.AIR) {
                     // Get the explosion resistance like vanilla
-                    blastResistance = Optional.of(this.source != null ? this.source.a(this, this.world, cachedPos, iblockdata) : iblockdata.getBlock().a((Entity) null));
+                    blastResistance = Optional.of(this.source != null ? this.source.a((Explosion)(Object)this, this.world, cachedPos, iblockdata) : iblockdata.getBlock().a((Entity) null));
                 }
             }
         }
@@ -282,16 +290,14 @@ public class Explosion {
         // of positions to destroy
         float reducedStrength = strength - totalResistance;
         if (reducedStrength > 0.0F && (this.a || iblockdata.getMaterial() != Material.AIR)) {
-            if ((this.source == null || this.source.a(this, this.world, cachedPos, iblockdata, reducedStrength)) && cachedPos.getY() < 256 && cachedPos.getY() >= 0) {
+            if ((this.source == null || this.source.a((Explosion)(Object)this, this.world, cachedPos, iblockdata, reducedStrength)) && cachedPos.getY() < 256 && cachedPos.getY() >= 0) {
                 touched.add(cachedPos.asLong());
             }
         }
 
         return totalResistance;
     }
-    // Dionysus end
-
-
+    @Overwrite
     public void a(boolean flag) {
         this.world.a((EntityHuman) null, this.posX, this.posY, this.posZ, SoundEffects.bV, SoundCategory.BLOCKS, 4.0F, (1.0F + (this.world.random.nextFloat() - this.world.random.nextFloat()) * 0.2F) * 0.7F);
         if (this.size >= 2.0F && this.b) {
@@ -300,7 +306,7 @@ public class Explosion {
             this.world.addParticle(EnumParticle.EXPLOSION_LARGE, this.posX, this.posY, this.posZ, 1.0D, 0.0D, 0.0D);
         }
 
-        Iterator iterator;
+        Iterator<BlockPosition> iterator;
         BlockPosition blockposition;
 
         if (this.b) {
@@ -338,7 +344,7 @@ public class Explosion {
 
             this.blocks.clear();
 
-            this.blocks.ensureCapacity(bukkitBlocks.size());
+            ((ArrayList<BlockPosition>)this.blocks).ensureCapacity(bukkitBlocks.size());
             for (org.bukkit.block.Block bblock : bukkitBlocks) {
                 BlockPosition coords = new BlockPosition(bblock.getX(), bblock.getY(), bblock.getZ());
                 blocks.add(coords);
@@ -380,13 +386,13 @@ public class Explosion {
                 }
 
                 if (iblockdata.getMaterial() != Material.AIR) {
-                    if (block.a(this)) {
+                    if (block.a((Explosion)(Object)this)) {
                         // CraftBukkit - add yield
                         block.dropNaturally(this.world, blockposition, this.world.getType(blockposition), yield, 0);
                     }
 
                     this.world.setTypeAndData(blockposition, Blocks.AIR.getBlockData(), 3);
-                    block.wasExploded(this.world, blockposition, this);
+                    block.wasExploded(this.world, blockposition, (Explosion)(Object)this);
                 }
             }
         }
@@ -398,7 +404,7 @@ public class Explosion {
                 blockposition = (BlockPosition) iterator.next();
                 if (this.world.getType(blockposition).getMaterial() == Material.AIR && this.world.getType(blockposition.down()).b() && this.c.nextInt(3) == 0) {
                     // CraftBukkit start - Ignition by explosion
-                    if (!CraftEventFactory.callBlockIgniteEvent(this.world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this).isCancelled()) {
+                    if (!CraftEventFactory.callBlockIgniteEvent(this.world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), (Explosion)(Object)this).isCancelled()) {
                         this.world.setTypeUpdate(blockposition, Blocks.FIRE.getBlockData());
                     }
                     // CraftBukkit end
@@ -407,98 +413,14 @@ public class Explosion {
         }
 
     }
-
-    public Map<EntityHuman, Vec3D> b() {
-        return this.k;
-    }
-
-    @Nullable
-    public EntityLiving getSource() {
-        // CraftBukkit start - obtain Fireball shooter for explosion tracking
-        return this.source == null ? null : (this.source instanceof EntityTNTPrimed ? ((EntityTNTPrimed) this.source).getSource() : (this.source instanceof EntityLiving ? (EntityLiving) this.source : (this.source instanceof EntityFireball ? ((EntityFireball) this.source).shooter : null)));
-        // CraftBukkit end
-    }
-
-    public void clearBlocks() {
-        this.blocks.clear();
-    }
-
-    public List<BlockPosition> getBlocks() {
-        return this.blocks;
-    }
-
-    // Paper start - Optimize explosions
-    private float getBlockDensity(Vec3D vec3d, AxisAlignedBB aabb) {
-        if (!this.world.paperConfig.optimizeExplosions) {
-            return this.world.a(vec3d, aabb);
-        }
-        CacheKey key = new CacheKey(this, aabb);
-        return this.world.explosionDensityCache.computeIfAbsent(key, k1 -> this.world.a(vec3d, aabb));
-    }
-
-    static class CacheKey {
-        private final World world;
-        private final double posX, posY, posZ;
-        private final double minX, minY, minZ;
-        private final double maxX, maxY, maxZ;
-
-        public CacheKey(Explosion explosion, AxisAlignedBB aabb) {
-            this.world = explosion.world;
-            this.posX = explosion.posX;
-            this.posY = explosion.posY;
-            this.posZ = explosion.posZ;
-            this.minX = aabb.a;
-            this.minY = aabb.b;
-            this.minZ = aabb.c;
-            this.maxX = aabb.d;
-            this.maxY = aabb.e;
-            this.maxZ = aabb.f;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            CacheKey cacheKey = (CacheKey) o;
-
-            if (Double.compare(cacheKey.posX, posX) != 0) return false;
-            if (Double.compare(cacheKey.posY, posY) != 0) return false;
-            if (Double.compare(cacheKey.posZ, posZ) != 0) return false;
-            if (Double.compare(cacheKey.minX, minX) != 0) return false;
-            if (Double.compare(cacheKey.minY, minY) != 0) return false;
-            if (Double.compare(cacheKey.minZ, minZ) != 0) return false;
-            if (Double.compare(cacheKey.maxX, maxX) != 0) return false;
-            if (Double.compare(cacheKey.maxY, maxY) != 0) return false;
-            if (Double.compare(cacheKey.maxZ, maxZ) != 0) return false;
-            return world.equals(cacheKey.world);
-        }
-
-        @Override
-        public int hashCode() {
-            int result;
-            long temp;
-            result = world.hashCode();
-            temp = Double.doubleToLongBits(posX);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp = Double.doubleToLongBits(posY);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp = Double.doubleToLongBits(posZ);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp = Double.doubleToLongBits(minX);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp = Double.doubleToLongBits(minY);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp = Double.doubleToLongBits(minZ);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp = Double.doubleToLongBits(maxX);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp = Double.doubleToLongBits(maxY);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp = Double.doubleToLongBits(maxZ);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            return result;
-        }
-    }
+    @Shadow protected abstract float getBlockDensity(Vec3D vec3d, AxisAlignedBB aabb);
+    //private float getBlockDensity(Vec3D vec3d, AxisAlignedBB aabb) {
+        //if (!this.world.paperConfig.optimizeExplosions) {
+        //    return this.world.a(vec3d, aabb);
+        //}
+        //CacheKey key = new CacheKey((Explosion)(Object)this, aabb);
+        //return this.world.explosionDensityCache.computeIfAbsent(key, k1 -> this.world.a(vec3d, aabb));
+    //}
     // Paper end
+    // Dionysus end
 }
