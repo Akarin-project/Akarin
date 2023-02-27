@@ -142,11 +142,6 @@
             <version>1.26</version>
         </dependency>
         <dependency>
-            <groupId>org.spongepowered</groupId>
-            <artifactId>mixin</artifactId>
-            <version>0.7.11-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>com.googlecode.concurrent-locks</groupId>
             <artifactId>concurrent-locks</artifactId>
             <version>1.0.0</version>
