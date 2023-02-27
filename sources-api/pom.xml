@@ -34,16 +34,16 @@
 
     <repositories>
         <repository>
+            <id>spongepowered-repo</id>
+            <url>https://repo.spongepowered.org/maven/</url>
+        </repository>
+        <repository>
             <id>spigotmc-public</id>
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
         <repository>
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
-        </repository>
-        <repository>
-            <id>spongepowered-repo</id>
-            <url>https://repo.spongepowered.org/maven/</url>
         </repository>
     </repositories>
 
@@ -156,7 +156,7 @@
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-utils</artifactId>
+            <artifactId>asm-util</artifactId>
             <version>9.4</version>
         </dependency>
         <dependency>
