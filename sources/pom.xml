@@ -177,7 +177,7 @@
         </repository>
         <repository>
             <id>josephworks</id>
-            <url>http://repo.josephworks.net/repository/maven-public/</url>
+            <url>https://repo.josephworks.net/repository/maven-public/</url>
         </repository>
         <repository>
             <id>sonatype-nexusg</id>
