@@ -34,8 +34,8 @@
 
     <repositories>
         <repository>
-            <id>spongepowered-repo</id>
-            <url>https://repo.spongepowered.org/maven/</url>
+            <id>josephworks</id>
+            <url>http://repo.josephworks.net/repository/maven-public/</url>
         </repository>
         <repository>
             <id>spigotmc-public</id>
@@ -139,9 +139,9 @@
 		
         <!-- mixin -->
         <dependency>
-            <groupId>org.jetbrains.java.decompiler</groupId>
-            <artifactId>fernflower</artifactId>
-            <version>sponge-SNAPSHOT</version>
+            <groupId>io.akarin</groupId>
+            <artifactId>mixin</artifactId>
+            <version>0.8.5</version>
         </dependency>
         <!-- ASM -->
         <dependency>
