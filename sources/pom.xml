@@ -138,13 +138,13 @@
         <!-- Akarin -->
         <dependency>
             <groupId>io.akarin</groupId>
-            <artifactId>legacylauncher</artifactId>
-            <version>1.26</version>
+            <artifactId>mixin</artifactId>
+            <version>0.8.5</version>
         </dependency>
         <dependency>
             <groupId>io.akarin</groupId>
-            <artifactId>mixin</artifactId>
-            <version>0.8.5</version>
+            <artifactId>legacylauncher</artifactId>
+            <version>1.26</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.concurrent-locks</groupId>
