@@ -142,9 +142,9 @@
             <version>1.26</version>
         </dependency>
         <dependency>
-            <groupId>org.spongepowered</groupId>
+            <groupId>io.akarin</groupId>
             <artifactId>mixin</artifactId>
-            <version>0.7.11-SNAPSHOT</version>
+            <version>0.8.5</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.concurrent-locks</groupId>
