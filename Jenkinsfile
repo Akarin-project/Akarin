@@ -9,7 +9,7 @@ pipeline {
     
     stage('Build') {
       steps {
-	    sh 'update-alternatives --set java /usr/lib/jvm/zulu8/bin/java'
+	    sh 'update-alternatives --set java /usr/lib/jvm/zulu8/jre/bin/java'
 	    sh 'chmod +x scripts/inst.sh'
             sh './scripts/inst.sh --setup --fast --remote'
       }
