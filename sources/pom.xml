@@ -137,39 +137,14 @@
 
         <!-- Akarin -->
         <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-            <version>9.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-tree</artifactId>
-            <version>9.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-analysis</artifactId>
-            <version>9.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-util</artifactId>
-            <version>9.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-commons</artifactId>
-            <version>9.2</version>
-        </dependency>
-        <dependency>
-            <groupId>io.akarin</groupId>
-            <artifactId>mixin</artifactId>
-            <version>0.8.5</version>
-        </dependency>
-        <dependency>
             <groupId>io.akarin</groupId>
             <artifactId>legacylauncher</artifactId>
             <version>1.26</version>
+        </dependency>
+        <dependency>
+            <groupId>org.spongepowered</groupId>
+            <artifactId>mixin</artifactId>
+            <version>0.7.11-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.concurrent-locks</groupId>
@@ -310,18 +285,6 @@
                                     <excludes>
                                         <exclude>io/netty/**</exclude>
                                         <exclude>org/apache/logging/log4j/**</exclude>
-                                    </excludes>
-                                </filter>
-                                <filter>
-                                    <artifact>io.akarin:legacylauncher:**</artifact>
-                                    <excludes>
-                                        <exclude>org/objectweb/**</exclude>
-                                    </excludes>
-                                </filter>
-                                <filter>
-                                    <artifact>com.destroystokyo.paper:paper-api:**</artifact>
-                                    <excludes>
-                                        <exclude>org/objectweb/**</exclude>
                                     </excludes>
                                 </filter>
                                 <filter>

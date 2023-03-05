@@ -1,30 +1,21 @@
-package io.akarin.server.mixin.optimization;
+package net.minecraft.server;
 
-import org.bukkit.event.player.PlayerShearEntityEvent;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
+import javax.annotation.Nullable;
+import org.bukkit.event.player.PlayerShearEntityEvent; // CraftBukkit
 
-import net.minecraft.server.Blocks;
-import net.minecraft.server.EntityCow;
-import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityItem;
-import net.minecraft.server.EntityMushroomCow;
-import net.minecraft.server.EnumHand;
-import net.minecraft.server.EnumParticle;
-import net.minecraft.server.ItemStack;
-import net.minecraft.server.Items;
-import net.minecraft.server.SoundEffects;
-import net.minecraft.server.World;
+public class EntityMushroomCow extends EntityCow {
 
-@Mixin(value = EntityMushroomCow.class, remap = false)
-public abstract class MixinEntityMushroomCow extends EntityCow {
+    public EntityMushroomCow(World world) {
+        super(world);
+        this.setSize(0.9F, 1.4F);
+        this.bA = Blocks.MYCELIUM;
+    }
 
-	public MixinEntityMushroomCow(World world) {
-		super(world);
-	}
-	
-	@Overwrite
-	public boolean a(EntityHuman entityhuman, EnumHand enumhand) {
+    public static void c(DataConverterManager dataconvertermanager) {
+        EntityInsentient.a(dataconvertermanager, EntityMushroomCow.class);
+    }
+
+    public boolean a(EntityHuman entityhuman, EnumHand enumhand) {
         ItemStack itemstack = entityhuman.b(enumhand);
 
         if (itemstack.getItem() == Items.BOWL && this.getAge() >= 0 && !entityhuman.abilities.canInstantlyBuild) {
@@ -74,4 +65,20 @@ public abstract class MixinEntityMushroomCow extends EntityCow {
         }
     }
 
+    public EntityMushroomCow c(EntityAgeable entityageable) {
+        return new EntityMushroomCow(this.world);
+    }
+
+    @Nullable
+    protected MinecraftKey J() {
+        return LootTables.M;
+    }
+
+    public EntityCow b(EntityAgeable entityageable) {
+        return this.c(entityageable);
+    }
+
+    public EntityAgeable createChild(EntityAgeable entityageable) {
+        return this.c(entityageable);
+    }
 }

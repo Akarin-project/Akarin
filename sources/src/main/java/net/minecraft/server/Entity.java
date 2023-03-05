@@ -1387,37 +1387,33 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     public void d(EntityHuman entityhuman) {}
 
     public void collide(Entity entity) {
-        if (!this.x(entity)) {
-            if (!entity.noclip && !this.noclip) {
-                double d0 = entity.locX - this.locX;
-                double d1 = entity.locZ - this.locZ;
-                double d2 = MathHelper.a(d0, d1);
+		if (entity.noclip || this.noclip || this.x(entity)) return; // NeonPaper - Test this earlier
+        double d0 = entity.locX - this.locX;
+        double d1 = entity.locZ - this.locZ;
+        double d2 = MathHelper.a(d0, d1);
 
-                if (d2 >= 0.009999999776482582D) {
-                    d2 = (double) MathHelper.sqrt(d2);
-                    d0 /= d2;
-                    d1 /= d2;
-                    double d3 = 1.0D / d2;
+        if (d2 >= 0.009999999776482582D) {
+            d2 = (double) MathHelper.sqrt(d2);
+            d0 /= d2;
+            d1 /= d2;
+            double d3 = 1.0D / d2;
 
-                    if (d3 > 1.0D) {
-                        d3 = 1.0D;
-                    }
+            if (d3 > 1.0D) {
+                d3 = 1.0D;
+            }
 
-                    d0 *= d3;
-                    d1 *= d3;
-                    d0 *= 0.05000000074505806D;
-                    d1 *= 0.05000000074505806D;
-                    d0 *= (double) (1.0F - this.R);
-                    d1 *= (double) (1.0F - this.R);
-                    if (!this.isVehicle()) {
-                        this.f(-d0, 0.0D, -d1);
-                    }
+            d0 *= d3;
+            d1 *= d3;
+            d0 *= 0.05000000074505806D;
+            d1 *= 0.05000000074505806D;
+            d0 *= (double) (1.0F - this.R);
+            d1 *= (double) (1.0F - this.R);
+            if (!this.isVehicle()) {
+                this.f(-d0, 0.0D, -d1);
+            }
 
-                    if (!entity.isVehicle()) {
-                        entity.f(d0, 0.0D, d1);
-                    }
-                }
-
+            if (!entity.isVehicle()) {
+                entity.f(d0, 0.0D, d1);
             }
         }
     }
