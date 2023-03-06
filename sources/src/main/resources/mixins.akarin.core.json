@@ -30,6 +30,7 @@
         "core.MixinPlayerConnectionUtils",
 		"core.MixinPlayerChunk",
 		"core.MixinWorldBorder",
+		"core.MixinEntityLiving",
         
         "nsc.OptimisticNetworkManager",
         "nsc.NonblockingServerConnection",
