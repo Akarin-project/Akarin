@@ -32,6 +32,7 @@
 		"core.MixinWorldBorder",
 		"core.MixinEntityLiving",
 		"core.MixinTileEntityLootable",
+		"core.MixinBlockMinecartDetector",
         
         "nsc.OptimisticNetworkManager",
         "nsc.NonblockingServerConnection",
