@@ -18,13 +18,6 @@ public abstract class MixinEntityLiving {
 	@Shadow public abstract boolean hasEffect(MobEffectList mobeffectlist);
 	@Shadow @Nullable public abstract MobEffect getEffect(MobEffectList mobeffectlist);
 	@Shadow protected abstract float ct();
-	@Shadow public abstract boolean isSprinting();
-	@Shadow public double motX;
-	@Shadow public double motY;
-	@Shadow public double motZ;
-	@Shadow public float yaw;
-	@Shadow public float pitch;
-	@Shadow public boolean impulse;
 	protected long lastJumpTime = 0L; // Dionysus - Backport ArrowDMG fix
 	
 	@Overwrite
@@ -40,18 +33,18 @@ public abstract class MixinEntityLiving {
             }
         }
         // Dionysus end - Backport ArrowDMG fix
-        motY = (double) ct();
+        ((EntityLiving)(Object)this).motY = (double) ct();
         if (hasEffect(MobEffects.JUMP)) {
-            motY += (double) ((float) (getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.1F);
+        	((EntityLiving)(Object)this).motY += (double) ((float) (getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.1F);
         }
 
-        if (canCrit&&isSprinting()) {
-            float f = yaw * 0.017453292F;
+        if (canCrit&&((EntityLiving)(Object)this).isSprinting()) {
+            float f = ((EntityLiving)(Object)this).yaw * 0.017453292F;
 
-            motX -= (double) (MathHelper.sin(f) * 0.2F);
-            motZ += (double) (MathHelper.cos(f) * 0.2F);
+            ((EntityLiving)(Object)this).motX -= (double) (MathHelper.sin(f) * 0.2F);
+            ((EntityLiving)(Object)this).motZ += (double) (MathHelper.cos(f) * 0.2F);
         }
 
-        impulse = true;
+        ((EntityLiving)(Object)this).impulse = true;
     }
 }
