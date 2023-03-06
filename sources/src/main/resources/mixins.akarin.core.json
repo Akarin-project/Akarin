@@ -49,6 +49,7 @@
         "optimization.MixinContainerHorse",
         "optimization.MixinExplosion",
         "optimization.MixinMathHelper",
-        "optimization.MixinBlockStationary"
+        "optimization.MixinBlockStationary",
+        "optimization.MixinDataBits"
     ]
 }
