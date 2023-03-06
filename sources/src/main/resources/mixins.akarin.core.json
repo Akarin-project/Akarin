@@ -28,6 +28,8 @@
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
         "core.MixinPlayerConnectionUtils",
+		"core.MixinPlayerChunk",
+		"core.MixinWorldBorder",
         
         "nsc.OptimisticNetworkManager",
         "nsc.NonblockingServerConnection",

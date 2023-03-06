@@ -262,4 +262,9 @@ public class AkarinGlobalConfig {
     private static void parallelMode() {
         parallelMode = getInt("core.parallel-mode", 1);
     }
+    
+    public static boolean noChunksPastWorldBorder = true;
+    private static void noChunksPastWorldBorder() {
+        noChunksPastWorldBorder = getBoolean("core.no-chunks-past-world-border", noChunksPastWorldBorder);
+    }
 }
