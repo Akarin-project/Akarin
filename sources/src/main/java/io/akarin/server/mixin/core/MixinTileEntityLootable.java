@@ -10,7 +10,7 @@ import net.minecraft.server.TileEntityLootable;
 
 @Mixin(value = TileEntityLootable.class, remap = false)
 public abstract class MixinTileEntityLootable {
-	@Inject(at = @At("HEAD"), method = "b()V", cancellable = true)
+	@Inject(at = @At("HEAD"), method = "b(Lnet/minecraft/server/EntityHuman;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V", cancellable = true)
 	private void b(EntityHuman entityhuman, CallbackInfo ci) {
 		if (entityhuman == null) ci.cancel();
 	}
