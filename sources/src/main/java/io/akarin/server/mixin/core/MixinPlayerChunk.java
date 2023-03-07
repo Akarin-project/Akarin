@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
-
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -17,6 +16,7 @@ import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.PacketPlayOutMapChunk;
 import net.minecraft.server.PlayerChunk;
 import net.minecraft.server.PlayerChunkMap;
+import net.minecraft.server.WorldBorder;
 
 @Mixin(value = PlayerChunk.class, remap = false)
 public abstract class MixinPlayerChunk {
@@ -38,8 +38,15 @@ public abstract class MixinPlayerChunk {
         	a.debug("Failed to add player. {} already is in chunk {}, {}", entityplayer, Integer.valueOf(this.location.x), Integer.valueOf(this.location.z));
         	return;
         }
-        if (AkarinGlobalConfig.noChunksPastWorldBorder && !playerChunkMap.getWorld().getWorldBorder().isChunkInBounds(location.x, location.z)) {
-    		return;
+        if (AkarinGlobalConfig.noChunksPastWorldBorder) {
+        	WorldBorder worldborder = playerChunkMap.getWorld().getWorldBorder();
+            int centerchunkx = ((int)worldborder.getCenterX()) >> 4;
+            int centerchunkz = ((int)worldborder.getCenterZ()) >> 4;
+            int sizechunks = ((int)worldborder.getSize()) >> 5;
+            ++sizechunks;
+            if(location.x<centerchunkx - sizechunks||location.x>=centerchunkx + sizechunks||location.z<centerchunkz - sizechunks||location.z>=centerchunkz + sizechunks) {
+            	return;
+            }
     	}
     	if (this.c.isEmpty()) {
             this.i = this.playerChunkMap.getWorld().getTime();
