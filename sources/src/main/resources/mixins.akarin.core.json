@@ -28,6 +28,11 @@
         "core.MixinMinecraftServer",
         "core.MixinChunkIOExecutor",
         "core.MixinPlayerConnectionUtils",
+		"core.MixinPlayerChunk",
+		"core.MixinWorldBorder",
+		"core.MixinEntityLiving",
+		"core.MixinTileEntityLootable",
+		"core.MixinBlockMinecartDetector",
         
         "nsc.OptimisticNetworkManager",
         "nsc.NonblockingServerConnection",
@@ -44,6 +49,7 @@
         "optimization.MixinContainerHorse",
         "optimization.MixinExplosion",
         "optimization.MixinMathHelper",
-        "optimization.MixinBlockStationary"
+        "optimization.MixinBlockStationary",
+        "optimization.MixinDataBits"
     ]
 }
