@@ -45,10 +45,6 @@ import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.plugin.PluginManager;
 // CraftBukkit end
 
-// Dionysus start
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-// Dionysus end
-
 /**
  * Akarin Changes Note
  * 1) Random -> LightRandom (performance)
@@ -95,7 +91,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     private static int entityCount = 1; // Paper - MC-111480 - ID 0 is treated as special for DataWatchers, start 1
     private int id;
     public boolean i; public boolean blocksEntitySpawning() { return i; } // Paper - OBFHELPER
-    public final ObjectArrayList<Entity> passengers; // Dionysus
+    public final List<Entity> passengers;
     protected int j;
     private Entity au;public void setVehicle(Entity entity) { this.au = entity; } // Paper // OBFHELPER
     public boolean attachedToPlayer;
@@ -209,7 +205,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
 
     public Entity(World world) {
         this.id = Entity.entityCount++;
-        this.passengers = new ObjectArrayList<>(); // Dionysus
+        this.passengers = Lists.newArrayList();
         this.boundingBox = Entity.c;
         this.width = 0.6F;
         this.length = 1.8F;
@@ -2885,7 +2881,7 @@ public abstract class Entity implements ICommandListener, KeyedObject { // Paper
     }
 
     public List<Entity> bF() {
-        return (List) (this.passengers.isEmpty() ? Collections.emptyList() : new ObjectArrayList<>(this.passengers)); // Dionysus
+        return (List) (this.passengers.isEmpty() ? Collections.emptyList() : Lists.newArrayList(this.passengers));
     }
 
     public boolean w(Entity entity) {
