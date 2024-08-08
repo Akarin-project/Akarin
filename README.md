@@ -58,7 +58,6 @@ chmod -Rv a+x scripts/
 Demo Servers
 ---
 
-* [Fair Server](https://fairserver.ru)
 * [LoyaltyMC](https://www.loyaltymc.net/)
 * ~~`demo.akarin.io` (official)~~
 
