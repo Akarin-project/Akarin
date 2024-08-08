@@ -51,7 +51,6 @@ git submodule update --init --recursive
 Demo Servers
 ---
 
-* [Fair Server](https://fairserver.ru)
 * [Wolfx](https://wolfx.jp/)
 * [Pioneercraft](https://www.pioneercraft.pw/)
 
