@@ -37,6 +37,8 @@ target/
 gradle-app.setting
 .gradletasknamecache
 .gradle
+build/
+*/build/
 
 # Package Files #
 *.jar
@@ -47,6 +49,37 @@ gradle-app.setting
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# virtual machine crash logs
 hs_err_pid*
+replay_pid*
+
+# Paper/Akarin specific
+paper-api/
+paper-server/
+.paper-nms/
+.paper-nms.at
+.paper-nms.mixin
+.paper-nms.plugin
+.paper-nms.remapped
+.paper-nms.remapped.notch
+.paper-nms.remapped.spigot
+.paper-nms.remapped.yarn
+.paper-nms.remapped.mojang
+.paper-nms.remapped.obf
+.paper-nms.remapped.srg
+.paper-nms.remapped.tsrg
+.paper-nms.remapped.tiny
+.paper-nms.remapped.csrg
+.paper-nms.remapped.proguard
+.paper-nms.remapped.retroguard
+.paper-nms.remapped.specialsource
+.paper-nms.remapped.asm
+.paper-nms.remapped.fernflower
+.paper-nms.remapped.cfr
+.paper-nms.remapped.procyon
+.paper-nms.remapped.quiltflower
+
+# OS specific
+.DS_Store
+Thumbs.db
 
